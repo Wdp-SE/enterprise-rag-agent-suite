@@ -1,0 +1,116 @@
+{
+  "v0.1": {
+    "indexed_documents": 4,
+    "indexed_pages": 128,
+    "chunks": 241,
+    "hit_at_k": {
+      "1": 0.814815,
+      "3": 0.814815,
+      "5": 0.814815
+    },
+    "recall_at_k": {
+      "1": 0.685185,
+      "3": 0.703704,
+      "5": 0.759259
+    },
+    "mrr": 0.814815,
+    "document_citation_accuracy": 0.703704,
+    "page_citation_accuracy": 0.222222,
+    "document_citation_hit_rate": 0.814815,
+    "page_citation_hit_rate": 0.814815,
+    "version_temporal_retrieval": {
+      "evaluated_questions": 5,
+      "hit_at_k": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0
+      },
+      "recall_at_k": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0
+      },
+      "mrr": 0.0
+    },
+    "version_temporal_citation": {
+      "questions": 5,
+      "claimed_citations": 25,
+      "document_citation_accuracy": 0.0,
+      "page_citation_accuracy": 0.0,
+      "document_citation_hit_rate": 0.0,
+      "page_citation_hit_rate": 0.0
+    },
+    "failure_taxonomy": {
+      "PARSE_FAILURE": 3,
+      "VERSION_AMBIGUITY": 2
+    }
+  },
+  "v0.2": {
+    "indexed_documents": 5,
+    "indexed_pages": 182,
+    "chunks": 319,
+    "hit_at_k": {
+      "1": 0.851852,
+      "3": 0.888889,
+      "5": 0.925926
+    },
+    "recall_at_k": {
+      "1": 0.722222,
+      "3": 0.759259,
+      "5": 0.851852
+    },
+    "mrr": 0.87963,
+    "document_citation_accuracy": 0.725926,
+    "page_citation_accuracy": 0.237037,
+    "document_citation_hit_rate": 0.925926,
+    "page_citation_hit_rate": 0.925926,
+    "version_temporal_retrieval": {
+      "evaluated_questions": 5,
+      "hit_at_k": {
+        "1": 0.6,
+        "3": 0.6,
+        "5": 0.6
+      },
+      "recall_at_k": {
+        "1": 0.5,
+        "3": 0.5,
+        "5": 0.5
+      },
+      "mrr": 0.6
+    },
+    "version_temporal_citation": {
+      "questions": 5,
+      "claimed_citations": 25,
+      "document_citation_accuracy": 0.52,
+      "page_citation_accuracy": 0.12,
+      "document_citation_hit_rate": 0.6,
+      "page_citation_hit_rate": 0.6
+    },
+    "failure_taxonomy": {
+      "VERSION_AMBIGUITY": 2
+    }
+  },
+  "delta": {
+    "indexed_documents": 1,
+    "indexed_pages": 54,
+    "chunks": 78,
+    "hit_at_k": {
+      "1": 0.037037,
+      "3": 0.074074,
+      "5": 0.111111
+    },
+    "recall_at_k": {
+      "1": 0.037037,
+      "3": 0.055555,
+      "5": 0.092593
+    },
+    "mrr": 0.064815,
+    "document_citation_accuracy": 0.022222,
+    "page_citation_accuracy": 0.014815
+  },
+  "interpretation_boundary": [
+    "The run evaluates retrieval and retrieval-evidence citation potential only.",
+    "No answer LLM, confidence gate, version resolver, or temporal query planner was used.",
+    "Metric changes are observations, not proof of causation by OCR alone."
+  ]
+}

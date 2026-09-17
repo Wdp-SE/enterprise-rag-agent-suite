@@ -1,0 +1,722 @@
+{
+  "run_kind": "trusted_qa_phase3_offline_post_answer_replay",
+  "created_at_utc": "2026-09-03T19:53:14.991436+00:00",
+  "source_results": "reports\\trusted_qa_phase2\\answer_smoke_results.json",
+  "source_manual_review": "reports\\trusted_qa_phase2\\answer_smoke_manual_review.json",
+  "question_count": 10,
+  "answer_llm_called": false,
+  "retrieval_called": false,
+  "gate_extra_llm_calls": 0,
+  "pre_generation_enforcement": false,
+  "post_answer_enforcement": true,
+  "enforcement_scope": "POST_ANSWER_ONLY",
+  "policy_version": "trusted_qa_post_answer_v1",
+  "results": [
+    {
+      "question_id": "tqa-holdout-a02",
+      "ground_truth_answerable": true,
+      "negative_class": null,
+      "pre_generation_shadow_decision": "UNCERTAIN",
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": true,
+        "claimed_citation_count": 0,
+        "citation_count": 0,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "ANSWER_IS_NA",
+        "post_answer_shadow_decision": "REJECT",
+        "reason_codes": [
+          "ANSWER_IS_NA"
+        ],
+        "generation_error_type": null
+      },
+      "manual_result": "FALSE_ABSTENTION",
+      "expected_candidate_action": "VALID_ABSTENTION",
+      "enforcement_decision": {
+        "action": "VALID_ABSTENTION",
+        "reason_codes": [
+          "VALID_MODEL_ABSTENTION"
+        ],
+        "policy_version": "trusted_qa_post_answer_v1",
+        "original_answer_state": "EXPLICIT_NA",
+        "citation_state": "EMPTY",
+        "structured_output_state": "VALID",
+        "enforced": false,
+        "enforcement_scope": "POST_ANSWER_ONLY",
+        "pre_generation_enforcement": false,
+        "post_answer_enforcement": true,
+        "extra_llm_calls": 0,
+        "semantic_entailment_verified": false
+      },
+      "original_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      },
+      "final_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      }
+    },
+    {
+      "question_id": "tqa-holdout-a04",
+      "ground_truth_answerable": true,
+      "negative_class": null,
+      "pre_generation_shadow_decision": "ANSWER",
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": false,
+        "claimed_citation_count": 1,
+        "citation_count": 0,
+        "citation_membership_valid": false,
+        "semantic_support_verified": null,
+        "post_validation_status": "EMPTY_VALID_CITATIONS",
+        "post_answer_shadow_decision": "REJECT",
+        "reason_codes": [
+          "ANSWER_WITHOUT_VALID_CITATION"
+        ],
+        "generation_error_type": null
+      },
+      "manual_result": "ANSWER_CONTENT_ADEQUATE_BUT_UNTRACEABLE",
+      "expected_candidate_action": "FAIL_CLOSED",
+      "enforcement_decision": {
+        "action": "FAIL_CLOSED",
+        "reason_codes": [
+          "CITATION_MEMBERSHIP_INVALID"
+        ],
+        "policy_version": "trusted_qa_post_answer_v1",
+        "original_answer_state": "SUBSTANTIVE_ANSWER",
+        "citation_state": "INVALID",
+        "structured_output_state": "VALID",
+        "enforced": true,
+        "enforcement_scope": "POST_ANSWER_ONLY",
+        "pre_generation_enforcement": false,
+        "post_answer_enforcement": true,
+        "extra_llm_calls": 0,
+        "semantic_entailment_verified": false
+      },
+      "original_result": {
+        "final_answer": "特种设备存在严重事故隐患、没有改造修理价值或者达到其他报废条件时，使用单位需要依法履行报废义务，采取必要措施消除该特种设备的使用功能，并向原登记的负责特种设备安全监督管理的部门办理使用登记证书注销手续。",
+        "sources": [],
+        "error": null
+      },
+      "final_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      }
+    },
+    {
+      "question_id": "tqa-holdout-a05",
+      "ground_truth_answerable": true,
+      "negative_class": null,
+      "pre_generation_shadow_decision": "ANSWER",
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": false,
+        "claimed_citation_count": 1,
+        "citation_count": 0,
+        "citation_membership_valid": false,
+        "semantic_support_verified": null,
+        "post_validation_status": "EMPTY_VALID_CITATIONS",
+        "post_answer_shadow_decision": "REJECT",
+        "reason_codes": [
+          "ANSWER_WITHOUT_VALID_CITATION"
+        ],
+        "generation_error_type": null
+      },
+      "manual_result": "INCOMPLETE_AND_UNTRACEABLE",
+      "expected_candidate_action": "FAIL_CLOSED",
+      "enforcement_decision": {
+        "action": "FAIL_CLOSED",
+        "reason_codes": [
+          "CITATION_MEMBERSHIP_INVALID"
+        ],
+        "policy_version": "trusted_qa_post_answer_v1",
+        "original_answer_state": "SUBSTANTIVE_ANSWER",
+        "citation_state": "INVALID",
+        "structured_output_state": "VALID",
+        "enforced": true,
+        "enforcement_scope": "POST_ANSWER_ONLY",
+        "pre_generation_enforcement": false,
+        "post_answer_enforcement": true,
+        "extra_llm_calls": 0,
+        "semantic_entailment_verified": false
+      },
+      "original_result": {
+        "final_answer": "事故报告应当包括以下内容：（一）事故发生的时间、地点、单位概况以及特种设备种类；（二）事故发生简要经过；（三）已经造成或者可估计的直接经济损失；（四）现场破坏情况；（五）已经造成或者可能造成的伤亡和涉险人数。",
+        "sources": [],
+        "error": null
+      },
+      "final_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      }
+    },
+    {
+      "question_id": "tqa-holdout-a06",
+      "ground_truth_answerable": true,
+      "negative_class": null,
+      "pre_generation_shadow_decision": "UNCERTAIN",
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": false,
+        "claimed_citation_count": 5,
+        "citation_count": 5,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "VALID",
+        "post_answer_shadow_decision": "ANSWER",
+        "reason_codes": [],
+        "generation_error_type": null
+      },
+      "manual_result": "ANSWER_CONTENT_ADEQUATE",
+      "expected_candidate_action": "ALLOW_ANSWER",
+      "enforcement_decision": {
+        "action": "PASS",
+        "reason_codes": [],
+        "policy_version": "trusted_qa_post_answer_v1",
+        "original_answer_state": "SUBSTANTIVE_ANSWER",
+        "citation_state": "VALID",
+        "structured_output_state": "VALID",
+        "enforced": false,
+        "enforcement_scope": "POST_ANSWER_ONLY",
+        "pre_generation_enforcement": false,
+        "post_answer_enforcement": true,
+        "extra_llm_calls": 0,
+        "semantic_entailment_verified": false
+      },
+      "original_result": {
+        "final_answer": "事故调查组成员应具备特种设备事故调查所需的知识和专长，与事故发生单位及相关人员无直接利害关系，并不得泄露事故调查信息。",
+        "sources": [
+          {
+            "document_id": "samr-order-50-2022",
+            "document_title": "特种设备事故报告和调查处理规定",
+            "page_number": 8,
+            "source": "特种设备事故报告和调查处理规定2022.pdf",
+            "source_url": "https://www.samr.gov.cn/tzsbj/zcfg/flfg/art/2022/art_4ef537c541ff431fb631ab64ac251e3b.html",
+            "document_number": "国家市场监督管理总局令第50号",
+            "version": "2022",
+            "status": "ACTIVE",
+            "effective_date": "2022-03-01"
+          },
+          {
+            "document_id": "samr-order-50-2022",
+            "document_title": "特种设备事故报告和调查处理规定",
+            "page_number": 9,
+            "source": "特种设备事故报告和调查处理规定2022.pdf",
+            "source_url": "https://www.samr.gov.cn/tzsbj/zcfg/flfg/art/2022/art_4ef537c541ff431fb631ab64ac251e3b.html",
+            "document_number": "国家市场监督管理总局令第50号",
+            "version": "2022",
+            "status": "ACTIVE",
+            "effective_date": "2022-03-01"
+          },
+          {
+            "document_id": "samr-order-50-2022",
+            "document_title": "特种设备事故报告和调查处理规定",
+            "page_number": 10,
+            "source": "特种设备事故报告和调查处理规定2022.pdf",
+            "source_url": "https://www.samr.gov.cn/tzsbj/zcfg/flfg/art/2022/art_4ef537c541ff431fb631ab64ac251e3b.html",
+            "document_number": "国家市场监督管理总局令第50号",
+            "version": "2022",
+            "status": "ACTIVE",
+            "effective_date": "2022-03-01"
+          },
+          {
+            "document_id": "samr-order-50-2022",
+            "document_title": "特种设备事故报告和调查处理规定",
+            "page_number": 11,
+            "source": "特种设备事故报告和调查处理规定2022.pdf",
+            "source_url": "https://www.samr.gov.cn/tzsbj/zcfg/flfg/art/2022/art_4ef537c541ff431fb631ab64ac251e3b.html",
+            "document_number": "国家市场监督管理总局令第50号",
+            "version": "2022",
+            "status": "ACTIVE",
+            "effective_date": "2022-03-01"
+          },
+          {
+            "document_id": "samr-order-50-2022",
+            "document_title": "特种设备事故报告和调查处理规定",
+            "page_number": 12,
+            "source": "特种设备事故报告和调查处理规定2022.pdf",
+            "source_url": "https://www.samr.gov.cn/tzsbj/zcfg/flfg/art/2022/art_4ef537c541ff431fb631ab64ac251e3b.html",
+            "document_number": "国家市场监督管理总局令第50号",
+            "version": "2022",
+            "status": "ACTIVE",
+            "effective_date": "2022-03-01"
+          }
+        ],
+        "error": null
+      },
+      "final_result": {
+        "final_answer": "事故调查组成员应具备特种设备事故调查所需的知识和专长，与事故发生单位及相关人员无直接利害关系，并不得泄露事故调查信息。",
+        "sources": [
+          {
+            "document_id": "samr-order-50-2022",
+            "document_title": "特种设备事故报告和调查处理规定",
+            "page_number": 8,
+            "source": "特种设备事故报告和调查处理规定2022.pdf",
+            "source_url": "https://www.samr.gov.cn/tzsbj/zcfg/flfg/art/2022/art_4ef537c541ff431fb631ab64ac251e3b.html",
+            "document_number": "国家市场监督管理总局令第50号",
+            "version": "2022",
+            "status": "ACTIVE",
+            "effective_date": "2022-03-01"
+          },
+          {
+            "document_id": "samr-order-50-2022",
+            "document_title": "特种设备事故报告和调查处理规定",
+            "page_number": 9,
+            "source": "特种设备事故报告和调查处理规定2022.pdf",
+            "source_url": "https://www.samr.gov.cn/tzsbj/zcfg/flfg/art/2022/art_4ef537c541ff431fb631ab64ac251e3b.html",
+            "document_number": "国家市场监督管理总局令第50号",
+            "version": "2022",
+            "status": "ACTIVE",
+            "effective_date": "2022-03-01"
+          },
+          {
+            "document_id": "samr-order-50-2022",
+            "document_title": "特种设备事故报告和调查处理规定",
+            "page_number": 10,
+            "source": "特种设备事故报告和调查处理规定2022.pdf",
+            "source_url": "https://www.samr.gov.cn/tzsbj/zcfg/flfg/art/2022/art_4ef537c541ff431fb631ab64ac251e3b.html",
+            "document_number": "国家市场监督管理总局令第50号",
+            "version": "2022",
+            "status": "ACTIVE",
+            "effective_date": "2022-03-01"
+          },
+          {
+            "document_id": "samr-order-50-2022",
+            "document_title": "特种设备事故报告和调查处理规定",
+            "page_number": 11,
+            "source": "特种设备事故报告和调查处理规定2022.pdf",
+            "source_url": "https://www.samr.gov.cn/tzsbj/zcfg/flfg/art/2022/art_4ef537c541ff431fb631ab64ac251e3b.html",
+            "document_number": "国家市场监督管理总局令第50号",
+            "version": "2022",
+            "status": "ACTIVE",
+            "effective_date": "2022-03-01"
+          },
+          {
+            "document_id": "samr-order-50-2022",
+            "document_title": "特种设备事故报告和调查处理规定",
+            "page_number": 12,
+            "source": "特种设备事故报告和调查处理规定2022.pdf",
+            "source_url": "https://www.samr.gov.cn/tzsbj/zcfg/flfg/art/2022/art_4ef537c541ff431fb631ab64ac251e3b.html",
+            "document_number": "国家市场监督管理总局令第50号",
+            "version": "2022",
+            "status": "ACTIVE",
+            "effective_date": "2022-03-01"
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "question_id": "tqa-holdout-a09",
+      "ground_truth_answerable": true,
+      "negative_class": null,
+      "pre_generation_shadow_decision": "ANSWER",
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": false,
+        "claimed_citation_count": 5,
+        "citation_count": 5,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "VALID",
+        "post_answer_shadow_decision": "ANSWER",
+        "reason_codes": [],
+        "generation_error_type": null
+      },
+      "manual_result": "ANSWER_CONTENT_ADEQUATE",
+      "expected_candidate_action": "ALLOW_ANSWER",
+      "enforcement_decision": {
+        "action": "PASS",
+        "reason_codes": [],
+        "policy_version": "trusted_qa_post_answer_v1",
+        "original_answer_state": "SUBSTANTIVE_ANSWER",
+        "citation_state": "VALID",
+        "structured_output_state": "VALID",
+        "enforced": false,
+        "enforcement_scope": "POST_ANSWER_ONLY",
+        "pre_generation_enforcement": false,
+        "post_answer_enforcement": true,
+        "extra_llm_calls": 0,
+        "semantic_entailment_verified": false
+      },
+      "original_result": {
+        "final_answer": "压力容器安全员在安全技术档案、日常巡检、定期检验和事故处置方面的职责包括：建立健全压力容器安全技术档案并办理使用登记；组织对压力容器进行日常巡检；编制压力容器定期检验计划并负责检验和后续整改；按照规定报告压力容器事故，纠正和制止违章作业，参加事故救援，协助调查和善后处理。",
+        "sources": [
+          {
+            "document_id": "samr-order-74-2023",
+            "document_title": "特种设备使用单位落实使用安全主体责任监督管理规定",
+            "page_number": 12,
+            "source": "特种设备使用单位落实使用安全主体责任监督管理规定2023.pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_df3582cb24ae497ba18d9667ecbb63b7.html",
+            "document_number": "国家市场监督管理总局令第74号",
+            "version": "2023",
+            "status": "ACTIVE",
+            "effective_date": "2023-05-05"
+          },
+          {
+            "document_id": "samr-order-74-2023",
+            "document_title": "特种设备使用单位落实使用安全主体责任监督管理规定",
+            "page_number": 10,
+            "source": "特种设备使用单位落实使用安全主体责任监督管理规定2023.pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_df3582cb24ae497ba18d9667ecbb63b7.html",
+            "document_number": "国家市场监督管理总局令第74号",
+            "version": "2023",
+            "status": "ACTIVE",
+            "effective_date": "2023-05-05"
+          },
+          {
+            "document_id": "samr-order-74-2023",
+            "document_title": "特种设备使用单位落实使用安全主体责任监督管理规定",
+            "page_number": 27,
+            "source": "特种设备使用单位落实使用安全主体责任监督管理规定2023.pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_df3582cb24ae497ba18d9667ecbb63b7.html",
+            "document_number": "国家市场监督管理总局令第74号",
+            "version": "2023",
+            "status": "ACTIVE",
+            "effective_date": "2023-05-05"
+          },
+          {
+            "document_id": "samr-order-74-2023",
+            "document_title": "特种设备使用单位落实使用安全主体责任监督管理规定",
+            "page_number": 11,
+            "source": "特种设备使用单位落实使用安全主体责任监督管理规定2023.pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_df3582cb24ae497ba18d9667ecbb63b7.html",
+            "document_number": "国家市场监督管理总局令第74号",
+            "version": "2023",
+            "status": "ACTIVE",
+            "effective_date": "2023-05-05"
+          },
+          {
+            "document_id": "samr-order-74-2023",
+            "document_title": "特种设备使用单位落实使用安全主体责任监督管理规定",
+            "page_number": 13,
+            "source": "特种设备使用单位落实使用安全主体责任监督管理规定2023.pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_df3582cb24ae497ba18d9667ecbb63b7.html",
+            "document_number": "国家市场监督管理总局令第74号",
+            "version": "2023",
+            "status": "ACTIVE",
+            "effective_date": "2023-05-05"
+          }
+        ],
+        "error": null
+      },
+      "final_result": {
+        "final_answer": "压力容器安全员在安全技术档案、日常巡检、定期检验和事故处置方面的职责包括：建立健全压力容器安全技术档案并办理使用登记；组织对压力容器进行日常巡检；编制压力容器定期检验计划并负责检验和后续整改；按照规定报告压力容器事故，纠正和制止违章作业，参加事故救援，协助调查和善后处理。",
+        "sources": [
+          {
+            "document_id": "samr-order-74-2023",
+            "document_title": "特种设备使用单位落实使用安全主体责任监督管理规定",
+            "page_number": 12,
+            "source": "特种设备使用单位落实使用安全主体责任监督管理规定2023.pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_df3582cb24ae497ba18d9667ecbb63b7.html",
+            "document_number": "国家市场监督管理总局令第74号",
+            "version": "2023",
+            "status": "ACTIVE",
+            "effective_date": "2023-05-05"
+          },
+          {
+            "document_id": "samr-order-74-2023",
+            "document_title": "特种设备使用单位落实使用安全主体责任监督管理规定",
+            "page_number": 10,
+            "source": "特种设备使用单位落实使用安全主体责任监督管理规定2023.pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_df3582cb24ae497ba18d9667ecbb63b7.html",
+            "document_number": "国家市场监督管理总局令第74号",
+            "version": "2023",
+            "status": "ACTIVE",
+            "effective_date": "2023-05-05"
+          },
+          {
+            "document_id": "samr-order-74-2023",
+            "document_title": "特种设备使用单位落实使用安全主体责任监督管理规定",
+            "page_number": 27,
+            "source": "特种设备使用单位落实使用安全主体责任监督管理规定2023.pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_df3582cb24ae497ba18d9667ecbb63b7.html",
+            "document_number": "国家市场监督管理总局令第74号",
+            "version": "2023",
+            "status": "ACTIVE",
+            "effective_date": "2023-05-05"
+          },
+          {
+            "document_id": "samr-order-74-2023",
+            "document_title": "特种设备使用单位落实使用安全主体责任监督管理规定",
+            "page_number": 11,
+            "source": "特种设备使用单位落实使用安全主体责任监督管理规定2023.pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_df3582cb24ae497ba18d9667ecbb63b7.html",
+            "document_number": "国家市场监督管理总局令第74号",
+            "version": "2023",
+            "status": "ACTIVE",
+            "effective_date": "2023-05-05"
+          },
+          {
+            "document_id": "samr-order-74-2023",
+            "document_title": "特种设备使用单位落实使用安全主体责任监督管理规定",
+            "page_number": 13,
+            "source": "特种设备使用单位落实使用安全主体责任监督管理规定2023.pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_df3582cb24ae497ba18d9667ecbb63b7.html",
+            "document_number": "国家市场监督管理总局令第74号",
+            "version": "2023",
+            "status": "ACTIVE",
+            "effective_date": "2023-05-05"
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "question_id": "tqa-holdout-n01",
+      "ground_truth_answerable": false,
+      "negative_class": "HARD_NEGATIVE",
+      "pre_generation_shadow_decision": "ANSWER",
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": true,
+        "claimed_citation_count": 0,
+        "citation_count": 0,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "ANSWER_IS_NA",
+        "post_answer_shadow_decision": "REJECT",
+        "reason_codes": [
+          "ANSWER_IS_NA"
+        ],
+        "generation_error_type": null
+      },
+      "manual_result": "CORRECT_ABSTENTION",
+      "expected_candidate_action": "VALID_ABSTENTION",
+      "enforcement_decision": {
+        "action": "VALID_ABSTENTION",
+        "reason_codes": [
+          "VALID_MODEL_ABSTENTION"
+        ],
+        "policy_version": "trusted_qa_post_answer_v1",
+        "original_answer_state": "EXPLICIT_NA",
+        "citation_state": "EMPTY",
+        "structured_output_state": "VALID",
+        "enforced": false,
+        "enforcement_scope": "POST_ANSWER_ONLY",
+        "pre_generation_enforcement": false,
+        "post_answer_enforcement": true,
+        "extra_llm_calls": 0,
+        "semantic_entailment_verified": false
+      },
+      "original_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      },
+      "final_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      }
+    },
+    {
+      "question_id": "tqa-holdout-n03",
+      "ground_truth_answerable": false,
+      "negative_class": "HARD_NEGATIVE",
+      "pre_generation_shadow_decision": "ANSWER",
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": true,
+        "claimed_citation_count": 0,
+        "citation_count": 0,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "ANSWER_IS_NA",
+        "post_answer_shadow_decision": "REJECT",
+        "reason_codes": [
+          "ANSWER_IS_NA"
+        ],
+        "generation_error_type": null
+      },
+      "manual_result": "CORRECT_ABSTENTION",
+      "expected_candidate_action": "VALID_ABSTENTION",
+      "enforcement_decision": {
+        "action": "VALID_ABSTENTION",
+        "reason_codes": [
+          "VALID_MODEL_ABSTENTION"
+        ],
+        "policy_version": "trusted_qa_post_answer_v1",
+        "original_answer_state": "EXPLICIT_NA",
+        "citation_state": "EMPTY",
+        "structured_output_state": "VALID",
+        "enforced": false,
+        "enforcement_scope": "POST_ANSWER_ONLY",
+        "pre_generation_enforcement": false,
+        "post_answer_enforcement": true,
+        "extra_llm_calls": 0,
+        "semantic_entailment_verified": false
+      },
+      "original_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      },
+      "final_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      }
+    },
+    {
+      "question_id": "tqa-holdout-n04",
+      "ground_truth_answerable": false,
+      "negative_class": "HARD_NEGATIVE",
+      "pre_generation_shadow_decision": "UNCERTAIN",
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": true,
+        "claimed_citation_count": 0,
+        "citation_count": 0,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "ANSWER_IS_NA",
+        "post_answer_shadow_decision": "REJECT",
+        "reason_codes": [
+          "ANSWER_IS_NA"
+        ],
+        "generation_error_type": null
+      },
+      "manual_result": "CORRECT_ABSTENTION",
+      "expected_candidate_action": "VALID_ABSTENTION",
+      "enforcement_decision": {
+        "action": "VALID_ABSTENTION",
+        "reason_codes": [
+          "VALID_MODEL_ABSTENTION"
+        ],
+        "policy_version": "trusted_qa_post_answer_v1",
+        "original_answer_state": "EXPLICIT_NA",
+        "citation_state": "EMPTY",
+        "structured_output_state": "VALID",
+        "enforced": false,
+        "enforcement_scope": "POST_ANSWER_ONLY",
+        "pre_generation_enforcement": false,
+        "post_answer_enforcement": true,
+        "extra_llm_calls": 0,
+        "semantic_entailment_verified": false
+      },
+      "original_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      },
+      "final_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      }
+    },
+    {
+      "question_id": "tqa-holdout-n05",
+      "ground_truth_answerable": false,
+      "negative_class": "HARD_NEGATIVE",
+      "pre_generation_shadow_decision": "ANSWER",
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": true,
+        "claimed_citation_count": 0,
+        "citation_count": 0,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "ANSWER_IS_NA",
+        "post_answer_shadow_decision": "REJECT",
+        "reason_codes": [
+          "ANSWER_IS_NA"
+        ],
+        "generation_error_type": null
+      },
+      "manual_result": "CORRECT_ABSTENTION",
+      "expected_candidate_action": "VALID_ABSTENTION",
+      "enforcement_decision": {
+        "action": "VALID_ABSTENTION",
+        "reason_codes": [
+          "VALID_MODEL_ABSTENTION"
+        ],
+        "policy_version": "trusted_qa_post_answer_v1",
+        "original_answer_state": "EXPLICIT_NA",
+        "citation_state": "EMPTY",
+        "structured_output_state": "VALID",
+        "enforced": false,
+        "enforcement_scope": "POST_ANSWER_ONLY",
+        "pre_generation_enforcement": false,
+        "post_answer_enforcement": true,
+        "extra_llm_calls": 0,
+        "semantic_entailment_verified": false
+      },
+      "original_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      },
+      "final_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      }
+    },
+    {
+      "question_id": "tqa-holdout-n07",
+      "ground_truth_answerable": false,
+      "negative_class": "HARD_NEGATIVE",
+      "pre_generation_shadow_decision": "UNCERTAIN",
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": true,
+        "claimed_citation_count": 0,
+        "citation_count": 0,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "ANSWER_IS_NA",
+        "post_answer_shadow_decision": "REJECT",
+        "reason_codes": [
+          "ANSWER_IS_NA"
+        ],
+        "generation_error_type": null
+      },
+      "manual_result": "CORRECT_ABSTENTION",
+      "expected_candidate_action": "VALID_ABSTENTION",
+      "enforcement_decision": {
+        "action": "VALID_ABSTENTION",
+        "reason_codes": [
+          "VALID_MODEL_ABSTENTION"
+        ],
+        "policy_version": "trusted_qa_post_answer_v1",
+        "original_answer_state": "EXPLICIT_NA",
+        "citation_state": "EMPTY",
+        "structured_output_state": "VALID",
+        "enforced": false,
+        "enforcement_scope": "POST_ANSWER_ONLY",
+        "pre_generation_enforcement": false,
+        "post_answer_enforcement": true,
+        "extra_llm_calls": 0,
+        "semantic_entailment_verified": false
+      },
+      "original_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      },
+      "final_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      }
+    }
+  ]
+}

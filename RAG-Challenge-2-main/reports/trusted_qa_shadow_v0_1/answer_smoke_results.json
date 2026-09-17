@@ -1,0 +1,282 @@
+{
+  "run_kind": "trusted_qa_bounded_real_answer_smoke",
+  "started_at_utc": "2026-09-03T18:54:29.196945+00:00",
+  "completed_at_utc": "2026-09-03T18:54:39.343326+00:00",
+  "question_count": 6,
+  "answerable_count": 3,
+  "unanswerable_count": 3,
+  "configuration": {
+    "trusted_qa_mode": "SHADOW",
+    "policy_version": "trusted_qa_shadow_v0_1",
+    "answer_provider": "dashscope",
+    "answer_model": "qwen-turbo",
+    "embedding_model": "text-embedding-v1",
+    "rerank_enabled": false,
+    "top_k": 5,
+    "parent_page": true,
+    "gate_extra_llm_calls": 0
+  },
+  "usage": {
+    "prompt_tokens": 10843,
+    "completion_tokens": 979,
+    "total_tokens": 11822,
+    "scope": "Answer generation only; query embedding usage is not reported by the provider response."
+  },
+  "results": [
+    {
+      "question_id": "single-001",
+      "question": "《中华人民共和国特种设备安全法》规定的特种设备安全工作原则是什么？",
+      "ground_truth_answerable": true,
+      "question_type": "single_document",
+      "shadow_decision": "ANSWER",
+      "shadow_reason_codes": [],
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": false,
+        "claimed_citation_count": 1,
+        "citation_count": 1,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "VALID",
+        "post_answer_shadow_decision": "ANSWER",
+        "reason_codes": [],
+        "generation_error_type": null
+      },
+      "actual_pipeline_result": {
+        "final_answer": "安全第一、预防为主、节能环保、综合治理。",
+        "sources": [
+          {
+            "document_id": "cn-law-special-equipment-safety-2013",
+            "document_title": "中华人民共和国特种设备安全法",
+            "page_number": 3,
+            "source": "中华人民共和国特种设备安全法.pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_ad5e293574484b48b45047ee0ede6099.html",
+            "document_number": "中华人民共和国主席令第四号",
+            "version": "2013",
+            "status": "ACTIVE",
+            "effective_date": "2014-01-01"
+          }
+        ],
+        "error": null
+      },
+      "answer_usage": {
+        "model": "qwen-turbo",
+        "input_tokens": 1918,
+        "output_tokens": 158
+      },
+      "latency_ms": 1799.921
+    },
+    {
+      "question_id": "cross-006",
+      "question": "使用单位未按要求进行定期检验时，法律上的使用限制和监管检查中的处置方向是什么？",
+      "ground_truth_answerable": true,
+      "question_type": "cross_document",
+      "shadow_decision": "UNCERTAIN",
+      "shadow_reason_codes": [
+        "AMBIGUOUS_RETRIEVAL_SIGNAL"
+      ],
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": false,
+        "claimed_citation_count": 2,
+        "citation_count": 2,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "VALID",
+        "post_answer_shadow_decision": "ANSWER",
+        "reason_codes": [],
+        "generation_error_type": null
+      },
+      "actual_pipeline_result": {
+        "final_answer": "根据法律规定，使用单位未按要求进行定期检验的特种设备不得继续使用。在监管检查中，若发现此类情况，市场监督管理部门可以依法发出特种设备安全监察指令，或者实施查封、扣押措施。",
+        "sources": [
+          {
+            "document_id": "cn-law-special-equipment-safety-2013",
+            "document_title": "中华人民共和国特种设备安全法",
+            "page_number": 10,
+            "source": "中华人民共和国特种设备安全法.pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_ad5e293574484b48b45047ee0ede6099.html",
+            "document_number": "中华人民共和国主席令第四号",
+            "version": "2013",
+            "status": "ACTIVE",
+            "effective_date": "2014-01-01"
+          },
+          {
+            "document_id": "samr-order-57-2022",
+            "document_title": "特种设备安全监督检查办法",
+            "page_number": 7,
+            "source": "特种设备安全监督检查办法2022.pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_db50fb38104c4aecbdf27adda0d6af68.html",
+            "document_number": "国家市场监督管理总局令第57号",
+            "version": "2022",
+            "status": "ACTIVE",
+            "effective_date": "2022-07-01"
+          }
+        ],
+        "error": null
+      },
+      "answer_usage": {
+        "model": "qwen-turbo",
+        "input_tokens": 2127,
+        "output_tokens": 296
+      },
+      "latency_ms": 2458.925
+    },
+    {
+      "question_id": "version-002",
+      "question": "TSG 08—2026封面载明由哪个部门发布，日期是什么？",
+      "ground_truth_answerable": true,
+      "question_type": "version_temporal",
+      "shadow_decision": "UNCERTAIN",
+      "shadow_reason_codes": [
+        "WEAK_RETRIEVAL_SIGNAL"
+      ],
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": false,
+        "claimed_citation_count": 1,
+        "citation_count": 1,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "VALID",
+        "post_answer_shadow_decision": "ANSWER",
+        "reason_codes": [],
+        "generation_error_type": null
+      },
+      "actual_pipeline_result": {
+        "final_answer": "国家市场监督管理总局，2026年2月2日",
+        "sources": [
+          {
+            "document_id": "tsg-08-2026",
+            "document_title": "特种设备使用管理规则",
+            "page_number": 1,
+            "source": "TSG 08—2026 特种设备使用管理规则 .pdf",
+            "source_url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/tzsbs/art/2026/art_ccfd987974c9490ab5d8c0792593f1d3.html",
+            "document_number": "TSG 08—2026",
+            "version": "2026",
+            "status": "ACTIVE",
+            "effective_date": "2026-05-01"
+          }
+        ],
+        "error": null
+      },
+      "answer_usage": {
+        "model": "qwen-turbo",
+        "input_tokens": 1137,
+        "output_tokens": 185
+      },
+      "latency_ms": 1724.116
+    },
+    {
+      "question_id": "unanswerable-001",
+      "question": "2025年全国共发生多少起特种设备事故，死亡人数是多少？",
+      "ground_truth_answerable": false,
+      "question_type": "unanswerable",
+      "shadow_decision": "UNCERTAIN",
+      "shadow_reason_codes": [
+        "AMBIGUOUS_RETRIEVAL_SIGNAL"
+      ],
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": true,
+        "claimed_citation_count": 0,
+        "citation_count": 0,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "ANSWER_IS_NA",
+        "post_answer_shadow_decision": "REJECT",
+        "reason_codes": [
+          "ANSWER_IS_NA"
+        ],
+        "generation_error_type": null
+      },
+      "actual_pipeline_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      },
+      "answer_usage": {
+        "model": "qwen-turbo",
+        "input_tokens": 2047,
+        "output_tokens": 115
+      },
+      "latency_ms": 1332.43
+    },
+    {
+      "question_id": "unanswerable-004",
+      "question": "广东省某市对特种设备使用登记逾期另行规定的地方罚款金额是多少？",
+      "ground_truth_answerable": false,
+      "question_type": "unanswerable",
+      "shadow_decision": "UNCERTAIN",
+      "shadow_reason_codes": [
+        "AMBIGUOUS_RETRIEVAL_SIGNAL"
+      ],
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": true,
+        "claimed_citation_count": 0,
+        "citation_count": 0,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "ANSWER_IS_NA",
+        "post_answer_shadow_decision": "REJECT",
+        "reason_codes": [
+          "ANSWER_IS_NA"
+        ],
+        "generation_error_type": null
+      },
+      "actual_pipeline_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      },
+      "answer_usage": {
+        "model": "qwen-turbo",
+        "input_tokens": 2305,
+        "output_tokens": 109
+      },
+      "latency_ms": 1446.973
+    },
+    {
+      "question_id": "unanswerable-007",
+      "question": "TSG 08—2026下一次修订将在哪一天发布？",
+      "ground_truth_answerable": false,
+      "question_type": "unanswerable",
+      "shadow_decision": "UNCERTAIN",
+      "shadow_reason_codes": [
+        "AMBIGUOUS_RETRIEVAL_SIGNAL"
+      ],
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": true,
+        "claimed_citation_count": 0,
+        "citation_count": 0,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "ANSWER_IS_NA",
+        "post_answer_shadow_decision": "REJECT",
+        "reason_codes": [
+          "ANSWER_IS_NA"
+        ],
+        "generation_error_type": null
+      },
+      "actual_pipeline_result": {
+        "final_answer": "N/A",
+        "sources": [],
+        "error": null
+      },
+      "answer_usage": {
+        "model": "qwen-turbo",
+        "input_tokens": 1309,
+        "output_tokens": 116
+      },
+      "latency_ms": 1381.386
+    }
+  ]
+}

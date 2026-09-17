@@ -1,0 +1,8 @@
+{
+  "embedding_provider": "dashscope",
+  "embedding_model": "text-embedding-v1",
+  "embedding_normalized": true,
+  "chunk_size": 300,
+  "chunk_overlap": 50,
+  "metadata_schema_version": "generic-document-v1-compatible"
+}

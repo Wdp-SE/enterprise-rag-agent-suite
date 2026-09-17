@@ -1,0 +1,50 @@
+[
+  {
+    "source_id": "S01",
+    "evidence_id": "ev_29b64be93258e9e36d0e",
+    "title": "使用单位安全管理公开要求",
+    "organization": "示例监管机构",
+    "url": "https://official.example.gov/docs/source-01",
+    "source_type": "government_webpage",
+    "document_number": null,
+    "publish_date": "2026-01-10",
+    "effective_date": null,
+    "source_level": "TIER1",
+    "retrieved_at": "2026-08-28T00:00:00Z",
+    "local_file": "raw_sources/32f87daacbdcb603a9c587ae8c0b278139546f8dbcc104766537f639de84ebf9.html",
+    "content_hash": "eb1f6a1d6483c046364b3036d14002e04f70a9c89f4a0a48a3d3c090ca44daa8",
+    "raw_file_hash": "32f87daacbdcb603a9c587ae8c0b278139546f8dbcc104766537f639de84ebf9"
+  },
+  {
+    "source_id": "S02",
+    "evidence_id": "ev_56822dcb35945736f4b5",
+    "title": "日常检查公开要求",
+    "organization": "示例标准机构",
+    "url": "https://standards.example.org/docs/source-02",
+    "source_type": "official_standard",
+    "document_number": "EXAMPLE-2026-02",
+    "publish_date": "2026-02-15",
+    "effective_date": "2026-03-01",
+    "source_level": "TIER1",
+    "retrieved_at": "2026-08-28T00:00:00Z",
+    "local_file": "raw_sources/d0d0d103523376b944a22844ef2b3b1dc62c304002b8a982d35d98f8bdc59926.pdf",
+    "content_hash": "4f202a5ab8e7d059363a74ffc7307554f1792d771d7f4f957e51ec2a06ffa9c3",
+    "raw_file_hash": "d0d0d103523376b944a22844ef2b3b1dc62c304002b8a982d35d98f8bdc59926"
+  },
+  {
+    "source_id": "S03",
+    "evidence_id": "ev_5e31792d904fd1097ad2",
+    "title": "异常情况处理公开指引",
+    "organization": "示例行业协会",
+    "url": "https://association.example.org/guidance/source-03",
+    "source_type": "industry_guidance",
+    "document_number": null,
+    "publish_date": "2026-03-20",
+    "effective_date": null,
+    "source_level": "TIER2",
+    "retrieved_at": "2026-08-28T00:00:00Z",
+    "local_file": "raw_sources/ad4c28beaf83a27f8b076f882a72787190c23c672a5499546acacf140838a513.txt",
+    "content_hash": "b8858ae5778dc04d140e97b6d34e980bf9bd3247d1f4b65d821c17e04e2e74c6",
+    "raw_file_hash": "ad4c28beaf83a27f8b076f882a72787190c23c672a5499546acacf140838a513"
+  }
+]

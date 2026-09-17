@@ -1,0 +1,32 @@
+[
+  {
+    "question_id": "version-001",
+    "failure_type": "VERSION_AMBIGUITY",
+    "evidence": "Expected ['tsg-08-2017']; retrieved ['cn-law-special-equipment-safety-2013', 'samr-order-50-2022', 'samr-order-57-2022']",
+    "likely_cause": "The baseline does not resolve current and historical versions."
+  },
+  {
+    "question_id": "version-002",
+    "failure_type": "PARSE_FAILURE",
+    "evidence": "Expected documents blocked from ingestion: ['tsg-08-2026']",
+    "likely_cause": "The source PDF requires OCR or failed parsing."
+  },
+  {
+    "question_id": "version-003",
+    "failure_type": "PARSE_FAILURE",
+    "evidence": "Expected documents blocked from ingestion: ['tsg-08-2026']",
+    "likely_cause": "The source PDF requires OCR or failed parsing."
+  },
+  {
+    "question_id": "version-004",
+    "failure_type": "PARSE_FAILURE",
+    "evidence": "Expected documents blocked from ingestion: ['tsg-08-2026']",
+    "likely_cause": "The source PDF requires OCR or failed parsing."
+  },
+  {
+    "question_id": "version-005",
+    "failure_type": "VERSION_AMBIGUITY",
+    "evidence": "Expected ['tsg-08-2017']; retrieved ['cn-law-special-equipment-safety-2013', 'samr-order-57-2022', 'samr-order-74-2023']",
+    "likely_cause": "The baseline does not resolve current and historical versions."
+  }
+]

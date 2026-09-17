@@ -1,0 +1,1434 @@
+{
+  "schema_version": "1.0",
+  "document_id": "tsg-08-2026",
+  "cache_complete": true,
+  "physical_pages": 54,
+  "native_pages": 1,
+  "ocr_pages_with_raw_blocks": 53,
+  "total_blocks": 2879,
+  "confidence_distribution": {
+    ">=0.90": 920,
+    "0.80-0.90": 316,
+    "0.70-0.80": 300,
+    "0.60-0.70": 242,
+    "0.575-0.60": 57,
+    "0.55-0.575": 68,
+    "0.525-0.55": 61,
+    "0.50-0.525": 47,
+    "0.45-0.50": 92,
+    "<0.45": 776
+  },
+  "low_confidence_0_50_0_60": {
+    "total": 233,
+    "classification_counts": {
+      "BODY_TEXT": 168,
+      "CLAUSE_NUMBER": 4,
+      "HEADING": 0,
+      "DATE_OR_EFFECTIVE_TERM": 1,
+      "HEADER_FOOTER": 9,
+      "WATERMARK": 0,
+      "GARBLED": 14,
+      "UNKNOWN": 37
+    }
+  },
+  "required_false_negative_examples": {
+    "clause": [
+      {
+        "page_number": 4,
+        "block_index": 5,
+        "text": "1.1  目的",
+        "confidence": 0.621376273286621,
+        "bbox": [
+          [
+            285.0,
+            651.0
+          ],
+          [
+            455.0,
+            651.0
+          ],
+          [
+            455.0,
+            693.0
+          ],
+          [
+            285.0,
+            693.0
+          ]
+        ],
+        "relative_bbox": {
+          "left": 0.159605,
+          "top": 0.25772,
+          "right": 0.254808,
+          "bottom": 0.274347,
+          "width": 0.095203,
+          "height": 0.016627,
+          "top_edge_angle_degrees": 0.0
+        },
+        "current_retained": true,
+        "normalized_text": "1.1目的",
+        "character_stats": {
+          "non_space_chars": 5,
+          "chinese_chars": 2,
+          "alnum_chars": 4,
+          "chinese_ratio": 0.4,
+          "unusual_ratio": 0.0
+        }
+      }
+    ],
+    "effective_date": [
+      {
+        "page_number": 21,
+        "block_index": 5,
+        "text": "本规则自2026年5月1日起施行,",
+        "confidence": 0.5453264150754644,
+        "bbox": [
+          [
+            282.0,
+            340.0
+          ],
+          [
+            842.0,
+            340.0
+          ],
+          [
+            842.0,
+            392.0
+          ],
+          [
+            282.0,
+            392.0
+          ]
+        ],
+        "relative_bbox": {
+          "left": 0.157925,
+          "top": 0.1346,
+          "right": 0.471534,
+          "bottom": 0.155186,
+          "width": 0.31361,
+          "height": 0.020586,
+          "top_edge_angle_degrees": 0.0
+        },
+        "current_retained": false,
+        "normalized_text": "本规则自2026年5月1日起施行,",
+        "character_stats": {
+          "non_space_chars": 17,
+          "chinese_chars": 10,
+          "alnum_chars": 16,
+          "chinese_ratio": 0.588235,
+          "unusual_ratio": 0.0
+        }
+      }
+    ],
+    "continuation": [
+      {
+        "page_number": 21,
+        "block_index": 11,
+        "text": "以本规则为准。",
+        "confidence": 0.5049303419309762,
+        "bbox": [
+          [
+            279.0,
+            521.0
+          ],
+          [
+            531.0,
+            521.0
+          ],
+          [
+            531.0,
+            571.0
+          ],
+          [
+            279.0,
+            571.0
+          ]
+        ],
+        "relative_bbox": {
+          "left": 0.156245,
+          "top": 0.206255,
+          "right": 0.297369,
+          "bottom": 0.226049,
+          "width": 0.141124,
+          "height": 0.019794,
+          "top_edge_angle_degrees": 0.0
+        },
+        "current_retained": false,
+        "normalized_text": "以本规则为准。",
+        "character_stats": {
+          "non_space_chars": 7,
+          "chinese_chars": 6,
+          "alnum_chars": 6,
+          "chinese_ratio": 0.857143,
+          "unusual_ratio": 0.0
+        }
+      }
+    ]
+  },
+  "bbox_observations": {
+    "coordinate_normalization": "bbox image pixels divided by physical PDF page size times render_scale=3",
+    "simple_margin_repeat_rule_available": true,
+    "rotated_repeated_watermark_candidates": 0
+  },
+  "repeated_text_candidates": [
+    {
+      "normalized_text": "特种设备安全技术规范",
+      "page_count": 53,
+      "page_numbers": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "mean_top": 0.070475,
+      "top_stddev": 0.001528,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "tsg",
+      "page_count": 38,
+      "page_numbers": [
+        2,
+        3,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        15,
+        18,
+        20,
+        21,
+        22,
+        23,
+        24,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        34,
+        36,
+        39,
+        40,
+        41,
+        42,
+        44,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "mean_top": 0.072446,
+      "top_stddev": 0.001462,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "08-2026",
+      "page_count": 23,
+      "page_numbers": [
+        2,
+        3,
+        4,
+        8,
+        10,
+        12,
+        14,
+        15,
+        21,
+        22,
+        24,
+        26,
+        28,
+        30,
+        32,
+        34,
+        42,
+        44,
+        46,
+        48,
+        50,
+        52,
+        54
+      ],
+      "mean_top": 0.071672,
+      "top_stddev": 0.001329,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "tsg08-2026",
+      "page_count": 15,
+      "page_numbers": [
+        5,
+        7,
+        9,
+        11,
+        13,
+        16,
+        17,
+        19,
+        25,
+        33,
+        35,
+        37,
+        38,
+        43,
+        45
+      ],
+      "mean_top": 0.073106,
+      "top_stddev": 0.000839,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "08--2026",
+      "page_count": 14,
+      "page_numbers": [
+        6,
+        18,
+        20,
+        23,
+        27,
+        29,
+        31,
+        36,
+        40,
+        41,
+        47,
+        49,
+        51,
+        53
+      ],
+      "mean_top": 0.073832,
+      "top_stddev": 0.000491,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "3",
+      "page_count": 6,
+      "page_numbers": [
+        3,
+        6,
+        9,
+        29,
+        30,
+        31
+      ],
+      "mean_top": 0.494955,
+      "top_stddev": 0.238039,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "产品编号",
+      "page_count": 6,
+      "page_numbers": [
+        26,
+        27,
+        32,
+        46,
+        47,
+        48
+      ],
+      "mean_top": 0.331618,
+      "top_stddev": 0.052421,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "使用单位名称",
+      "page_count": 6,
+      "page_numbers": [
+        26,
+        27,
+        28,
+        32,
+        46,
+        48
+      ],
+      "mean_top": 0.344418,
+      "top_stddev": 0.111513,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "使用单位地址",
+      "page_count": 6,
+      "page_numbers": [
+        26,
+        27,
+        28,
+        41,
+        46,
+        48
+      ],
+      "mean_top": 0.335709,
+      "top_stddev": 0.059908,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "安全员",
+      "page_count": 6,
+      "page_numbers": [
+        8,
+        26,
+        27,
+        28,
+        46,
+        48
+      ],
+      "mean_top": 0.40923,
+      "top_stddev": 0.103136,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "设备代码",
+      "page_count": 6,
+      "page_numbers": [
+        26,
+        29,
+        46,
+        47,
+        48,
+        49
+      ],
+      "mean_top": 0.377276,
+      "top_stddev": 0.088026,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "设备品种",
+      "page_count": 6,
+      "page_numbers": [
+        26,
+        27,
+        28,
+        46,
+        47,
+        48
+      ],
+      "mean_top": 0.283452,
+      "top_stddev": 0.059367,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "说明:",
+      "page_count": 6,
+      "page_numbers": [
+        26,
+        27,
+        28,
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.749604,
+      "top_stddev": 0.029552,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "(使用单位公章)",
+      "page_count": 5,
+      "page_numbers": [
+        26,
+        27,
+        28,
+        46,
+        48
+      ],
+      "mean_top": 0.678306,
+      "top_stddev": 0.036697,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "c",
+      "page_count": 5,
+      "page_numbers": [
+        36,
+        37,
+        40,
+        45,
+        47
+      ],
+      "mean_top": 0.723718,
+      "top_stddev": 0.199017,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "y=l00",
+      "page_count": 5,
+      "page_numbers": [
+        22,
+        23,
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.538797,
+      "top_stddev": 0.187136,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "。",
+      "page_count": 5,
+      "page_numbers": [
+        21,
+        30,
+        32,
+        36,
+        50
+      ],
+      "mean_top": 0.489111,
+      "top_stddev": 0.185225,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "产品名称",
+      "page_count": 5,
+      "page_numbers": [
+        26,
+        27,
+        28,
+        29,
+        47
+      ],
+      "mean_top": 0.300396,
+      "top_stddev": 0.100058,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "其他",
+      "page_count": 5,
+      "page_numbers": [
+        13,
+        26,
+        27,
+        28,
+        34
+      ],
+      "mean_top": 0.610135,
+      "top_stddev": 0.108466,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "字体:黑体",
+      "page_count": 5,
+      "page_numbers": [
+        22,
+        23,
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.422194,
+      "top_stddev": 0.138355,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "字号:",
+      "page_count": 5,
+      "page_numbers": [
+        22,
+        23,
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.451558,
+      "top_stddev": 0.149619,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "安全总监",
+      "page_count": 5,
+      "page_numbers": [
+        7,
+        26,
+        27,
+        28,
+        48
+      ],
+      "mean_top": 0.429533,
+      "top_stddev": 0.081794,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "文字",
+      "page_count": 5,
+      "page_numbers": [
+        22,
+        23,
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.395804,
+      "top_stddev": 0.139316,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "登记机关登记人员:",
+      "page_count": 5,
+      "page_numbers": [
+        26,
+        27,
+        28,
+        46,
+        48
+      ],
+      "mean_top": 0.832383,
+      "top_stddev": 0.018558,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "纸张",
+      "page_count": 5,
+      "page_numbers": [
+        22,
+        23,
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.461203,
+      "top_stddev": 0.17163,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "2",
+      "page_count": 4,
+      "page_numbers": [
+        3,
+        5,
+        31,
+        38
+      ],
+      "mean_top": 0.455378,
+      "top_stddev": 0.293942,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "2.5",
+      "page_count": 4,
+      "page_numbers": [
+        7,
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.522328,
+      "top_stddev": 0.074784,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "c-0",
+      "page_count": 4,
+      "page_numbers": [
+        49,
+        51,
+        52,
+        54
+      ],
+      "mean_top": 0.502243,
+      "top_stddev": 0.151078,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "i",
+      "page_count": 4,
+      "page_numbers": [
+        31,
+        36,
+        39,
+        45
+      ],
+      "mean_top": 0.200416,
+      "top_stddev": 0.13574,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "k-0",
+      "page_count": 4,
+      "page_numbers": [
+        49,
+        51,
+        52,
+        54
+      ],
+      "mean_top": 0.676326,
+      "top_stddev": 0.023617,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "k=0",
+      "page_count": 4,
+      "page_numbers": [
+        49,
+        51,
+        52,
+        54
+      ],
+      "mean_top": 0.521887,
+      "top_stddev": 0.140041,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "使用单位",
+      "page_count": 4,
+      "page_numbers": [
+        26,
+        27,
+        28,
+        41
+      ],
+      "mean_top": 0.358868,
+      "top_stddev": 0.087545,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "制造单位名称",
+      "page_count": 4,
+      "page_numbers": [
+        26,
+        27,
+        32,
+        47
+      ],
+      "mean_top": 0.286718,
+      "top_stddev": 0.061323,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "登记机关:",
+      "page_count": 4,
+      "page_numbers": [
+        22,
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.442894,
+      "top_stddev": 0.114444,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "移动电话",
+      "page_count": 4,
+      "page_numbers": [
+        26,
+        27,
+        28,
+        33
+      ],
+      "mean_top": 0.471744,
+      "top_stddev": 0.059329,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "设备使用地点",
+      "page_count": 4,
+      "page_numbers": [
+        26,
+        28,
+        33,
+        46
+      ],
+      "mean_top": 0.310471,
+      "top_stddev": 0.123226,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "设备种类:",
+      "page_count": 4,
+      "page_numbers": [
+        22,
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.337391,
+      "top_stddev": 0.104745,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "邮政编码",
+      "page_count": 4,
+      "page_numbers": [
+        26,
+        27,
+        28,
+        32
+      ],
+      "mean_top": 0.503761,
+      "top_stddev": 0.1576,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "颜色:",
+      "page_count": 4,
+      "page_numbers": [
+        22,
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.408683,
+      "top_stddev": 0.138732,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "#",
+      "page_count": 3,
+      "page_numbers": [
+        36,
+        37,
+        39
+      ],
+      "mean_top": 0.375297,
+      "top_stddev": 0.036952,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "(登记机关专用章)",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        28,
+        46
+      ],
+      "mean_top": 0.815255,
+      "top_stddev": 0.010264,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "1.",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.756928,
+      "top_stddev": 0.014812,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "10ommx15omm",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.636316,
+      "top_stddev": 0.01175,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "13点",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.455028,
+      "top_stddev": 0.145851,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "145",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.561362,
+      "top_stddev": 0.012317,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "18",
+      "page_count": 3,
+      "page_numbers": [
+        21,
+        23,
+        31
+      ],
+      "mean_top": 0.589338,
+      "top_stddev": 0.236573,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "25",
+      "page_count": 3,
+      "page_numbers": [
+        28,
+        31,
+        54
+      ],
+      "mean_top": 0.51214,
+      "top_stddev": 0.29014,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "`",
+      "page_count": 3,
+      "page_numbers": [
+        37,
+        38,
+        49
+      ],
+      "mean_top": 0.377923,
+      "top_stddev": 0.036082,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "c-45",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.669834,
+      "top_stddev": 0.011655,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "c-80",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.406651,
+      "top_stddev": 0.201505,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "m-0",
+      "page_count": 3,
+      "page_numbers": [
+        51,
+        52,
+        54
+      ],
+      "mean_top": 0.529216,
+      "top_stddev": 0.151737,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "m-30",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.487094,
+      "top_stddev": 0.198512,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "m-40",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.66957,
+      "top_stddev": 0.01175,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "m=0",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.460332,
+      "top_stddev": 0.118751,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "y-0",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.568329,
+      "top_stddev": 0.155018,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "二维码打印区",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.639351,
+      "top_stddev": 0.011637,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "使用单位:",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.307997,
+      "top_stddev": 0.019046,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "使用单位填表人员:",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        27,
+        28
+      ],
+      "mean_top": 0.718131,
+      "top_stddev": 0.033616,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "使用单位安全总监:",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        27,
+        28
+      ],
+      "mean_top": 0.740829,
+      "top_stddev": 0.032673,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "使用登记",
+      "page_count": 3,
+      "page_numbers": [
+        3,
+        4,
+        46
+      ],
+      "mean_top": 0.413038,
+      "top_stddev": 0.149794,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "使用登记证编号:",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        27,
+        28
+      ],
+      "mean_top": 0.849169,
+      "top_stddev": 0.020951,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "则编为",
+      "page_count": 3,
+      "page_numbers": [
+        25,
+        30,
+        53
+      ],
+      "mean_top": 0.682403,
+      "top_stddev": 0.186277,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "加粗",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.30285,
+      "top_stddev": 0.014398,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "单位内编号",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        27,
+        32
+      ],
+      "mean_top": 0.516099,
+      "top_stddev": 0.228368,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "单位内编号:",
+      "page_count": 3,
+      "page_numbers": [
+        22,
+        49,
+        51
+      ],
+      "mean_top": 0.409079,
+      "top_stddev": 0.097651,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "墨",
+      "page_count": 3,
+      "page_numbers": [
+        38,
+        40,
+        45
+      ],
+      "mean_top": 0.410047,
+      "top_stddev": 0.142912,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "字号:24点",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.318949,
+      "top_stddev": 0.014461,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "对于工业管道,",
+      "page_count": 3,
+      "page_numbers": [
+        41,
+        43,
+        44
+      ],
+      "mean_top": 0.450119,
+      "top_stddev": 0.135376,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "尺寸:",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.635128,
+      "top_stddev": 0.01175,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "年月日",
+      "page_count": 3,
+      "page_numbers": [
+        22,
+        26,
+        27
+      ],
+      "mean_top": 0.759303,
+      "top_stddev": 0.077982,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "底色:",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.474004,
+      "top_stddev": 0.176897,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "投入使用日期",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        27,
+        33
+      ],
+      "mean_top": 0.396806,
+      "top_stddev": 0.133262,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "施工单位名称",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        27,
+        32
+      ],
+      "mean_top": 0.33782,
+      "top_stddev": 0.026548,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "日期",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        27,
+        28
+      ],
+      "mean_top": 0.747031,
+      "top_stddev": 0.072793,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "日期:",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        27,
+        28
+      ],
+      "mean_top": 0.77118,
+      "top_stddev": 0.045188,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "检验机构名称",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        33,
+        44
+      ],
+      "mean_top": 0.506334,
+      "top_stddev": 0.226009,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "检验结论",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        34,
+        43
+      ],
+      "mean_top": 0.550409,
+      "top_stddev": 0.224227,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "特种设备使用标志",
+      "page_count": 3,
+      "page_numbers": [
+        3,
+        49,
+        51
+      ],
+      "mean_top": 0.3365,
+      "top_stddev": 0.164448,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "特种设备使用登记证",
+      "page_count": 3,
+      "page_numbers": [
+        3,
+        19,
+        22
+      ],
+      "mean_top": 0.313011,
+      "top_stddev": 0.025942,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "登记类别:",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        27,
+        28
+      ],
+      "mean_top": 0.203747,
+      "top_stddev": 0.005498,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "登记证编号:",
+      "page_count": 3,
+      "page_numbers": [
+        49,
+        51,
+        52
+      ],
+      "mean_top": 0.444972,
+      "top_stddev": 0.020072,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "皇",
+      "page_count": 3,
+      "page_numbers": [
+        38,
+        40,
+        45
+      ],
+      "mean_top": 0.236342,
+      "top_stddev": 0.01165,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "监督检验机构名称",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        27,
+        32
+      ],
+      "mean_top": 0.36474,
+      "top_stddev": 0.023597,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "编号:",
+      "page_count": 3,
+      "page_numbers": [
+        22,
+        23,
+        47
+      ],
+      "mean_top": 0.287675,
+      "top_stddev": 0.049724,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "规格:",
+      "page_count": 3,
+      "page_numbers": [
+        22,
+        23,
+        49
+      ],
+      "mean_top": 0.349406,
+      "top_stddev": 0.142573,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "设备",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        27,
+        28
+      ],
+      "mean_top": 0.385194,
+      "top_stddev": 0.13309,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "设备种类",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        29,
+        47
+      ],
+      "mean_top": 0.277514,
+      "top_stddev": 0.055931,
+      "position_stable": false
+    },
+    {
+      "normalized_text": "设备类别",
+      "page_count": 3,
+      "page_numbers": [
+        26,
+        28,
+        47
+      ],
+      "mean_top": 0.233043,
+      "top_stddev": 0.009082,
+      "position_stable": true
+    },
+    {
+      "normalized_text": "鼍",
+      "page_count": 3,
+      "page_numbers": [
+        38,
+        39,
+        40
+      ],
+      "mean_top": 0.522697,
+      "top_stddev": 0.240173,
+      "position_stable": false
+    }
+  ],
+  "ocr_invocation_count": 0
+}

@@ -1,0 +1,84 @@
+{
+  "evaluation_mode": "retrieval_evidence_citation_potential",
+  "answerable_questions": 8,
+  "claimed_citations": 40,
+  "document_citation_accuracy": 0.55,
+  "page_citation_accuracy": 0.15,
+  "document_citation_hit_rate": 0.75,
+  "page_citation_hit_rate": 0.75,
+  "unanswerable_empty_citation_rate": null,
+  "per_question": [
+    {
+      "question_id": "vg-current-001",
+      "answerable": true,
+      "citation_count": 5,
+      "document_correct_claims": 3,
+      "page_correct_claims": 1,
+      "document_hit": true,
+      "page_hit": true
+    },
+    {
+      "question_id": "vg-explicit-old-001",
+      "answerable": true,
+      "citation_count": 5,
+      "document_correct_claims": 0,
+      "page_correct_claims": 0,
+      "document_hit": false,
+      "page_hit": false
+    },
+    {
+      "question_id": "vg-explicit-new-001",
+      "answerable": true,
+      "citation_count": 5,
+      "document_correct_claims": 4,
+      "page_correct_claims": 1,
+      "document_hit": true,
+      "page_hit": true
+    },
+    {
+      "question_id": "vg-temporal-past-001",
+      "answerable": true,
+      "citation_count": 5,
+      "document_correct_claims": 0,
+      "page_correct_claims": 0,
+      "document_hit": false,
+      "page_hit": false
+    },
+    {
+      "question_id": "vg-temporal-current-001",
+      "answerable": true,
+      "citation_count": 5,
+      "document_correct_claims": 4,
+      "page_correct_claims": 1,
+      "document_hit": true,
+      "page_hit": true
+    },
+    {
+      "question_id": "vg-dual-001",
+      "answerable": true,
+      "citation_count": 5,
+      "document_correct_claims": 4,
+      "page_correct_claims": 1,
+      "document_hit": true,
+      "page_hit": true
+    },
+    {
+      "question_id": "vg-ambiguous-year-001",
+      "answerable": true,
+      "citation_count": 5,
+      "document_correct_claims": 4,
+      "page_correct_claims": 1,
+      "document_hit": true,
+      "page_hit": true
+    },
+    {
+      "question_id": "vg-unspecified-001",
+      "answerable": true,
+      "citation_count": 5,
+      "document_correct_claims": 3,
+      "page_correct_claims": 1,
+      "document_hit": true,
+      "page_hit": true
+    }
+  ]
+}

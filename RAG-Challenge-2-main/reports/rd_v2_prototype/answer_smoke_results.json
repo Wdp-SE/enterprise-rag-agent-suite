@@ -1,0 +1,742 @@
+{
+  "query_count": 3,
+  "provider": "dashscope",
+  "results": [
+    {
+      "id": "SM01",
+      "schema": "text",
+      "question": "What does POST /api/v2/ingest do?",
+      "retrieval_mode": "rd_hybrid",
+      "answer_model": "qwen-turbo",
+      "rerank_model": "qwen-turbo",
+      "latency_ms": 4644.189,
+      "retrieved": [
+        {
+          "document_id": "rd_v2_demo_specification",
+          "page_number": 4,
+          "chunk_id": "rd_v2_demo_specification:7",
+          "section_id": "rd_v2_demo_specification:section:0004",
+          "context_role": "hit",
+          "retrieval_sources": [
+            "dense",
+            "bm25"
+          ]
+        },
+        {
+          "document_id": "rd_v2_demo_specification",
+          "page_number": 4,
+          "chunk_id": "rd_v2_demo_specification:8",
+          "section_id": "rd_v2_demo_specification:section:0004",
+          "context_role": "neighbor",
+          "retrieval_sources": [
+            "dense",
+            "bm25"
+          ]
+        },
+        {
+          "document_id": "rd_v2_demo_specification",
+          "page_number": 6,
+          "chunk_id": "rd_v2_demo_specification:12",
+          "section_id": "rd_v2_demo_specification:section:0006",
+          "context_role": "hit",
+          "retrieval_sources": [
+            "dense",
+            "bm25"
+          ]
+        },
+        {
+          "document_id": "rd_v2_demo_specification",
+          "page_number": 6,
+          "chunk_id": "rd_v2_demo_specification:11",
+          "section_id": "rd_v2_demo_specification:section:0006",
+          "context_role": "parent_anchor",
+          "retrieval_sources": [
+            "dense",
+            "bm25"
+          ]
+        }
+      ],
+      "final_answer": "POST /api/v2/ingest 创建一个异步数据摄入任务。必填字段包括 source_uri 和 document_id，可选字段包括 language 和 force_ocr。成功请求后会返回 job_id 和 accepted_at，其中 job_id 用于轮询数据摄入状态。",
+      "sources": [
+        {
+          "document_id": "rd_v2_demo_specification",
+          "document_title": "R&D Document Intelligence Platform Specification",
+          "page_number": 4,
+          "source": "rd_v2_demo_specification.pdf",
+          "source_url": null
+        }
+      ],
+      "structured_output_success": true,
+      "citation_membership_success": true,
+      "answer_usage": {
+        "model": "qwen-turbo",
+        "prompt_tokens": 965,
+        "completion_tokens": 229,
+        "total_tokens": 1194
+      },
+      "rerank_usage": {
+        "model": "qwen-turbo",
+        "prompt_tokens": 725,
+        "completion_tokens": 239,
+        "total_tokens": 964
+      },
+      "combined_total_tokens": 2158,
+      "error": null
+    },
+    {
+      "id": "SM02",
+      "schema": "number",
+      "question": "What is the maximum supported concurrent user count?",
+      "retrieval_mode": "rd_hybrid",
+      "answer_model": "qwen-turbo",
+      "rerank_model": "qwen-turbo",
+      "latency_ms": 3483.534,
+      "retrieved": [
+        {
+          "document_id": "rd_v2_demo_specification",
+          "page_number": 8,
+          "chunk_id": "rd_v2_demo_specification:15",
+          "section_id": "rd_v2_demo_specification:section:0008",
+          "context_role": "hit",
+          "retrieval_sources": [
+            "dense",
+            "bm25"
+          ]
+        },
+        {
+          "document_id": "rd_v2_demo_specification",
+          "page_number": 8,
+          "chunk_id": "rd_v2_demo_specification:16",
+          "section_id": "rd_v2_demo_specification:section:0008",
+          "context_role": "neighbor",
+          "retrieval_sources": [
+            "dense",
+            "bm25"
+          ]
+        },
+        {
+          "document_id": "rd_v2_demo_specification",
+          "page_number": 7,
+          "chunk_id": "rd_v2_demo_specification:14",
+          "section_id": "rd_v2_demo_specification:section:0007",
+          "context_role": "hit",
+          "retrieval_sources": [
+            "dense"
+          ]
+        },
+        {
+          "document_id": "rd_v2_demo_specification",
+          "page_number": 7,
+          "chunk_id": "rd_v2_demo_specification:13",
+          "section_id": "rd_v2_demo_specification:section:0007",
+          "context_role": "parent_anchor",
+          "retrieval_sources": [
+            "dense"
+          ]
+        }
+      ],
+      "final_answer": 240,
+      "sources": [
+        {
+          "document_id": "rd_v2_demo_specification",
+          "document_title": "R&D Document Intelligence Platform Specification",
+          "page_number": 8,
+          "source": "rd_v2_demo_specification.pdf",
+          "source_url": null
+        }
+      ],
+      "structured_output_success": true,
+      "citation_membership_success": true,
+      "answer_usage": {
+        "model": "qwen-turbo",
+        "prompt_tokens": 986,
+        "completion_tokens": 139,
+        "total_tokens": 1125
+      },
+      "rerank_usage": {
+        "model": "qwen-turbo",
+        "prompt_tokens": 759,
+        "completion_tokens": 215,
+        "total_tokens": 974
+      },
+      "combined_total_tokens": 2099,
+      "error": null
+    },
+    {
+      "id": "SM03",
+      "schema": "text",
+      "question": "How many days are exported packages retained before deletion?",
+      "retrieval_mode": "rd_hybrid",
+      "answer_model": "qwen-turbo",
+      "rerank_model": "qwen-turbo",
+      "latency_ms": 3583.411,
+      "retrieved": [
+        {
+          "document_id": "rd_v2_demo_specification",
+          "page_number": 7,
+          "chunk_id": "rd_v2_demo_specification:13",
+          "section_id": "rd_v2_demo_specification:section:0007",
+          "context_role": "hit",
+          "retrieval_sources": [
+            "dense"
+          ]
+        },
+        {
+          "document_id": "rd_v2_demo_specification",
+          "page_number": 7,
+          "chunk_id": "rd_v2_demo_specification:14",
+          "section_id": "rd_v2_demo_specification:section:0007",
+          "context_role": "neighbor",
+          "retrieval_sources": [
+            "dense"
+          ]
+        },
+        {
+          "document_id": "rd_v2_demo_specification",
+          "page_number": 4,
+          "chunk_id": "rd_v2_demo_specification:8",
+          "section_id": "rd_v2_demo_specification:section:0004",
+          "context_role": "hit",
+          "retrieval_sources": [
+            "bm25"
+          ]
+        },
+        {
+          "document_id": "rd_v2_demo_specification",
+          "page_number": 4,
+          "chunk_id": "rd_v2_demo_specification:7",
+          "section_id": "rd_v2_demo_specification:section:0004",
+          "context_role": "parent_anchor",
+          "retrieval_sources": [
+            "bm25"
+          ]
+        }
+      ],
+      "final_answer": "N/A",
+      "sources": [],
+      "structured_output_success": true,
+      "citation_membership_success": true,
+      "answer_usage": {
+        "model": "qwen-turbo",
+        "prompt_tokens": 986,
+        "completion_tokens": 134,
+        "total_tokens": 1120
+      },
+      "rerank_usage": {
+        "model": "qwen-turbo",
+        "prompt_tokens": 720,
+        "completion_tokens": 202,
+        "total_tokens": 922
+      },
+      "combined_total_tokens": 2042,
+      "error": null
+    }
+  ],
+  "trusted_qa_mode": "ENFORCE",
+  "trusted_qa_traces": [
+    {
+      "question_id": "SM01",
+      "signal_snapshot": {
+        "question_id": "SM01",
+        "retrieved_count": 4,
+        "top1_score": 0.032787,
+        "top2_score": 0.032787,
+        "top3_score": 0.031754,
+        "top5_scores": [
+          0.032787,
+          0.032787,
+          0.031754,
+          0.031754
+        ],
+        "top1_top2_margin": 0.0,
+        "top3_mean": 0.032443,
+        "top5_mean": 0.03227,
+        "retrieved_document_count": 1,
+        "retrieved_page_count": 2,
+        "document_ids": [
+          "rd_v2_demo_specification"
+        ],
+        "page_ids": [
+          {
+            "document_id": "rd_v2_demo_specification",
+            "page_number": 4
+          },
+          {
+            "document_id": "rd_v2_demo_specification",
+            "page_number": 6
+          }
+        ],
+        "dominant_document_ratio": 1.0,
+        "top3_document_concentration": 1.0,
+        "adjacent_page_pair_count": 0,
+        "version_governance_enabled": false,
+        "version_intent": null,
+        "version_resolution_status": "DISABLED",
+        "version_ambiguity": false,
+        "eligible_document_count": null,
+        "version_resolution_issues": [],
+        "citation_candidates_available": true,
+        "citation_candidate_count": 2,
+        "rerank_available": true,
+        "rerank_score": 1.0,
+        "rerank_scores": [
+          1.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        "rerank_margin": 0.0,
+        "retrieval_state_valid": true,
+        "retrieval_state_issues": []
+      },
+      "shadow_decision": {
+        "decision": "UNCERTAIN",
+        "reason_codes": [
+          "WEAK_RETRIEVAL_SIGNAL"
+        ],
+        "signals_used": [
+          "top1_score",
+          "top3_mean"
+        ],
+        "preconditions": [
+          {
+            "reason_code": "NO_RETRIEVAL_RESULT",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "The retriever returned no candidate evidence."
+          },
+          {
+            "reason_code": "INVALID_RETRIEVAL_STATE",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "Retrieval state is structurally valid."
+          },
+          {
+            "reason_code": "NO_ELIGIBLE_DOCUMENT",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "Version resolution produced no eligible indexed document."
+          },
+          {
+            "reason_code": "VERSION_RESOLUTION_FAILED",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "Version resolution failed for the current query."
+          },
+          {
+            "reason_code": "VERSION_AMBIGUITY",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "The existing Version Resolver reports an unresolved ambiguity."
+          }
+        ],
+        "policy_version": "trusted_qa_shadow_v0_1",
+        "shadow_mode": true
+      },
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": false,
+        "claimed_citation_count": 1,
+        "citation_count": 1,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "VALID",
+        "post_answer_shadow_decision": "ANSWER",
+        "reason_codes": [],
+        "generation_error_type": null
+      },
+      "actual_pipeline_result": {
+        "final_answer": "POST /api/v2/ingest 创建一个异步数据摄入任务。必填字段包括 source_uri 和 document_id，可选字段包括 language 和 force_ocr。成功请求后会返回 job_id 和 accepted_at，其中 job_id 用于轮询数据摄入状态。",
+        "relevant_pages": [],
+        "relevant_sources": [
+          {
+            "document_id": "rd_v2_demo_specification",
+            "page_number": 4
+          }
+        ],
+        "sources": [
+          {
+            "document_id": "rd_v2_demo_specification",
+            "document_title": "R&D Document Intelligence Platform Specification",
+            "page_number": 4,
+            "source": "rd_v2_demo_specification.pdf",
+            "source_url": null
+          }
+        ]
+      },
+      "post_answer_enforcement": {
+        "action": "PASS",
+        "reason_codes": [],
+        "policy_version": "trusted_qa_post_answer_v1",
+        "original_answer_state": "SUBSTANTIVE_ANSWER",
+        "citation_state": "VALID",
+        "structured_output_state": "VALID",
+        "enforced": false,
+        "enforcement_scope": "POST_ANSWER_ONLY",
+        "pre_generation_enforcement": false,
+        "post_answer_enforcement": true,
+        "extra_llm_calls": 0,
+        "semantic_entailment_verified": false
+      },
+      "original_pipeline_result": {
+        "final_answer": "POST /api/v2/ingest 创建一个异步数据摄入任务。必填字段包括 source_uri 和 document_id，可选字段包括 language 和 force_ocr。成功请求后会返回 job_id 和 accepted_at，其中 job_id 用于轮询数据摄入状态。",
+        "relevant_pages": [],
+        "relevant_sources": [
+          {
+            "document_id": "rd_v2_demo_specification",
+            "page_number": 4
+          }
+        ]
+      },
+      "final_pipeline_result": {
+        "final_answer": "POST /api/v2/ingest 创建一个异步数据摄入任务。必填字段包括 source_uri 和 document_id，可选字段包括 language 和 force_ocr。成功请求后会返回 job_id 和 accepted_at，其中 job_id 用于轮询数据摄入状态。",
+        "relevant_pages": [],
+        "relevant_sources": [
+          {
+            "document_id": "rd_v2_demo_specification",
+            "page_number": 4
+          }
+        ],
+        "sources": [
+          {
+            "document_id": "rd_v2_demo_specification",
+            "document_title": "R&D Document Intelligence Platform Specification",
+            "page_number": 4,
+            "source": "rd_v2_demo_specification.pdf",
+            "source_url": null
+          }
+        ]
+      }
+    },
+    {
+      "question_id": "SM02",
+      "signal_snapshot": {
+        "question_id": "SM02",
+        "retrieved_count": 4,
+        "top1_score": 0.032787,
+        "top2_score": 0.032787,
+        "top3_score": 0.015873,
+        "top5_scores": [
+          0.032787,
+          0.032787,
+          0.015873,
+          0.015873
+        ],
+        "top1_top2_margin": 0.0,
+        "top3_mean": 0.027149,
+        "top5_mean": 0.02433,
+        "retrieved_document_count": 1,
+        "retrieved_page_count": 2,
+        "document_ids": [
+          "rd_v2_demo_specification"
+        ],
+        "page_ids": [
+          {
+            "document_id": "rd_v2_demo_specification",
+            "page_number": 8
+          },
+          {
+            "document_id": "rd_v2_demo_specification",
+            "page_number": 7
+          }
+        ],
+        "dominant_document_ratio": 1.0,
+        "top3_document_concentration": 1.0,
+        "adjacent_page_pair_count": 1,
+        "version_governance_enabled": false,
+        "version_intent": null,
+        "version_resolution_status": "DISABLED",
+        "version_ambiguity": false,
+        "eligible_document_count": null,
+        "version_resolution_issues": [],
+        "citation_candidates_available": true,
+        "citation_candidate_count": 2,
+        "rerank_available": true,
+        "rerank_score": 1.0,
+        "rerank_scores": [
+          1.0,
+          1.0,
+          0.1,
+          0.1
+        ],
+        "rerank_margin": 0.0,
+        "retrieval_state_valid": true,
+        "retrieval_state_issues": []
+      },
+      "shadow_decision": {
+        "decision": "UNCERTAIN",
+        "reason_codes": [
+          "WEAK_RETRIEVAL_SIGNAL"
+        ],
+        "signals_used": [
+          "top1_score",
+          "top3_mean"
+        ],
+        "preconditions": [
+          {
+            "reason_code": "NO_RETRIEVAL_RESULT",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "The retriever returned no candidate evidence."
+          },
+          {
+            "reason_code": "INVALID_RETRIEVAL_STATE",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "Retrieval state is structurally valid."
+          },
+          {
+            "reason_code": "NO_ELIGIBLE_DOCUMENT",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "Version resolution produced no eligible indexed document."
+          },
+          {
+            "reason_code": "VERSION_RESOLUTION_FAILED",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "Version resolution failed for the current query."
+          },
+          {
+            "reason_code": "VERSION_AMBIGUITY",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "The existing Version Resolver reports an unresolved ambiguity."
+          }
+        ],
+        "policy_version": "trusted_qa_shadow_v0_1",
+        "shadow_mode": true
+      },
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": false,
+        "claimed_citation_count": 1,
+        "citation_count": 1,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "VALID",
+        "post_answer_shadow_decision": "ANSWER",
+        "reason_codes": [],
+        "generation_error_type": null
+      },
+      "actual_pipeline_result": {
+        "final_answer": 240,
+        "relevant_pages": [
+          8
+        ],
+        "relevant_sources": [
+          {
+            "document_id": "rd_v2_demo_specification",
+            "page_number": 8
+          }
+        ],
+        "sources": [
+          {
+            "document_id": "rd_v2_demo_specification",
+            "document_title": "R&D Document Intelligence Platform Specification",
+            "page_number": 8,
+            "source": "rd_v2_demo_specification.pdf",
+            "source_url": null
+          }
+        ]
+      },
+      "post_answer_enforcement": {
+        "action": "PASS",
+        "reason_codes": [],
+        "policy_version": "trusted_qa_post_answer_v1",
+        "original_answer_state": "SUBSTANTIVE_ANSWER",
+        "citation_state": "VALID",
+        "structured_output_state": "VALID",
+        "enforced": false,
+        "enforcement_scope": "POST_ANSWER_ONLY",
+        "pre_generation_enforcement": false,
+        "post_answer_enforcement": true,
+        "extra_llm_calls": 0,
+        "semantic_entailment_verified": false
+      },
+      "original_pipeline_result": {
+        "final_answer": 240,
+        "relevant_pages": [
+          8
+        ],
+        "relevant_sources": [
+          {
+            "document_id": "rd_v2_demo_specification",
+            "page_number": 8
+          }
+        ]
+      },
+      "final_pipeline_result": {
+        "final_answer": 240,
+        "relevant_pages": [
+          8
+        ],
+        "relevant_sources": [
+          {
+            "document_id": "rd_v2_demo_specification",
+            "page_number": 8
+          }
+        ],
+        "sources": [
+          {
+            "document_id": "rd_v2_demo_specification",
+            "document_title": "R&D Document Intelligence Platform Specification",
+            "page_number": 8,
+            "source": "rd_v2_demo_specification.pdf",
+            "source_url": null
+          }
+        ]
+      }
+    },
+    {
+      "question_id": "SM03",
+      "signal_snapshot": {
+        "question_id": "SM03",
+        "retrieved_count": 4,
+        "top1_score": 0.016393,
+        "top2_score": 0.016393,
+        "top3_score": 0.016393,
+        "top5_scores": [
+          0.016393,
+          0.016393,
+          0.016393,
+          0.016393
+        ],
+        "top1_top2_margin": 0.0,
+        "top3_mean": 0.016393,
+        "top5_mean": 0.016393,
+        "retrieved_document_count": 1,
+        "retrieved_page_count": 2,
+        "document_ids": [
+          "rd_v2_demo_specification"
+        ],
+        "page_ids": [
+          {
+            "document_id": "rd_v2_demo_specification",
+            "page_number": 7
+          },
+          {
+            "document_id": "rd_v2_demo_specification",
+            "page_number": 4
+          }
+        ],
+        "dominant_document_ratio": 1.0,
+        "top3_document_concentration": 1.0,
+        "adjacent_page_pair_count": 0,
+        "version_governance_enabled": false,
+        "version_intent": null,
+        "version_resolution_status": "DISABLED",
+        "version_ambiguity": false,
+        "eligible_document_count": null,
+        "version_resolution_issues": [],
+        "citation_candidates_available": true,
+        "citation_candidate_count": 2,
+        "rerank_available": true,
+        "rerank_score": 0.1,
+        "rerank_scores": [
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "rerank_margin": 0.0,
+        "retrieval_state_valid": true,
+        "retrieval_state_issues": []
+      },
+      "shadow_decision": {
+        "decision": "UNCERTAIN",
+        "reason_codes": [
+          "WEAK_RETRIEVAL_SIGNAL"
+        ],
+        "signals_used": [
+          "top1_score",
+          "top3_mean"
+        ],
+        "preconditions": [
+          {
+            "reason_code": "NO_RETRIEVAL_RESULT",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "The retriever returned no candidate evidence."
+          },
+          {
+            "reason_code": "INVALID_RETRIEVAL_STATE",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "Retrieval state is structurally valid."
+          },
+          {
+            "reason_code": "NO_ELIGIBLE_DOCUMENT",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "Version resolution produced no eligible indexed document."
+          },
+          {
+            "reason_code": "VERSION_RESOLUTION_FAILED",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "Version resolution failed for the current query."
+          },
+          {
+            "reason_code": "VERSION_AMBIGUITY",
+            "triggered": false,
+            "proposed_decision": null,
+            "detail": "The existing Version Resolver reports an unresolved ambiguity."
+          }
+        ],
+        "policy_version": "trusted_qa_shadow_v0_1",
+        "shadow_mode": true
+      },
+      "post_answer_audit": {
+        "generation_performed": true,
+        "structured_output_valid": true,
+        "answer_is_na": true,
+        "claimed_citation_count": 0,
+        "citation_count": 0,
+        "citation_membership_valid": true,
+        "semantic_support_verified": null,
+        "post_validation_status": "ANSWER_IS_NA",
+        "post_answer_shadow_decision": "REJECT",
+        "reason_codes": [
+          "ANSWER_IS_NA"
+        ],
+        "generation_error_type": null
+      },
+      "actual_pipeline_result": {
+        "final_answer": "N/A",
+        "relevant_pages": [],
+        "relevant_sources": [],
+        "sources": []
+      },
+      "post_answer_enforcement": {
+        "action": "VALID_ABSTENTION",
+        "reason_codes": [
+          "VALID_MODEL_ABSTENTION"
+        ],
+        "policy_version": "trusted_qa_post_answer_v1",
+        "original_answer_state": "EXPLICIT_NA",
+        "citation_state": "EMPTY",
+        "structured_output_state": "VALID",
+        "enforced": false,
+        "enforcement_scope": "POST_ANSWER_ONLY",
+        "pre_generation_enforcement": false,
+        "post_answer_enforcement": true,
+        "extra_llm_calls": 0,
+        "semantic_entailment_verified": false
+      },
+      "original_pipeline_result": {
+        "final_answer": "N/A",
+        "relevant_pages": [],
+        "relevant_sources": []
+      },
+      "final_pipeline_result": {
+        "final_answer": "N/A",
+        "relevant_pages": [],
+        "relevant_sources": [],
+        "sources": []
+      }
+    }
+  ]
+}

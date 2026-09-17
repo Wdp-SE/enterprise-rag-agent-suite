@@ -1,0 +1,114 @@
+{
+  "document_count": 5,
+  "question_count": 2,
+  "results": [
+    {
+      "id": "G01",
+      "schema": "text",
+      "question": "Who remained the Chief Executive Officer after the President and CEO roles were split in 2022?",
+      "routing_mode": "generic",
+      "provider": "dashscope",
+      "models": {
+        "answer": "qwen-turbo",
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo"
+      },
+      "retrieved": [
+        {
+          "document_id": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73",
+          "document_title": "CrossFirst Bank",
+          "page_number": 11,
+          "similarity_score": 0.562,
+          "relevance_score": 1.0,
+          "combined_score": 0.8686,
+          "chunk_id": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73:29"
+        },
+        {
+          "document_id": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73",
+          "document_title": "CrossFirst Bank",
+          "page_number": 35,
+          "similarity_score": 0.5113,
+          "relevance_score": 0.9,
+          "combined_score": 0.7834,
+          "chunk_id": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73:142"
+        },
+        {
+          "document_id": "2779336b845a41544348abb7b3e6e5bd2ff893a2",
+          "document_title": "Tradition",
+          "page_number": 20,
+          "similarity_score": 0.5126,
+          "relevance_score": 0.3,
+          "combined_score": 0.3638,
+          "chunk_id": "2779336b845a41544348abb7b3e6e5bd2ff893a2:32"
+        }
+      ],
+      "final_answer": "Michael J. Maddox",
+      "sources": [
+        {
+          "document_id": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73",
+          "document_title": "CrossFirst Bank",
+          "page_number": 11,
+          "source": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73.json",
+          "source_url": null
+        }
+      ],
+      "latency_ms": 5900.24,
+      "answer_usage": {
+        "model": "qwen-turbo",
+        "input_tokens": 3485,
+        "output_tokens": 231
+      },
+      "error": null
+    },
+    {
+      "id": "G02",
+      "schema": "boolean",
+      "question": "Did the reporting entity open a staffed branch on the Moon during 2022?",
+      "routing_mode": "generic",
+      "provider": "dashscope",
+      "models": {
+        "answer": "qwen-turbo",
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo"
+      },
+      "retrieved": [
+        {
+          "document_id": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73",
+          "document_title": "CrossFirst Bank",
+          "page_number": 11,
+          "similarity_score": 0.3677,
+          "relevance_score": 0.1,
+          "combined_score": 0.1803,
+          "chunk_id": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73:28"
+        },
+        {
+          "document_id": "2779336b845a41544348abb7b3e6e5bd2ff893a2",
+          "document_title": "Tradition",
+          "page_number": 1,
+          "similarity_score": 0.3607,
+          "relevance_score": 0.1,
+          "combined_score": 0.1782,
+          "chunk_id": "2779336b845a41544348abb7b3e6e5bd2ff893a2:0"
+        },
+        {
+          "document_id": "ac9aa244462c80705c3ff046542c02c459989742",
+          "document_title": "Mercia Asset Management PLC",
+          "page_number": 9,
+          "similarity_score": 0.3362,
+          "relevance_score": 0.1,
+          "combined_score": 0.1709,
+          "chunk_id": "ac9aa244462c80705c3ff046542c02c459989742:18"
+        }
+      ],
+      "final_answer": "N/A",
+      "sources": [],
+      "latency_ms": 4680.21,
+      "answer_usage": {
+        "model": "qwen-turbo",
+        "input_tokens": 2127,
+        "output_tokens": 137
+      },
+      "error": null
+    }
+  ]
+}

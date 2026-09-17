@@ -1,0 +1,326 @@
+{
+  "mode": "normalized_vector",
+  "embedding_provider": "dashscope",
+  "embedding_model": "text-embedding-v1",
+  "rerank_provider": null,
+  "rerank_model": null,
+  "top_k": 5,
+  "per_document_top_k": 8,
+  "questions": [
+    {
+      "question_id": "version-001",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "latency_ms": 335.96,
+      "results": [
+        {
+          "rank": 1,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 21,
+          "chunk_id": "tsg-08-2026:35",
+          "cosine_similarity": 0.6972,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "施行时间\n5.5\n本规则自2026年5月1日起施行,\n《特种设备使用管理规则》\n(TSG 08-2017)\n同时废止。\n本规则实施之前发布的其他相关文件和安全技术规范 ,\n其要求与本规则不-致\n以本规则为准。\n的,"
+        },
+        {
+          "rank": 2,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 1,
+          "chunk_id": "tsg-08-2026:0",
+          "cosine_similarity": 0.57,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "TSG 特种设备安全技术规范 TSG 08—2026\n国家市场监督管理总局发布\n2026年2月2日\n特种设备使用管理规则\nSpecial Equipment Service Administration Regulation"
+        },
+        {
+          "rank": 3,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 2,
+          "chunk_id": "tsg-08-2026:1",
+          "cosine_similarity": 0.4728,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "国家市场监督管理总局特种设备安全监察局 (以下简称市场监管总\n2024年5月,\n局特种设备局)向中国特种设备检测研究院 (以下简称中国特检院)下达《特种设备使\n成立修订工作组 ,\n启动修订工作。2024年 6月,工作组部分成员在上海召开工作会\n结构 (章节)框架\n修订工作进度表。\n10月31日\n工作组在北京召开工作会议,讨论本规则修订稿初稿\n2025年3月,形\n成本规则修订稿。\n细化《特种设\n由于需修订的内容较多 ,\n提出的要求 ,\n需要进行改版。\n(TSG 01-2014)"
+        },
+        {
+          "rank": 4,
+          "document_id": "samr-order-50-2022",
+          "document_title": "特种设备事故报告和调查处理规定",
+          "page_number": 1,
+          "chunk_id": "samr-order-50-2022:0",
+          "cosine_similarity": 0.455,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "国家市场监督管理总局规章\n\n国家市场监督管理总局令\n\n第 50 号\n\n《特种设备事故报告和调查处理规定》已经 2022 年 1 月 7\n\n日市场监管总局第 1 次局务会议通过\n\n月 1 日起施行\n\n。\n\n，\n\n现予公布\n\n，\n\n自 2022 年 3\n\n局长 张工\n\n2022 年 1 月 20 日\n\n-\n\n国家市场监督管理总局发布\n\n1\n\n-\n\nX"
+        },
+        {
+          "rank": 5,
+          "document_id": "cn-law-special-equipment-safety-2013",
+          "document_title": "中华人民共和国特种设备安全法",
+          "page_number": 30,
+          "chunk_id": "cn-law-special-equipment-safety-2013:57",
+          "cosine_similarity": 0.435,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "理，由有关部门依照本法和其他有关法律的规定实施。\n\n第一百零一条\n\n本法自 2014 年 1 月 1 日起施行。\n\n30—\n\n—"
+        }
+      ]
+    },
+    {
+      "question_id": "version-002",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "latency_ms": 140.192,
+      "results": [
+        {
+          "rank": 1,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 1,
+          "chunk_id": "tsg-08-2026:0",
+          "cosine_similarity": 0.4972,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "TSG 特种设备安全技术规范 TSG 08—2026\n国家市场监督管理总局发布\n2026年2月2日\n特种设备使用管理规则\nSpecial Equipment Service Administration Regulation"
+        },
+        {
+          "rank": 2,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 2,
+          "chunk_id": "tsg-08-2026:1",
+          "cosine_similarity": 0.4476,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "国家市场监督管理总局特种设备安全监察局 (以下简称市场监管总\n2024年5月,\n局特种设备局)向中国特种设备检测研究院 (以下简称中国特检院)下达《特种设备使\n成立修订工作组 ,\n启动修订工作。2024年 6月,工作组部分成员在上海召开工作会\n结构 (章节)框架\n修订工作进度表。\n10月31日\n工作组在北京召开工作会议,讨论本规则修订稿初稿\n2025年3月,形\n成本规则修订稿。\n细化《特种设\n由于需修订的内容较多 ,\n提出的要求 ,\n需要进行改版。\n(TSG 01-2014)"
+        },
+        {
+          "rank": 3,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 21,
+          "chunk_id": "tsg-08-2026:35",
+          "cosine_similarity": 0.4286,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "施行时间\n5.5\n本规则自2026年5月1日起施行,\n《特种设备使用管理规则》\n(TSG 08-2017)\n同时废止。\n本规则实施之前发布的其他相关文件和安全技术规范 ,\n其要求与本规则不-致\n以本规则为准。\n的,"
+        },
+        {
+          "rank": 4,
+          "document_id": "samr-order-50-2022",
+          "document_title": "特种设备事故报告和调查处理规定",
+          "page_number": 1,
+          "chunk_id": "samr-order-50-2022:0",
+          "cosine_similarity": 0.3251,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "国家市场监督管理总局规章\n\n国家市场监督管理总局令\n\n第 50 号\n\n《特种设备事故报告和调查处理规定》已经 2022 年 1 月 7\n\n日市场监管总局第 1 次局务会议通过\n\n月 1 日起施行\n\n。\n\n，\n\n现予公布\n\n，\n\n自 2022 年 3\n\n局长 张工\n\n2022 年 1 月 20 日\n\n-\n\n国家市场监督管理总局发布\n\n1\n\n-\n\nX"
+        },
+        {
+          "rank": 5,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 39,
+          "chunk_id": "tsg-08-2026:58",
+          "cosine_similarity": 0.31,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "2026"
+        }
+      ]
+    },
+    {
+      "question_id": "version-003",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "latency_ms": 157.801,
+      "results": [
+        {
+          "rank": 1,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 21,
+          "chunk_id": "tsg-08-2026:35",
+          "cosine_similarity": 0.5974,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "施行时间\n5.5\n本规则自2026年5月1日起施行,\n《特种设备使用管理规则》\n(TSG 08-2017)\n同时废止。\n本规则实施之前发布的其他相关文件和安全技术规范 ,\n其要求与本规则不-致\n以本规则为准。\n的,"
+        },
+        {
+          "rank": 2,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 1,
+          "chunk_id": "tsg-08-2026:0",
+          "cosine_similarity": 0.5829,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "TSG 特种设备安全技术规范 TSG 08—2026\n国家市场监督管理总局发布\n2026年2月2日\n特种设备使用管理规则\nSpecial Equipment Service Administration Regulation"
+        },
+        {
+          "rank": 3,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 2,
+          "chunk_id": "tsg-08-2026:1",
+          "cosine_similarity": 0.4776,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "国家市场监督管理总局特种设备安全监察局 (以下简称市场监管总\n2024年5月,\n局特种设备局)向中国特种设备检测研究院 (以下简称中国特检院)下达《特种设备使\n成立修订工作组 ,\n启动修订工作。2024年 6月,工作组部分成员在上海召开工作会\n结构 (章节)框架\n修订工作进度表。\n10月31日\n工作组在北京召开工作会议,讨论本规则修订稿初稿\n2025年3月,形\n成本规则修订稿。\n细化《特种设\n由于需修订的内容较多 ,\n提出的要求 ,\n需要进行改版。\n(TSG 01-2014)"
+        },
+        {
+          "rank": 4,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 4,
+          "chunk_id": "tsg-08-2026:3",
+          "cosine_similarity": 0.3927,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "特种设备使用管理规则\n1.1  目的\n为规范特种设备使用管理 ,\n保障特种设备安全经济运行,\n根据《中华人民共和国\n特种设备安全法》《中华人民共和国节约能源法》《特种设备安全监察条例》和《特\n种设备使用单位落实使用安全主体责任监督管理规定》\n适用范围\n1.2\n使用单位主体责任\n1.3\n特种设备使用单位应当按照本规则规定\n责,\n监督管理\n1.4\n职责分工\n1.4.1\n内特种设备使用安全\n种设备使用安全\n使用登记\n1.4.2\n按照\n本规则的要求负责办理特种设备使用登记,本规则和其"
+        },
+        {
+          "rank": 5,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 39,
+          "chunk_id": "tsg-08-2026:58",
+          "cosine_similarity": 0.3267,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "2026"
+        }
+      ]
+    },
+    {
+      "question_id": "version-004",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "latency_ms": 155.819,
+      "results": [
+        {
+          "rank": 1,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 1,
+          "chunk_id": "tsg-08-2026:0",
+          "cosine_similarity": 0.4434,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "TSG 特种设备安全技术规范 TSG 08—2026\n国家市场监督管理总局发布\n2026年2月2日\n特种设备使用管理规则\nSpecial Equipment Service Administration Regulation"
+        },
+        {
+          "rank": 2,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 2,
+          "chunk_id": "tsg-08-2026:1",
+          "cosine_similarity": 0.4223,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "国家市场监督管理总局特种设备安全监察局 (以下简称市场监管总\n2024年5月,\n局特种设备局)向中国特种设备检测研究院 (以下简称中国特检院)下达《特种设备使\n成立修订工作组 ,\n启动修订工作。2024年 6月,工作组部分成员在上海召开工作会\n结构 (章节)框架\n修订工作进度表。\n10月31日\n工作组在北京召开工作会议,讨论本规则修订稿初稿\n2025年3月,形\n成本规则修订稿。\n细化《特种设\n由于需修订的内容较多 ,\n提出的要求 ,\n需要进行改版。\n(TSG 01-2014)"
+        },
+        {
+          "rank": 3,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 21,
+          "chunk_id": "tsg-08-2026:35",
+          "cosine_similarity": 0.4082,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "施行时间\n5.5\n本规则自2026年5月1日起施行,\n《特种设备使用管理规则》\n(TSG 08-2017)\n同时废止。\n本规则实施之前发布的其他相关文件和安全技术规范 ,\n其要求与本规则不-致\n以本规则为准。\n的,"
+        },
+        {
+          "rank": 4,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 39,
+          "chunk_id": "tsg-08-2026:58",
+          "cosine_similarity": 0.392,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "2026"
+        },
+        {
+          "rank": 5,
+          "document_id": "samr-order-50-2022",
+          "document_title": "特种设备事故报告和调查处理规定",
+          "page_number": 1,
+          "chunk_id": "samr-order-50-2022:0",
+          "cosine_similarity": 0.2223,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "国家市场监督管理总局规章\n\n国家市场监督管理总局令\n\n第 50 号\n\n《特种设备事故报告和调查处理规定》已经 2022 年 1 月 7\n\n日市场监管总局第 1 次局务会议通过\n\n月 1 日起施行\n\n。\n\n，\n\n现予公布\n\n，\n\n自 2022 年 3\n\n局长 张工\n\n2022 年 1 月 20 日\n\n-\n\n国家市场监督管理总局发布\n\n1\n\n-\n\nX"
+        }
+      ]
+    },
+    {
+      "question_id": "version-005",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "latency_ms": 158.85,
+      "results": [
+        {
+          "rank": 1,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 15,
+          "chunk_id": "tsg-08-2026:25",
+          "cosine_similarity": 0.6077,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "使用登记程序\n4.4\n使用登记程序 ,\n审查和颁发使用登记证。\n申请\n4.4.1\n按台(套)办理\n4.4.1.1\n应当逐台(套)填写使用登记表,向登\n使用单位申请办理特种设备使用登记时 ,\n记机关提交以下相应资料,并且对其真实性负责:\n(1)使用登记表(一式两份) ;\n(2)含有使用单位统一社会信用代码的证明或者个人身份证明 (适用于个人所有\n的特种设备) ;\n(3)特种设备产品质量证明文件 (含产品数据表\n车用气瓶安装合格证明) ;\n备,提交使用前的首次检验报告) ;\n机动"
+        },
+        {
+          "rank": 2,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 33,
+          "chunk_id": "tsg-08-2026:52",
+          "cosine_similarity": 0.5843,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "设备使用地点\nb3.6\n某某场地等。\n填写设备安装在单位内的固定地点或者使用区域,\n\"移动\"  或者 \"流动\"\"\n移动式 (流动式)特种设备,\n填写\n设备使用地点不在使用单\n位内的 ,\n应当按照 b3.2 条填写设备使用地的详细地址。\n投入使用日期\nb3.7\n单位固定电话\nb3.8\n填写使用单位特种设备安全管理机构或者主管特种设备机构的联系电话。\n安全总监。安全员\n63.9\n填写使用单位安全总监和负责该台特种设备的安全员姓名\n移动电话\nb3.10\n系电话\nb3.11\n填写方式"
+        },
+        {
+          "rank": 3,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 34,
+          "chunk_id": "tsg-08-2026:53",
+          "cosine_similarity": 0.5819,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "检验报告编号\n64.3\n填写检验机构出具的检验报告编号或者安全评估机构出具的安全评估报告编\n没有要求出具检验报告的 ,\n只填写监检证书编号\n检验日期\nb4.4\n检验结论\n64.5\n按照有关检验规则的要求填写 ,\n如 \"合格\"\n'整改后合格 \"\n'基\n允许使用\" 等。检验结论为\n'不合格\"\n本符合要求\"\n的设备不得\n申请办理使用登记。\n64.6\n规定填写,\n\"=\n种设备,\n使用单位填写\n其他\nb5\nb6\n使用单位的填表人员和安全总监需要\n并且附特种设备产品数据表 (复\n签字,\n"
+        },
+        {
+          "rank": 4,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 21,
+          "chunk_id": "tsg-08-2026:35",
+          "cosine_similarity": 0.543,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "施行时间\n5.5\n本规则自2026年5月1日起施行,\n《特种设备使用管理规则》\n(TSG 08-2017)\n同时废止。\n本规则实施之前发布的其他相关文件和安全技术规范 ,\n其要求与本规则不-致\n以本规则为准。\n的,"
+        },
+        {
+          "rank": 5,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 18,
+          "chunk_id": "tsg-08-2026:31",
+          "cosine_similarity": 0.5317,
+          "rerank_score": null,
+          "combined_score": null,
+          "text_preview": "标有注销标记的原使用登记表和有效期内的定期检验报告\n(自行检测报告) ,\n按照本规则 4.4条的规定重新申请使用登记。\n特种设备产权单位未发生娈化 (共有产权特种设备)娈更使用单位的\n4.8.3.2\n日内,持《特种设备使用登记娈更 (停\n30\n书面证明。有效期内的定期检验报告 (自行检测报告) ,\n到登记机关办理变更。登记\n机关签发新使用登记证。\n名称娈更\n4.8.4\n使用单位名称变更时\n《特种设备\n证。2台以上批量娈更的 ,\n可以简化处理。\n达到设计使用年限继续使用的娈更\n"
+        }
+      ]
+    }
+  ]
+}

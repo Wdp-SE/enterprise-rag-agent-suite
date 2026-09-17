@@ -1,0 +1,160 @@
+{
+  "dataset_id": "trusted_qa_holdout_v0_1",
+  "classification_method": "Manual Ground Truth review against the frozen corpus before policy execution; no LLM judge.",
+  "hard_negative_count": 7,
+  "decisions": {
+    "ANSWER": 3,
+    "REJECT": 0,
+    "UNCERTAIN": 4
+  },
+  "questions": [
+    {
+      "question_id": "tqa-holdout-n01",
+      "unanswerable_reason": "当前语料只规定事故发生地县级市场监督管理部门应及时派员赶赴现场，没有给出以分钟计的最迟到场时限。",
+      "top1_score": 0.8162,
+      "top5_scores": [
+        0.8162,
+        0.7482,
+        0.7333,
+        0.7199,
+        0.7199
+      ],
+      "shadow_decision": "ANSWER",
+      "reason_codes": [],
+      "decision_path": [
+        "RETRIEVAL_STATE_VALID",
+        "NO_HARD_PRECONDITION",
+        "CALIBRATION_STRONG_SCORE_REGION",
+        "ANSWER"
+      ]
+    },
+    {
+      "question_id": "tqa-holdout-n02",
+      "unanswerable_reason": "当前语料仅规定事故责任单位依法承担赔偿责任及相关行政罚款，不包含对死者家属的固定赔偿金额。",
+      "top1_score": 0.6245,
+      "top5_scores": [
+        0.6245,
+        0.6219,
+        0.6217,
+        0.618,
+        0.5904
+      ],
+      "shadow_decision": "UNCERTAIN",
+      "reason_codes": [
+        "AMBIGUOUS_RETRIEVAL_SIGNAL"
+      ],
+      "decision_path": [
+        "RETRIEVAL_STATE_VALID",
+        "NO_HARD_PRECONDITION",
+        "AMBIGUOUS_RETRIEVAL_SIGNAL",
+        "UNCERTAIN"
+      ]
+    },
+    {
+      "question_id": "tqa-holdout-n03",
+      "unanswerable_reason": "办法规定制定年度计划、对象库和双随机抽查，但未规定每个已登记使用单位每年的固定最低检查次数。",
+      "top1_score": 0.7657,
+      "top5_scores": [
+        0.7657,
+        0.7548,
+        0.7495,
+        0.7473,
+        0.7437
+      ],
+      "shadow_decision": "ANSWER",
+      "reason_codes": [],
+      "decision_path": [
+        "RETRIEVAL_STATE_VALID",
+        "NO_HARD_PRECONDITION",
+        "CALIBRATION_STRONG_SCORE_REGION",
+        "ANSWER"
+      ]
+    },
+    {
+      "question_id": "tqa-holdout-n04",
+      "unanswerable_reason": "总局令第74号要求形成记录并将履职情况存档备查，但当前语料没有给出《每日锅炉安全检查记录》的最低保存年限。",
+      "top1_score": 0.7206,
+      "top5_scores": [
+        0.7206,
+        0.6879,
+        0.6819,
+        0.6752,
+        0.6532
+      ],
+      "shadow_decision": "UNCERTAIN",
+      "reason_codes": [
+        "AMBIGUOUS_RETRIEVAL_SIGNAL"
+      ],
+      "decision_path": [
+        "RETRIEVAL_STATE_VALID",
+        "NO_HARD_PRECONDITION",
+        "AMBIGUOUS_RETRIEVAL_SIGNAL",
+        "UNCERTAIN"
+      ]
+    },
+    {
+      "question_id": "tqa-holdout-n05",
+      "unanswerable_reason": "当前可检索语料仅在总局令第74号中引用该考核指南，并未收录指南正文或合格分数。",
+      "top1_score": 0.7659,
+      "top5_scores": [
+        0.7659,
+        0.7431,
+        0.715,
+        0.7012,
+        0.6842
+      ],
+      "shadow_decision": "ANSWER",
+      "reason_codes": [],
+      "decision_path": [
+        "RETRIEVAL_STATE_VALID",
+        "NO_HARD_PRECONDITION",
+        "CALIBRATION_STRONG_SCORE_REGION",
+        "ANSWER"
+      ]
+    },
+    {
+      "question_id": "tqa-holdout-n06",
+      "unanswerable_reason": "安全法仅鼓励投保特种设备安全责任保险，当前语料未规定每台电梯的最低赔偿限额。",
+      "top1_score": 0.6052,
+      "top5_scores": [
+        0.6052,
+        0.6004,
+        0.5652,
+        0.556,
+        0.5454
+      ],
+      "shadow_decision": "UNCERTAIN",
+      "reason_codes": [
+        "AMBIGUOUS_RETRIEVAL_SIGNAL"
+      ],
+      "decision_path": [
+        "RETRIEVAL_STATE_VALID",
+        "NO_HARD_PRECONDITION",
+        "AMBIGUOUS_RETRIEVAL_SIGNAL",
+        "UNCERTAIN"
+      ]
+    },
+    {
+      "question_id": "tqa-holdout-n07",
+      "unanswerable_reason": "当前语料说明行政许可、检验收费依照其他法律行政法规执行，并详细规定登记材料和程序，但未给出办理一台设备使用登记的统一具体金额。",
+      "top1_score": 0.7454,
+      "top5_scores": [
+        0.7454,
+        0.7317,
+        0.7156,
+        0.7074,
+        0.7055
+      ],
+      "shadow_decision": "UNCERTAIN",
+      "reason_codes": [
+        "AMBIGUOUS_RETRIEVAL_SIGNAL"
+      ],
+      "decision_path": [
+        "RETRIEVAL_STATE_VALID",
+        "NO_HARD_PRECONDITION",
+        "AMBIGUOUS_RETRIEVAL_SIGNAL",
+        "UNCERTAIN"
+      ]
+    }
+  ]
+}

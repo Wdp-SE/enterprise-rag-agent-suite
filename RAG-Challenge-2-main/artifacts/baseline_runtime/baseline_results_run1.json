@@ -1,0 +1,3970 @@
+{
+  "run_metadata": {
+    "provider": "dashscope",
+    "answer_model": "qwen-turbo",
+    "rerank_model": "qwen-turbo",
+    "embedding_model": "text-embedding-v1",
+    "parent_page_retrieval": true,
+    "rerank_sample_size": 8,
+    "top_n": 4,
+    "documents_batch_size": 4,
+    "confidence_gate_enabled": false,
+    "question_count": 15
+  },
+  "index_verification": [
+    {
+      "document_id": "194000c9109c6fa628f1fed33b44ae4c2b8365f4",
+      "company_name": "Holley Inc.",
+      "index_type": "IndexFlatIP",
+      "metric_type": 0,
+      "metric_is_inner_product": true,
+      "dimension": 1536,
+      "vector_count": 462,
+      "chunk_count": 462,
+      "vector_chunk_count_match": true,
+      "norm_min": 0.9999998807907104,
+      "norm_max": 1.0000001192092896,
+      "norm_mean": 1.0,
+      "all_norms_close_to_one": true
+    },
+    {
+      "document_id": "2779336b845a41544348abb7b3e6e5bd2ff893a2",
+      "company_name": "Tradition",
+      "index_type": "IndexFlatIP",
+      "metric_type": 0,
+      "metric_is_inner_product": true,
+      "dimension": 1536,
+      "vector_count": 377,
+      "chunk_count": 377,
+      "vector_chunk_count_match": true,
+      "norm_min": 0.9999998807907104,
+      "norm_max": 1.0000001192092896,
+      "norm_mean": 1.0,
+      "all_norms_close_to_one": true
+    },
+    {
+      "document_id": "9d7a72445aba6860402c3acce75af02dc045f74d",
+      "company_name": "TSX_Y",
+      "index_type": "IndexFlatIP",
+      "metric_type": 0,
+      "metric_is_inner_product": true,
+      "dimension": 1536,
+      "vector_count": 264,
+      "chunk_count": 264,
+      "vector_chunk_count_match": true,
+      "norm_min": 0.9999998807907104,
+      "norm_max": 1.0000001192092896,
+      "norm_mean": 1.0,
+      "all_norms_close_to_one": true
+    },
+    {
+      "document_id": "ac9aa244462c80705c3ff046542c02c459989742",
+      "company_name": "Mercia Asset Management PLC",
+      "index_type": "IndexFlatIP",
+      "metric_type": 0,
+      "metric_is_inner_product": true,
+      "dimension": 1536,
+      "vector_count": 376,
+      "chunk_count": 376,
+      "vector_chunk_count_match": true,
+      "norm_min": 0.9999998807907104,
+      "norm_max": 1.0000001192092896,
+      "norm_mean": 1.0,
+      "all_norms_close_to_one": true
+    },
+    {
+      "document_id": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73",
+      "company_name": "CrossFirst Bank",
+      "index_type": "IndexFlatIP",
+      "metric_type": 0,
+      "metric_is_inner_product": true,
+      "dimension": 1536,
+      "vector_count": 445,
+      "chunk_count": 445,
+      "vector_chunk_count_match": true,
+      "norm_min": 0.9999998807907104,
+      "norm_max": 1.0000001192092896,
+      "norm_mean": 1.0,
+      "all_norms_close_to_one": true
+    }
+  ],
+  "results": [
+    {
+      "id": "Q01",
+      "question": "Did Holley Inc. mention any mergers or acquisitions in the annual report?",
+      "company_name": "Holley Inc.",
+      "kind": "boolean",
+      "category": "boolean_true",
+      "expected_behavior": "answer",
+      "expected_value": true,
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 34,
+          "similarity_score": 0.7181,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5911,
+          "text_sha256": "c50a5ca86730942c042321734c884c74c90d77764f32c6677fa08ada2bffd81b"
+        },
+        {
+          "rank": 2,
+          "page": 56,
+          "similarity_score": 0.718,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5737,
+          "text_sha256": "19494f28782ffd3a20c72c7221321765579a78a0555a8b9d5057cefe2c795659"
+        },
+        {
+          "rank": 3,
+          "page": 51,
+          "similarity_score": 0.6772,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3283,
+          "text_sha256": "8f4ffbdc330641309b1f3edb033ae3edaa718a14036004efc467adfc77d0c209"
+        },
+        {
+          "rank": 4,
+          "page": 89,
+          "similarity_score": 0.6512,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5280,
+          "text_sha256": "9f02a44b3a3bcb0eddb3783e6bc3da171eb443fb39e39b7649a536f13edd9076"
+        },
+        {
+          "rank": 5,
+          "page": 33,
+          "similarity_score": 0.645,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4938,
+          "text_sha256": "3febd6c9ac9e32c19a83e08e3ab084c78e04d5e7c9788506a6af02739a25cecc"
+        },
+        {
+          "rank": 6,
+          "page": 6,
+          "similarity_score": 0.6341,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5905,
+          "text_sha256": "cdb76738d2ca2b003a5ed4f02b8bbfe595164b324bc011fde9b75d46a6597891"
+        },
+        {
+          "rank": 7,
+          "page": 54,
+          "similarity_score": 0.6154,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 1683,
+          "text_sha256": "ee28dcf69f777f78dee6f24be174bd564ef53cd88252aab59edd76b4e8100dbc"
+        }
+      ],
+      "retrieved_pages": [
+        34,
+        56,
+        51,
+        89,
+        33,
+        6,
+        54
+      ],
+      "retrieval_scores": [
+        0.7181,
+        0.718,
+        0.6772,
+        0.6512,
+        0.645,
+        0.6341,
+        0.6154
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 88.15157318115234,
+        "normalized_norm": 0.9999999403953552
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 34,
+          "similarity_score": 0.7181,
+          "relevance_score": 1.0,
+          "combined_score": 0.9154,
+          "text_length": 5911,
+          "text_sha256": "c50a5ca86730942c042321734c884c74c90d77764f32c6677fa08ada2bffd81b"
+        },
+        {
+          "rank": 2,
+          "page": 6,
+          "similarity_score": 0.6341,
+          "relevance_score": 0.8,
+          "combined_score": 0.7502,
+          "text_length": 5905,
+          "text_sha256": "cdb76738d2ca2b003a5ed4f02b8bbfe595164b324bc011fde9b75d46a6597891"
+        },
+        {
+          "rank": 3,
+          "page": 33,
+          "similarity_score": 0.645,
+          "relevance_score": 0.7,
+          "combined_score": 0.6835,
+          "text_length": 4938,
+          "text_sha256": "3febd6c9ac9e32c19a83e08e3ab084c78e04d5e7c9788506a6af02739a25cecc"
+        },
+        {
+          "rank": 4,
+          "page": 56,
+          "similarity_score": 0.718,
+          "relevance_score": 0.4,
+          "combined_score": 0.4954,
+          "text_length": 5737,
+          "text_sha256": "19494f28782ffd3a20c72c7221321765579a78a0555a8b9d5057cefe2c795659"
+        },
+        {
+          "rank": 5,
+          "page": 89,
+          "similarity_score": 0.6512,
+          "relevance_score": 0.1,
+          "combined_score": 0.2654,
+          "text_length": 5280,
+          "text_sha256": "9f02a44b3a3bcb0eddb3783e6bc3da171eb443fb39e39b7649a536f13edd9076"
+        },
+        {
+          "rank": 6,
+          "page": 51,
+          "similarity_score": 0.6772,
+          "relevance_score": 0.0,
+          "combined_score": 0.2032,
+          "text_length": 3283,
+          "text_sha256": "8f4ffbdc330641309b1f3edb033ae3edaa718a14036004efc467adfc77d0c209"
+        },
+        {
+          "rank": 7,
+          "page": 54,
+          "similarity_score": 0.6154,
+          "relevance_score": 0.0,
+          "combined_score": 0.1846,
+          "text_length": 1683,
+          "text_sha256": "ee28dcf69f777f78dee6f24be174bd564ef53cd88252aab59edd76b4e8100dbc"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 34,
+          "relevance_score": 1.0,
+          "combined_score": 0.9154
+        },
+        {
+          "page": 6,
+          "relevance_score": 0.8,
+          "combined_score": 0.7502
+        },
+        {
+          "page": 33,
+          "relevance_score": 0.7,
+          "combined_score": 0.6835
+        },
+        {
+          "page": 56,
+          "relevance_score": 0.4,
+          "combined_score": 0.4954
+        },
+        {
+          "page": 89,
+          "relevance_score": 0.1,
+          "combined_score": 0.2654
+        },
+        {
+          "page": 51,
+          "relevance_score": 0.0,
+          "combined_score": 0.2032
+        },
+        {
+          "page": 54,
+          "relevance_score": 0.0,
+          "combined_score": 0.1846
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        34,
+        6,
+        33,
+        56
+      ],
+      "structured_output_parsed": true,
+      "final_answer": true,
+      "answer_type": "bool",
+      "reasoning_summary": "Holley Inc. mentioned both a merger and several acquisitions in the annual report.",
+      "claimed_pages": [
+        6,
+        33,
+        34
+      ],
+      "validated_pages": [
+        6,
+        33,
+        34
+      ],
+      "filtered_hallucinated_pages": [],
+      "citations": [
+        {
+          "pdf_sha1": "194000c9109c6fa628f1fed33b44ae4c2b8365f4",
+          "page_index": 6
+        },
+        {
+          "pdf_sha1": "194000c9109c6fa628f1fed33b44ae4c2b8365f4",
+          "page_index": 33
+        },
+        {
+          "pdf_sha1": "194000c9109c6fa628f1fed33b44ae4c2b8365f4",
+          "page_index": 34
+        }
+      ],
+      "latency_ms": {
+        "retrieval": 513.81,
+        "rerank": 5829.75,
+        "generation": 2082.45,
+        "total": 8451.41
+      },
+      "prompt_tokens": 14818,
+      "completion_tokens": 877,
+      "total_tokens": 15695,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 5619,
+            "output_tokens": 338
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 3562,
+            "output_tokens": 322
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 5637,
+          "output_tokens": 217
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q02",
+      "question": "According to the annual report, how many USD did Holley Inc. spend on research and development per year on average since 2017?",
+      "company_name": "Holley Inc.",
+      "kind": "number",
+      "category": "answerable_number_with_citation",
+      "expected_behavior": "answer",
+      "expected_value": 20500000,
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 34,
+          "similarity_score": 0.5781,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5911,
+          "text_sha256": "c50a5ca86730942c042321734c884c74c90d77764f32c6677fa08ada2bffd81b"
+        },
+        {
+          "rank": 2,
+          "page": 43,
+          "similarity_score": 0.5698,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5846,
+          "text_sha256": "6edc4177fe6e1169aa98bb92df537ac21950ef28cf65e0c4d6233114f821b42d"
+        },
+        {
+          "rank": 3,
+          "page": 36,
+          "similarity_score": 0.5687,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3419,
+          "text_sha256": "7477f1268c41dc3792e7b271a2761284728a52d9b58173d93f6136aeb3bc3f92"
+        },
+        {
+          "rank": 4,
+          "page": 54,
+          "similarity_score": 0.5083,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 1683,
+          "text_sha256": "ee28dcf69f777f78dee6f24be174bd564ef53cd88252aab59edd76b4e8100dbc"
+        },
+        {
+          "rank": 5,
+          "page": 38,
+          "similarity_score": 0.5077,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3770,
+          "text_sha256": "fc2d645b96ebff1513ee4172d3d3629e86766ed4380f7dace632ff29ebd60e1d"
+        },
+        {
+          "rank": 6,
+          "page": 11,
+          "similarity_score": 0.5014,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5987,
+          "text_sha256": "fba6a4b5e4c8eeba3a4606c2afc747405229b8f7ecf8a0cea039b232bfe27117"
+        },
+        {
+          "rank": 7,
+          "page": 53,
+          "similarity_score": 0.4954,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 1914,
+          "text_sha256": "4f0bbd89c894a80d7fa731663365945eff4155c6f9573f93c54682850d59b00a"
+        },
+        {
+          "rank": 8,
+          "page": 39,
+          "similarity_score": 0.4921,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4321,
+          "text_sha256": "73a4df78c0784117dc531bb9fc0f69b1bb1ac72f3bd5d83d605c4823e31dff6a"
+        }
+      ],
+      "retrieved_pages": [
+        34,
+        43,
+        36,
+        54,
+        38,
+        11,
+        53,
+        39
+      ],
+      "retrieval_scores": [
+        0.5781,
+        0.5698,
+        0.5687,
+        0.5083,
+        0.5077,
+        0.5014,
+        0.4954,
+        0.4921
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 98.27271270751953,
+        "normalized_norm": 0.9999999403953552
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 36,
+          "similarity_score": 0.5687,
+          "relevance_score": 0.9,
+          "combined_score": 0.8006,
+          "text_length": 3419,
+          "text_sha256": "7477f1268c41dc3792e7b271a2761284728a52d9b58173d93f6136aeb3bc3f92"
+        },
+        {
+          "rank": 2,
+          "page": 38,
+          "similarity_score": 0.5077,
+          "relevance_score": 0.6,
+          "combined_score": 0.5723,
+          "text_length": 3770,
+          "text_sha256": "fc2d645b96ebff1513ee4172d3d3629e86766ed4380f7dace632ff29ebd60e1d"
+        },
+        {
+          "rank": 3,
+          "page": 53,
+          "similarity_score": 0.4954,
+          "relevance_score": 0.6,
+          "combined_score": 0.5686,
+          "text_length": 1914,
+          "text_sha256": "4f0bbd89c894a80d7fa731663365945eff4155c6f9573f93c54682850d59b00a"
+        },
+        {
+          "rank": 4,
+          "page": 39,
+          "similarity_score": 0.4921,
+          "relevance_score": 0.6,
+          "combined_score": 0.5676,
+          "text_length": 4321,
+          "text_sha256": "73a4df78c0784117dc531bb9fc0f69b1bb1ac72f3bd5d83d605c4823e31dff6a"
+        },
+        {
+          "rank": 5,
+          "page": 43,
+          "similarity_score": 0.5698,
+          "relevance_score": 0.2,
+          "combined_score": 0.3109,
+          "text_length": 5846,
+          "text_sha256": "6edc4177fe6e1169aa98bb92df537ac21950ef28cf65e0c4d6233114f821b42d"
+        },
+        {
+          "rank": 6,
+          "page": 34,
+          "similarity_score": 0.5781,
+          "relevance_score": 0.1,
+          "combined_score": 0.2434,
+          "text_length": 5911,
+          "text_sha256": "c50a5ca86730942c042321734c884c74c90d77764f32c6677fa08ada2bffd81b"
+        },
+        {
+          "rank": 7,
+          "page": 54,
+          "similarity_score": 0.5083,
+          "relevance_score": 0.1,
+          "combined_score": 0.2225,
+          "text_length": 1683,
+          "text_sha256": "ee28dcf69f777f78dee6f24be174bd564ef53cd88252aab59edd76b4e8100dbc"
+        },
+        {
+          "rank": 8,
+          "page": 11,
+          "similarity_score": 0.5014,
+          "relevance_score": 0.1,
+          "combined_score": 0.2204,
+          "text_length": 5987,
+          "text_sha256": "fba6a4b5e4c8eeba3a4606c2afc747405229b8f7ecf8a0cea039b232bfe27117"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 36,
+          "relevance_score": 0.9,
+          "combined_score": 0.8006
+        },
+        {
+          "page": 38,
+          "relevance_score": 0.6,
+          "combined_score": 0.5723
+        },
+        {
+          "page": 53,
+          "relevance_score": 0.6,
+          "combined_score": 0.5686
+        },
+        {
+          "page": 39,
+          "relevance_score": 0.6,
+          "combined_score": 0.5676
+        },
+        {
+          "page": 43,
+          "relevance_score": 0.2,
+          "combined_score": 0.3109
+        },
+        {
+          "page": 34,
+          "relevance_score": 0.1,
+          "combined_score": 0.2434
+        },
+        {
+          "page": 54,
+          "relevance_score": 0.1,
+          "combined_score": 0.2225
+        },
+        {
+          "page": 11,
+          "relevance_score": 0.1,
+          "combined_score": 0.2204
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        36,
+        38,
+        53,
+        39
+      ],
+      "structured_output_parsed": true,
+      "final_answer": "N/A",
+      "answer_type": "N/A",
+      "reasoning_summary": "年报未提供2017年及以前的研发费用数据，无法计算平均值。",
+      "claimed_pages": [
+        36,
+        39
+      ],
+      "validated_pages": [
+        36,
+        39
+      ],
+      "filtered_hallucinated_pages": [],
+      "citations": [
+        {
+          "pdf_sha1": "194000c9109c6fa628f1fed33b44ae4c2b8365f4",
+          "page_index": 36
+        },
+        {
+          "pdf_sha1": "194000c9109c6fa628f1fed33b44ae4c2b8365f4",
+          "page_index": 39
+        }
+      ],
+      "latency_ms": {
+        "retrieval": 183.85,
+        "rerank": 5825.44,
+        "generation": 2145.38,
+        "total": 8165.16
+      },
+      "prompt_tokens": 16221,
+      "completion_tokens": 954,
+      "total_tokens": 17175,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 5292,
+            "output_tokens": 336
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 5055,
+            "output_tokens": 388
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 5874,
+          "output_tokens": 230
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q03",
+      "question": "According to the annual report, what is the Operating margin (%) for Tradition within the last period or at the end of the last period? If data is not available, return 'N/A'.",
+      "company_name": "Tradition",
+      "kind": "number",
+      "category": "competition_question",
+      "expected_behavior": "answer_or_na",
+      "expected_value": null,
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 44,
+          "similarity_score": 0.4336,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2441,
+          "text_sha256": "3f0e0c1ffcaf19b290f36bdabe9493451df177a1b2a2cc4236cc2f04250ade71"
+        },
+        {
+          "rank": 2,
+          "page": 73,
+          "similarity_score": 0.4165,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2951,
+          "text_sha256": "ca62c00ce665d4ad93694df0eabfc0b67ef7d62c589367c7143992505dc9989e"
+        },
+        {
+          "rank": 3,
+          "page": 45,
+          "similarity_score": 0.4098,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3032,
+          "text_sha256": "33fb7f1d6cd045427bb8e834d843f45141a0c7a9e173c44285f9d6eb68fb7682"
+        },
+        {
+          "rank": 4,
+          "page": 76,
+          "similarity_score": 0.4068,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 1624,
+          "text_sha256": "bf43dc7fe542a76dec86d15b09abe9f1d36a2b3940ed13d98bdf06c05afe1e04"
+        },
+        {
+          "rank": 5,
+          "page": 74,
+          "similarity_score": 0.4058,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 1534,
+          "text_sha256": "963e6fab352afb1ca2e452569af7c9494c306eec44d2f37355e567fa21828c2a"
+        },
+        {
+          "rank": 6,
+          "page": 14,
+          "similarity_score": 0.4005,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3264,
+          "text_sha256": "61ac4b43bb1bd5748aa4d8d4b40c80775180784f9df5ed54dcc24c9344c842d2"
+        }
+      ],
+      "retrieved_pages": [
+        44,
+        73,
+        45,
+        76,
+        74,
+        14
+      ],
+      "retrieval_scores": [
+        0.4336,
+        0.4165,
+        0.4098,
+        0.4068,
+        0.4058,
+        0.4005
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 74.5193862915039,
+        "normalized_norm": 1.0
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 44,
+          "similarity_score": 0.4336,
+          "relevance_score": 1.0,
+          "combined_score": 0.8301,
+          "text_length": 2441,
+          "text_sha256": "3f0e0c1ffcaf19b290f36bdabe9493451df177a1b2a2cc4236cc2f04250ade71"
+        },
+        {
+          "rank": 2,
+          "page": 73,
+          "similarity_score": 0.4165,
+          "relevance_score": 0.7,
+          "combined_score": 0.6149,
+          "text_length": 2951,
+          "text_sha256": "ca62c00ce665d4ad93694df0eabfc0b67ef7d62c589367c7143992505dc9989e"
+        },
+        {
+          "rank": 3,
+          "page": 74,
+          "similarity_score": 0.4058,
+          "relevance_score": 0.4,
+          "combined_score": 0.4017,
+          "text_length": 1534,
+          "text_sha256": "963e6fab352afb1ca2e452569af7c9494c306eec44d2f37355e567fa21828c2a"
+        },
+        {
+          "rank": 4,
+          "page": 45,
+          "similarity_score": 0.4098,
+          "relevance_score": 0.3,
+          "combined_score": 0.3329,
+          "text_length": 3032,
+          "text_sha256": "33fb7f1d6cd045427bb8e834d843f45141a0c7a9e173c44285f9d6eb68fb7682"
+        },
+        {
+          "rank": 5,
+          "page": 14,
+          "similarity_score": 0.4005,
+          "relevance_score": 0.2,
+          "combined_score": 0.2601,
+          "text_length": 3264,
+          "text_sha256": "61ac4b43bb1bd5748aa4d8d4b40c80775180784f9df5ed54dcc24c9344c842d2"
+        },
+        {
+          "rank": 6,
+          "page": 76,
+          "similarity_score": 0.4068,
+          "relevance_score": 0.0,
+          "combined_score": 0.122,
+          "text_length": 1624,
+          "text_sha256": "bf43dc7fe542a76dec86d15b09abe9f1d36a2b3940ed13d98bdf06c05afe1e04"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 44,
+          "relevance_score": 1.0,
+          "combined_score": 0.8301
+        },
+        {
+          "page": 73,
+          "relevance_score": 0.7,
+          "combined_score": 0.6149
+        },
+        {
+          "page": 74,
+          "relevance_score": 0.4,
+          "combined_score": 0.4017
+        },
+        {
+          "page": 45,
+          "relevance_score": 0.3,
+          "combined_score": 0.3329
+        },
+        {
+          "page": 14,
+          "relevance_score": 0.2,
+          "combined_score": 0.2601
+        },
+        {
+          "page": 76,
+          "relevance_score": 0.0,
+          "combined_score": 0.122
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        44,
+        73,
+        74,
+        45
+      ],
+      "structured_output_parsed": true,
+      "final_answer": "N/A",
+      "answer_type": "N/A",
+      "reasoning_summary": "The report provides operating margins for the Group but not for 'Tradition' specifically.",
+      "claimed_pages": [
+        45
+      ],
+      "validated_pages": [
+        45
+      ],
+      "filtered_hallucinated_pages": [],
+      "citations": [
+        {
+          "pdf_sha1": "2779336b845a41544348abb7b3e6e5bd2ff893a2",
+          "page_index": 45
+        }
+      ],
+      "latency_ms": {
+        "retrieval": 163.87,
+        "rerank": 3641.0,
+        "generation": 2828.04,
+        "total": 6638.02
+      },
+      "prompt_tokens": 9473,
+      "completion_tokens": 696,
+      "total_tokens": 10169,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 3355,
+            "output_tokens": 274
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 1868,
+            "output_tokens": 157
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 4250,
+          "output_tokens": 265
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q04",
+      "question": "Did Tradition use quantum computers to settle securities transactions during the reporting period?",
+      "company_name": "Tradition",
+      "kind": "boolean",
+      "category": "boolean_na",
+      "expected_behavior": "na",
+      "expected_value": "N/A",
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 124,
+          "similarity_score": 0.4943,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 1726,
+          "text_sha256": "269b27f94735d66bd7c8bedeb55679a05fbd02ea6d489bf9ccc2a40eba579431"
+        },
+        {
+          "rank": 2,
+          "page": 14,
+          "similarity_score": 0.4831,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3264,
+          "text_sha256": "61ac4b43bb1bd5748aa4d8d4b40c80775180784f9df5ed54dcc24c9344c842d2"
+        },
+        {
+          "rank": 3,
+          "page": 67,
+          "similarity_score": 0.4679,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4518,
+          "text_sha256": "926f61f0ead0ac0fa31626fe012744e2ce10a59f8c085c917bba71648dfa33ca"
+        },
+        {
+          "rank": 4,
+          "page": 13,
+          "similarity_score": 0.4548,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 1942,
+          "text_sha256": "e0079a5d0459db19fbe0b4c6fc6bb13e2fdcf8f4555459f0455751fbaefc1894"
+        },
+        {
+          "rank": 5,
+          "page": 123,
+          "similarity_score": 0.4139,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 1690,
+          "text_sha256": "8c0c40e60a47c6a90931a6eda0a7523e3be104b6af75049cf65a51b729b8fb4e"
+        },
+        {
+          "rank": 6,
+          "page": 137,
+          "similarity_score": 0.3941,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3752,
+          "text_sha256": "e07fd3ef08a1672712674ef4f4fa21a2c3827757cc784fc58e5223ba3bf67950"
+        },
+        {
+          "rank": 7,
+          "page": 128,
+          "similarity_score": 0.3923,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 1295,
+          "text_sha256": "869169fc4ba56a44ac7e814b79d6e1720aea6d8d9aaddb4c6d61f9c3771b8801"
+        },
+        {
+          "rank": 8,
+          "page": 40,
+          "similarity_score": 0.3882,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3802,
+          "text_sha256": "ec0fc90e1034a35d5883c07b1dff922ad0e82efb74bbe2841da1ec978b372635"
+        }
+      ],
+      "retrieved_pages": [
+        124,
+        14,
+        67,
+        13,
+        123,
+        137,
+        128,
+        40
+      ],
+      "retrieval_scores": [
+        0.4943,
+        0.4831,
+        0.4679,
+        0.4548,
+        0.4139,
+        0.3941,
+        0.3923,
+        0.3882
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 89.31411743164062,
+        "normalized_norm": 1.0
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 14,
+          "similarity_score": 0.4831,
+          "relevance_score": 0.3,
+          "combined_score": 0.3549,
+          "text_length": 3264,
+          "text_sha256": "61ac4b43bb1bd5748aa4d8d4b40c80775180784f9df5ed54dcc24c9344c842d2"
+        },
+        {
+          "rank": 2,
+          "page": 124,
+          "similarity_score": 0.4943,
+          "relevance_score": 0.2,
+          "combined_score": 0.2883,
+          "text_length": 1726,
+          "text_sha256": "269b27f94735d66bd7c8bedeb55679a05fbd02ea6d489bf9ccc2a40eba579431"
+        },
+        {
+          "rank": 3,
+          "page": 13,
+          "similarity_score": 0.4548,
+          "relevance_score": 0.2,
+          "combined_score": 0.2764,
+          "text_length": 1942,
+          "text_sha256": "e0079a5d0459db19fbe0b4c6fc6bb13e2fdcf8f4555459f0455751fbaefc1894"
+        },
+        {
+          "rank": 4,
+          "page": 137,
+          "similarity_score": 0.3941,
+          "relevance_score": 0.2,
+          "combined_score": 0.2582,
+          "text_length": 3752,
+          "text_sha256": "e07fd3ef08a1672712674ef4f4fa21a2c3827757cc784fc58e5223ba3bf67950"
+        },
+        {
+          "rank": 5,
+          "page": 40,
+          "similarity_score": 0.3882,
+          "relevance_score": 0.2,
+          "combined_score": 0.2565,
+          "text_length": 3802,
+          "text_sha256": "ec0fc90e1034a35d5883c07b1dff922ad0e82efb74bbe2841da1ec978b372635"
+        },
+        {
+          "rank": 6,
+          "page": 67,
+          "similarity_score": 0.4679,
+          "relevance_score": 0.1,
+          "combined_score": 0.2104,
+          "text_length": 4518,
+          "text_sha256": "926f61f0ead0ac0fa31626fe012744e2ce10a59f8c085c917bba71648dfa33ca"
+        },
+        {
+          "rank": 7,
+          "page": 123,
+          "similarity_score": 0.4139,
+          "relevance_score": 0.1,
+          "combined_score": 0.1942,
+          "text_length": 1690,
+          "text_sha256": "8c0c40e60a47c6a90931a6eda0a7523e3be104b6af75049cf65a51b729b8fb4e"
+        },
+        {
+          "rank": 8,
+          "page": 128,
+          "similarity_score": 0.3923,
+          "relevance_score": 0.1,
+          "combined_score": 0.1877,
+          "text_length": 1295,
+          "text_sha256": "869169fc4ba56a44ac7e814b79d6e1720aea6d8d9aaddb4c6d61f9c3771b8801"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 14,
+          "relevance_score": 0.3,
+          "combined_score": 0.3549
+        },
+        {
+          "page": 124,
+          "relevance_score": 0.2,
+          "combined_score": 0.2883
+        },
+        {
+          "page": 13,
+          "relevance_score": 0.2,
+          "combined_score": 0.2764
+        },
+        {
+          "page": 137,
+          "relevance_score": 0.2,
+          "combined_score": 0.2582
+        },
+        {
+          "page": 40,
+          "relevance_score": 0.2,
+          "combined_score": 0.2565
+        },
+        {
+          "page": 67,
+          "relevance_score": 0.1,
+          "combined_score": 0.2104
+        },
+        {
+          "page": 123,
+          "relevance_score": 0.1,
+          "combined_score": 0.1942
+        },
+        {
+          "page": 128,
+          "relevance_score": 0.1,
+          "combined_score": 0.1877
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        14,
+        124,
+        13,
+        137
+      ],
+      "structured_output_parsed": true,
+      "final_answer": false,
+      "answer_type": "bool",
+      "reasoning_summary": "No mention of quantum computing in the provided pages, so the answer is False.",
+      "claimed_pages": [],
+      "validated_pages": [],
+      "filtered_hallucinated_pages": [],
+      "citations": [],
+      "latency_ms": {
+        "retrieval": 151.25,
+        "rerank": 5047.12,
+        "generation": 2092.92,
+        "total": 7297.96
+      },
+      "prompt_tokens": 10577,
+      "completion_tokens": 833,
+      "total_tokens": 11410,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 3396,
+            "output_tokens": 315
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 3497,
+            "output_tokens": 317
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 3684,
+          "output_tokens": 201
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q05",
+      "question": "Did TSX_Y announce a share buyback plan in the annual report?",
+      "company_name": "TSX_Y",
+      "kind": "boolean",
+      "category": "boolean_true",
+      "expected_behavior": "answer",
+      "expected_value": true,
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 20,
+          "similarity_score": 0.5401,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4347,
+          "text_sha256": "0138e4fd38f108c9f295e27eb7ab1376937e70ba7b71d474826fd0f6ff30b377"
+        },
+        {
+          "rank": 2,
+          "page": 68,
+          "similarity_score": 0.5219,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5633,
+          "text_sha256": "e08bcac9769c2b09560fe178ab00eb31a75b1663b6487afe487e6460eeb287e8"
+        },
+        {
+          "rank": 3,
+          "page": 19,
+          "similarity_score": 0.5076,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4157,
+          "text_sha256": "1491703605557d58ab60c9fac70c41030304e5a4b85f91d9850305c970827557"
+        },
+        {
+          "rank": 4,
+          "page": 73,
+          "similarity_score": 0.499,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2825,
+          "text_sha256": "aa59b0c5ef30f27c1e60880162a8ca4f9086426584c3154c9a025ebb2bc3e67b"
+        },
+        {
+          "rank": 5,
+          "page": 70,
+          "similarity_score": 0.4832,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3834,
+          "text_sha256": "7504b42c9781de6b1dd218779214c899f1e41d9ddf55ffaa78d791c05aa9f9d1"
+        },
+        {
+          "rank": 6,
+          "page": 71,
+          "similarity_score": 0.4797,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4675,
+          "text_sha256": "5b83e7dc4dbbfe36d06b308f4db5776c59c8ccb60c7239af78f9a8203ebb8f29"
+        },
+        {
+          "rank": 7,
+          "page": 3,
+          "similarity_score": 0.4791,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3840,
+          "text_sha256": "33d2fc2b9ac453ee2694106754e15522b9e53c8c941204f87df9a34b95ee12c3"
+        }
+      ],
+      "retrieved_pages": [
+        20,
+        68,
+        19,
+        73,
+        70,
+        71,
+        3
+      ],
+      "retrieval_scores": [
+        0.5401,
+        0.5219,
+        0.5076,
+        0.499,
+        0.4832,
+        0.4797,
+        0.4791
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 96.45507049560547,
+        "normalized_norm": 1.0
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 20,
+          "similarity_score": 0.5401,
+          "relevance_score": 1.0,
+          "combined_score": 0.862,
+          "text_length": 4347,
+          "text_sha256": "0138e4fd38f108c9f295e27eb7ab1376937e70ba7b71d474826fd0f6ff30b377"
+        },
+        {
+          "rank": 2,
+          "page": 68,
+          "similarity_score": 0.5219,
+          "relevance_score": 1.0,
+          "combined_score": 0.8566,
+          "text_length": 5633,
+          "text_sha256": "e08bcac9769c2b09560fe178ab00eb31a75b1663b6487afe487e6460eeb287e8"
+        },
+        {
+          "rank": 3,
+          "page": 19,
+          "similarity_score": 0.5076,
+          "relevance_score": 1.0,
+          "combined_score": 0.8523,
+          "text_length": 4157,
+          "text_sha256": "1491703605557d58ab60c9fac70c41030304e5a4b85f91d9850305c970827557"
+        },
+        {
+          "rank": 4,
+          "page": 3,
+          "similarity_score": 0.4791,
+          "relevance_score": 0.7,
+          "combined_score": 0.6337,
+          "text_length": 3840,
+          "text_sha256": "33d2fc2b9ac453ee2694106754e15522b9e53c8c941204f87df9a34b95ee12c3"
+        },
+        {
+          "rank": 5,
+          "page": 73,
+          "similarity_score": 0.499,
+          "relevance_score": 0.3,
+          "combined_score": 0.3597,
+          "text_length": 2825,
+          "text_sha256": "aa59b0c5ef30f27c1e60880162a8ca4f9086426584c3154c9a025ebb2bc3e67b"
+        },
+        {
+          "rank": 6,
+          "page": 70,
+          "similarity_score": 0.4832,
+          "relevance_score": 0.2,
+          "combined_score": 0.285,
+          "text_length": 3834,
+          "text_sha256": "7504b42c9781de6b1dd218779214c899f1e41d9ddf55ffaa78d791c05aa9f9d1"
+        },
+        {
+          "rank": 7,
+          "page": 71,
+          "similarity_score": 0.4797,
+          "relevance_score": 0.2,
+          "combined_score": 0.2839,
+          "text_length": 4675,
+          "text_sha256": "5b83e7dc4dbbfe36d06b308f4db5776c59c8ccb60c7239af78f9a8203ebb8f29"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 20,
+          "relevance_score": 1.0,
+          "combined_score": 0.862
+        },
+        {
+          "page": 68,
+          "relevance_score": 1.0,
+          "combined_score": 0.8566
+        },
+        {
+          "page": 19,
+          "relevance_score": 1.0,
+          "combined_score": 0.8523
+        },
+        {
+          "page": 3,
+          "relevance_score": 0.7,
+          "combined_score": 0.6337
+        },
+        {
+          "page": 73,
+          "relevance_score": 0.3,
+          "combined_score": 0.3597
+        },
+        {
+          "page": 70,
+          "relevance_score": 0.2,
+          "combined_score": 0.285
+        },
+        {
+          "page": 71,
+          "relevance_score": 0.2,
+          "combined_score": 0.2839
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        20,
+        68,
+        19,
+        3
+      ],
+      "structured_output_parsed": true,
+      "final_answer": false,
+      "answer_type": "bool",
+      "reasoning_summary": "The annual report mentions past share buybacks but no new announcement of a share buyback plan.",
+      "claimed_pages": [
+        20,
+        68
+      ],
+      "validated_pages": [
+        20,
+        68
+      ],
+      "filtered_hallucinated_pages": [],
+      "citations": [
+        {
+          "pdf_sha1": "9d7a72445aba6860402c3acce75af02dc045f74d",
+          "page_index": 20
+        },
+        {
+          "pdf_sha1": "9d7a72445aba6860402c3acce75af02dc045f74d",
+          "page_index": 68
+        }
+      ],
+      "latency_ms": {
+        "retrieval": 170.36,
+        "rerank": 5545.09,
+        "generation": 2114.26,
+        "total": 7834.02
+      },
+      "prompt_tokens": 14243,
+      "completion_tokens": 824,
+      "total_tokens": 15067,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 5253,
+            "output_tokens": 330
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 3584,
+            "output_tokens": 268
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 5406,
+          "output_tokens": 226
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q06",
+      "question": "Did TSX_Y report layoffs or workforce reductions in the annual report?",
+      "company_name": "TSX_Y",
+      "kind": "boolean",
+      "category": "boolean_true",
+      "expected_behavior": "answer",
+      "expected_value": true,
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 62,
+          "similarity_score": 0.498,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2679,
+          "text_sha256": "e80eec1c9a5c295e92850b0ecc92c8863d2265197156be25939ac4d718697a8c"
+        },
+        {
+          "rank": 2,
+          "page": 14,
+          "similarity_score": 0.4582,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3788,
+          "text_sha256": "1d3dc4b316e09a458589ffa809cd9f7d82b6bceb2f331664e12c0946a1865a64"
+        },
+        {
+          "rank": 3,
+          "page": 17,
+          "similarity_score": 0.4537,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4029,
+          "text_sha256": "6b860cff0e460dcce51594a7b1195e13f4f9b85c52295194780bbb6316839033"
+        },
+        {
+          "rank": 4,
+          "page": 15,
+          "similarity_score": 0.4502,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4621,
+          "text_sha256": "68bdd1cfb3f058077e6a1d5b2eae28f1ea7991a3524455abe32526970617100c"
+        },
+        {
+          "rank": 5,
+          "page": 68,
+          "similarity_score": 0.4339,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5633,
+          "text_sha256": "e08bcac9769c2b09560fe178ab00eb31a75b1663b6487afe487e6460eeb287e8"
+        },
+        {
+          "rank": 6,
+          "page": 71,
+          "similarity_score": 0.4278,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4675,
+          "text_sha256": "5b83e7dc4dbbfe36d06b308f4db5776c59c8ccb60c7239af78f9a8203ebb8f29"
+        },
+        {
+          "rank": 7,
+          "page": 53,
+          "similarity_score": 0.4116,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2928,
+          "text_sha256": "72f8582989fce5903fb4d2672853402d0587cf674c7f5bbc801be39602ff66ea"
+        },
+        {
+          "rank": 8,
+          "page": 11,
+          "similarity_score": 0.404,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4664,
+          "text_sha256": "c8ab7e57fe383b60adb8194af114e0e8f69f6764c6b1808e3eca4f02f25f428a"
+        }
+      ],
+      "retrieved_pages": [
+        62,
+        14,
+        17,
+        15,
+        68,
+        71,
+        53,
+        11
+      ],
+      "retrieval_scores": [
+        0.498,
+        0.4582,
+        0.4537,
+        0.4502,
+        0.4339,
+        0.4278,
+        0.4116,
+        0.404
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 95.75712585449219,
+        "normalized_norm": 1.0
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 62,
+          "similarity_score": 0.498,
+          "relevance_score": 0.9,
+          "combined_score": 0.7794,
+          "text_length": 2679,
+          "text_sha256": "e80eec1c9a5c295e92850b0ecc92c8863d2265197156be25939ac4d718697a8c"
+        },
+        {
+          "rank": 2,
+          "page": 11,
+          "similarity_score": 0.404,
+          "relevance_score": 0.9,
+          "combined_score": 0.7512,
+          "text_length": 4664,
+          "text_sha256": "c8ab7e57fe383b60adb8194af114e0e8f69f6764c6b1808e3eca4f02f25f428a"
+        },
+        {
+          "rank": 3,
+          "page": 14,
+          "similarity_score": 0.4582,
+          "relevance_score": 0.8,
+          "combined_score": 0.6975,
+          "text_length": 3788,
+          "text_sha256": "1d3dc4b316e09a458589ffa809cd9f7d82b6bceb2f331664e12c0946a1865a64"
+        },
+        {
+          "rank": 4,
+          "page": 17,
+          "similarity_score": 0.4537,
+          "relevance_score": 0.6,
+          "combined_score": 0.5561,
+          "text_length": 4029,
+          "text_sha256": "6b860cff0e460dcce51594a7b1195e13f4f9b85c52295194780bbb6316839033"
+        },
+        {
+          "rank": 5,
+          "page": 15,
+          "similarity_score": 0.4502,
+          "relevance_score": 0.1,
+          "combined_score": 0.2051,
+          "text_length": 4621,
+          "text_sha256": "68bdd1cfb3f058077e6a1d5b2eae28f1ea7991a3524455abe32526970617100c"
+        },
+        {
+          "rank": 6,
+          "page": 68,
+          "similarity_score": 0.4339,
+          "relevance_score": 0.1,
+          "combined_score": 0.2002,
+          "text_length": 5633,
+          "text_sha256": "e08bcac9769c2b09560fe178ab00eb31a75b1663b6487afe487e6460eeb287e8"
+        },
+        {
+          "rank": 7,
+          "page": 71,
+          "similarity_score": 0.4278,
+          "relevance_score": 0.1,
+          "combined_score": 0.1983,
+          "text_length": 4675,
+          "text_sha256": "5b83e7dc4dbbfe36d06b308f4db5776c59c8ccb60c7239af78f9a8203ebb8f29"
+        },
+        {
+          "rank": 8,
+          "page": 53,
+          "similarity_score": 0.4116,
+          "relevance_score": 0.1,
+          "combined_score": 0.1935,
+          "text_length": 2928,
+          "text_sha256": "72f8582989fce5903fb4d2672853402d0587cf674c7f5bbc801be39602ff66ea"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 62,
+          "relevance_score": 0.9,
+          "combined_score": 0.7794
+        },
+        {
+          "page": 11,
+          "relevance_score": 0.9,
+          "combined_score": 0.7512
+        },
+        {
+          "page": 14,
+          "relevance_score": 0.8,
+          "combined_score": 0.6975
+        },
+        {
+          "page": 17,
+          "relevance_score": 0.6,
+          "combined_score": 0.5561
+        },
+        {
+          "page": 15,
+          "relevance_score": 0.1,
+          "combined_score": 0.2051
+        },
+        {
+          "page": 68,
+          "relevance_score": 0.1,
+          "combined_score": 0.2002
+        },
+        {
+          "page": 71,
+          "relevance_score": 0.1,
+          "combined_score": 0.1983
+        },
+        {
+          "page": 53,
+          "relevance_score": 0.1,
+          "combined_score": 0.1935
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        62,
+        11,
+        14,
+        17
+      ],
+      "structured_output_parsed": true,
+      "final_answer": true,
+      "answer_type": "bool",
+      "reasoning_summary": "多个页面明确提到员工削减相关费用，答案为True。",
+      "claimed_pages": [
+        11,
+        14,
+        17
+      ],
+      "validated_pages": [
+        11,
+        14,
+        17
+      ],
+      "filtered_hallucinated_pages": [],
+      "citations": [
+        {
+          "pdf_sha1": "9d7a72445aba6860402c3acce75af02dc045f74d",
+          "page_index": 11
+        },
+        {
+          "pdf_sha1": "9d7a72445aba6860402c3acce75af02dc045f74d",
+          "page_index": 14
+        },
+        {
+          "pdf_sha1": "9d7a72445aba6860402c3acce75af02dc045f74d",
+          "page_index": 17
+        }
+      ],
+      "latency_ms": {
+        "retrieval": 198.21,
+        "rerank": 5339.84,
+        "generation": 1898.45,
+        "total": 7442.88
+      },
+      "prompt_tokens": 15034,
+      "completion_tokens": 679,
+      "total_tokens": 15713,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 4902,
+            "output_tokens": 267
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 5330,
+            "output_tokens": 228
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 4802,
+          "output_tokens": 184
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q07",
+      "question": "Did Mercia Asset Management PLC mention any mergers or acquisitions in the annual report?",
+      "company_name": "Mercia Asset Management PLC",
+      "kind": "boolean",
+      "category": "boolean_true",
+      "expected_behavior": "answer",
+      "expected_value": true,
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 4,
+          "similarity_score": 0.7377,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2028,
+          "text_sha256": "2f39b65740caedb7e23d9a3123e7cf036adbb3f68d08cece88705d55a7e5c083"
+        },
+        {
+          "rank": 2,
+          "page": 81,
+          "similarity_score": 0.7358,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3788,
+          "text_sha256": "f21aa0734dc42f2c7b5f4a6b8ae6c37e5d82398f71166afc9c1fdf782cc8c266"
+        },
+        {
+          "rank": 3,
+          "page": 8,
+          "similarity_score": 0.7222,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 332,
+          "text_sha256": "c8aca9ca3bbb5ba66b16ffd734ae06c551d3e1b020a2e6f3fc70cf4ff1e21711"
+        },
+        {
+          "rank": 4,
+          "page": 9,
+          "similarity_score": 0.7142,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2075,
+          "text_sha256": "8c735c459f5271600a44ac2a068d57aea34975ea9d9b5f0638ed61aab0ac1e75"
+        },
+        {
+          "rank": 5,
+          "page": 10,
+          "similarity_score": 0.7108,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 1692,
+          "text_sha256": "a659b6648a08a29353ad26ac1e4def895bf23bb04856198c72e4d98661d0d1b1"
+        },
+        {
+          "rank": 6,
+          "page": 2,
+          "similarity_score": 0.7087,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 841,
+          "text_sha256": "8a0d5bf4d7960db9531bdbebe939127907a288c2d6ae9b54512848d882370c57"
+        },
+        {
+          "rank": 7,
+          "page": 28,
+          "similarity_score": 0.7076,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 1992,
+          "text_sha256": "551b9addc937f97108bcb74e70901413c89ced824cb048bb6f6c13aed0934fd8"
+        },
+        {
+          "rank": 8,
+          "page": 56,
+          "similarity_score": 0.7069,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4158,
+          "text_sha256": "42aeba599a386f42dbebf07f3301ab4d68c0ea800b179e17f2d5c50e42dde78c"
+        }
+      ],
+      "retrieved_pages": [
+        4,
+        81,
+        8,
+        9,
+        10,
+        2,
+        28,
+        56
+      ],
+      "retrieval_scores": [
+        0.7377,
+        0.7358,
+        0.7222,
+        0.7142,
+        0.7108,
+        0.7087,
+        0.7076,
+        0.7069
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 87.29000091552734,
+        "normalized_norm": 1.0
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 4,
+          "similarity_score": 0.7377,
+          "relevance_score": 0.8,
+          "combined_score": 0.7813,
+          "text_length": 2028,
+          "text_sha256": "2f39b65740caedb7e23d9a3123e7cf036adbb3f68d08cece88705d55a7e5c083"
+        },
+        {
+          "rank": 2,
+          "page": 81,
+          "similarity_score": 0.7358,
+          "relevance_score": 0.3,
+          "combined_score": 0.4307,
+          "text_length": 3788,
+          "text_sha256": "f21aa0734dc42f2c7b5f4a6b8ae6c37e5d82398f71166afc9c1fdf782cc8c266"
+        },
+        {
+          "rank": 3,
+          "page": 8,
+          "similarity_score": 0.7222,
+          "relevance_score": 0.2,
+          "combined_score": 0.3567,
+          "text_length": 332,
+          "text_sha256": "c8aca9ca3bbb5ba66b16ffd734ae06c551d3e1b020a2e6f3fc70cf4ff1e21711"
+        },
+        {
+          "rank": 4,
+          "page": 28,
+          "similarity_score": 0.7076,
+          "relevance_score": 0.2,
+          "combined_score": 0.3523,
+          "text_length": 1992,
+          "text_sha256": "551b9addc937f97108bcb74e70901413c89ced824cb048bb6f6c13aed0934fd8"
+        },
+        {
+          "rank": 5,
+          "page": 9,
+          "similarity_score": 0.7142,
+          "relevance_score": 0.1,
+          "combined_score": 0.2843,
+          "text_length": 2075,
+          "text_sha256": "8c735c459f5271600a44ac2a068d57aea34975ea9d9b5f0638ed61aab0ac1e75"
+        },
+        {
+          "rank": 6,
+          "page": 10,
+          "similarity_score": 0.7108,
+          "relevance_score": 0.1,
+          "combined_score": 0.2832,
+          "text_length": 1692,
+          "text_sha256": "a659b6648a08a29353ad26ac1e4def895bf23bb04856198c72e4d98661d0d1b1"
+        },
+        {
+          "rank": 7,
+          "page": 2,
+          "similarity_score": 0.7087,
+          "relevance_score": 0.1,
+          "combined_score": 0.2826,
+          "text_length": 841,
+          "text_sha256": "8a0d5bf4d7960db9531bdbebe939127907a288c2d6ae9b54512848d882370c57"
+        },
+        {
+          "rank": 8,
+          "page": 56,
+          "similarity_score": 0.7069,
+          "relevance_score": 0.1,
+          "combined_score": 0.2821,
+          "text_length": 4158,
+          "text_sha256": "42aeba599a386f42dbebf07f3301ab4d68c0ea800b179e17f2d5c50e42dde78c"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 4,
+          "relevance_score": 0.8,
+          "combined_score": 0.7813
+        },
+        {
+          "page": 81,
+          "relevance_score": 0.3,
+          "combined_score": 0.4307
+        },
+        {
+          "page": 8,
+          "relevance_score": 0.2,
+          "combined_score": 0.3567
+        },
+        {
+          "page": 28,
+          "relevance_score": 0.2,
+          "combined_score": 0.3523
+        },
+        {
+          "page": 9,
+          "relevance_score": 0.1,
+          "combined_score": 0.2843
+        },
+        {
+          "page": 10,
+          "relevance_score": 0.1,
+          "combined_score": 0.2832
+        },
+        {
+          "page": 2,
+          "relevance_score": 0.1,
+          "combined_score": 0.2826
+        },
+        {
+          "page": 56,
+          "relevance_score": 0.1,
+          "combined_score": 0.2821
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        4,
+        81,
+        8,
+        28
+      ],
+      "structured_output_parsed": true,
+      "final_answer": "N/A",
+      "answer_type": "N/A",
+      "reasoning_summary": "No mention of mergers or acquisitions found in the retrieved pages.",
+      "claimed_pages": [],
+      "validated_pages": [],
+      "filtered_hallucinated_pages": [],
+      "citations": [],
+      "latency_ms": {
+        "retrieval": 226.85,
+        "rerank": 4611.18,
+        "generation": 1729.27,
+        "total": 6572.79
+      },
+      "prompt_tokens": 8019,
+      "completion_tokens": 741,
+      "total_tokens": 8760,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 2591,
+            "output_tokens": 287
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 2743,
+            "output_tokens": 254
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 2685,
+          "output_tokens": 200
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q08",
+      "question": "Did Mercia Asset Management PLC announce a share buyback plan in the annual report?",
+      "company_name": "Mercia Asset Management PLC",
+      "kind": "boolean",
+      "category": "boolean_false",
+      "expected_behavior": "answer",
+      "expected_value": false,
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 56,
+          "similarity_score": 0.7547,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4158,
+          "text_sha256": "42aeba599a386f42dbebf07f3301ab4d68c0ea800b179e17f2d5c50e42dde78c"
+        },
+        {
+          "rank": 2,
+          "page": 107,
+          "similarity_score": 0.741,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 1732,
+          "text_sha256": "856f37c115c4df083dba9374cb67e6802075173a7c7d8366a2d838505c0a76f4"
+        },
+        {
+          "rank": 3,
+          "page": 8,
+          "similarity_score": 0.7248,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 332,
+          "text_sha256": "c8aca9ca3bbb5ba66b16ffd734ae06c551d3e1b020a2e6f3fc70cf4ff1e21711"
+        },
+        {
+          "rank": 4,
+          "page": 81,
+          "similarity_score": 0.7224,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3788,
+          "text_sha256": "f21aa0734dc42f2c7b5f4a6b8ae6c37e5d82398f71166afc9c1fdf782cc8c266"
+        },
+        {
+          "rank": 5,
+          "page": 28,
+          "similarity_score": 0.7219,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 1992,
+          "text_sha256": "551b9addc937f97108bcb74e70901413c89ced824cb048bb6f6c13aed0934fd8"
+        },
+        {
+          "rank": 6,
+          "page": 4,
+          "similarity_score": 0.7188,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2028,
+          "text_sha256": "2f39b65740caedb7e23d9a3123e7cf036adbb3f68d08cece88705d55a7e5c083"
+        },
+        {
+          "rank": 7,
+          "page": 3,
+          "similarity_score": 0.7088,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2090,
+          "text_sha256": "7fbce4ee61e6d6aea9ab9109274f93be8139b6ef5bb55693923641ead481d52c"
+        },
+        {
+          "rank": 8,
+          "page": 5,
+          "similarity_score": 0.7015,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5098,
+          "text_sha256": "ce1446ce517364d9fe6375beae7add2b86eff9150bf5cfd7271e99e0f5a96080"
+        }
+      ],
+      "retrieved_pages": [
+        56,
+        107,
+        8,
+        81,
+        28,
+        4,
+        3,
+        5
+      ],
+      "retrieval_scores": [
+        0.7547,
+        0.741,
+        0.7248,
+        0.7224,
+        0.7219,
+        0.7188,
+        0.7088,
+        0.7015
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 95.62936401367188,
+        "normalized_norm": 1.0
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 56,
+          "similarity_score": 0.7547,
+          "relevance_score": 0.2,
+          "combined_score": 0.3664,
+          "text_length": 4158,
+          "text_sha256": "42aeba599a386f42dbebf07f3301ab4d68c0ea800b179e17f2d5c50e42dde78c"
+        },
+        {
+          "rank": 2,
+          "page": 28,
+          "similarity_score": 0.7219,
+          "relevance_score": 0.2,
+          "combined_score": 0.3566,
+          "text_length": 1992,
+          "text_sha256": "551b9addc937f97108bcb74e70901413c89ced824cb048bb6f6c13aed0934fd8"
+        },
+        {
+          "rank": 3,
+          "page": 3,
+          "similarity_score": 0.7088,
+          "relevance_score": 0.2,
+          "combined_score": 0.3526,
+          "text_length": 2090,
+          "text_sha256": "7fbce4ee61e6d6aea9ab9109274f93be8139b6ef5bb55693923641ead481d52c"
+        },
+        {
+          "rank": 4,
+          "page": 107,
+          "similarity_score": 0.741,
+          "relevance_score": 0.1,
+          "combined_score": 0.2923,
+          "text_length": 1732,
+          "text_sha256": "856f37c115c4df083dba9374cb67e6802075173a7c7d8366a2d838505c0a76f4"
+        },
+        {
+          "rank": 5,
+          "page": 8,
+          "similarity_score": 0.7248,
+          "relevance_score": 0.1,
+          "combined_score": 0.2874,
+          "text_length": 332,
+          "text_sha256": "c8aca9ca3bbb5ba66b16ffd734ae06c551d3e1b020a2e6f3fc70cf4ff1e21711"
+        },
+        {
+          "rank": 6,
+          "page": 81,
+          "similarity_score": 0.7224,
+          "relevance_score": 0.1,
+          "combined_score": 0.2867,
+          "text_length": 3788,
+          "text_sha256": "f21aa0734dc42f2c7b5f4a6b8ae6c37e5d82398f71166afc9c1fdf782cc8c266"
+        },
+        {
+          "rank": 7,
+          "page": 4,
+          "similarity_score": 0.7188,
+          "relevance_score": 0.1,
+          "combined_score": 0.2856,
+          "text_length": 2028,
+          "text_sha256": "2f39b65740caedb7e23d9a3123e7cf036adbb3f68d08cece88705d55a7e5c083"
+        },
+        {
+          "rank": 8,
+          "page": 5,
+          "similarity_score": 0.7015,
+          "relevance_score": 0.1,
+          "combined_score": 0.2805,
+          "text_length": 5098,
+          "text_sha256": "ce1446ce517364d9fe6375beae7add2b86eff9150bf5cfd7271e99e0f5a96080"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 56,
+          "relevance_score": 0.2,
+          "combined_score": 0.3664
+        },
+        {
+          "page": 28,
+          "relevance_score": 0.2,
+          "combined_score": 0.3566
+        },
+        {
+          "page": 3,
+          "relevance_score": 0.2,
+          "combined_score": 0.3526
+        },
+        {
+          "page": 107,
+          "relevance_score": 0.1,
+          "combined_score": 0.2923
+        },
+        {
+          "page": 8,
+          "relevance_score": 0.1,
+          "combined_score": 0.2874
+        },
+        {
+          "page": 81,
+          "relevance_score": 0.1,
+          "combined_score": 0.2867
+        },
+        {
+          "page": 4,
+          "relevance_score": 0.1,
+          "combined_score": 0.2856
+        },
+        {
+          "page": 5,
+          "relevance_score": 0.1,
+          "combined_score": 0.2805
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        56,
+        28,
+        3,
+        107
+      ],
+      "structured_output_parsed": true,
+      "final_answer": false,
+      "answer_type": "bool",
+      "reasoning_summary": "年报未提及股票回购计划，答案为False。",
+      "claimed_pages": [],
+      "validated_pages": [],
+      "filtered_hallucinated_pages": [],
+      "citations": [],
+      "latency_ms": {
+        "retrieval": 233.3,
+        "rerank": 5130.15,
+        "generation": 1366.74,
+        "total": 6735.22
+      },
+      "prompt_tokens": 10274,
+      "completion_tokens": 796,
+      "total_tokens": 11070,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 3437,
+            "output_tokens": 310
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 3253,
+            "output_tokens": 349
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 3584,
+          "output_tokens": 137
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q09",
+      "question": "Did CrossFirst Bank complete a merger with Central during 2022?",
+      "company_name": "CrossFirst Bank",
+      "kind": "boolean",
+      "category": "boolean_true",
+      "expected_behavior": "answer",
+      "expected_value": true,
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 11,
+          "similarity_score": 0.6867,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4401,
+          "text_sha256": "7cd5277a55950df02434bb23fc5456b93761101517b933000f27ac2f17759cf4"
+        },
+        {
+          "rank": 2,
+          "page": 69,
+          "similarity_score": 0.6828,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5194,
+          "text_sha256": "380fdf39256c4a0814d8a00ced056aa6ab1c0ece5f2388446d5571150ffca842"
+        },
+        {
+          "rank": 3,
+          "page": 108,
+          "similarity_score": 0.6313,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2058,
+          "text_sha256": "e39f85ac82adb737271f1896b1dfe696ba2b72de73e1a661f51adf3cf5397763"
+        },
+        {
+          "rank": 4,
+          "page": 4,
+          "similarity_score": 0.5929,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 666,
+          "text_sha256": "8ff824b8c165fdade1d2706bad2cad8995c20186c4153f771a8aa612cb8441ef"
+        },
+        {
+          "rank": 5,
+          "page": 37,
+          "similarity_score": 0.5799,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3153,
+          "text_sha256": "5d483f828814341f298c3d1940ee49b2ad09cf66e2fece6498e1014b6a463e4d"
+        },
+        {
+          "rank": 6,
+          "page": 62,
+          "similarity_score": 0.5649,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2491,
+          "text_sha256": "b289c4a40bf73590527f0e54ba7043c2fb1e84301f6038705a27b0dc3f50e275"
+        },
+        {
+          "rank": 7,
+          "page": 3,
+          "similarity_score": 0.5602,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3524,
+          "text_sha256": "effa01323580723fdec6f4e3fc73567976b8bd61251ec8d9165262cb9ec1288d"
+        }
+      ],
+      "retrieved_pages": [
+        11,
+        69,
+        108,
+        4,
+        37,
+        62,
+        3
+      ],
+      "retrieval_scores": [
+        0.6867,
+        0.6828,
+        0.6313,
+        0.5929,
+        0.5799,
+        0.5649,
+        0.5602
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 101.73323822021484,
+        "normalized_norm": 0.9999999403953552
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 11,
+          "similarity_score": 0.6867,
+          "relevance_score": 1.0,
+          "combined_score": 0.906,
+          "text_length": 4401,
+          "text_sha256": "7cd5277a55950df02434bb23fc5456b93761101517b933000f27ac2f17759cf4"
+        },
+        {
+          "rank": 2,
+          "page": 37,
+          "similarity_score": 0.5799,
+          "relevance_score": 0.9,
+          "combined_score": 0.804,
+          "text_length": 3153,
+          "text_sha256": "5d483f828814341f298c3d1940ee49b2ad09cf66e2fece6498e1014b6a463e4d"
+        },
+        {
+          "rank": 3,
+          "page": 69,
+          "similarity_score": 0.6828,
+          "relevance_score": 0.7,
+          "combined_score": 0.6948,
+          "text_length": 5194,
+          "text_sha256": "380fdf39256c4a0814d8a00ced056aa6ab1c0ece5f2388446d5571150ffca842"
+        },
+        {
+          "rank": 4,
+          "page": 3,
+          "similarity_score": 0.5602,
+          "relevance_score": 0.5,
+          "combined_score": 0.5181,
+          "text_length": 3524,
+          "text_sha256": "effa01323580723fdec6f4e3fc73567976b8bd61251ec8d9165262cb9ec1288d"
+        },
+        {
+          "rank": 5,
+          "page": 4,
+          "similarity_score": 0.5929,
+          "relevance_score": 0.4,
+          "combined_score": 0.4579,
+          "text_length": 666,
+          "text_sha256": "8ff824b8c165fdade1d2706bad2cad8995c20186c4153f771a8aa612cb8441ef"
+        },
+        {
+          "rank": 6,
+          "page": 108,
+          "similarity_score": 0.6313,
+          "relevance_score": 0.1,
+          "combined_score": 0.2594,
+          "text_length": 2058,
+          "text_sha256": "e39f85ac82adb737271f1896b1dfe696ba2b72de73e1a661f51adf3cf5397763"
+        },
+        {
+          "rank": 7,
+          "page": 62,
+          "similarity_score": 0.5649,
+          "relevance_score": 0.1,
+          "combined_score": 0.2395,
+          "text_length": 2491,
+          "text_sha256": "b289c4a40bf73590527f0e54ba7043c2fb1e84301f6038705a27b0dc3f50e275"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 11,
+          "relevance_score": 1.0,
+          "combined_score": 0.906
+        },
+        {
+          "page": 37,
+          "relevance_score": 0.9,
+          "combined_score": 0.804
+        },
+        {
+          "page": 69,
+          "relevance_score": 0.7,
+          "combined_score": 0.6948
+        },
+        {
+          "page": 3,
+          "relevance_score": 0.5,
+          "combined_score": 0.5181
+        },
+        {
+          "page": 4,
+          "relevance_score": 0.4,
+          "combined_score": 0.4579
+        },
+        {
+          "page": 108,
+          "relevance_score": 0.1,
+          "combined_score": 0.2594
+        },
+        {
+          "page": 62,
+          "relevance_score": 0.1,
+          "combined_score": 0.2395
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        11,
+        37,
+        69,
+        3
+      ],
+      "structured_output_parsed": true,
+      "final_answer": true,
+      "answer_type": "bool",
+      "reasoning_summary": "年报显示CrossFirst Bank在2022年完成了对Central的收购。",
+      "claimed_pages": [
+        11
+      ],
+      "validated_pages": [
+        11
+      ],
+      "filtered_hallucinated_pages": [],
+      "citations": [
+        {
+          "pdf_sha1": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73",
+          "page_index": 11
+        }
+      ],
+      "latency_ms": {
+        "retrieval": 185.81,
+        "rerank": 4830.23,
+        "generation": 1969.45,
+        "total": 6990.04
+      },
+      "prompt_tokens": 10571,
+      "completion_tokens": 718,
+      "total_tokens": 11289,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 3294,
+            "output_tokens": 310
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 2833,
+            "output_tokens": 216
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 4444,
+          "output_tokens": 192
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q10",
+      "question": "Who was the President and Chief Executive Officer of CrossFirst Bank at the end of the annual report?",
+      "company_name": "CrossFirst Bank",
+      "kind": "name",
+      "category": "answerable_name_with_citation",
+      "expected_behavior": "answer",
+      "expected_value": "Michael J. Maddox",
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 36,
+          "similarity_score": 0.6658,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5764,
+          "text_sha256": "1998849579c93d97c45d93a075708930c5a2dce3cdc201720f15143a03a5f3ca"
+        },
+        {
+          "rank": 2,
+          "page": 69,
+          "similarity_score": 0.645,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5194,
+          "text_sha256": "380fdf39256c4a0814d8a00ced056aa6ab1c0ece5f2388446d5571150ffca842"
+        },
+        {
+          "rank": 3,
+          "page": 11,
+          "similarity_score": 0.613,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4401,
+          "text_sha256": "7cd5277a55950df02434bb23fc5456b93761101517b933000f27ac2f17759cf4"
+        },
+        {
+          "rank": 4,
+          "page": 35,
+          "similarity_score": 0.6125,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4155,
+          "text_sha256": "547e11507639cb1b1b95205731239d3ab4beb0ab92d0e054dd56781ebcad67fd"
+        },
+        {
+          "rank": 5,
+          "page": 62,
+          "similarity_score": 0.6001,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2491,
+          "text_sha256": "b289c4a40bf73590527f0e54ba7043c2fb1e84301f6038705a27b0dc3f50e275"
+        },
+        {
+          "rank": 6,
+          "page": 3,
+          "similarity_score": 0.587,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3524,
+          "text_sha256": "effa01323580723fdec6f4e3fc73567976b8bd61251ec8d9165262cb9ec1288d"
+        }
+      ],
+      "retrieved_pages": [
+        36,
+        69,
+        11,
+        35,
+        62,
+        3
+      ],
+      "retrieval_scores": [
+        0.6658,
+        0.645,
+        0.613,
+        0.6125,
+        0.6001,
+        0.587
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 80.44222259521484,
+        "normalized_norm": 1.0
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 36,
+          "similarity_score": 0.6658,
+          "relevance_score": 1.0,
+          "combined_score": 0.8997,
+          "text_length": 5764,
+          "text_sha256": "1998849579c93d97c45d93a075708930c5a2dce3cdc201720f15143a03a5f3ca"
+        },
+        {
+          "rank": 2,
+          "page": 62,
+          "similarity_score": 0.6001,
+          "relevance_score": 1.0,
+          "combined_score": 0.88,
+          "text_length": 2491,
+          "text_sha256": "b289c4a40bf73590527f0e54ba7043c2fb1e84301f6038705a27b0dc3f50e275"
+        },
+        {
+          "rank": 3,
+          "page": 69,
+          "similarity_score": 0.645,
+          "relevance_score": 0.6,
+          "combined_score": 0.6135,
+          "text_length": 5194,
+          "text_sha256": "380fdf39256c4a0814d8a00ced056aa6ab1c0ece5f2388446d5571150ffca842"
+        },
+        {
+          "rank": 4,
+          "page": 11,
+          "similarity_score": 0.613,
+          "relevance_score": 0.3,
+          "combined_score": 0.3939,
+          "text_length": 4401,
+          "text_sha256": "7cd5277a55950df02434bb23fc5456b93761101517b933000f27ac2f17759cf4"
+        },
+        {
+          "rank": 5,
+          "page": 35,
+          "similarity_score": 0.6125,
+          "relevance_score": 0.1,
+          "combined_score": 0.2538,
+          "text_length": 4155,
+          "text_sha256": "547e11507639cb1b1b95205731239d3ab4beb0ab92d0e054dd56781ebcad67fd"
+        },
+        {
+          "rank": 6,
+          "page": 3,
+          "similarity_score": 0.587,
+          "relevance_score": 0.0,
+          "combined_score": 0.1761,
+          "text_length": 3524,
+          "text_sha256": "effa01323580723fdec6f4e3fc73567976b8bd61251ec8d9165262cb9ec1288d"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 36,
+          "relevance_score": 1.0,
+          "combined_score": 0.8997
+        },
+        {
+          "page": 62,
+          "relevance_score": 1.0,
+          "combined_score": 0.88
+        },
+        {
+          "page": 69,
+          "relevance_score": 0.6,
+          "combined_score": 0.6135
+        },
+        {
+          "page": 11,
+          "relevance_score": 0.3,
+          "combined_score": 0.3939
+        },
+        {
+          "page": 35,
+          "relevance_score": 0.1,
+          "combined_score": 0.2538
+        },
+        {
+          "page": 3,
+          "relevance_score": 0.0,
+          "combined_score": 0.1761
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        36,
+        62,
+        69,
+        11
+      ],
+      "structured_output_parsed": true,
+      "final_answer": "W. Randall Rapp",
+      "answer_type": "str",
+      "reasoning_summary": "Page 11 states that W. Randall Rapp became President of the Bank in July 2022, and Michael J. Maddox remained as Chief Executive Officer. These roles were split, so Rapp was President and Maddox was CEO at the end of the report.",
+      "claimed_pages": [
+        11
+      ],
+      "validated_pages": [
+        11
+      ],
+      "filtered_hallucinated_pages": [],
+      "citations": [
+        {
+          "pdf_sha1": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73",
+          "page_index": 11
+        }
+      ],
+      "latency_ms": {
+        "retrieval": 188.22,
+        "rerank": 4603.3,
+        "generation": 3035.01,
+        "total": 7831.35
+      },
+      "prompt_tokens": 11518,
+      "completion_tokens": 844,
+      "total_tokens": 12362,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 4883,
+            "output_tokens": 315
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 1954,
+            "output_tokens": 166
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 4681,
+          "output_tokens": 363
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q11",
+      "question": "What was CrossFirst Bank's open market common share repurchase amount in USD for 2022?",
+      "company_name": "CrossFirst Bank",
+      "kind": "number",
+      "category": "answerable_number_with_citation",
+      "expected_behavior": "answer",
+      "expected_value": 35780000,
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 38,
+          "similarity_score": 0.7572,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3756,
+          "text_sha256": "98981bcd337a881d2d099f7060f878b6f4b0591d92e778ee4ee40fda386d084e"
+        },
+        {
+          "rank": 2,
+          "page": 11,
+          "similarity_score": 0.7203,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4401,
+          "text_sha256": "7cd5277a55950df02434bb23fc5456b93761101517b933000f27ac2f17759cf4"
+        },
+        {
+          "rank": 3,
+          "page": 108,
+          "similarity_score": 0.6158,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2058,
+          "text_sha256": "e39f85ac82adb737271f1896b1dfe696ba2b72de73e1a661f51adf3cf5397763"
+        },
+        {
+          "rank": 4,
+          "page": 37,
+          "similarity_score": 0.6068,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3153,
+          "text_sha256": "5d483f828814341f298c3d1940ee49b2ad09cf66e2fece6498e1014b6a463e4d"
+        },
+        {
+          "rank": 5,
+          "page": 104,
+          "similarity_score": 0.5949,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2635,
+          "text_sha256": "b4e2c8bfcfa0f455773022b84cebc464c8befef68fa0f5d316cdfc5c72ef89ed"
+        },
+        {
+          "rank": 6,
+          "page": 69,
+          "similarity_score": 0.5418,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5194,
+          "text_sha256": "380fdf39256c4a0814d8a00ced056aa6ab1c0ece5f2388446d5571150ffca842"
+        }
+      ],
+      "retrieved_pages": [
+        38,
+        11,
+        108,
+        37,
+        104,
+        69
+      ],
+      "retrieval_scores": [
+        0.7572,
+        0.7203,
+        0.6158,
+        0.6068,
+        0.5949,
+        0.5418
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 96.72014617919922,
+        "normalized_norm": 1.0
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 38,
+          "similarity_score": 0.7572,
+          "relevance_score": 1.0,
+          "combined_score": 0.9272,
+          "text_length": 3756,
+          "text_sha256": "98981bcd337a881d2d099f7060f878b6f4b0591d92e778ee4ee40fda386d084e"
+        },
+        {
+          "rank": 2,
+          "page": 104,
+          "similarity_score": 0.5949,
+          "relevance_score": 1.0,
+          "combined_score": 0.8785,
+          "text_length": 2635,
+          "text_sha256": "b4e2c8bfcfa0f455773022b84cebc464c8befef68fa0f5d316cdfc5c72ef89ed"
+        },
+        {
+          "rank": 3,
+          "page": 11,
+          "similarity_score": 0.7203,
+          "relevance_score": 0.7,
+          "combined_score": 0.7061,
+          "text_length": 4401,
+          "text_sha256": "7cd5277a55950df02434bb23fc5456b93761101517b933000f27ac2f17759cf4"
+        },
+        {
+          "rank": 4,
+          "page": 108,
+          "similarity_score": 0.6158,
+          "relevance_score": 0.1,
+          "combined_score": 0.2547,
+          "text_length": 2058,
+          "text_sha256": "e39f85ac82adb737271f1896b1dfe696ba2b72de73e1a661f51adf3cf5397763"
+        },
+        {
+          "rank": 5,
+          "page": 37,
+          "similarity_score": 0.6068,
+          "relevance_score": 0.1,
+          "combined_score": 0.252,
+          "text_length": 3153,
+          "text_sha256": "5d483f828814341f298c3d1940ee49b2ad09cf66e2fece6498e1014b6a463e4d"
+        },
+        {
+          "rank": 6,
+          "page": 69,
+          "similarity_score": 0.5418,
+          "relevance_score": 0.0,
+          "combined_score": 0.1625,
+          "text_length": 5194,
+          "text_sha256": "380fdf39256c4a0814d8a00ced056aa6ab1c0ece5f2388446d5571150ffca842"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 38,
+          "relevance_score": 1.0,
+          "combined_score": 0.9272
+        },
+        {
+          "page": 104,
+          "relevance_score": 1.0,
+          "combined_score": 0.8785
+        },
+        {
+          "page": 11,
+          "relevance_score": 0.7,
+          "combined_score": 0.7061
+        },
+        {
+          "page": 108,
+          "relevance_score": 0.1,
+          "combined_score": 0.2547
+        },
+        {
+          "page": 37,
+          "relevance_score": 0.1,
+          "combined_score": 0.252
+        },
+        {
+          "page": 69,
+          "relevance_score": 0.0,
+          "combined_score": 0.1625
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        38,
+        104,
+        11,
+        108
+      ],
+      "structured_output_parsed": true,
+      "final_answer": 36000000,
+      "answer_type": "int",
+      "reasoning_summary": "年报中提及2022年回购3600万美元股票，推断为公开市场回购。",
+      "claimed_pages": [
+        38,
+        104
+      ],
+      "validated_pages": [
+        38,
+        104
+      ],
+      "filtered_hallucinated_pages": [],
+      "citations": [
+        {
+          "pdf_sha1": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73",
+          "page_index": 38
+        },
+        {
+          "pdf_sha1": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73",
+          "page_index": 104
+        }
+      ],
+      "latency_ms": {
+        "retrieval": 170.35,
+        "rerank": 4470.5,
+        "generation": 2589.16,
+        "total": 7237.11
+      },
+      "prompt_tokens": 11394,
+      "completion_tokens": 808,
+      "total_tokens": 12202,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 4161,
+            "output_tokens": 347
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 2376,
+            "output_tokens": 185
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 4857,
+          "output_tokens": 276
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q12",
+      "question": "Did CrossFirst Bank report changes in or disagreements with accountants on accounting and financial disclosure?",
+      "company_name": "CrossFirst Bank",
+      "kind": "boolean",
+      "category": "boolean_false",
+      "expected_behavior": "answer",
+      "expected_value": false,
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 62,
+          "similarity_score": 0.7083,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2491,
+          "text_sha256": "b289c4a40bf73590527f0e54ba7043c2fb1e84301f6038705a27b0dc3f50e275"
+        },
+        {
+          "rank": 2,
+          "page": 69,
+          "similarity_score": 0.6549,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5194,
+          "text_sha256": "380fdf39256c4a0814d8a00ced056aa6ab1c0ece5f2388446d5571150ffca842"
+        },
+        {
+          "rank": 3,
+          "page": 108,
+          "similarity_score": 0.5778,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2058,
+          "text_sha256": "e39f85ac82adb737271f1896b1dfe696ba2b72de73e1a661f51adf3cf5397763"
+        },
+        {
+          "rank": 4,
+          "page": 11,
+          "similarity_score": 0.5729,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4401,
+          "text_sha256": "7cd5277a55950df02434bb23fc5456b93761101517b933000f27ac2f17759cf4"
+        },
+        {
+          "rank": 5,
+          "page": 37,
+          "similarity_score": 0.5724,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3153,
+          "text_sha256": "5d483f828814341f298c3d1940ee49b2ad09cf66e2fece6498e1014b6a463e4d"
+        },
+        {
+          "rank": 6,
+          "page": 3,
+          "similarity_score": 0.5654,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3524,
+          "text_sha256": "effa01323580723fdec6f4e3fc73567976b8bd61251ec8d9165262cb9ec1288d"
+        },
+        {
+          "rank": 7,
+          "page": 112,
+          "similarity_score": 0.5524,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4021,
+          "text_sha256": "08a72d1fa76068e4741a1712ac20db063254d8180214c6da80974628951d97e6"
+        },
+        {
+          "rank": 8,
+          "page": 113,
+          "similarity_score": 0.5048,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3705,
+          "text_sha256": "91190c5e67ffcfbfc1c10bb45e0cd2c1471bd9595a19eaa53482f2cd42e28591"
+        }
+      ],
+      "retrieved_pages": [
+        62,
+        69,
+        108,
+        11,
+        37,
+        3,
+        112,
+        113
+      ],
+      "retrieval_scores": [
+        0.7083,
+        0.6549,
+        0.5778,
+        0.5729,
+        0.5724,
+        0.5654,
+        0.5524,
+        0.5048
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 87.81163787841797,
+        "normalized_norm": 0.9999999403953552
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 62,
+          "similarity_score": 0.7083,
+          "relevance_score": 0.4,
+          "combined_score": 0.4925,
+          "text_length": 2491,
+          "text_sha256": "b289c4a40bf73590527f0e54ba7043c2fb1e84301f6038705a27b0dc3f50e275"
+        },
+        {
+          "rank": 2,
+          "page": 69,
+          "similarity_score": 0.6549,
+          "relevance_score": 0.3,
+          "combined_score": 0.4065,
+          "text_length": 5194,
+          "text_sha256": "380fdf39256c4a0814d8a00ced056aa6ab1c0ece5f2388446d5571150ffca842"
+        },
+        {
+          "rank": 3,
+          "page": 112,
+          "similarity_score": 0.5524,
+          "relevance_score": 0.3,
+          "combined_score": 0.3757,
+          "text_length": 4021,
+          "text_sha256": "08a72d1fa76068e4741a1712ac20db063254d8180214c6da80974628951d97e6"
+        },
+        {
+          "rank": 4,
+          "page": 108,
+          "similarity_score": 0.5778,
+          "relevance_score": 0.2,
+          "combined_score": 0.3133,
+          "text_length": 2058,
+          "text_sha256": "e39f85ac82adb737271f1896b1dfe696ba2b72de73e1a661f51adf3cf5397763"
+        },
+        {
+          "rank": 5,
+          "page": 11,
+          "similarity_score": 0.5729,
+          "relevance_score": 0.1,
+          "combined_score": 0.2419,
+          "text_length": 4401,
+          "text_sha256": "7cd5277a55950df02434bb23fc5456b93761101517b933000f27ac2f17759cf4"
+        },
+        {
+          "rank": 6,
+          "page": 37,
+          "similarity_score": 0.5724,
+          "relevance_score": 0.1,
+          "combined_score": 0.2417,
+          "text_length": 3153,
+          "text_sha256": "5d483f828814341f298c3d1940ee49b2ad09cf66e2fece6498e1014b6a463e4d"
+        },
+        {
+          "rank": 7,
+          "page": 3,
+          "similarity_score": 0.5654,
+          "relevance_score": 0.1,
+          "combined_score": 0.2396,
+          "text_length": 3524,
+          "text_sha256": "effa01323580723fdec6f4e3fc73567976b8bd61251ec8d9165262cb9ec1288d"
+        },
+        {
+          "rank": 8,
+          "page": 113,
+          "similarity_score": 0.5048,
+          "relevance_score": 0.1,
+          "combined_score": 0.2214,
+          "text_length": 3705,
+          "text_sha256": "91190c5e67ffcfbfc1c10bb45e0cd2c1471bd9595a19eaa53482f2cd42e28591"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 62,
+          "relevance_score": 0.4,
+          "combined_score": 0.4925
+        },
+        {
+          "page": 69,
+          "relevance_score": 0.3,
+          "combined_score": 0.4065
+        },
+        {
+          "page": 112,
+          "relevance_score": 0.3,
+          "combined_score": 0.3757
+        },
+        {
+          "page": 108,
+          "relevance_score": 0.2,
+          "combined_score": 0.3133
+        },
+        {
+          "page": 11,
+          "relevance_score": 0.1,
+          "combined_score": 0.2419
+        },
+        {
+          "page": 37,
+          "relevance_score": 0.1,
+          "combined_score": 0.2417
+        },
+        {
+          "page": 3,
+          "relevance_score": 0.1,
+          "combined_score": 0.2396
+        },
+        {
+          "page": 113,
+          "relevance_score": 0.1,
+          "combined_score": 0.2214
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        62,
+        69,
+        112,
+        108
+      ],
+      "structured_output_parsed": true,
+      "final_answer": false,
+      "answer_type": "bool",
+      "reasoning_summary": "No changes or disagreements with accountants were reported.",
+      "claimed_pages": [
+        62
+      ],
+      "validated_pages": [
+        62
+      ],
+      "filtered_hallucinated_pages": [],
+      "citations": [
+        {
+          "pdf_sha1": "e2b19d2cc2ccab2fd9022326b56b38fb0e772e73",
+          "page_index": 62
+        }
+      ],
+      "latency_ms": {
+        "retrieval": 161.34,
+        "rerank": 6338.1,
+        "generation": 1754.55,
+        "total": 8258.94
+      },
+      "prompt_tokens": 12029,
+      "completion_tokens": 790,
+      "total_tokens": 12819,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 3708,
+            "output_tokens": 314
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 4593,
+            "output_tokens": 282
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 3728,
+          "output_tokens": 194
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q13",
+      "question": "Did CrossFirst Bank open a staffed branch on the Moon during 2022?",
+      "company_name": "CrossFirst Bank",
+      "kind": "boolean",
+      "category": "boolean_na",
+      "expected_behavior": "na",
+      "expected_value": "N/A",
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 11,
+          "similarity_score": 0.6125,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4401,
+          "text_sha256": "7cd5277a55950df02434bb23fc5456b93761101517b933000f27ac2f17759cf4"
+        },
+        {
+          "rank": 2,
+          "page": 69,
+          "similarity_score": 0.5943,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5194,
+          "text_sha256": "380fdf39256c4a0814d8a00ced056aa6ab1c0ece5f2388446d5571150ffca842"
+        },
+        {
+          "rank": 3,
+          "page": 108,
+          "similarity_score": 0.5394,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2058,
+          "text_sha256": "e39f85ac82adb737271f1896b1dfe696ba2b72de73e1a661f51adf3cf5397763"
+        },
+        {
+          "rank": 4,
+          "page": 37,
+          "similarity_score": 0.5203,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3153,
+          "text_sha256": "5d483f828814341f298c3d1940ee49b2ad09cf66e2fece6498e1014b6a463e4d"
+        },
+        {
+          "rank": 5,
+          "page": 3,
+          "similarity_score": 0.5138,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3524,
+          "text_sha256": "effa01323580723fdec6f4e3fc73567976b8bd61251ec8d9165262cb9ec1288d"
+        },
+        {
+          "rank": 6,
+          "page": 36,
+          "similarity_score": 0.5089,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5764,
+          "text_sha256": "1998849579c93d97c45d93a075708930c5a2dce3cdc201720f15143a03a5f3ca"
+        },
+        {
+          "rank": 7,
+          "page": 4,
+          "similarity_score": 0.4994,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 666,
+          "text_sha256": "8ff824b8c165fdade1d2706bad2cad8995c20186c4153f771a8aa612cb8441ef"
+        }
+      ],
+      "retrieved_pages": [
+        11,
+        69,
+        108,
+        37,
+        3,
+        36,
+        4
+      ],
+      "retrieval_scores": [
+        0.6125,
+        0.5943,
+        0.5394,
+        0.5203,
+        0.5138,
+        0.5089,
+        0.4994
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 97.15967559814453,
+        "normalized_norm": 1.0
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 11,
+          "similarity_score": 0.6125,
+          "relevance_score": 0.1,
+          "combined_score": 0.2538,
+          "text_length": 4401,
+          "text_sha256": "7cd5277a55950df02434bb23fc5456b93761101517b933000f27ac2f17759cf4"
+        },
+        {
+          "rank": 2,
+          "page": 69,
+          "similarity_score": 0.5943,
+          "relevance_score": 0.1,
+          "combined_score": 0.2483,
+          "text_length": 5194,
+          "text_sha256": "380fdf39256c4a0814d8a00ced056aa6ab1c0ece5f2388446d5571150ffca842"
+        },
+        {
+          "rank": 3,
+          "page": 108,
+          "similarity_score": 0.5394,
+          "relevance_score": 0.1,
+          "combined_score": 0.2318,
+          "text_length": 2058,
+          "text_sha256": "e39f85ac82adb737271f1896b1dfe696ba2b72de73e1a661f51adf3cf5397763"
+        },
+        {
+          "rank": 4,
+          "page": 37,
+          "similarity_score": 0.5203,
+          "relevance_score": 0.1,
+          "combined_score": 0.2261,
+          "text_length": 3153,
+          "text_sha256": "5d483f828814341f298c3d1940ee49b2ad09cf66e2fece6498e1014b6a463e4d"
+        },
+        {
+          "rank": 5,
+          "page": 3,
+          "similarity_score": 0.5138,
+          "relevance_score": 0.1,
+          "combined_score": 0.2241,
+          "text_length": 3524,
+          "text_sha256": "effa01323580723fdec6f4e3fc73567976b8bd61251ec8d9165262cb9ec1288d"
+        },
+        {
+          "rank": 6,
+          "page": 36,
+          "similarity_score": 0.5089,
+          "relevance_score": 0.1,
+          "combined_score": 0.2227,
+          "text_length": 5764,
+          "text_sha256": "1998849579c93d97c45d93a075708930c5a2dce3cdc201720f15143a03a5f3ca"
+        },
+        {
+          "rank": 7,
+          "page": 4,
+          "similarity_score": 0.4994,
+          "relevance_score": 0.1,
+          "combined_score": 0.2198,
+          "text_length": 666,
+          "text_sha256": "8ff824b8c165fdade1d2706bad2cad8995c20186c4153f771a8aa612cb8441ef"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 11,
+          "relevance_score": 0.1,
+          "combined_score": 0.2538
+        },
+        {
+          "page": 69,
+          "relevance_score": 0.1,
+          "combined_score": 0.2483
+        },
+        {
+          "page": 108,
+          "relevance_score": 0.1,
+          "combined_score": 0.2318
+        },
+        {
+          "page": 37,
+          "relevance_score": 0.1,
+          "combined_score": 0.2261
+        },
+        {
+          "page": 3,
+          "relevance_score": 0.1,
+          "combined_score": 0.2241
+        },
+        {
+          "page": 36,
+          "relevance_score": 0.1,
+          "combined_score": 0.2227
+        },
+        {
+          "page": 4,
+          "relevance_score": 0.1,
+          "combined_score": 0.2198
+        }
+      ],
+      "rerank_changed_order": false,
+      "selected_pages": [
+        11,
+        69,
+        108,
+        37
+      ],
+      "structured_output_parsed": true,
+      "final_answer": false,
+      "answer_type": "bool",
+      "reasoning_summary": "No information about a Moon branch was found in the provided context.",
+      "claimed_pages": [],
+      "validated_pages": [],
+      "filtered_hallucinated_pages": [],
+      "citations": [],
+      "latency_ms": {
+        "retrieval": 139.66,
+        "rerank": 4028.12,
+        "generation": 1805.01,
+        "total": 5976.52
+      },
+      "prompt_tokens": 11124,
+      "completion_tokens": 669,
+      "total_tokens": 11793,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 4029,
+            "output_tokens": 276
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 2913,
+            "output_tokens": 204
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 4182,
+          "output_tokens": 189
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q14",
+      "question": "According to page 999 of the CrossFirst Bank annual report, what was the name of its lunar mining subsidiary?",
+      "company_name": "CrossFirst Bank",
+      "kind": "name",
+      "category": "hallucinated_citation_probe",
+      "expected_behavior": "na",
+      "expected_value": "N/A",
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 69,
+          "similarity_score": 0.602,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5194,
+          "text_sha256": "380fdf39256c4a0814d8a00ced056aa6ab1c0ece5f2388446d5571150ffca842"
+        },
+        {
+          "rank": 2,
+          "page": 11,
+          "similarity_score": 0.5941,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 4401,
+          "text_sha256": "7cd5277a55950df02434bb23fc5456b93761101517b933000f27ac2f17759cf4"
+        },
+        {
+          "rank": 3,
+          "page": 37,
+          "similarity_score": 0.5175,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3153,
+          "text_sha256": "5d483f828814341f298c3d1940ee49b2ad09cf66e2fece6498e1014b6a463e4d"
+        },
+        {
+          "rank": 4,
+          "page": 108,
+          "similarity_score": 0.495,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2058,
+          "text_sha256": "e39f85ac82adb737271f1896b1dfe696ba2b72de73e1a661f51adf3cf5397763"
+        },
+        {
+          "rank": 5,
+          "page": 62,
+          "similarity_score": 0.4708,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 2491,
+          "text_sha256": "b289c4a40bf73590527f0e54ba7043c2fb1e84301f6038705a27b0dc3f50e275"
+        },
+        {
+          "rank": 6,
+          "page": 3,
+          "similarity_score": 0.4541,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 3524,
+          "text_sha256": "effa01323580723fdec6f4e3fc73567976b8bd61251ec8d9165262cb9ec1288d"
+        }
+      ],
+      "retrieved_pages": [
+        69,
+        11,
+        37,
+        108,
+        62,
+        3
+      ],
+      "retrieval_scores": [
+        0.602,
+        0.5941,
+        0.5175,
+        0.495,
+        0.4708,
+        0.4541
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 79.61688995361328,
+        "normalized_norm": 1.0
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 11,
+          "similarity_score": 0.5941,
+          "relevance_score": 0.2,
+          "combined_score": 0.3182,
+          "text_length": 4401,
+          "text_sha256": "7cd5277a55950df02434bb23fc5456b93761101517b933000f27ac2f17759cf4"
+        },
+        {
+          "rank": 2,
+          "page": 69,
+          "similarity_score": 0.602,
+          "relevance_score": 0.1,
+          "combined_score": 0.2506,
+          "text_length": 5194,
+          "text_sha256": "380fdf39256c4a0814d8a00ced056aa6ab1c0ece5f2388446d5571150ffca842"
+        },
+        {
+          "rank": 3,
+          "page": 37,
+          "similarity_score": 0.5175,
+          "relevance_score": 0.1,
+          "combined_score": 0.2253,
+          "text_length": 3153,
+          "text_sha256": "5d483f828814341f298c3d1940ee49b2ad09cf66e2fece6498e1014b6a463e4d"
+        },
+        {
+          "rank": 4,
+          "page": 108,
+          "similarity_score": 0.495,
+          "relevance_score": 0.1,
+          "combined_score": 0.2185,
+          "text_length": 2058,
+          "text_sha256": "e39f85ac82adb737271f1896b1dfe696ba2b72de73e1a661f51adf3cf5397763"
+        },
+        {
+          "rank": 5,
+          "page": 62,
+          "similarity_score": 0.4708,
+          "relevance_score": 0.1,
+          "combined_score": 0.2112,
+          "text_length": 2491,
+          "text_sha256": "b289c4a40bf73590527f0e54ba7043c2fb1e84301f6038705a27b0dc3f50e275"
+        },
+        {
+          "rank": 6,
+          "page": 3,
+          "similarity_score": 0.4541,
+          "relevance_score": 0.1,
+          "combined_score": 0.2062,
+          "text_length": 3524,
+          "text_sha256": "effa01323580723fdec6f4e3fc73567976b8bd61251ec8d9165262cb9ec1288d"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 11,
+          "relevance_score": 0.2,
+          "combined_score": 0.3182
+        },
+        {
+          "page": 69,
+          "relevance_score": 0.1,
+          "combined_score": 0.2506
+        },
+        {
+          "page": 37,
+          "relevance_score": 0.1,
+          "combined_score": 0.2253
+        },
+        {
+          "page": 108,
+          "relevance_score": 0.1,
+          "combined_score": 0.2185
+        },
+        {
+          "page": 62,
+          "relevance_score": 0.1,
+          "combined_score": 0.2112
+        },
+        {
+          "page": 3,
+          "relevance_score": 0.1,
+          "combined_score": 0.2062
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        11,
+        69,
+        37,
+        108
+      ],
+      "structured_output_parsed": true,
+      "final_answer": "N/A",
+      "answer_type": "N/A",
+      "reasoning_summary": "The context does not include page 999 or any reference to a lunar mining subsidiary. No relevant information was found in the provided pages.",
+      "claimed_pages": [],
+      "validated_pages": [],
+      "filtered_hallucinated_pages": [],
+      "citations": [],
+      "latency_ms": {
+        "retrieval": 169.32,
+        "rerank": 4946.92,
+        "generation": 2980.19,
+        "total": 8101.03
+      },
+      "prompt_tokens": 10232,
+      "completion_tokens": 828,
+      "total_tokens": 11060,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 4035,
+            "output_tokens": 349
+          },
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 1959,
+            "output_tokens": 161
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 4238,
+          "output_tokens": 318
+        },
+        "embedding_usage_included": false
+      }
+    },
+    {
+      "id": "Q15",
+      "question": "Which companies did Holley Inc. identify as its 2022 acquisitions?",
+      "company_name": "Holley Inc.",
+      "kind": "names",
+      "category": "answerable_names_with_citation",
+      "expected_behavior": "answer",
+      "expected_value": [
+        "John's Ind., Inc.",
+        "Southern Kentucky Classics",
+        "RaceQuip"
+      ],
+      "provider": "dashscope",
+      "models": {
+        "embedding": "text-embedding-v1",
+        "rerank": "qwen-turbo",
+        "answer": "qwen-turbo"
+      },
+      "confidence_gate_applied": false,
+      "error": null,
+      "retrieved_documents": [
+        {
+          "rank": 1,
+          "page": 34,
+          "similarity_score": 0.815,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5911,
+          "text_sha256": "c50a5ca86730942c042321734c884c74c90d77764f32c6677fa08ada2bffd81b"
+        },
+        {
+          "rank": 2,
+          "page": 56,
+          "similarity_score": 0.6927,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5737,
+          "text_sha256": "19494f28782ffd3a20c72c7221321765579a78a0555a8b9d5057cefe2c795659"
+        },
+        {
+          "rank": 3,
+          "page": 89,
+          "similarity_score": 0.6727,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5280,
+          "text_sha256": "9f02a44b3a3bcb0eddb3783e6bc3da171eb443fb39e39b7649a536f13edd9076"
+        },
+        {
+          "rank": 4,
+          "page": 6,
+          "similarity_score": 0.6363,
+          "relevance_score": null,
+          "combined_score": null,
+          "text_length": 5905,
+          "text_sha256": "cdb76738d2ca2b003a5ed4f02b8bbfe595164b324bc011fde9b75d46a6597891"
+        }
+      ],
+      "retrieved_pages": [
+        34,
+        56,
+        89,
+        6
+      ],
+      "retrieval_scores": [
+        0.815,
+        0.6927,
+        0.6727,
+        0.6363
+      ],
+      "query_embedding_norm": {
+        "raw_norm": 97.537841796875,
+        "normalized_norm": 1.0
+      },
+      "cosine_scores_in_range": true,
+      "parent_page_links_valid": true,
+      "reranked_documents": [
+        {
+          "rank": 1,
+          "page": 34,
+          "similarity_score": 0.815,
+          "relevance_score": 1.0,
+          "combined_score": 0.9445,
+          "text_length": 5911,
+          "text_sha256": "c50a5ca86730942c042321734c884c74c90d77764f32c6677fa08ada2bffd81b"
+        },
+        {
+          "rank": 2,
+          "page": 56,
+          "similarity_score": 0.6927,
+          "relevance_score": 0.3,
+          "combined_score": 0.4178,
+          "text_length": 5737,
+          "text_sha256": "19494f28782ffd3a20c72c7221321765579a78a0555a8b9d5057cefe2c795659"
+        },
+        {
+          "rank": 3,
+          "page": 6,
+          "similarity_score": 0.6363,
+          "relevance_score": 0.2,
+          "combined_score": 0.3309,
+          "text_length": 5905,
+          "text_sha256": "cdb76738d2ca2b003a5ed4f02b8bbfe595164b324bc011fde9b75d46a6597891"
+        },
+        {
+          "rank": 4,
+          "page": 89,
+          "similarity_score": 0.6727,
+          "relevance_score": 0.1,
+          "combined_score": 0.2718,
+          "text_length": 5280,
+          "text_sha256": "9f02a44b3a3bcb0eddb3783e6bc3da171eb443fb39e39b7649a536f13edd9076"
+        }
+      ],
+      "rerank_scores": [
+        {
+          "page": 34,
+          "relevance_score": 1.0,
+          "combined_score": 0.9445
+        },
+        {
+          "page": 56,
+          "relevance_score": 0.3,
+          "combined_score": 0.4178
+        },
+        {
+          "page": 6,
+          "relevance_score": 0.2,
+          "combined_score": 0.3309
+        },
+        {
+          "page": 89,
+          "relevance_score": 0.1,
+          "combined_score": 0.2718
+        }
+      ],
+      "rerank_changed_order": true,
+      "selected_pages": [
+        34,
+        56,
+        6,
+        89
+      ],
+      "structured_output_parsed": true,
+      "final_answer": "N/A",
+      "answer_type": "N/A",
+      "reasoning_summary": "年报未提及2022年的具体收购公司。",
+      "claimed_pages": [],
+      "validated_pages": [],
+      "filtered_hallucinated_pages": [],
+      "citations": [],
+      "latency_ms": {
+        "retrieval": 161.35,
+        "rerank": 2851.35,
+        "generation": 2105.47,
+        "total": 5123.03
+      },
+      "prompt_tokens": 12403,
+      "completion_tokens": 541,
+      "total_tokens": 12944,
+      "token_breakdown": {
+        "rerank_calls": [
+          {
+            "model": "qwen-turbo",
+            "input_tokens": 6070,
+            "output_tokens": 326
+          }
+        ],
+        "generation_call": {
+          "model": "qwen-turbo",
+          "input_tokens": 6333,
+          "output_tokens": 215
+        },
+        "embedding_usage_included": false
+      }
+    }
+  ]
+}

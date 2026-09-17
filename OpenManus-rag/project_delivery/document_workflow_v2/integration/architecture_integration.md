@@ -1,0 +1,11 @@
+# Document Workflow and frozen RAG boundary
+
+The existing structured Word workflow parses `template.docx`, creates five section tasks, plans bounded field queries, collects Evidence, checks coverage and progress, fills missing fields, validates citation membership, and renders a human-reviewable `draft.docx`. Those business steps stay in the Agent repository.
+
+`RAGTool.retrieve_knowledge(query, top_k)` is the only knowledge tool in this workflow. `DemoRAGClient` remains the offline test client; legacy `HTTPRAGClient` retains its `/query` compatibility behavior. The new `HTTPRetrieveClient` calls the RAG service's `POST /retrieve` with query and Top-K and rejects malformed responses or HTTP errors. The workflow sees Evidence objects and never imports RAG runtime objects or reads FAISS, embeddings, chunks, or manifest files.
+
+RAG startup validates lifecycle, source and artifact hashes, counts, dimensions, and the frozen policy before serving requests. `/retrieve` invokes the existing `FrozenDenseRetriever.retrieve` and serializes only provenance, original chunk text, similarity, and rank. It bypasses answer generation and context summarization. `/query` continues its previous answer-oriented behavior.
+
+The Agent maps chunk ID, document ID, section ID/path, physical page number, content, and normalized content hash into the shared Evidence model. The existing deterministic Evidence identity now includes chunk ID when present; existing non-RAG Evidence identities retain their previous format. EvidenceCache and EvidenceStore deduplicate repeated chunks across queries and tasks. The draft cites only IDs in the current task's cache. This checks membership, not semantic entailment.
+
+The safe demo uses a separate formal RAG artifact namespace made from the existing 12-page public synthetic specification and four pages of synthetic project-plan facts. It uses the frozen BGE model, `SECTION_PATH` text builder, 512-dimensional vectors, and IndexFlatIP. Its source PDFs have verified physical pages. The private 5090-chunk artifact and runtime algorithm were not modified. No online generation runs in the demo; draft text is deterministically copied from admitted Evidence and remains subject to human review.

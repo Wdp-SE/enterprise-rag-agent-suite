@@ -1,0 +1,27 @@
+{
+  "estimate_created_before_answer_calls": true,
+  "historical_source": "reports/trusted_qa_shadow_v0_1/answer_smoke_results.json",
+  "historical_question_count": 6,
+  "historical_total_tokens": 11822,
+  "selected_question_count": 10,
+  "point_estimate_tokens": 19704,
+  "conservative_factor": 1.25,
+  "conservative_estimate_tokens": 24630,
+  "stop_threshold_tokens": 30000,
+  "within_budget": true,
+  "selected_answerable_ids": [
+    "tqa-holdout-a02",
+    "tqa-holdout-a04",
+    "tqa-holdout-a05",
+    "tqa-holdout-a06",
+    "tqa-holdout-a09"
+  ],
+  "selected_hard_negative_ids": [
+    "tqa-holdout-n01",
+    "tqa-holdout-n03",
+    "tqa-holdout-n04",
+    "tqa-holdout-n05",
+    "tqa-holdout-n07"
+  ],
+  "selection_basis": "Frozen retrieval-signal overlap plus the frozen retrieval miss; no policy tuning."
+}

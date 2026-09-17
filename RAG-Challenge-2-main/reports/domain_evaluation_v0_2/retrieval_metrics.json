@@ -1,0 +1,1124 @@
+{
+  "ks": [
+    1,
+    3,
+    5
+  ],
+  "overall": {
+    "evaluated_questions": 27,
+    "hit_at_k": {
+      "1": 0.851852,
+      "3": 0.888889,
+      "5": 0.925926
+    },
+    "recall_at_k": {
+      "1": 0.722222,
+      "3": 0.759259,
+      "5": 0.851852
+    },
+    "mrr": 0.87963
+  },
+  "by_question_type": {
+    "cross_document": {
+      "evaluated_questions": 7,
+      "hit_at_k": {
+        "1": 0.857143,
+        "3": 0.857143,
+        "5": 1.0
+      },
+      "recall_at_k": {
+        "1": 0.428571,
+        "3": 0.428571,
+        "5": 0.785714
+      },
+      "mrr": 0.892857
+    },
+    "single_document": {
+      "evaluated_questions": 15,
+      "hit_at_k": {
+        "1": 0.933333,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "recall_at_k": {
+        "1": 0.933333,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "mrr": 0.966667
+    },
+    "version_temporal": {
+      "evaluated_questions": 5,
+      "hit_at_k": {
+        "1": 0.6,
+        "3": 0.6,
+        "5": 0.6
+      },
+      "recall_at_k": {
+        "1": 0.5,
+        "3": 0.5,
+        "5": 0.5
+      },
+      "mrr": 0.6
+    }
+  },
+  "unanswerable_behavior": {
+    "question_count": 7,
+    "questions_with_any_retrieval": 7,
+    "any_retrieval_rate": 1.0,
+    "per_question": [
+      {
+        "question_id": "unanswerable-001",
+        "result_count": 5,
+        "top_distance": 0.6285,
+        "top_rerank_score": null,
+        "top_document_ids": [
+          "samr-order-50-2022",
+          "samr-order-50-2022",
+          "samr-order-50-2022",
+          "cn-law-special-equipment-safety-2013",
+          "samr-order-50-2022"
+        ]
+      },
+      {
+        "question_id": "unanswerable-002",
+        "result_count": 5,
+        "top_distance": 0.539,
+        "top_rerank_score": null,
+        "top_document_ids": [
+          "samr-order-74-2023",
+          "samr-order-74-2023",
+          "cn-law-special-equipment-safety-2013",
+          "samr-order-74-2023",
+          "samr-order-74-2023"
+        ]
+      },
+      {
+        "question_id": "unanswerable-003",
+        "result_count": 5,
+        "top_distance": 0.4765,
+        "top_rerank_score": null,
+        "top_document_ids": [
+          "samr-order-74-2023",
+          "samr-order-74-2023",
+          "cn-law-special-equipment-safety-2013",
+          "samr-order-74-2023",
+          "tsg-08-2026"
+        ]
+      },
+      {
+        "question_id": "unanswerable-004",
+        "result_count": 5,
+        "top_distance": 0.6862,
+        "top_rerank_score": null,
+        "top_document_ids": [
+          "cn-law-special-equipment-safety-2013",
+          "cn-law-special-equipment-safety-2013",
+          "samr-order-57-2022",
+          "cn-law-special-equipment-safety-2013",
+          "cn-law-special-equipment-safety-2013"
+        ]
+      },
+      {
+        "question_id": "unanswerable-005",
+        "result_count": 5,
+        "top_distance": 0.4945,
+        "top_rerank_score": null,
+        "top_document_ids": [
+          "samr-order-74-2023",
+          "samr-order-74-2023",
+          "samr-order-74-2023",
+          "samr-order-74-2023",
+          "samr-order-74-2023"
+        ]
+      },
+      {
+        "question_id": "unanswerable-006",
+        "result_count": 5,
+        "top_distance": 0.6041,
+        "top_rerank_score": null,
+        "top_document_ids": [
+          "tsg-08-2026",
+          "samr-order-74-2023",
+          "samr-order-74-2023",
+          "cn-law-special-equipment-safety-2013",
+          "tsg-08-2026"
+        ]
+      },
+      {
+        "question_id": "unanswerable-007",
+        "result_count": 5,
+        "top_distance": 0.5118,
+        "top_rerank_score": null,
+        "top_document_ids": [
+          "tsg-08-2026",
+          "tsg-08-2026",
+          "tsg-08-2026",
+          "tsg-08-2026",
+          "samr-order-74-2023"
+        ]
+      }
+    ]
+  },
+  "score_distribution": {
+    "cosine_top1": {
+      "answerable": {
+        "count": 27,
+        "minimum": 0.4434,
+        "maximum": 0.8334,
+        "mean": 0.733848,
+        "median": 0.756
+      },
+      "unanswerable": {
+        "count": 7,
+        "minimum": 0.4765,
+        "maximum": 0.6862,
+        "mean": 0.562943,
+        "median": 0.539
+      }
+    },
+    "rerank_top1": {
+      "answerable": {
+        "count": 0,
+        "minimum": null,
+        "maximum": null,
+        "mean": null,
+        "median": null
+      },
+      "unanswerable": {
+        "count": 0,
+        "minimum": null,
+        "maximum": null,
+        "mean": null,
+        "median": null
+      }
+    },
+    "threshold_selected": false
+  },
+  "per_question": [
+    {
+      "question_id": "single-001",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "cn-law-special-equipment-safety-2013"
+      ],
+      "retrieved_document_ids": [
+        "cn-law-special-equipment-safety-2013",
+        "cn-law-special-equipment-safety-2013",
+        "cn-law-special-equipment-safety-2013",
+        "cn-law-special-equipment-safety-2013",
+        "cn-law-special-equipment-safety-2013"
+      ],
+      "top_distance": 0.797,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-002",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "cn-law-special-equipment-safety-2013"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "cn-law-special-equipment-safety-2013",
+        "cn-law-special-equipment-safety-2013",
+        "tsg-08-2026",
+        "tsg-08-2026"
+      ],
+      "top_distance": 0.756,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 0,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 0.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 0.5,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-003",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "cn-law-special-equipment-safety-2013"
+      ],
+      "retrieved_document_ids": [
+        "cn-law-special-equipment-safety-2013",
+        "cn-law-special-equipment-safety-2013",
+        "tsg-08-2026",
+        "samr-order-74-2023",
+        "tsg-08-2026"
+      ],
+      "top_distance": 0.7863,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-004",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "cn-law-special-equipment-safety-2013"
+      ],
+      "retrieved_document_ids": [
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-57-2022",
+        "cn-law-special-equipment-safety-2013",
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-57-2022"
+      ],
+      "top_distance": 0.7304,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-005",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "cn-law-special-equipment-safety-2013"
+      ],
+      "retrieved_document_ids": [
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-74-2023",
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-74-2023",
+        "samr-order-74-2023"
+      ],
+      "top_distance": 0.814,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-006",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "samr-order-50-2022"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-50-2022",
+        "samr-order-50-2022",
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-50-2022",
+        "samr-order-50-2022"
+      ],
+      "top_distance": 0.7945,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-007",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "samr-order-50-2022"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-50-2022",
+        "samr-order-50-2022",
+        "samr-order-50-2022",
+        "samr-order-50-2022",
+        "cn-law-special-equipment-safety-2013"
+      ],
+      "top_distance": 0.7825,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-008",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "samr-order-50-2022"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-50-2022",
+        "samr-order-50-2022",
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-50-2022",
+        "samr-order-57-2022"
+      ],
+      "top_distance": 0.7607,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-009",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "samr-order-50-2022"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-50-2022",
+        "samr-order-50-2022",
+        "samr-order-50-2022",
+        "samr-order-50-2022",
+        "samr-order-50-2022"
+      ],
+      "top_distance": 0.8012,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-010",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "samr-order-57-2022"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-57-2022",
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-57-2022",
+        "samr-order-57-2022",
+        "cn-law-special-equipment-safety-2013"
+      ],
+      "top_distance": 0.8198,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-011",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "samr-order-57-2022"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-57-2022",
+        "samr-order-57-2022",
+        "samr-order-57-2022",
+        "samr-order-57-2022",
+        "samr-order-57-2022"
+      ],
+      "top_distance": 0.7233,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-012",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "samr-order-57-2022"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-57-2022",
+        "samr-order-57-2022",
+        "samr-order-57-2022",
+        "samr-order-57-2022",
+        "tsg-08-2026"
+      ],
+      "top_distance": 0.755,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-013",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "samr-order-74-2023"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023"
+      ],
+      "top_distance": 0.743,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-014",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "samr-order-74-2023"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023"
+      ],
+      "top_distance": 0.7547,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "single-015",
+      "question_type": "single_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "samr-order-74-2023"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023"
+      ],
+      "top_distance": 0.8334,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "cross-001",
+      "question_type": "cross_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-74-2023"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023"
+      ],
+      "top_distance": 0.817,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 0.5,
+        "3": 0.5,
+        "5": 0.5
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "cross-002",
+      "question_type": "cross_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-50-2022"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-50-2022",
+        "samr-order-50-2022",
+        "samr-order-50-2022",
+        "cn-law-special-equipment-safety-2013",
+        "tsg-08-2026"
+      ],
+      "top_distance": 0.8211,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 0.5,
+        "3": 0.5,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "cross-003",
+      "question_type": "cross_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-57-2022"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-57-2022",
+        "samr-order-57-2022",
+        "samr-order-57-2022",
+        "samr-order-57-2022",
+        "cn-law-special-equipment-safety-2013"
+      ],
+      "top_distance": 0.7442,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 0.5,
+        "3": 0.5,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "cross-004",
+      "question_type": "cross_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-74-2023"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "cn-law-special-equipment-safety-2013",
+        "cn-law-special-equipment-safety-2013"
+      ],
+      "top_distance": 0.7837,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 0,
+        "3": 0,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.5
+      },
+      "reciprocal_rank": 0.25,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "cross-005",
+      "question_type": "cross_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-74-2023"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "tsg-08-2026"
+      ],
+      "top_distance": 0.7272,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 0.5,
+        "3": 0.5,
+        "5": 0.5
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "cross-006",
+      "question_type": "cross_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-57-2022"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-57-2022",
+        "samr-order-57-2022",
+        "tsg-08-2026",
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-74-2023"
+      ],
+      "top_distance": 0.6151,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 0.5,
+        "3": 0.5,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "cross-007",
+      "question_type": "cross_document",
+      "answerable": true,
+      "expected_document_ids": [
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-74-2023"
+      ],
+      "retrieved_document_ids": [
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-74-2023"
+      ],
+      "top_distance": 0.8109,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 0.5,
+        "3": 0.5,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "unanswerable-001",
+      "question_type": "unanswerable",
+      "answerable": false,
+      "expected_document_ids": [],
+      "retrieved_document_ids": [
+        "samr-order-50-2022",
+        "samr-order-50-2022",
+        "samr-order-50-2022",
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-50-2022"
+      ],
+      "top_distance": 0.6285,
+      "top_rerank_score": null,
+      "hit_at_k": {},
+      "recall_at_k": {},
+      "reciprocal_rank": null,
+      "excluded_from_hit_metrics": true
+    },
+    {
+      "question_id": "unanswerable-002",
+      "question_type": "unanswerable",
+      "answerable": false,
+      "expected_document_ids": [],
+      "retrieved_document_ids": [
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-74-2023",
+        "samr-order-74-2023"
+      ],
+      "top_distance": 0.539,
+      "top_rerank_score": null,
+      "hit_at_k": {},
+      "recall_at_k": {},
+      "reciprocal_rank": null,
+      "excluded_from_hit_metrics": true
+    },
+    {
+      "question_id": "unanswerable-003",
+      "question_type": "unanswerable",
+      "answerable": false,
+      "expected_document_ids": [],
+      "retrieved_document_ids": [
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-74-2023",
+        "tsg-08-2026"
+      ],
+      "top_distance": 0.4765,
+      "top_rerank_score": null,
+      "hit_at_k": {},
+      "recall_at_k": {},
+      "reciprocal_rank": null,
+      "excluded_from_hit_metrics": true
+    },
+    {
+      "question_id": "unanswerable-004",
+      "question_type": "unanswerable",
+      "answerable": false,
+      "expected_document_ids": [],
+      "retrieved_document_ids": [
+        "cn-law-special-equipment-safety-2013",
+        "cn-law-special-equipment-safety-2013",
+        "samr-order-57-2022",
+        "cn-law-special-equipment-safety-2013",
+        "cn-law-special-equipment-safety-2013"
+      ],
+      "top_distance": 0.6862,
+      "top_rerank_score": null,
+      "hit_at_k": {},
+      "recall_at_k": {},
+      "reciprocal_rank": null,
+      "excluded_from_hit_metrics": true
+    },
+    {
+      "question_id": "unanswerable-005",
+      "question_type": "unanswerable",
+      "answerable": false,
+      "expected_document_ids": [],
+      "retrieved_document_ids": [
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "samr-order-74-2023"
+      ],
+      "top_distance": 0.4945,
+      "top_rerank_score": null,
+      "hit_at_k": {},
+      "recall_at_k": {},
+      "reciprocal_rank": null,
+      "excluded_from_hit_metrics": true
+    },
+    {
+      "question_id": "unanswerable-006",
+      "question_type": "unanswerable",
+      "answerable": false,
+      "expected_document_ids": [],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "samr-order-74-2023",
+        "samr-order-74-2023",
+        "cn-law-special-equipment-safety-2013",
+        "tsg-08-2026"
+      ],
+      "top_distance": 0.6041,
+      "top_rerank_score": null,
+      "hit_at_k": {},
+      "recall_at_k": {},
+      "reciprocal_rank": null,
+      "excluded_from_hit_metrics": true
+    },
+    {
+      "question_id": "unanswerable-007",
+      "question_type": "unanswerable",
+      "answerable": false,
+      "expected_document_ids": [],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "samr-order-74-2023"
+      ],
+      "top_distance": 0.5118,
+      "top_rerank_score": null,
+      "hit_at_k": {},
+      "recall_at_k": {},
+      "reciprocal_rank": null,
+      "excluded_from_hit_metrics": true
+    },
+    {
+      "question_id": "version-001",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "expected_document_ids": [
+        "tsg-08-2017"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "samr-order-50-2022",
+        "cn-law-special-equipment-safety-2013"
+      ],
+      "top_distance": 0.6972,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 0,
+        "3": 0,
+        "5": 0
+      },
+      "recall_at_k": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0
+      },
+      "reciprocal_rank": 0.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "version-002",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "expected_document_ids": [
+        "tsg-08-2026"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "samr-order-50-2022",
+        "tsg-08-2026"
+      ],
+      "top_distance": 0.4972,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "version-003",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "expected_document_ids": [
+        "tsg-08-2026"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026"
+      ],
+      "top_distance": 0.5974,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "version-004",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "expected_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2017"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "samr-order-50-2022"
+      ],
+      "top_distance": 0.4434,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 0.5,
+        "3": 0.5,
+        "5": 0.5
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "version-005",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "expected_document_ids": [
+        "tsg-08-2017"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026"
+      ],
+      "top_distance": 0.6077,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 0,
+        "3": 0,
+        "5": 0
+      },
+      "recall_at_k": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0
+      },
+      "reciprocal_rank": 0.0,
+      "excluded_from_hit_metrics": false
+    }
+  ]
+}

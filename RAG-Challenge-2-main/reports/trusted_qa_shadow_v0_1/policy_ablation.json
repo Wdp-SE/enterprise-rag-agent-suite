@@ -1,0 +1,290 @@
+{
+  "run_metadata": {
+    "run_kind": "trusted_qa_retrieval_only_shadow",
+    "started_at_utc": "2026-09-03T18:52:13.977496+00:00",
+    "completed_at_utc": "2026-09-03T18:52:20.674241+00:00",
+    "trusted_qa_mode": "SHADOW",
+    "default_policy_version": "trusted_qa_shadow_v0_1",
+    "answer_llm_called": false,
+    "rerank_called": false,
+    "gate_extra_llm_calls": 0,
+    "generation_performed": false,
+    "embedding_provider": "dashscope",
+    "embedding_model": "text-embedding-v1",
+    "top_k": 5,
+    "per_document_top_k": 8,
+    "version_governance_enabled": true,
+    "version_as_of_date": "2026-09-01",
+    "corpus_root": "data/domain_corpus_v0_2",
+    "historical_corpus_root": "data/domain_corpus_v0_2/historical_retrieval_assets"
+  },
+  "threshold_search_performed": false,
+  "profiles": {
+    "HARD_ONLY": {
+      "policy_version": "trusted_qa_shadow_v0_1_hard",
+      "domain": {
+        "metric_scope": "counterfactual_shadow_only",
+        "question_count": 34,
+        "answerable_count": 27,
+        "unanswerable_count": 7,
+        "answerable_decisions": {
+          "ANSWER": 27,
+          "REJECT": 0,
+          "UNCERTAIN": 0
+        },
+        "unanswerable_decisions": {
+          "ANSWER": 7,
+          "REJECT": 0,
+          "UNCERTAIN": 0
+        },
+        "shadow_answerable_acceptance_rate": 1.0,
+        "shadow_unanswerable_rejection_rate": 0.0,
+        "shadow_false_reject_count": 0,
+        "shadow_false_reject_rate": 0.0,
+        "shadow_false_accept_count": 7,
+        "shadow_false_accept_rate": 1.0,
+        "shadow_uncertain_count": 0,
+        "shadow_uncertain_rate": 0.0,
+        "coverage": 1.0,
+        "potential_selective_accuracy": 0.794118,
+        "shadow_reject_precision": null,
+        "production_accuracy": null
+      },
+      "version_stress": {
+        "metric_scope": "counterfactual_shadow_only",
+        "question_count": 8,
+        "answerable_count": 8,
+        "unanswerable_count": 0,
+        "answerable_decisions": {
+          "ANSWER": 7,
+          "REJECT": 0,
+          "UNCERTAIN": 1
+        },
+        "unanswerable_decisions": {
+          "ANSWER": 0,
+          "REJECT": 0,
+          "UNCERTAIN": 0
+        },
+        "shadow_answerable_acceptance_rate": 0.875,
+        "shadow_unanswerable_rejection_rate": null,
+        "shadow_false_reject_count": 0,
+        "shadow_false_reject_rate": 0.0,
+        "shadow_false_accept_count": 0,
+        "shadow_false_accept_rate": null,
+        "shadow_uncertain_count": 1,
+        "shadow_uncertain_rate": 0.125,
+        "coverage": 0.875,
+        "potential_selective_accuracy": 1.0,
+        "shadow_reject_precision": null,
+        "production_accuracy": null
+      },
+      "combined": {
+        "metric_scope": "counterfactual_shadow_only",
+        "question_count": 42,
+        "answerable_count": 35,
+        "unanswerable_count": 7,
+        "answerable_decisions": {
+          "ANSWER": 34,
+          "REJECT": 0,
+          "UNCERTAIN": 1
+        },
+        "unanswerable_decisions": {
+          "ANSWER": 7,
+          "REJECT": 0,
+          "UNCERTAIN": 0
+        },
+        "shadow_answerable_acceptance_rate": 0.971429,
+        "shadow_unanswerable_rejection_rate": 0.0,
+        "shadow_false_reject_count": 0,
+        "shadow_false_reject_rate": 0.0,
+        "shadow_false_accept_count": 7,
+        "shadow_false_accept_rate": 1.0,
+        "shadow_uncertain_count": 1,
+        "shadow_uncertain_rate": 0.02381,
+        "coverage": 0.97619,
+        "potential_selective_accuracy": 0.829268,
+        "shadow_reject_precision": null,
+        "production_accuracy": null
+      }
+    },
+    "HARD_PLUS_SOFT": {
+      "policy_version": "trusted_qa_shadow_v0_1",
+      "domain": {
+        "metric_scope": "counterfactual_shadow_only",
+        "question_count": 34,
+        "answerable_count": 27,
+        "unanswerable_count": 7,
+        "answerable_decisions": {
+          "ANSWER": 16,
+          "REJECT": 0,
+          "UNCERTAIN": 11
+        },
+        "unanswerable_decisions": {
+          "ANSWER": 0,
+          "REJECT": 0,
+          "UNCERTAIN": 7
+        },
+        "shadow_answerable_acceptance_rate": 0.592593,
+        "shadow_unanswerable_rejection_rate": 0.0,
+        "shadow_false_reject_count": 0,
+        "shadow_false_reject_rate": 0.0,
+        "shadow_false_accept_count": 0,
+        "shadow_false_accept_rate": 0.0,
+        "shadow_uncertain_count": 18,
+        "shadow_uncertain_rate": 0.529412,
+        "coverage": 0.470588,
+        "potential_selective_accuracy": 1.0,
+        "shadow_reject_precision": null,
+        "production_accuracy": null
+      },
+      "version_stress": {
+        "metric_scope": "counterfactual_shadow_only",
+        "question_count": 8,
+        "answerable_count": 8,
+        "unanswerable_count": 0,
+        "answerable_decisions": {
+          "ANSWER": 3,
+          "REJECT": 0,
+          "UNCERTAIN": 5
+        },
+        "unanswerable_decisions": {
+          "ANSWER": 0,
+          "REJECT": 0,
+          "UNCERTAIN": 0
+        },
+        "shadow_answerable_acceptance_rate": 0.375,
+        "shadow_unanswerable_rejection_rate": null,
+        "shadow_false_reject_count": 0,
+        "shadow_false_reject_rate": 0.0,
+        "shadow_false_accept_count": 0,
+        "shadow_false_accept_rate": null,
+        "shadow_uncertain_count": 5,
+        "shadow_uncertain_rate": 0.625,
+        "coverage": 0.375,
+        "potential_selective_accuracy": 1.0,
+        "shadow_reject_precision": null,
+        "production_accuracy": null
+      },
+      "combined": {
+        "metric_scope": "counterfactual_shadow_only",
+        "question_count": 42,
+        "answerable_count": 35,
+        "unanswerable_count": 7,
+        "answerable_decisions": {
+          "ANSWER": 19,
+          "REJECT": 0,
+          "UNCERTAIN": 16
+        },
+        "unanswerable_decisions": {
+          "ANSWER": 0,
+          "REJECT": 0,
+          "UNCERTAIN": 7
+        },
+        "shadow_answerable_acceptance_rate": 0.542857,
+        "shadow_unanswerable_rejection_rate": 0.0,
+        "shadow_false_reject_count": 0,
+        "shadow_false_reject_rate": 0.0,
+        "shadow_false_accept_count": 0,
+        "shadow_false_accept_rate": 0.0,
+        "shadow_uncertain_count": 23,
+        "shadow_uncertain_rate": 0.547619,
+        "coverage": 0.452381,
+        "potential_selective_accuracy": 1.0,
+        "shadow_reject_precision": null,
+        "production_accuracy": null
+      }
+    },
+    "HARD_SOFT_AGREEMENT": {
+      "policy_version": "trusted_qa_shadow_v0_1_agreement",
+      "domain": {
+        "metric_scope": "counterfactual_shadow_only",
+        "question_count": 34,
+        "answerable_count": 27,
+        "unanswerable_count": 7,
+        "answerable_decisions": {
+          "ANSWER": 16,
+          "REJECT": 0,
+          "UNCERTAIN": 11
+        },
+        "unanswerable_decisions": {
+          "ANSWER": 0,
+          "REJECT": 0,
+          "UNCERTAIN": 7
+        },
+        "shadow_answerable_acceptance_rate": 0.592593,
+        "shadow_unanswerable_rejection_rate": 0.0,
+        "shadow_false_reject_count": 0,
+        "shadow_false_reject_rate": 0.0,
+        "shadow_false_accept_count": 0,
+        "shadow_false_accept_rate": 0.0,
+        "shadow_uncertain_count": 18,
+        "shadow_uncertain_rate": 0.529412,
+        "coverage": 0.470588,
+        "potential_selective_accuracy": 1.0,
+        "shadow_reject_precision": null,
+        "production_accuracy": null
+      },
+      "version_stress": {
+        "metric_scope": "counterfactual_shadow_only",
+        "question_count": 8,
+        "answerable_count": 8,
+        "unanswerable_count": 0,
+        "answerable_decisions": {
+          "ANSWER": 3,
+          "REJECT": 0,
+          "UNCERTAIN": 5
+        },
+        "unanswerable_decisions": {
+          "ANSWER": 0,
+          "REJECT": 0,
+          "UNCERTAIN": 0
+        },
+        "shadow_answerable_acceptance_rate": 0.375,
+        "shadow_unanswerable_rejection_rate": null,
+        "shadow_false_reject_count": 0,
+        "shadow_false_reject_rate": 0.0,
+        "shadow_false_accept_count": 0,
+        "shadow_false_accept_rate": null,
+        "shadow_uncertain_count": 5,
+        "shadow_uncertain_rate": 0.625,
+        "coverage": 0.375,
+        "potential_selective_accuracy": 1.0,
+        "shadow_reject_precision": null,
+        "production_accuracy": null
+      },
+      "combined": {
+        "metric_scope": "counterfactual_shadow_only",
+        "question_count": 42,
+        "answerable_count": 35,
+        "unanswerable_count": 7,
+        "answerable_decisions": {
+          "ANSWER": 19,
+          "REJECT": 0,
+          "UNCERTAIN": 16
+        },
+        "unanswerable_decisions": {
+          "ANSWER": 0,
+          "REJECT": 0,
+          "UNCERTAIN": 7
+        },
+        "shadow_answerable_acceptance_rate": 0.542857,
+        "shadow_unanswerable_rejection_rate": 0.0,
+        "shadow_false_reject_count": 0,
+        "shadow_false_reject_rate": 0.0,
+        "shadow_false_accept_count": 0,
+        "shadow_false_accept_rate": 0.0,
+        "shadow_uncertain_count": 23,
+        "shadow_uncertain_rate": 0.547619,
+        "coverage": 0.452381,
+        "potential_selective_accuracy": 1.0,
+        "shadow_reject_precision": null,
+        "production_accuracy": null
+      }
+    }
+  },
+  "policy_definitions": {
+    "HARD_ONLY": "Hard preconditions; otherwise ANSWER.",
+    "HARD_PLUS_SOFT": "Hard preconditions plus calibration-only strong-score ANSWER region; all other valid results are UNCERTAIN.",
+    "HARD_SOFT_AGREEMENT": "HARD_PLUS_SOFT plus factual document/page-neighborhood agreement observations for ANSWER; never hard-rejects on cosine."
+  }
+}

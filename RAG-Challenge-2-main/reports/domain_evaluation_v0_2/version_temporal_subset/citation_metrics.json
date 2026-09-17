@@ -1,0 +1,57 @@
+{
+  "evaluation_mode": "retrieval_evidence_citation_potential",
+  "answerable_questions": 5,
+  "claimed_citations": 25,
+  "document_citation_accuracy": 0.52,
+  "page_citation_accuracy": 0.12,
+  "document_citation_hit_rate": 0.6,
+  "page_citation_hit_rate": 0.6,
+  "unanswerable_empty_citation_rate": null,
+  "per_question": [
+    {
+      "question_id": "version-001",
+      "answerable": true,
+      "citation_count": 5,
+      "document_correct_claims": 0,
+      "page_correct_claims": 0,
+      "document_hit": false,
+      "page_hit": false
+    },
+    {
+      "question_id": "version-002",
+      "answerable": true,
+      "citation_count": 5,
+      "document_correct_claims": 4,
+      "page_correct_claims": 1,
+      "document_hit": true,
+      "page_hit": true
+    },
+    {
+      "question_id": "version-003",
+      "answerable": true,
+      "citation_count": 5,
+      "document_correct_claims": 5,
+      "page_correct_claims": 1,
+      "document_hit": true,
+      "page_hit": true
+    },
+    {
+      "question_id": "version-004",
+      "answerable": true,
+      "citation_count": 5,
+      "document_correct_claims": 4,
+      "page_correct_claims": 1,
+      "document_hit": true,
+      "page_hit": true
+    },
+    {
+      "question_id": "version-005",
+      "answerable": true,
+      "citation_count": 5,
+      "document_correct_claims": 0,
+      "page_correct_claims": 0,
+      "document_hit": false,
+      "page_hit": false
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+[
+  {
+    "id": "Q01",
+    "company_name": "Holley Inc.",
+    "kind": "boolean",
+    "category": "boolean_true",
+    "question": "Did Holley Inc. mention any mergers or acquisitions in the annual report?",
+    "expected_behavior": "answer",
+    "expected_value": true,
+    "expect_citation": true
+  },
+  {
+    "id": "Q02",
+    "company_name": "Holley Inc.",
+    "kind": "number",
+    "category": "answerable_number_with_citation",
+    "question": "According to the annual report, how many USD did Holley Inc. spend on research and development per year on average since 2017?",
+    "expected_behavior": "answer",
+    "expected_value": 20500000,
+    "expect_citation": true
+  },
+  {
+    "id": "Q03",
+    "company_name": "Tradition",
+    "kind": "number",
+    "category": "competition_question",
+    "question": "According to the annual report, what is the Operating margin (%) for Tradition within the last period or at the end of the last period? If data is not available, return 'N/A'.",
+    "expected_behavior": "answer_or_na",
+    "expected_value": null,
+    "expect_citation": false
+  },
+  {
+    "id": "Q04",
+    "company_name": "Tradition",
+    "kind": "boolean",
+    "category": "boolean_na",
+    "question": "Did Tradition use quantum computers to settle securities transactions during the reporting period?",
+    "expected_behavior": "na",
+    "expected_value": "N/A",
+    "expect_citation": false
+  },
+  {
+    "id": "Q05",
+    "company_name": "TSX_Y",
+    "kind": "boolean",
+    "category": "boolean_true",
+    "question": "Did TSX_Y announce a share buyback plan in the annual report?",
+    "expected_behavior": "answer",
+    "expected_value": true,
+    "expect_citation": true
+  },
+  {
+    "id": "Q06",
+    "company_name": "TSX_Y",
+    "kind": "boolean",
+    "category": "boolean_true",
+    "question": "Did TSX_Y report layoffs or workforce reductions in the annual report?",
+    "expected_behavior": "answer",
+    "expected_value": true,
+    "expect_citation": true
+  },
+  {
+    "id": "Q07",
+    "company_name": "Mercia Asset Management PLC",
+    "kind": "boolean",
+    "category": "boolean_true",
+    "question": "Did Mercia Asset Management PLC mention any mergers or acquisitions in the annual report?",
+    "expected_behavior": "answer",
+    "expected_value": true,
+    "expect_citation": true
+  },
+  {
+    "id": "Q08",
+    "company_name": "Mercia Asset Management PLC",
+    "kind": "boolean",
+    "category": "boolean_false",
+    "question": "Did Mercia Asset Management PLC announce a share buyback plan in the annual report?",
+    "expected_behavior": "answer",
+    "expected_value": false,
+    "expect_citation": true
+  },
+  {
+    "id": "Q09",
+    "company_name": "CrossFirst Bank",
+    "kind": "boolean",
+    "category": "boolean_true",
+    "question": "Did CrossFirst Bank complete a merger with Central during 2022?",
+    "expected_behavior": "answer",
+    "expected_value": true,
+    "expect_citation": true
+  },
+  {
+    "id": "Q10",
+    "company_name": "CrossFirst Bank",
+    "kind": "name",
+    "category": "answerable_name_with_citation",
+    "question": "Who was the President and Chief Executive Officer of CrossFirst Bank at the end of the annual report?",
+    "expected_behavior": "answer",
+    "expected_value": "Michael J. Maddox",
+    "expect_citation": true
+  },
+  {
+    "id": "Q11",
+    "company_name": "CrossFirst Bank",
+    "kind": "number",
+    "category": "answerable_number_with_citation",
+    "question": "What was CrossFirst Bank's open market common share repurchase amount in USD for 2022?",
+    "expected_behavior": "answer",
+    "expected_value": 35780000,
+    "expect_citation": true
+  },
+  {
+    "id": "Q12",
+    "company_name": "CrossFirst Bank",
+    "kind": "boolean",
+    "category": "boolean_false",
+    "question": "Did CrossFirst Bank report changes in or disagreements with accountants on accounting and financial disclosure?",
+    "expected_behavior": "answer",
+    "expected_value": false,
+    "expect_citation": true
+  },
+  {
+    "id": "Q13",
+    "company_name": "CrossFirst Bank",
+    "kind": "boolean",
+    "category": "boolean_na",
+    "question": "Did CrossFirst Bank open a staffed branch on the Moon during 2022?",
+    "expected_behavior": "na",
+    "expected_value": "N/A",
+    "expect_citation": false
+  },
+  {
+    "id": "Q14",
+    "company_name": "CrossFirst Bank",
+    "kind": "name",
+    "category": "hallucinated_citation_probe",
+    "question": "According to page 999 of the CrossFirst Bank annual report, what was the name of its lunar mining subsidiary?",
+    "expected_behavior": "na",
+    "expected_value": "N/A",
+    "expect_citation": false
+  },
+  {
+    "id": "Q15",
+    "company_name": "Holley Inc.",
+    "kind": "names",
+    "category": "answerable_names_with_citation",
+    "question": "Which companies did Holley Inc. identify as its 2022 acquisitions?",
+    "expected_behavior": "answer",
+    "expected_value": [
+      "John's Ind., Inc.",
+      "Southern Kentucky Classics",
+      "RaceQuip"
+    ],
+    "expect_citation": true
+  }
+]

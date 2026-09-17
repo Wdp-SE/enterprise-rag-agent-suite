@@ -1,0 +1,15 @@
+[
+  {"id":"RD01","category":"semantic","question":"What is the main responsibility of the data processing module?","answerable":true,"expected_pages":[2],"reference_answer":"RD-DATA-01 turns parser and OCR output into stable normalized evidence records while preserving provenance."},
+  {"id":"RD02","category":"exact_term","question":"What does module RD-DATA-01 emit?","answerable":true,"expected_pages":[2],"reference_answer":"It emits normalized_blocks."},
+  {"id":"RD03","category":"interface","question":"What does POST /api/v2/ingest do?","answerable":true,"expected_pages":[4],"reference_answer":"It creates an asynchronous ingestion job."},
+  {"id":"RD04","category":"field","question":"Is source_uri required by the ingestion interface?","answerable":true,"expected_pages":[4],"reference_answer":"Yes, source_uri is required."},
+  {"id":"RD05","category":"dependency","question":"Which module consumes normalized_blocks?","answerable":true,"expected_pages":[5],"reference_answer":"RD-INDEX-02 consumes normalized_blocks."},
+  {"id":"RD06","category":"interface","question":"What is the purpose of POST /api/export?","answerable":true,"expected_pages":[6],"reference_answer":"It starts asynchronous export operation EXPORT-ASYNC-07."},
+  {"id":"RD07","category":"field","question":"What does timeout_ms control?","answerable":true,"expected_pages":[7],"reference_answer":"It controls the maximum export wait."},
+  {"id":"RD08","category":"numeric","question":"What is the default timeout_ms value?","answerable":true,"expected_pages":[7],"reference_answer":"30000 milliseconds."},
+  {"id":"RD09","category":"numeric","question":"What sustained retrieval throughput is required by PERF-RD-100?","answerable":true,"expected_pages":[8],"reference_answer":"1000 req/s."},
+  {"id":"RD10","category":"numeric","question":"What is the maximum supported concurrent user count?","answerable":true,"expected_pages":[8],"reference_answer":"240 users."},
+  {"id":"RD11","category":"cross_section","question":"Trace the handoff from RD-DATA-01 output to the consuming index module.","answerable":true,"expected_pages":[2,5],"reference_answer":"RD-DATA-01 emits normalized_blocks, which RD-INDEX-02 consumes."},
+  {"id":"RD12","category":"acceptance","question":"What citation membership validation rate does AC-RAG-02 require?","answerable":true,"expected_pages":[11],"reference_answer":"100 percent."},
+  {"id":"RD13","category":"unanswerable","question":"How many days are exported packages retained before automatic deletion?","answerable":false,"expected_pages":[],"reference_answer":null}
+]

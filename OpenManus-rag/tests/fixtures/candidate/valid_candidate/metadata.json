@@ -1,0 +1,19 @@
+{
+  "document_id": "doc_fixture-valid_0000000000000001",
+  "title": "使用单位基本安全管理要求（离线契约 Fixture）",
+  "document_type": "knowledge_note",
+  "source": "multiple_public_sources",
+  "source_url": "https://official.example.gov/docs/source-01",
+  "category": "safety_management",
+  "tags": [
+    "offline-fixture",
+    "candidate-contract"
+  ],
+  "legacy_company_name": null,
+  "candidate": {
+    "status": "CANDIDATE",
+    "generated_by": "openmanus-agent",
+    "requires_review": true,
+    "created_at": "2026-08-28T00:00:00Z"
+  }
+}

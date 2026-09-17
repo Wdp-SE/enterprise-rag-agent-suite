@@ -1,0 +1,128 @@
+{
+  "run_kind": "trusted_qa_phase3_bounded_real_enforce_smoke",
+  "started_at_utc": "2026-09-04T01:01:19.022465+00:00",
+  "completed_at_utc": "2026-09-04T01:01:19.024326+00:00",
+  "dataset_id": "trusted_qa_holdout_v0_1",
+  "dataset_sha256": "c23c95ca1a97e67520bc2deeee03933f4661414e3991b5118430cdce98798f71",
+  "question_count": 4,
+  "answerable_count": 2,
+  "hard_negative_count": 2,
+  "configuration": {
+    "trusted_qa_mode": "ENFORCE",
+    "enforcement_scope": "POST_ANSWER_ONLY",
+    "pre_generation_enforcement": false,
+    "post_answer_enforcement": true,
+    "pre_generation_policy_version": "trusted_qa_shadow_v0_1",
+    "post_answer_policy_version": "trusted_qa_post_answer_v1",
+    "answer_provider": "dashscope",
+    "answer_model": "qwen-turbo",
+    "embedding_provider": "dashscope",
+    "embedding_model": "text-embedding-v1",
+    "rerank_enabled": false,
+    "top_k": 5,
+    "parent_page": true,
+    "gate_extra_llm_calls": 0,
+    "semantic_entailment_verified": false
+  },
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0,
+    "within_limit": true,
+    "scope": "Answer generation only; query embedding usage is not reported by the provider response."
+  },
+  "results": [
+    {
+      "question_id": "tqa-holdout-a06",
+      "question": "事故调查组成员在专业能力、利害关系和调查信息保密方面应满足哪些要求？",
+      "ground_truth_answerable": true,
+      "negative_class": null,
+      "reference_answer": "成员应具备事故调查所需的知识和专长，与事故发生单位及相关人员不存在直接利害关系，遵守调查纪律，并不得泄露有关事故调查信息。",
+      "unanswerable_reason": null,
+      "pre_generation_shadow_decision": "REJECT",
+      "generation_result": null,
+      "structured_output_valid": null,
+      "citation_count": null,
+      "citation_membership_valid": null,
+      "post_answer_action": null,
+      "reason_codes": [],
+      "enforced": false,
+      "final_result": {
+        "final_answer": null,
+        "sources": [],
+        "error": "ValueError: No relevant context found"
+      },
+      "answer_usage": {},
+      "latency_ms": 0.786
+    },
+    {
+      "question_id": "tqa-holdout-a09",
+      "question": "压力容器安全员在安全技术档案、日常巡检、定期检验和事故处置方面承担哪些职责？",
+      "ground_truth_answerable": true,
+      "negative_class": null,
+      "reference_answer": "应建立健全压力容器安全技术档案并办理使用登记，组织日常巡检并纠正制止违章作业，编制定期检验计划并督促检验和整改，按规定报告事故、参加救援并协助调查和善后处理。",
+      "unanswerable_reason": null,
+      "pre_generation_shadow_decision": "REJECT",
+      "generation_result": null,
+      "structured_output_valid": null,
+      "citation_count": null,
+      "citation_membership_valid": null,
+      "post_answer_action": null,
+      "reason_codes": [],
+      "enforced": false,
+      "final_result": {
+        "final_answer": null,
+        "sources": [],
+        "error": "ValueError: No relevant context found"
+      },
+      "answer_usage": {},
+      "latency_ms": 0.175
+    },
+    {
+      "question_id": "tqa-holdout-n04",
+      "question": "《每日锅炉安全检查记录》依法至少需要保存多少年？",
+      "ground_truth_answerable": false,
+      "negative_class": "HARD_NEGATIVE",
+      "reference_answer": null,
+      "unanswerable_reason": "总局令第74号要求形成记录并将履职情况存档备查，但当前语料没有给出《每日锅炉安全检查记录》的最低保存年限。",
+      "pre_generation_shadow_decision": "REJECT",
+      "generation_result": null,
+      "structured_output_valid": null,
+      "citation_count": null,
+      "citation_membership_valid": null,
+      "post_answer_action": null,
+      "reason_codes": [],
+      "enforced": false,
+      "final_result": {
+        "final_answer": null,
+        "sources": [],
+        "error": "ValueError: No relevant context found"
+      },
+      "answer_usage": {},
+      "latency_ms": 0.619
+    },
+    {
+      "question_id": "tqa-holdout-n07",
+      "question": "办理一台特种设备使用登记时，登记机关统一收取的具体费用是多少元？",
+      "ground_truth_answerable": false,
+      "negative_class": "HARD_NEGATIVE",
+      "reference_answer": null,
+      "unanswerable_reason": "当前语料说明行政许可、检验收费依照其他法律行政法规执行，并详细规定登记材料和程序，但未给出办理一台设备使用登记的统一具体金额。",
+      "pre_generation_shadow_decision": "REJECT",
+      "generation_result": null,
+      "structured_output_valid": null,
+      "citation_count": null,
+      "citation_membership_valid": null,
+      "post_answer_action": null,
+      "reason_codes": [],
+      "enforced": false,
+      "final_result": {
+        "final_answer": null,
+        "sources": [],
+        "error": "ValueError: No relevant context found"
+      },
+      "answer_usage": {},
+      "latency_ms": 0.398
+    }
+  ]
+}

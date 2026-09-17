@@ -1,0 +1,28 @@
+policy_id = "public_source_tiers_v1"
+fallback_level = "TIER3"
+fallback_reason = "No configured authoritative-source rule matched."
+
+[[rules]]
+rule_id = "government_and_regulators"
+priority = 100
+level = "TIER1"
+reason = "Configured government, regulator, or official-publication source."
+domain_patterns = ["*.gov", "*.gov.cn"]
+organization_types = ["government", "regulator"]
+source_types = ["government_webpage", "regulation"]
+
+[[rules]]
+rule_id = "official_standards_bodies"
+priority = 90
+level = "TIER1"
+reason = "Configured official standards-body source."
+organization_types = ["official_standard_body"]
+source_types = ["official_standard"]
+
+[[rules]]
+rule_id = "industry_and_official_organizations"
+priority = 50
+level = "TIER2"
+reason = "Configured association, major institution, or official vendor source."
+organization_types = ["industry_association", "major_institution", "official_vendor"]
+source_types = ["industry_guidance", "institutional_publication", "vendor_official"]

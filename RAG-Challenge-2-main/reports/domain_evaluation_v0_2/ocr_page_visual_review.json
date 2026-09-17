@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "document_id": "tsg-08-2026",
+  "review_method": "SOURCE_PDF_PAGE_RENDER_MANUAL_VISUAL_INSPECTION",
+  "review_scope": "Only pages found empty after offline block reassembly",
+  "render_timing": "AFTER_OFFLINE_CALIBRATION_REASSEMBLY_AND_INITIAL_QUALITY_VALIDATION",
+  "ocr_invocation_count": 0,
+  "pages": [
+    {
+      "page_number": 37,
+      "source_has_meaningful_content": true,
+      "layout": "ROTATED_FULL_PAGE_TABLE",
+      "content_summary": "Pressure-pipeline basic-information summary form with a title, organization fields, and column headings",
+      "offline_reassembly_empty": true,
+      "finding": "SOURCE_CONTENT_NOT_RECOVERED_FROM_EXISTING_RAW_BLOCKS",
+      "requires_review": true
+    }
+  ],
+  "conclusion": "FAIL_CLOSED"
+}

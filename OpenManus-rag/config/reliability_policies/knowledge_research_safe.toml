@@ -1,0 +1,41 @@
+[policy]
+profile_id = "knowledge_research_safe"
+enabled = true
+allowed_tools = [
+  "web_search",
+  "http_get",
+  "browser_acquire",
+  "evidence_extract",
+  "llm_synthesis",
+  "workspace_write",
+  "candidate_package",
+]
+denied_tools = [
+  "python_execute",
+  "str_replace_editor",
+  "approve_candidate",
+  "rag_ingestion",
+  "faiss_write",
+  "external_publish",
+]
+network_access = true
+allowed_output_roots = ["research_runs", "candidate_knowledge"]
+allow_external_writes = false
+allowed_side_effect_levels = ["READ_ONLY", "IDEMPOTENT_WRITE"]
+timeout_profile = "knowledge_research"
+retry_profile = "knowledge_research"
+budget_profile = "knowledge_research"
+
+[policy.operation_fallbacks]
+"research.http_get" = "browser_acquire"
+
+[policy.no_progress_actions]
+SAME_ERROR_REPEAT = "FALLBACK"
+SAME_RESOURCE_REPEAT = "FALLBACK"
+SAME_OPERATION_REPEAT = "REPLAN"
+STAGE_REENTRY_WITHOUT_PROGRESS = "REPLAN"
+NO_ARTIFACT_GROWTH = "REPLAN"
+
+[policy.no_progress_fallbacks]
+SAME_ERROR_REPEAT = "browser_acquire"
+SAME_RESOURCE_REPEAT = "browser_acquire"

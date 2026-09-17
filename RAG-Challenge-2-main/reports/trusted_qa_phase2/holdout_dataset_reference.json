@@ -1,0 +1,16 @@
+{
+  "dataset_id": "trusted_qa_holdout_v0_1",
+  "dataset_file": "data/evaluation/trusted_qa_holdout_v0_1.jsonl",
+  "freeze_metadata_file": "data/evaluation/trusted_qa_holdout_v0_1.freeze.json",
+  "dataset_sha256": "c23c95ca1a97e67520bc2deeee03933f4661414e3991b5118430cdce98798f71",
+  "status": "FROZEN",
+  "frozen_at": "2026-09-04T03:14:13+08:00",
+  "question_count": 20,
+  "answerable_count": 10,
+  "unanswerable_count": 10,
+  "easy_negative_count": 3,
+  "hard_negative_count": 7,
+  "ground_truth_review": "MANUAL_CORPUS_VERIFIED",
+  "exact_overlap_found": false,
+  "holdout_contaminated": false
+}

@@ -1,0 +1,64 @@
+# Credentials and machine-local configuration
+**/.env
+**/.env.*
+!**/.env.example
+**/config.toml
+**/.streamlit/secrets.toml
+
+# Python environments and caches
+**/.venv/
+**/venv/
+**/env/
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+*.py[cod]
+
+# Local workspaces and UI outputs
+OpenManus-rag/workspace/
+demo-ui/runtime/
+
+# Confidential R&D source documents, normalized copies, indexes and reports
+RAG-Challenge-2-main/开发过程资料/
+RAG-Challenge-2-main/data/rd_v2_corpus/
+RAG-Challenge-2-main/reports/rd_v2_real_corpus/
+RAG-Challenge-2-main/reports/rd_v2_structure_diagnostics/
+RAG-Challenge-2-main/reports/rd_v2_section_repair/
+RAG-Challenge-2-main/reports/rd_v2_real_retrieval_validation/
+RAG-Challenge-2-main/reports/rd_v2_dense_failure_analysis/
+RAG-Challenge-2-main/reports/rd_v2_embedding_enrichment/
+RAG-Challenge-2-main/reports/rd_v2_hybrid_ablation/
+RAG-Challenge-2-main/reports/rd_v2_bm25_failure_analysis/
+RAG-Challenge-2-main/reports/rd_v2_bm25_tokenizer_experiment/
+RAG-Challenge-2-main/reports/rd_v2_final_retrieval_validation/
+RAG-Challenge-2-main/reports/rd_v2_engineering_hardening/
+
+# Rebuildable runtime data
+RAG-Challenge-2-main/artifacts/baseline_runtime/runtime_dataset/
+RAG-Challenge-2-main/data/domain_corpus/databases/
+RAG-Challenge-2-main/data/domain_corpus/embedding_batches/
+RAG-Challenge-2-main/data/domain_corpus_v0_2/databases/
+RAG-Challenge-2-main/data/domain_corpus_v0_2/embedding_batches/
+RAG-Challenge-2-main/data/domain_corpus_v0_2/ocr_cache/
+RAG-Challenge-2-main/data/domain_corpus_v0_2/offline_reassembly/
+
+# Local logs, IDE and operating-system files
+*.local.log
+*.token.log
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+
+# Temporary test output and rebuildable public corpus inputs
+**/.tmp*/
+RAG-Challenge-2-main/data/domain_corpus/debug_data/
+RAG-Challenge-2-main/data/domain_corpus/ingestion_inputs/
+RAG-Challenge-2-main/data/domain_corpus/source_pdfs/
+RAG-Challenge-2-main/data/domain_corpus_v0_2/debug_data/
+RAG-Challenge-2-main/data/domain_corpus_v0_2/historical_retrieval_assets/
+RAG-Challenge-2-main/data/domain_corpus_v0_2/source_pdfs/
+RAG-Challenge-2-main/data/test_set/databases.zip
+RAG-Challenge-2-main/data/test_set/debug_data.zip
+RAG-Challenge-2-main/data/test_set/pdf_reports/

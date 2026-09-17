@@ -1,0 +1,18 @@
+{
+  "document_id": "doc_special-equipment-validation_62ce784eda553678",
+  "title": "特种设备使用单位基本安全管理要求",
+  "document_type": "knowledge_note",
+  "source": "multiple_public_sources",
+  "source_url": "https://www.jiangmen.gov.cn/gzhd/zhzw/content/post_3320570.html",
+  "category": "safety_management",
+  "tags": [
+    "special-equipment-validation",
+    "public-research"
+  ],
+  "candidate": {
+    "status": "CANDIDATE",
+    "generated_by": "openmanus-agent",
+    "requires_review": true,
+    "created_at": "2026-08-28T08:21:10.167680Z"
+  }
+}

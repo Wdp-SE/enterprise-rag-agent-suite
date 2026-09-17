@@ -1,0 +1,20 @@
+profile_id = "special_equipment_validation_minimal"
+domain = "special_equipment_validation"
+research_topic = "特种设备使用单位基本安全管理要求"
+research_questions = [
+  "公开资料中有哪些基本安全管理要求？",
+  "这些要求由哪些公开权威来源支持？",
+]
+preferred_source_types = [
+  "government_webpage",
+  "official_standard",
+  "industry_guidance",
+]
+knowledge_category = "safety_management"
+max_sources = 3
+
+[output_requirements]
+document_type = "knowledge_note"
+tags = ["special-equipment-validation", "public-research"]
+minimum_evidence_count = 2
+required_sections = ["概述", "核心知识", "主要要求", "注意事项", "资料边界", "来源"]

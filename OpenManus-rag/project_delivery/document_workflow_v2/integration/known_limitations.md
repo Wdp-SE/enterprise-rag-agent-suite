@@ -1,0 +1,9 @@
+# Known limitations
+
+- The complete E2E used only synthetic/public material. Unapproved private R&D material was used only for local retrieval and provenance verification and was never transmitted to an online LLM. The synthetic namespace does not establish retrieval quality on private documents.
+- The final retrieval policy remains `DENSE_ONLY`, and its dense representation remains `SECTION_PATH`. BM25 and hybrid retrieval are off by default. Reranker V2 did not complete value validation and stays off.
+- Evidence membership proves only that a draft's cited ID belongs to this run's admitted retrieval results. It does not prove semantic entailment, absolute factual correctness, or zero hallucination. The field-coverage check is a literal field-name match and can miss synonyms or accept unrelated text containing the name.
+- The safe E2E reached MISSING for throughput but did not itself trip the NoProgress threshold; the retained offline NoProgress regression test passed. HTTP errors yield a bounded PARTIAL draft with error types in Trace. The workflow has a timeout and hard execution budget, but it does not yet route HTTP failures through the separate retry owner or an `ExecutionResult` orchestrator.
+- The parser and renderer support common structured `.docx` templates with Heading 1–3, plain placeholders, and simple tables. Rich runs in a replaced paragraph may be flattened. This does not support arbitrary Word templates.
+- `evidence.json` intentionally contains full body text for the synthetic demo. The structured execution Trace records hashes, IDs, counts, statuses, and error types without private body text. Any future private workflow must keep Evidence outputs local and enforce its own data handling policy.
+- The output is a human-reviewable draft with `requires_human_review = true`, not an approved final business document. The selected Agent regression excludes live research and sandbox tests; there is no production readiness claim.

@@ -1,0 +1,314 @@
+{
+  "ks": [
+    1,
+    3,
+    5
+  ],
+  "overall": {
+    "evaluated_questions": 8,
+    "hit_at_k": {
+      "1": 1.0,
+      "3": 1.0,
+      "5": 1.0
+    },
+    "recall_at_k": {
+      "1": 0.875,
+      "3": 0.9375,
+      "5": 1.0
+    },
+    "mrr": 1.0
+  },
+  "by_question_type": {
+    "version_temporal": {
+      "evaluated_questions": 8,
+      "hit_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "recall_at_k": {
+        "1": 0.875,
+        "3": 0.9375,
+        "5": 1.0
+      },
+      "mrr": 1.0
+    }
+  },
+  "unanswerable_behavior": {
+    "question_count": 0,
+    "questions_with_any_retrieval": 0,
+    "any_retrieval_rate": null,
+    "per_question": []
+  },
+  "score_distribution": {
+    "cosine_top1": {
+      "answerable": {
+        "count": 8,
+        "minimum": 0.4579,
+        "maximum": 0.8632,
+        "mean": 0.707337,
+        "median": 0.76435
+      },
+      "unanswerable": {
+        "count": 0,
+        "minimum": null,
+        "maximum": null,
+        "mean": null,
+        "median": null
+      }
+    },
+    "rerank_top1": {
+      "answerable": {
+        "count": 0,
+        "minimum": null,
+        "maximum": null,
+        "mean": null,
+        "median": null
+      },
+      "unanswerable": {
+        "count": 0,
+        "minimum": null,
+        "maximum": null,
+        "mean": null,
+        "median": null
+      }
+    },
+    "threshold_selected": false
+  },
+  "per_question": [
+    {
+      "question_id": "vg-current-001",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "expected_document_ids": [
+        "tsg-08-2026"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "samr-order-57-2022"
+      ],
+      "top_distance": 0.8632,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "vg-explicit-old-001",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "expected_document_ids": [
+        "tsg-08-2017"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2017",
+        "tsg-08-2017",
+        "tsg-08-2017",
+        "tsg-08-2017",
+        "tsg-08-2017"
+      ],
+      "top_distance": 0.6257,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "vg-explicit-new-001",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "expected_document_ids": [
+        "tsg-08-2026"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "samr-order-50-2022"
+      ],
+      "top_distance": 0.4972,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "vg-temporal-past-001",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "expected_document_ids": [
+        "tsg-08-2017"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2017",
+        "tsg-08-2017",
+        "tsg-08-2017",
+        "tsg-08-2017",
+        "tsg-08-2017"
+      ],
+      "top_distance": 0.711,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "vg-temporal-current-001",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "expected_document_ids": [
+        "tsg-08-2026"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026"
+      ],
+      "top_distance": 0.8177,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "vg-dual-001",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "expected_document_ids": [
+        "tsg-08-2017",
+        "tsg-08-2026"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2017",
+        "tsg-08-2017",
+        "tsg-08-2026"
+      ],
+      "top_distance": 0.4579,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 0.5,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "vg-ambiguous-year-001",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "expected_document_ids": [
+        "tsg-08-2017",
+        "tsg-08-2026"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2017",
+        "tsg-08-2017"
+      ],
+      "top_distance": 0.8246,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 0.5,
+        "3": 0.5,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    },
+    {
+      "question_id": "vg-unspecified-001",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "expected_document_ids": [
+        "tsg-08-2026"
+      ],
+      "retrieved_document_ids": [
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "tsg-08-2026",
+        "samr-order-57-2022",
+        "samr-order-50-2022"
+      ],
+      "top_distance": 0.8614,
+      "top_rerank_score": null,
+      "hit_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1
+      },
+      "recall_at_k": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "reciprocal_rank": 1.0,
+      "excluded_from_hit_metrics": false
+    }
+  ]
+}

@@ -1,0 +1,978 @@
+{
+  "mode": "normalized_vector",
+  "embedding_provider": "dashscope",
+  "embedding_model": "text-embedding-v1",
+  "rerank_provider": null,
+  "rerank_model": null,
+  "top_k": 5,
+  "per_document_top_k": 8,
+  "questions": [
+    {
+      "question_id": "version-001",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "latency_ms": 593.106,
+      "results": [
+        {
+          "rank": 1,
+          "document_id": "tsg-08-2017",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 20,
+          "chunk_id": "tsg-08-2017:54",
+          "cosine_similarity": 0.6257,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.6257,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.6457,
+          "document_number": "TSG 08—2017",
+          "version": "2017",
+          "status": "SUPERSEDED",
+          "text_preview": "TSG 08-2017\n\n特种设备安全技术规范\n\n4.3\n\n解释权限\n\n本规则由国家质检总局负责解释。\n\n4.4\n\n施行时间\n\n本规则自\n\n2017\n\n年\n\n8\n\n月\n\n1\n\n日起施行，以下安全技术规范同时废止：\n\n(\n\n1\n\n)\n\n2005\n\n年\n\n9\n\n月\n\n16\n\n日，国家质检总局颁布的《气瓶使用登记管理规则》\n\n(\n\nTSG\n\nR5001\n\n-\n\n2005\n\n)\n\n；\n\n(\n\n2\n\n)\n\n2009\n\n年\n\n5\n\n月\n\n8\n\n日，国家质检总局颁布的《电梯使用管理与维护保"
+        },
+        {
+          "rank": 2,
+          "document_id": "tsg-08-2017",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 1,
+          "chunk_id": "tsg-08-2017:0",
+          "cosine_similarity": 0.5901,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.5901,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.6101,
+          "document_number": "TSG 08—2017",
+          "version": "2017",
+          "status": "SUPERSEDED",
+          "text_preview": "TSG\n\n特种设备安全技术规范\n\nTSG 08-2017\n\n特种设备使用管理规则\n\nSpecial Equipment Service Administration Regulation\n\n中华人民共和国国家质量监督检验检疫总局颁布\n\n2017年1月16日"
+        },
+        {
+          "rank": 3,
+          "document_id": "tsg-08-2017",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 46,
+          "chunk_id": "tsg-08-2017:107",
+          "cosine_similarity": 0.5791,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.5791,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.5991,
+          "document_number": "TSG 08—2017",
+          "version": "2017",
+          "status": "SUPERSEDED",
+          "text_preview": "TSG 08-2017\n\n特种设备安全技术规范\n\n1.\n\n《蒸汽锅炉使用登记试行办法》\n\n(\n\n1962\n\n年\n\n10\n\n月\n\n4\n\n日，劳动部公布\n\n)\n\n。\n\n2.\n\n《锅炉使用登记办法》\n\n(\n\n劳动人事部劳人锅〔\n\n1986\n\n〕\n\n2\n\n号，\n\n1986\n\n年\n\n2\n\n月\n\n7\n\n日颁\n\n相关规章和规范历次制(修)订情况\n\n布，\n\n1987\n\n年\n\n1\n\n月\n\n1\n\n日实施，\n\n2003\n\n年\n\n9\n\n月\n\n1\n\n日废止\n\n)\n\n。\n\n3.\n\n《压力容器使用登记管理"
+        },
+        {
+          "rank": 4,
+          "document_id": "tsg-08-2017",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 5,
+          "chunk_id": "tsg-08-2017:9",
+          "cosine_similarity": 0.5191,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.5191,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.5391,
+          "document_number": "TSG 08—2017",
+          "version": "2017",
+          "status": "SUPERSEDED",
+          "text_preview": "特种设备安全技术规范\n\nTSG 08-2017\n\n1.1\n\n目的\n\n为规范特种设备使用管理，保障特种设备安全经济运行，根据《中华人民共和国\n\n特种设备安全法》《中华人民共和国安全生产法》《中华人民共和国节约能源法》和\n\n《特种设备安全监察条例》，制定本规则。\n\n1.2\n\n适用范围\n\n本规则适用于《特种设备目录》范围内特种设备的安全与节能管理。\n\n1.3\n\n使用单位主体责任\n\n特种设备使用单位应当按照本规则规定，负责特种设备安全与节能管理，承担\n\n特种设备使用安全与节能主体责任"
+        },
+        {
+          "rank": 5,
+          "document_id": "tsg-08-2017",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 2,
+          "chunk_id": "tsg-08-2017:1",
+          "cosine_similarity": 0.5014,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.5014,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.5214,
+          "document_number": "TSG 08—2017",
+          "version": "2017",
+          "status": "SUPERSEDED",
+          "text_preview": "特种设备安全技术规范\n\nTSG 08-2017\n\n2013\n\n年\n\n12\n\n月，国家质量监督检验检疫总局\n\n(\n\n以下简称国家质检总局\n\n)\n\n特种设备安\n\n全监察局\n\n(\n\n以下简称特种设备局\n\n)\n\n向中国特种设备检测研究院\n\n(\n\n以下简称中国特检院\n\n)\n\n下达《特种设备使用管理规则》的起草任务书。\n\n2014\n\n年\n\n1\n\n月，中国特检院组织有关\n\n专家成立起草组，在北京召开工作会议，讨论本规则的制定原则、需要解决的主要\n\n问题和重点内容，以及结构\n\n(\n\n章节\n\n"
+        }
+      ]
+    },
+    {
+      "question_id": "version-002",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "latency_ms": 238.564,
+      "results": [
+        {
+          "rank": 1,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 1,
+          "chunk_id": "tsg-08-2026:0",
+          "cosine_similarity": 0.4972,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.4972,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.5172,
+          "document_number": "TSG 08—2026",
+          "version": "2026",
+          "status": "ACTIVE",
+          "text_preview": "TSG 特种设备安全技术规范 TSG 08—2026\n国家市场监督管理总局发布\n2026年2月2日\n特种设备使用管理规则\nSpecial Equipment Service Administration Regulation"
+        },
+        {
+          "rank": 2,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 2,
+          "chunk_id": "tsg-08-2026:1",
+          "cosine_similarity": 0.4476,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.4476,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.4676,
+          "document_number": "TSG 08—2026",
+          "version": "2026",
+          "status": "ACTIVE",
+          "text_preview": "国家市场监督管理总局特种设备安全监察局 (以下简称市场监管总\n2024年5月,\n局特种设备局)向中国特种设备检测研究院 (以下简称中国特检院)下达《特种设备使\n成立修订工作组 ,\n启动修订工作。2024年 6月,工作组部分成员在上海召开工作会\n结构 (章节)框架\n修订工作进度表。\n10月31日\n工作组在北京召开工作会议,讨论本规则修订稿初稿\n2025年3月,形\n成本规则修订稿。\n细化《特种设\n由于需修订的内容较多 ,\n提出的要求 ,\n需要进行改版。\n(TSG 01-2014)"
+        },
+        {
+          "rank": 3,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 21,
+          "chunk_id": "tsg-08-2026:35",
+          "cosine_similarity": 0.4286,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.4286,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.4486,
+          "document_number": "TSG 08—2026",
+          "version": "2026",
+          "status": "ACTIVE",
+          "text_preview": "施行时间\n5.5\n本规则自2026年5月1日起施行,\n《特种设备使用管理规则》\n(TSG 08-2017)\n同时废止。\n本规则实施之前发布的其他相关文件和安全技术规范 ,\n其要求与本规则不-致\n以本规则为准。\n的,"
+        },
+        {
+          "rank": 4,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 39,
+          "chunk_id": "tsg-08-2026:58",
+          "cosine_similarity": 0.31,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.31,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.33,
+          "document_number": "TSG 08—2026",
+          "version": "2026",
+          "status": "ACTIVE",
+          "text_preview": "2026"
+        },
+        {
+          "rank": 5,
+          "document_id": "samr-order-50-2022",
+          "document_title": "特种设备事故报告和调查处理规定",
+          "page_number": 1,
+          "chunk_id": "samr-order-50-2022:0",
+          "cosine_similarity": 0.3251,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.3251,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "final_pre_rerank_score": 0.3251,
+          "document_number": "国家市场监督管理总局令第50号",
+          "version": "2022",
+          "status": "ACTIVE",
+          "text_preview": "国家市场监督管理总局规章\n\n国家市场监督管理总局令\n\n第 50 号\n\n《特种设备事故报告和调查处理规定》已经 2022 年 1 月 7\n\n日市场监管总局第 1 次局务会议通过\n\n月 1 日起施行\n\n。\n\n，\n\n现予公布\n\n，\n\n自 2022 年 3\n\n局长 张工\n\n2022 年 1 月 20 日\n\n-\n\n国家市场监督管理总局发布\n\n1\n\n-\n\nX"
+        }
+      ]
+    },
+    {
+      "question_id": "version-003",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "latency_ms": 165.278,
+      "results": [
+        {
+          "rank": 1,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 21,
+          "chunk_id": "tsg-08-2026:35",
+          "cosine_similarity": 0.5974,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.5974,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.6174,
+          "document_number": "TSG 08—2026",
+          "version": "2026",
+          "status": "ACTIVE",
+          "text_preview": "施行时间\n5.5\n本规则自2026年5月1日起施行,\n《特种设备使用管理规则》\n(TSG 08-2017)\n同时废止。\n本规则实施之前发布的其他相关文件和安全技术规范 ,\n其要求与本规则不-致\n以本规则为准。\n的,"
+        },
+        {
+          "rank": 2,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 1,
+          "chunk_id": "tsg-08-2026:0",
+          "cosine_similarity": 0.5829,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.5829,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.6029,
+          "document_number": "TSG 08—2026",
+          "version": "2026",
+          "status": "ACTIVE",
+          "text_preview": "TSG 特种设备安全技术规范 TSG 08—2026\n国家市场监督管理总局发布\n2026年2月2日\n特种设备使用管理规则\nSpecial Equipment Service Administration Regulation"
+        },
+        {
+          "rank": 3,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 2,
+          "chunk_id": "tsg-08-2026:1",
+          "cosine_similarity": 0.4776,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.4776,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.4976,
+          "document_number": "TSG 08—2026",
+          "version": "2026",
+          "status": "ACTIVE",
+          "text_preview": "国家市场监督管理总局特种设备安全监察局 (以下简称市场监管总\n2024年5月,\n局特种设备局)向中国特种设备检测研究院 (以下简称中国特检院)下达《特种设备使\n成立修订工作组 ,\n启动修订工作。2024年 6月,工作组部分成员在上海召开工作会\n结构 (章节)框架\n修订工作进度表。\n10月31日\n工作组在北京召开工作会议,讨论本规则修订稿初稿\n2025年3月,形\n成本规则修订稿。\n细化《特种设\n由于需修订的内容较多 ,\n提出的要求 ,\n需要进行改版。\n(TSG 01-2014)"
+        },
+        {
+          "rank": 4,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 4,
+          "chunk_id": "tsg-08-2026:3",
+          "cosine_similarity": 0.3927,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.3927,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.4127,
+          "document_number": "TSG 08—2026",
+          "version": "2026",
+          "status": "ACTIVE",
+          "text_preview": "特种设备使用管理规则\n1.1  目的\n为规范特种设备使用管理 ,\n保障特种设备安全经济运行,\n根据《中华人民共和国\n特种设备安全法》《中华人民共和国节约能源法》《特种设备安全监察条例》和《特\n种设备使用单位落实使用安全主体责任监督管理规定》\n适用范围\n1.2\n使用单位主体责任\n1.3\n特种设备使用单位应当按照本规则规定\n责,\n监督管理\n1.4\n职责分工\n1.4.1\n内特种设备使用安全\n种设备使用安全\n使用登记\n1.4.2\n按照\n本规则的要求负责办理特种设备使用登记,本规则和其"
+        },
+        {
+          "rank": 5,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 39,
+          "chunk_id": "tsg-08-2026:58",
+          "cosine_similarity": 0.3267,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.3267,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.3467,
+          "document_number": "TSG 08—2026",
+          "version": "2026",
+          "status": "ACTIVE",
+          "text_preview": "2026"
+        }
+      ]
+    },
+    {
+      "question_id": "version-004",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "latency_ms": 155.811,
+      "results": [
+        {
+          "rank": 1,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 1,
+          "chunk_id": "tsg-08-2026:0",
+          "cosine_similarity": 0.4434,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.4434,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.4634,
+          "document_number": "TSG 08—2026",
+          "version": "2026",
+          "status": "ACTIVE",
+          "text_preview": "TSG 特种设备安全技术规范 TSG 08—2026\n国家市场监督管理总局发布\n2026年2月2日\n特种设备使用管理规则\nSpecial Equipment Service Administration Regulation"
+        },
+        {
+          "rank": 2,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 2,
+          "chunk_id": "tsg-08-2026:1",
+          "cosine_similarity": 0.4223,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.4223,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.4423,
+          "document_number": "TSG 08—2026",
+          "version": "2026",
+          "status": "ACTIVE",
+          "text_preview": "国家市场监督管理总局特种设备安全监察局 (以下简称市场监管总\n2024年5月,\n局特种设备局)向中国特种设备检测研究院 (以下简称中国特检院)下达《特种设备使\n成立修订工作组 ,\n启动修订工作。2024年 6月,工作组部分成员在上海召开工作会\n结构 (章节)框架\n修订工作进度表。\n10月31日\n工作组在北京召开工作会议,讨论本规则修订稿初稿\n2025年3月,形\n成本规则修订稿。\n细化《特种设\n由于需修订的内容较多 ,\n提出的要求 ,\n需要进行改版。\n(TSG 01-2014)"
+        },
+        {
+          "rank": 3,
+          "document_id": "tsg-08-2017",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 1,
+          "chunk_id": "tsg-08-2017:0",
+          "cosine_similarity": 0.4189,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.4189,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.4389,
+          "document_number": "TSG 08—2017",
+          "version": "2017",
+          "status": "SUPERSEDED",
+          "text_preview": "TSG\n\n特种设备安全技术规范\n\nTSG 08-2017\n\n特种设备使用管理规则\n\nSpecial Equipment Service Administration Regulation\n\n中华人民共和国国家质量监督检验检疫总局颁布\n\n2017年1月16日"
+        },
+        {
+          "rank": 4,
+          "document_id": "tsg-08-2017",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 20,
+          "chunk_id": "tsg-08-2017:55",
+          "cosine_similarity": 0.4155,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.4155,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.4355,
+          "document_number": "TSG 08—2017",
+          "version": "2017",
+          "status": "SUPERSEDED",
+          "text_preview": "TSG 08-2017\n\n特种设备安全技术规范\n\n4.3\n\n解释权限\n\n本规则由国家质检总局负责解释。\n\n4.4\n\n施行时间\n\n本规则自\n\n2017\n\n年\n\n8\n\n月\n\n1\n\n日起施行，以下安全技术规范同时废止：\n\n(\n\n1\n\n)\n\n2005\n\n年\n\n9\n\n月\n\n16\n\n日，国家质检总局颁布的《气瓶使用登记管理规则》\n\n(\n\nTSG\n\nR5001\n\n-\n\n2005\n\n)\n\n；\n\n(\n\n2\n\n)\n\n2009\n\n年\n\n5\n\n月\n\n8\n\n日，国家质检总局颁布的《电梯使用管理与维护保"
+        },
+        {
+          "rank": 5,
+          "document_id": "tsg-08-2026",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 21,
+          "chunk_id": "tsg-08-2026:35",
+          "cosine_similarity": 0.4082,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.4082,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.4282,
+          "document_number": "TSG 08—2026",
+          "version": "2026",
+          "status": "ACTIVE",
+          "text_preview": "施行时间\n5.5\n本规则自2026年5月1日起施行,\n《特种设备使用管理规则》\n(TSG 08-2017)\n同时废止。\n本规则实施之前发布的其他相关文件和安全技术规范 ,\n其要求与本规则不-致\n以本规则为准。\n的,"
+        }
+      ]
+    },
+    {
+      "question_id": "version-005",
+      "question_type": "version_temporal",
+      "answerable": true,
+      "latency_ms": 154.841,
+      "results": [
+        {
+          "rank": 1,
+          "document_id": "tsg-08-2017",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 31,
+          "chunk_id": "tsg-08-2017:77",
+          "cosine_similarity": 0.6331,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.6331,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.6531,
+          "document_number": "TSG 08—2017",
+          "version": "2017",
+          "status": "SUPERSEDED",
+          "text_preview": "特种设备安全技术规范\n\nTSG 08-2017\n\n安全评估、基于风险检验、事故检验等。\n\nb4.3\n\n检验报告编号\n\n填写检验机构出具的检验报告的编号或者安全评估机构出具的安全评估报告编\n\n号，没有要求出具检验报告的，只填写监检证书编号。\n\nb4.4\n\n检验日期\n\n填写进行检验的日期，一般是检验完成的日期，即报告出具日期\n\n(\n\n年、月、\n\n日\n\n)\n\n。\n\nb4.5\n\n检验结论\n\n按照有关检验规则的要求填写，如符合要求、基本符合要求、不符合要求，合\n\n格、复检合格、不合格等"
+        },
+        {
+          "rank": 2,
+          "document_id": "tsg-08-2017",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 12,
+          "chunk_id": "tsg-08-2017:31",
+          "cosine_similarity": 0.5545,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.5545,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.5745,
+          "document_number": "TSG 08—2017",
+          "version": "2017",
+          "status": "SUPERSEDED",
+          "text_preview": "TSG 08-2017\n\n特种设备安全技术规范\n\n2.8\n\n水\n\n(\n\n介\n\n)\n\n质\n\n锅炉以及以水为介质产生蒸汽的压力容器的使用单位，应当做好锅炉水\n\n(\n\n介\n\n)\n\n质、压力容器水质的处理和监测工作，保证水\n\n(\n\n介\n\n)\n\n质质量符合相关要求。\n\n2.9\n\n安全警示\n\n电梯、客运索道、大型游乐设施的运营使用单位应当将安全使用说明、安全注\n\n意事项和安全警示标志置于易于引起乘客注意的位置。\n\n除前款以外的其他特种设备应当根据设备特点和使用环境、场所，设置安全使\n\n用"
+        },
+        {
+          "rank": 3,
+          "document_id": "tsg-08-2017",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 35,
+          "chunk_id": "tsg-08-2017:84",
+          "cosine_similarity": 0.5309,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.5309,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.5509,
+          "document_number": "TSG 08—2017",
+          "version": "2017",
+          "status": "SUPERSEDED",
+          "text_preview": "特种设备安全技术规范\n\nTSG 08-2017\n\nc7  管道编号\n\n按照使用单位规定的管道编号填写。\n\nc8  管道级别\n\n按照工业管道级别划分规定填写。\n\nc9  设计单位、安装单位\n\n填写管道的设计、安装单位名称。\n\nc10  安装年月、投用年月\n\n填写管道安装竣工、投用的具体年、月。\n\nc11  管道长度\n\n是管道折合成一条直线管道的长度，也可以采用管道设计的计算长度。\n\nc12  设计/工作条件\n\n填写设计和工作的条件。如设计压力为\n\n10MPa\n\n，实际使用最高工"
+        },
+        {
+          "rank": 4,
+          "document_id": "tsg-08-2017",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 17,
+          "chunk_id": "tsg-08-2017:45",
+          "cosine_similarity": 0.511,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.511,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.531,
+          "document_number": "TSG 08—2017",
+          "version": "2017",
+          "status": "SUPERSEDED",
+          "text_preview": "特种设备安全技术规范\n\nTSG 08-2017\n\n统，实施动态管理。\n\n采用纸质申报方式进行使用登记的，登记机关应当将特种设备产品合格证及其产\n\n品数据表复印一份，与使用登记表一同存档，并且将使用单位申请登记时提交的资料\n\n交还使用单位。\n\n3.6\n\n定期检验日期的确定\n\n首次定期检验的日期和实施改造、拆卸移装后的定期检验日期，由使用单位根\n\n据安全技术规范、监督检验报告和使用情况确定。\n\n3.7\n\n单位登记的设备信息报送\n\n以单位登记的特种设备使用单位应当及时更新气瓶、压力"
+        },
+        {
+          "rank": 5,
+          "document_id": "tsg-08-2017",
+          "document_title": "特种设备使用管理规则",
+          "page_number": 16,
+          "chunk_id": "tsg-08-2017:43",
+          "cosine_similarity": 0.501,
+          "rerank_score": null,
+          "combined_score": null,
+          "original_score": 0.501,
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "final_pre_rerank_score": 0.521,
+          "document_number": "TSG 08—2017",
+          "version": "2017",
+          "status": "SUPERSEDED",
+          "text_preview": "TSG 08-2017\n\n特种设备安全技术规范\n\n管道总长小于或者等于\n\n1000\n\n米时，压力管道随锅炉一同办理使用登记；包含压力容\n\n器的撬装式承压设备系统或者机械设备系统中的压力管道可以随其压力容器一同办\n\n理使用登记。登记时另提交分汽\n\n(\n\n水\n\n)\n\n缸、压力管道元件的产品合格证\n\n(\n\n含产品数据\n\n表\n\n)\n\n，但是不需要单独领取使用登记证。\n\n没有产品数据表的特种设备，登记机关可以参照已有特种设备产品数据表的格\n\n式，制定其特种设备产品数据表，由使用单位根据"
+        }
+      ]
+    }
+  ],
+  "version_governance_enabled": true,
+  "version_traces": [
+    {
+      "question_id": "version-001",
+      "version_intent": "EXPLICIT_VERSION",
+      "query_date": null,
+      "query_period_start": null,
+      "query_period_end": null,
+      "date_precision": null,
+      "explicit_versions": [
+        "2017"
+      ],
+      "matched_document_ids": [
+        "tsg-08-2017"
+      ],
+      "temporal_ambiguity": false,
+      "signals": [
+        "document_number:tsg-08-2017"
+      ],
+      "issues": [],
+      "candidate_documents": [
+        {
+          "candidate_document_id": "cn-law-special-equipment-safety-2013",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-50-2022",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-57-2022",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-74-2023",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-08-2017",
+          "document_status": "SUPERSEDED",
+          "version_family": "TSG_08",
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "reason": "matches explicit or temporal version intent",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-08-2026",
+          "document_status": "ACTIVE",
+          "version_family": "TSG_08",
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-z0007-2023",
+          "document_status": "REFERENCE",
+          "version_family": null,
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": false
+        },
+        {
+          "candidate_document_id": "tsg-z0008-2023",
+          "document_status": "REFERENCE",
+          "version_family": null,
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": false
+        }
+      ]
+    },
+    {
+      "question_id": "version-002",
+      "version_intent": "EXPLICIT_VERSION",
+      "query_date": null,
+      "query_period_start": null,
+      "query_period_end": null,
+      "date_precision": null,
+      "explicit_versions": [
+        "2026"
+      ],
+      "matched_document_ids": [
+        "tsg-08-2026"
+      ],
+      "temporal_ambiguity": false,
+      "signals": [
+        "document_number:tsg-08-2026"
+      ],
+      "issues": [],
+      "candidate_documents": [
+        {
+          "candidate_document_id": "cn-law-special-equipment-safety-2013",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-50-2022",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-57-2022",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-74-2023",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-08-2017",
+          "document_status": "SUPERSEDED",
+          "version_family": "TSG_08",
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-08-2026",
+          "document_status": "ACTIVE",
+          "version_family": "TSG_08",
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "reason": "matches explicit or temporal version intent",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-z0007-2023",
+          "document_status": "REFERENCE",
+          "version_family": null,
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": false
+        },
+        {
+          "candidate_document_id": "tsg-z0008-2023",
+          "document_status": "REFERENCE",
+          "version_family": null,
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": false
+        }
+      ]
+    },
+    {
+      "question_id": "version-003",
+      "version_intent": "TEMPORAL_DATE",
+      "query_date": null,
+      "query_period_start": "2026-09-01",
+      "query_period_end": "2026-09-30",
+      "date_precision": "MONTH",
+      "explicit_versions": [
+        "2017",
+        "2026"
+      ],
+      "matched_document_ids": [
+        "tsg-08-2017",
+        "tsg-08-2026"
+      ],
+      "temporal_ambiguity": false,
+      "signals": [
+        "version:2017",
+        "version:2026",
+        "current:当前",
+        "month:2026-09"
+      ],
+      "issues": [],
+      "candidate_documents": [
+        {
+          "candidate_document_id": "cn-law-special-equipment-safety-2013",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-50-2022",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-57-2022",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-74-2023",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-08-2017",
+          "document_status": "SUPERSEDED",
+          "version_family": "TSG_08",
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-08-2026",
+          "document_status": "ACTIVE",
+          "version_family": "TSG_08",
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "reason": "matches explicit or temporal version intent",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-z0007-2023",
+          "document_status": "REFERENCE",
+          "version_family": null,
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": false
+        },
+        {
+          "candidate_document_id": "tsg-z0008-2023",
+          "document_status": "REFERENCE",
+          "version_family": null,
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": false
+        }
+      ]
+    },
+    {
+      "question_id": "version-004",
+      "version_intent": "EXPLICIT_VERSION",
+      "query_date": null,
+      "query_period_start": null,
+      "query_period_end": null,
+      "date_precision": null,
+      "explicit_versions": [
+        "2017",
+        "2026"
+      ],
+      "matched_document_ids": [
+        "tsg-08-2017",
+        "tsg-08-2026"
+      ],
+      "temporal_ambiguity": false,
+      "signals": [
+        "document_number:tsg-08-2017",
+        "document_number:tsg-08-2026"
+      ],
+      "issues": [],
+      "candidate_documents": [
+        {
+          "candidate_document_id": "cn-law-special-equipment-safety-2013",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-50-2022",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-57-2022",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-74-2023",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-08-2017",
+          "document_status": "SUPERSEDED",
+          "version_family": "TSG_08",
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "reason": "matches explicit or temporal version intent",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-08-2026",
+          "document_status": "ACTIVE",
+          "version_family": "TSG_08",
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "reason": "matches explicit or temporal version intent",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-z0007-2023",
+          "document_status": "REFERENCE",
+          "version_family": null,
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": false
+        },
+        {
+          "candidate_document_id": "tsg-z0008-2023",
+          "document_status": "REFERENCE",
+          "version_family": null,
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": false
+        }
+      ]
+    },
+    {
+      "question_id": "version-005",
+      "version_intent": "EXPLICIT_VERSION",
+      "query_date": null,
+      "query_period_start": null,
+      "query_period_end": null,
+      "date_precision": null,
+      "explicit_versions": [
+        "2017"
+      ],
+      "matched_document_ids": [
+        "tsg-08-2017"
+      ],
+      "temporal_ambiguity": false,
+      "signals": [
+        "document_number:tsg-08-2017",
+        "historical:旧版"
+      ],
+      "issues": [],
+      "candidate_documents": [
+        {
+          "candidate_document_id": "cn-law-special-equipment-safety-2013",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-50-2022",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-57-2022",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "samr-order-74-2023",
+          "document_status": "ACTIVE",
+          "version_family": null,
+          "version_action": "ALLOW",
+          "version_adjustment": 0.0,
+          "reason": "eligible without a version-specific rank preference",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-08-2017",
+          "document_status": "SUPERSEDED",
+          "version_family": "TSG_08",
+          "version_action": "PREFER",
+          "version_adjustment": 0.02,
+          "reason": "matches explicit or temporal version intent",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-08-2026",
+          "document_status": "ACTIVE",
+          "version_family": "TSG_08",
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": true
+        },
+        {
+          "candidate_document_id": "tsg-z0007-2023",
+          "document_status": "REFERENCE",
+          "version_family": null,
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": false
+        },
+        {
+          "candidate_document_id": "tsg-z0008-2023",
+          "document_status": "REFERENCE",
+          "version_family": null,
+          "version_action": "EXCLUDE",
+          "version_adjustment": 0.0,
+          "reason": "not eligible for resolved version intent",
+          "index_available": false
+        }
+      ]
+    }
+  ]
+}

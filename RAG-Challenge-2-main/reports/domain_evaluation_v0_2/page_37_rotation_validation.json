@@ -1,0 +1,148 @@
+{
+  "schema_version": "1.0",
+  "document_id": "tsg-08-2026",
+  "page_number": 37,
+  "rotation_trigger": {
+    "native_text_insufficient": true,
+    "normal_ocr_executed": true,
+    "normal_raw_block_count": 26,
+    "normal_retained_block_count": 0,
+    "normal_meaningful_char_count": 0,
+    "normal_hybrid_text_empty": true,
+    "orientation_status": "OCR_ORIENTATION_SUSPECTED",
+    "source_render_manually_confirmed_nonempty": true
+  },
+  "rotation_attempted": true,
+  "rotation_degrees": [
+    90,
+    270
+  ],
+  "rotation_recovered": true,
+  "orientation_status": "OCR_ROTATION_RECOVERED",
+  "selected_rotation": 270,
+  "rendered_page": {
+    "has_content": true,
+    "grayscale_stddev": 36.105988,
+    "foreground_ratio": 0.03897672
+  },
+  "candidates": [
+    {
+      "rotation": 90,
+      "raw_block_count": 51,
+      "retained_block_count": 6,
+      "meaningful_char_count": 13,
+      "chinese_character_ratio": 0.0,
+      "structured_text_count": 0,
+      "garbled_ratio": 0.882353,
+      "quality_score": 19.352941,
+      "rotation_recovered": false,
+      "selected": false,
+      "cache_generation_run_cache_hit": false,
+      "validation_run_cache_hit": true,
+      "second_run_cache_hit": true,
+      "error": null
+    },
+    {
+      "rotation": 270,
+      "raw_block_count": 56,
+      "retained_block_count": 35,
+      "meaningful_char_count": 94,
+      "chinese_character_ratio": 0.851064,
+      "structured_text_count": 0,
+      "garbled_ratio": 0.375,
+      "quality_score": 243.521277,
+      "rotation_recovered": true,
+      "selected": true,
+      "cache_generation_run_cache_hit": false,
+      "validation_run_cache_hit": true,
+      "second_run_cache_hit": true,
+      "error": null
+    }
+  ],
+  "validation_terms": {
+    "required_title": "压力管道基本信息汇总表",
+    "title_recovered": true,
+    "candidate_field_signals": {
+      "使用单位": [
+        "使用单位"
+      ],
+      "管道名称": [
+        "管道名称"
+      ],
+      "使用登记编号": [
+        "登记",
+        "编号"
+      ],
+      "途经区域": [
+        "途经",
+        "区域"
+      ],
+      "设计压力": [
+        "设计",
+        "压力"
+      ],
+      "工作压力": [
+        "工作",
+        "压力"
+      ],
+      "公称直径": [
+        "公称",
+        "直径"
+      ],
+      "公称厚度": [
+        "公称",
+        "厚度"
+      ],
+      "管道材质": [
+        "管道",
+        "材质"
+      ],
+      "管道级别": [
+        "管道",
+        "级别"
+      ],
+      "介质": [
+        "介质"
+      ]
+    },
+    "fields_recovered": [
+      "使用单位",
+      "管道名称",
+      "使用登记编号",
+      "途经区域",
+      "设计压力",
+      "工作压力",
+      "公称直径",
+      "公称厚度",
+      "管道材质",
+      "管道级别",
+      "介质"
+    ],
+    "field_matching_method": "all generic OCR tokens for a validation-only field must be present"
+  },
+  "selected_assembled_text": "压力管道基本信息汇总表\n(长输管道)\n使用单位 (加盖公章) :\n使用单位地址:\n安全管理部门:\n管道名称:\n终\n设计\n工作\n公称\n公称\n管道\n管道\n途经\n名称 (登记\n介质\n序号\n长度\n压力\n直径\n厚度\n编号\n区域\n材质\n级别\n单元)\n(MPa)\n(MPa)\n3\n4\n5\n6\n8\n9\n10",
+  "selected_candidate_cache_path": "data\\domain_corpus_v0_2\\ocr_cache\\tsg-08-2026\\0c563c9603108a42987926ef50ed277ab6649b87b95b4657489de6ae48f5c115\\9249e764dbaafb467b39ba10ff0dd581b9e8cb5c4cc48c60712bf314230043ad\\rotation_pages\\247767d90dc79753a5cc4f9354da1dc69faef28684fbac760b2a4eb23f92f07f\\page_0037_rot270.json",
+  "normal_cache_preserved": true,
+  "cache_generation_rotation_ocr_invocation_count": 2,
+  "first_run_rotation_ocr_invocation_count": 2,
+  "current_validation_run_rotation_ocr_invocation_count": 0,
+  "second_run_rotation_ocr_invocation_count": 0,
+  "other_page_ocr_invocation_count": 0,
+  "checks": {
+    "normal_hybrid_text_empty": true,
+    "rendered_page_has_content": true,
+    "page_37_not_empty_after_recovery": true,
+    "table_title_recovered": true,
+    "multiple_table_fields_recovered": true,
+    "chinese_text_quality_passed": true,
+    "garbled_ratio_passed": true,
+    "physical_page_number_preserved": true,
+    "rotation_metadata_correct": true,
+    "second_run_all_candidates_cache_hit": true,
+    "second_run_easyocr_invocations_zero": true,
+    "other_53_pages_easyocr_invocations_zero": true,
+    "normal_ocr_cache_unchanged": true
+  },
+  "passed": true,
+  "downstream_allowed": true
+}

@@ -1,0 +1,139 @@
+{
+  "audit_scope": "existing 7 domain_eval_v0_1 unanswerable questions",
+  "classification_method": "Manual semantic audit against corpus scope plus live retrieval observations; no LLM judge.",
+  "counts": {
+    "EASY_OR_MEDIUM": 2,
+    "HARD": 5
+  },
+  "hard_negative_minimum_met": true,
+  "new_hard_negatives_added": 0,
+  "reason_no_addition": "Five existing cases meet the hard-negative definition, so the optional dataset expansion was not used.",
+  "questions": [
+    {
+      "question_id": "unanswerable-001",
+      "classification": "HARD",
+      "rationale": "The corpus contains accident-reporting rules and retrieves them strongly, but not the requested 2025 national accident count.",
+      "top1_score": 0.6285,
+      "top5_scores": [
+        0.6285,
+        0.6262,
+        0.6093,
+        0.5881,
+        0.5776
+      ],
+      "retrieved_document_count": 2,
+      "shadow_decision": "UNCERTAIN",
+      "reason_codes": [
+        "AMBIGUOUS_RETRIEVAL_SIGNAL"
+      ]
+    },
+    {
+      "question_id": "unanswerable-002",
+      "classification": "HARD",
+      "rationale": "The corpus discusses elevator safety responsibility and insurance duties, but contains no enterprise-specific annual premium.",
+      "top1_score": 0.539,
+      "top5_scores": [
+        0.539,
+        0.5325,
+        0.5202,
+        0.5123,
+        0.5114
+      ],
+      "retrieved_document_count": 2,
+      "shadow_decision": "UNCERTAIN",
+      "reason_codes": [
+        "AMBIGUOUS_RETRIEVAL_SIGNAL"
+      ]
+    },
+    {
+      "question_id": "unanswerable-003",
+      "classification": "EASY_OR_MEDIUM",
+      "rationale": "The request is commercial price/vendor information; retrieved elevator material is only indirectly related.",
+      "top1_score": 0.4765,
+      "top5_scores": [
+        0.4765,
+        0.446,
+        0.4444,
+        0.4337,
+        0.4277
+      ],
+      "retrieved_document_count": 3,
+      "shadow_decision": "UNCERTAIN",
+      "reason_codes": [
+        "WEAK_RETRIEVAL_SIGNAL"
+      ]
+    },
+    {
+      "question_id": "unanswerable-004",
+      "classification": "HARD",
+      "rationale": "National registration and penalty provisions are highly similar, but the requested unnamed local rule is absent.",
+      "top1_score": 0.6862,
+      "top5_scores": [
+        0.6862,
+        0.6589,
+        0.6553,
+        0.6505,
+        0.64
+      ],
+      "retrieved_document_count": 2,
+      "shadow_decision": "UNCERTAIN",
+      "reason_codes": [
+        "AMBIGUOUS_RETRIEVAL_SIGNAL"
+      ]
+    },
+    {
+      "question_id": "unanswerable-005",
+      "classification": "EASY_OR_MEDIUM",
+      "rationale": "Emergency and elevator-operation text is nearby, but a mandated AI algorithm is outside the corpus evidence.",
+      "top1_score": 0.4945,
+      "top5_scores": [
+        0.4945,
+        0.4583,
+        0.4357,
+        0.4329,
+        0.4302
+      ],
+      "retrieved_document_count": 1,
+      "shadow_decision": "UNCERTAIN",
+      "reason_codes": [
+        "WEAK_RETRIEVAL_SIGNAL"
+      ]
+    },
+    {
+      "question_id": "unanswerable-006",
+      "classification": "HARD",
+      "rationale": "Safety-director duties and qualifications are present, while a national minimum salary is not.",
+      "top1_score": 0.6041,
+      "top5_scores": [
+        0.6041,
+        0.534,
+        0.5318,
+        0.517,
+        0.5134
+      ],
+      "retrieved_document_count": 3,
+      "shadow_decision": "UNCERTAIN",
+      "reason_codes": [
+        "AMBIGUOUS_RETRIEVAL_SIGNAL"
+      ]
+    },
+    {
+      "question_id": "unanswerable-007",
+      "classification": "HARD",
+      "rationale": "The current TSG 08—2026 publication is retrieved directly, but it cannot establish a future revision publication date.",
+      "top1_score": 0.5118,
+      "top5_scores": [
+        0.5118,
+        0.446,
+        0.4399,
+        0.3646,
+        0.2567
+      ],
+      "retrieved_document_count": 2,
+      "shadow_decision": "UNCERTAIN",
+      "reason_codes": [
+        "AMBIGUOUS_RETRIEVAL_SIGNAL"
+      ]
+    }
+  ]
+}

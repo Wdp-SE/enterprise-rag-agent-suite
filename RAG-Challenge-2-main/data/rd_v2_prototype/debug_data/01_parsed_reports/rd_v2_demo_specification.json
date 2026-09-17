@@ -1,0 +1,697 @@
+{
+  "metainfo": {
+    "sha1_name": "rd_v2_demo_specification",
+    "pages_amount": 12,
+    "text_blocks_amount": 105,
+    "tables_amount": 0,
+    "pictures_amount": 0,
+    "equations_amount": 0,
+    "footnotes_amount": 0,
+    "filename": "rd_v2_demo_specification.pdf",
+    "document_id": "rd_v2_demo_specification",
+    "title": "R&D Document Intelligence Platform Specification",
+    "document_type": "technical_specification",
+    "source": "rd_v2_demo_specification.pdf",
+    "category": "rd_document_rag",
+    "tags": [
+      "prototype",
+      "engineering",
+      "public-synthetic"
+    ],
+    "source_url": null,
+    "legacy_company_name": null
+  },
+  "content": [
+    {
+      "page": 1,
+      "content": [
+        {
+          "text": "R&D Document Intelligence Platform",
+          "type": "text",
+          "text_id": 0
+        },
+        {
+          "text": "PROTOTYPE SPECIFICATION - RAG-RD-V2",
+          "type": "text",
+          "text_id": 1
+        },
+        {
+          "text": "1 Overview",
+          "type": "text",
+          "text_id": 2
+        },
+        {
+          "text": "This specification defines the R&D Document Intelligence Platform. It covers ingestion,",
+          "type": "text",
+          "text_id": 3
+        },
+        {
+          "text": "section-aware indexing, retrieval, export, reliability, security, and acceptance controls.",
+          "type": "text",
+          "text_id": 4
+        },
+        {
+          "text": "The platform is designed for long requirements, design, interface, test, and acceptance",
+          "type": "text",
+          "text_id": 5
+        },
+        {
+          "text": "documents. Every answer must remain traceable to a document identifier and a physical page",
+          "type": "text",
+          "text_id": 6
+        },
+        {
+          "text": "number.",
+          "type": "text",
+          "text_id": 7
+        },
+        {
+          "text": "Release identifier: RAG-RD-V2. Document status: prototype specification.",
+          "type": "text",
+          "text_id": 8
+        },
+        {
+          "text": "RAG-RD-V2 - Synthetic public prototype corpus",
+          "type": "text",
+          "text_id": 9
+        },
+        {
+          "text": "Page 1",
+          "type": "text",
+          "text_id": 10
+        }
+      ],
+      "page_dimensions": {
+        "l": 98.67628479003906,
+        "t": 767.2716674804688,
+        "r": 496.78326416015625,
+        "b": 745.7206420898438,
+        "coord_origin": "BOTTOMLEFT"
+      }
+    },
+    {
+      "page": 2,
+      "content": [
+        {
+          "text": "1.1 Data Processing Goals",
+          "type": "text",
+          "text_id": 11
+        },
+        {
+          "text": "Module RD-DATA-01 normalizes source records, preserves document_id and page_number,",
+          "type": "text",
+          "text_id": 12
+        },
+        {
+          "text": "removes transport-only wrappers, and emits normalized_blocks.",
+          "type": "text",
+          "text_id": 13
+        },
+        {
+          "text": "Its main responsibility is to turn parser output into stable evidence records without losing",
+          "type": "text",
+          "text_id": 14
+        },
+        {
+          "text": "source provenance. It does not generate answers and it does not decide whether a question is",
+          "type": "text",
+          "text_id": 15
+        },
+        {
+          "text": "answerable.",
+          "type": "text",
+          "text_id": 16
+        },
+        {
+          "text": "The module accepts PDF parser blocks and OCR blocks through the same normalization",
+          "type": "text",
+          "text_id": 17
+        },
+        {
+          "text": "contract.",
+          "type": "text",
+          "text_id": 18
+        },
+        {
+          "text": "RAG-RD-V2 - Synthetic public prototype corpus",
+          "type": "text",
+          "text_id": 19
+        },
+        {
+          "text": "Page 2",
+          "type": "text",
+          "text_id": 20
+        }
+      ],
+      "page_dimensions": {
+        "l": 69.78419494628906,
+        "t": 768.6316528320312,
+        "r": 293.59619140625,
+        "b": 751.765625,
+        "coord_origin": "BOTTOMLEFT"
+      }
+    },
+    {
+      "page": 3,
+      "content": [
+        {
+          "text": "2 Architecture",
+          "type": "text",
+          "text_id": 21
+        },
+        {
+          "text": "The request path is gateway, ingestion coordinator, parser, RD-DATA-01 normalizer, section",
+          "type": "text",
+          "text_id": 22
+        },
+        {
+          "text": "detector, RD-INDEX-02 indexer, retrieval service, and answer service.",
+          "type": "text",
+          "text_id": 23
+        },
+        {
+          "text": "The export worker is isolated from online retrieval. Monitoring observes both the ingestion and",
+          "type": "text",
+          "text_id": 24
+        },
+        {
+          "text": "export paths, but monitoring does not own business records.",
+          "type": "text",
+          "text_id": 25
+        },
+        {
+          "text": "Dense retrieval and sparse retrieval are independent candidate producers. Their raw scores",
+          "type": "text",
+          "text_id": 26
+        },
+        {
+          "text": "are not directly added.",
+          "type": "text",
+          "text_id": 27
+        },
+        {
+          "text": "RAG-RD-V2 - Synthetic public prototype corpus",
+          "type": "text",
+          "text_id": 28
+        },
+        {
+          "text": "Page 3",
+          "type": "text",
+          "text_id": 29
+        }
+      ],
+      "page_dimensions": {
+        "l": 68.81219482421875,
+        "t": 768.4696655273438,
+        "r": 188.72821044921875,
+        "b": 755.3296508789062,
+        "coord_origin": "BOTTOMLEFT"
+      }
+    },
+    {
+      "page": 4,
+      "content": [
+        {
+          "text": "2.1 Ingestion Interface",
+          "type": "text",
+          "text_id": 30
+        },
+        {
+          "text": "POST /api/v2/ingest creates an asynchronous ingestion job.",
+          "type": "text",
+          "text_id": 31
+        },
+        {
+          "text": "Required request fields are source_uri and document_id. Optional fields are language and",
+          "type": "text",
+          "text_id": 32
+        },
+        {
+          "text": "force_ocr.",
+          "type": "text",
+          "text_id": 33
+        },
+        {
+          "text": "A successful request returns job_id and accepted_at. The job_id is used to poll ingestion state.",
+          "type": "text",
+          "text_id": 34
+        },
+        {
+          "text": "The interface rejects a blank source_uri before any parser work starts.",
+          "type": "text",
+          "text_id": 35
+        },
+        {
+          "text": "RAG-RD-V2 - Synthetic public prototype corpus",
+          "type": "text",
+          "text_id": 36
+        },
+        {
+          "text": "Page 4",
+          "type": "text",
+          "text_id": 37
+        }
+      ],
+      "page_dimensions": {
+        "l": 68.81219482421875,
+        "t": 768.6316528320312,
+        "r": 257.7581787109375,
+        "b": 751.765625,
+        "coord_origin": "BOTTOMLEFT"
+      }
+    },
+    {
+      "page": 5,
+      "content": [
+        {
+          "text": "2.2 Indexing Contract",
+          "type": "text",
+          "text_id": 38
+        },
+        {
+          "text": "RD-INDEX-02 consumes normalized_blocks emitted by RD-DATA-01. It creates child",
+          "type": "text",
+          "text_id": 39
+        },
+        {
+          "text": "embeddings, a FAISS IndexFlatIP index, and a local BM25 sparse index.",
+          "type": "text",
+          "text_id": 40
+        },
+        {
+          "text": "Every child record retains chunk_id, parent_id, section_id, document_id, and page_number.",
+          "type": "text",
+          "text_id": 41
+        },
+        {
+          "text": "The section detector output is consumed before embedding so that a child never crosses a",
+          "type": "text",
+          "text_id": 42
+        },
+        {
+          "text": "detected section boundary.",
+          "type": "text",
+          "text_id": 43
+        },
+        {
+          "text": "RAG-RD-V2 - Synthetic public prototype corpus",
+          "type": "text",
+          "text_id": 44
+        },
+        {
+          "text": "Page 5",
+          "type": "text",
+          "text_id": 45
+        }
+      ],
+      "page_dimensions": {
+        "l": 68.81219482421875,
+        "t": 768.6316528320312,
+        "r": 251.18820190429688,
+        "b": 751.765625,
+        "coord_origin": "BOTTOMLEFT"
+      }
+    },
+    {
+      "page": 6,
+      "content": [
+        {
+          "text": "3 Export Service",
+          "type": "text",
+          "text_id": 46
+        },
+        {
+          "text": "POST /api/export starts export operation EXPORT-ASYNC-07. The operation returns an",
+          "type": "text",
+          "text_id": 47
+        },
+        {
+          "text": "export_job_id rather than a binary file in the initial response.",
+          "type": "text",
+          "text_id": 48
+        },
+        {
+          "text": "The worker reads validated answer records and citation records, then writes a portable JSON",
+          "type": "text",
+          "text_id": 49
+        },
+        {
+          "text": "package.",
+          "type": "text",
+          "text_id": 50
+        },
+        {
+          "text": "GET /api/export/{export_job_id} returns the current export status.",
+          "type": "text",
+          "text_id": 51
+        },
+        {
+          "text": "RAG-RD-V2 - Synthetic public prototype corpus",
+          "type": "text",
+          "text_id": 52
+        },
+        {
+          "text": "Page 6",
+          "type": "text",
+          "text_id": 53
+        }
+      ],
+      "page_dimensions": {
+        "l": 69.04619598388672,
+        "t": 768.6316528320312,
+        "r": 208.76219177246094,
+        "b": 751.9996337890625,
+        "coord_origin": "BOTTOMLEFT"
+      }
+    },
+    {
+      "page": 7,
+      "content": [
+        {
+          "text": "3.1 Export Request Fields",
+          "type": "text",
+          "text_id": 54
+        },
+        {
+          "text": "The timeout_ms field controls the maximum export wait. Its default value is 30000 milliseconds",
+          "type": "text",
+          "text_id": 55
+        },
+        {
+          "text": "and its allowed upper bound is 120000 milliseconds.",
+          "type": "text",
+          "text_id": 56
+        },
+        {
+          "text": "The export_format field accepts json or markdown. The include_sources field defaults to true.",
+          "type": "text",
+          "text_id": 57
+        },
+        {
+          "text": "Requests above the timeout_ms upper bound fail validation and do not enter the worker",
+          "type": "text",
+          "text_id": 58
+        },
+        {
+          "text": "queue.",
+          "type": "text",
+          "text_id": 59
+        },
+        {
+          "text": "RAG-RD-V2 - Synthetic public prototype corpus",
+          "type": "text",
+          "text_id": 60
+        },
+        {
+          "text": "Page 7",
+          "type": "text",
+          "text_id": 61
+        }
+      ],
+      "page_dimensions": {
+        "l": 69.04619598388672,
+        "t": 768.4696655273438,
+        "r": 287.566162109375,
+        "b": 751.9996337890625,
+        "coord_origin": "BOTTOMLEFT"
+      }
+    },
+    {
+      "page": 8,
+      "content": [
+        {
+          "text": "4 Performance Requirements",
+          "type": "text",
+          "text_id": 62
+        },
+        {
+          "text": "PERF-RD-100 requires sustained retrieval throughput of 1000 req/s for cached query",
+          "type": "text",
+          "text_id": 63
+        },
+        {
+          "text": "embeddings.",
+          "type": "text",
+          "text_id": 64
+        },
+        {
+          "text": "The maximum supported concurrent user count is 240. Under the reference workload, retrieval",
+          "type": "text",
+          "text_id": 65
+        },
+        {
+          "text": "p95 latency must remain at or below 800 ms.",
+          "type": "text",
+          "text_id": 66
+        },
+        {
+          "text": "The reference workload uses five evidence results and a 1800 token context budget.",
+          "type": "text",
+          "text_id": 67
+        },
+        {
+          "text": "RAG-RD-V2 - Synthetic public prototype corpus",
+          "type": "text",
+          "text_id": 68
+        },
+        {
+          "text": "Page 8",
+          "type": "text",
+          "text_id": 69
+        }
+      ],
+      "page_dimensions": {
+        "l": 68.7042007446289,
+        "t": 768.6316528320312,
+        "r": 317.57220458984375,
+        "b": 751.9996337890625,
+        "coord_origin": "BOTTOMLEFT"
+      }
+    },
+    {
+      "page": 9,
+      "content": [
+        {
+          "text": "5 Reliability and Failure Handling",
+          "type": "text",
+          "text_id": 70
+        },
+        {
+          "text": "Transient index write failures use retry_count 3 and initial backoff_ms 500. After retries are",
+          "type": "text",
+          "text_id": 71
+        },
+        {
+          "text": "exhausted, the job moves to dead-letter queue DLQ-RD.",
+          "type": "text",
+          "text_id": 72
+        },
+        {
+          "text": "A failed document does not prevent other documents in the same batch from completing.",
+          "type": "text",
+          "text_id": 73
+        },
+        {
+          "text": "Section detection failure is non-fatal: ingestion falls back to the legacy page chunker and",
+          "type": "text",
+          "text_id": 74
+        },
+        {
+          "text": "records legacy_fallback in the artifact.",
+          "type": "text",
+          "text_id": 75
+        },
+        {
+          "text": "RAG-RD-V2 - Synthetic public prototype corpus",
+          "type": "text",
+          "text_id": 76
+        },
+        {
+          "text": "Page 9",
+          "type": "text",
+          "text_id": 77
+        }
+      ],
+      "page_dimensions": {
+        "l": 69.1541976928711,
+        "t": 768.4156494140625,
+        "r": 350.29620361328125,
+        "b": 751.765625,
+        "coord_origin": "BOTTOMLEFT"
+      }
+    },
+    {
+      "page": 10,
+      "content": [
+        {
+          "text": "6 Security Controls",
+          "type": "text",
+          "text_id": 78
+        },
+        {
+          "text": "The ingestion endpoint requires OAuth scope rag:ingest. The export endpoint requires scope",
+          "type": "text",
+          "text_id": 79
+        },
+        {
+          "text": "rag:export.",
+          "type": "text",
+          "text_id": 80
+        },
+        {
+          "text": "Stored source objects use AES-256 encryption. Service logs may include identifiers and",
+          "type": "text",
+          "text_id": 81
+        },
+        {
+          "text": "hashes but must not include source document text or access tokens.",
+          "type": "text",
+          "text_id": 82
+        },
+        {
+          "text": "External model calls are prohibited for restricted source documents unless an approved data",
+          "type": "text",
+          "text_id": 83
+        },
+        {
+          "text": "boundary explicitly permits them.",
+          "type": "text",
+          "text_id": 84
+        },
+        {
+          "text": "RAG-RD-V2 - Synthetic public prototype corpus",
+          "type": "text",
+          "text_id": 85
+        },
+        {
+          "text": "Page 10",
+          "type": "text",
+          "text_id": 86
+        }
+      ],
+      "page_dimensions": {
+        "l": 69.11819458007812,
+        "t": 768.6316528320312,
+        "r": 232.5402069091797,
+        "b": 751.765625,
+        "coord_origin": "BOTTOMLEFT"
+      }
+    },
+    {
+      "page": 11,
+      "content": [
+        {
+          "text": "7 Acceptance Criteria",
+          "type": "text",
+          "text_id": 87
+        },
+        {
+          "text": "AC-RAG-01 requires page-level Hit@3 of at least 0.85 on the frozen answerable retrieval set.",
+          "type": "text",
+          "text_id": 88
+        },
+        {
+          "text": "AC-RAG-02 requires citation membership validation success of 100 percent for accepted",
+          "type": "text",
+          "text_id": 89
+        },
+        {
+          "text": "generated answers.",
+          "type": "text",
+          "text_id": 90
+        },
+        {
+          "text": "AC-RAG-03 requires retrieval p95 latency no greater than 800 ms under the reference",
+          "type": "text",
+          "text_id": 91
+        },
+        {
+          "text": "workload.",
+          "type": "text",
+          "text_id": 92
+        },
+        {
+          "text": "Ground truth must remain frozen during a comparison run; it may not be edited to improve",
+          "type": "text",
+          "text_id": 93
+        },
+        {
+          "text": "reported metrics.",
+          "type": "text",
+          "text_id": 94
+        },
+        {
+          "text": "RAG-RD-V2 - Synthetic public prototype corpus",
+          "type": "text",
+          "text_id": 95
+        },
+        {
+          "text": "Page 11",
+          "type": "text",
+          "text_id": 96
+        }
+      ],
+      "page_dimensions": {
+        "l": 69.11819458007812,
+        "t": 768.6316528320312,
+        "r": 251.8181915283203,
+        "b": 751.9996337890625,
+        "coord_origin": "BOTTOMLEFT"
+      }
+    },
+    {
+      "page": 12,
+      "content": [
+        {
+          "text": "Appendix A Glossary",
+          "type": "text",
+          "text_id": 97
+        },
+        {
+          "text": "RD-DATA-01: source normalization module.",
+          "type": "text",
+          "text_id": 98
+        },
+        {
+          "text": "RD-INDEX-02: section-aware dense and sparse indexing module.",
+          "type": "text",
+          "text_id": 99
+        },
+        {
+          "text": "EXPORT-ASYNC-07: asynchronous export operation.",
+          "type": "text",
+          "text_id": 100
+        },
+        {
+          "text": "normalized_blocks: provenance-preserving output consumed by the indexer.",
+          "type": "text",
+          "text_id": 101
+        },
+        {
+          "text": "timeout_ms: maximum export wait in milliseconds.",
+          "type": "text",
+          "text_id": 102
+        },
+        {
+          "text": "RAG-RD-V2 - Synthetic public prototype corpus",
+          "type": "text",
+          "text_id": 103
+        },
+        {
+          "text": "Page 12",
+          "type": "text",
+          "text_id": 104
+        }
+      ],
+      "page_dimensions": {
+        "l": 68.36219787597656,
+        "t": 768.6316528320312,
+        "r": 250.1261749267578,
+        "b": 751.765625,
+        "coord_origin": "BOTTOMLEFT"
+      }
+    }
+  ],
+  "tables": [],
+  "pictures": []
+}

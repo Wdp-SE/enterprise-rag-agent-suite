@@ -1,0 +1,19 @@
+{
+  "document_id": "sample-candidate-interface-v2",
+  "title": "Hash-aware Candidate Interface Sample",
+  "document_type": "technical_note",
+  "source": "local_project_documentation",
+  "source_url": "https://example.test/candidate-contract-v2",
+  "category": "engineering",
+  "tags": [
+    "rag",
+    "candidate-interface-v2"
+  ],
+  "legacy_company_name": null,
+  "candidate": {
+    "status": "CANDIDATE",
+    "generated_by": "sample-agent-v2",
+    "requires_review": true,
+    "created_at": "2026-08-28T08:00:00+08:00"
+  }
+}

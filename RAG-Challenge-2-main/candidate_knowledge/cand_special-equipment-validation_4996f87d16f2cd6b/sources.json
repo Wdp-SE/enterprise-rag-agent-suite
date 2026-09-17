@@ -1,0 +1,28 @@
+[
+  {
+    "source_id": "S01",
+    "title": "问:《中华人民共和国特种设备安全法》对特种设备使用单位有哪些要求?_综合政务_江门市人民政府门户网站",
+    "organization": "www.baidu.com",
+    "url": "https://www.jiangmen.gov.cn/gzhd/zhzw/content/post_3320570.html",
+    "local_file": "raw_sources/f26bae41005f50b77d213ada68167e9eb2a681f01a77943d7ac95cb9330ad6c8.html",
+    "content_hash": "b02c5a2d608d479d107534e59db48e8d11cd23236365fd1f051db845611096fa",
+    "raw_file_hash": "f26bae41005f50b77d213ada68167e9eb2a681f01a77943d7ac95cb9330ad6c8",
+    "source_level": "TIER3",
+    "retrieved_at": "2026-08-28T08:21:09.682074Z",
+    "source_type": "webpage",
+    "evidence_id": "ev_731c83c552aae02af4c7"
+  },
+  {
+    "source_id": "S02",
+    "title": "特种设备使用单位落实使用安全主体责任监督管理规定",
+    "organization": "www.baidu.com",
+    "url": "https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_df3582cb24ae497ba18d9667ecbb63b7.html",
+    "local_file": "raw_sources/0708dc8f25b1a6a44eb7600738dc9fd66b6ed3962c15b059f7d783f86b2e6f28.html",
+    "content_hash": "ca402b6e4df1516c6fe1aeec7c9dc915f1e45e7c563ebc1e15d44b5cf749507a",
+    "raw_file_hash": "0708dc8f25b1a6a44eb7600738dc9fd66b6ed3962c15b059f7d783f86b2e6f28",
+    "source_level": "TIER3",
+    "retrieved_at": "2026-08-28T08:21:08.166465Z",
+    "source_type": "webpage",
+    "evidence_id": "ev_209727e632b49e7f0a0b"
+  }
+]
