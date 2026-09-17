@@ -62,3 +62,6 @@ RAG-Challenge-2-main/data/domain_corpus_v0_2/source_pdfs/
 RAG-Challenge-2-main/data/test_set/databases.zip
 RAG-Challenge-2-main/data/test_set/debug_data.zip
 RAG-Challenge-2-main/data/test_set/pdf_reports/
+
+# Local publishing tools
+.tools/
