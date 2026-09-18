@@ -1,4 +1,4 @@
-"""Deterministic, versioned Trusted QA shadow policies."""
+"""Deterministic, versioned Trusted QA evidence policies."""
 
 from __future__ import annotations
 
@@ -110,7 +110,7 @@ def evaluate_preconditions(
                 )
                 else None
             ),
-            detail="The existing Version Resolver reports an unresolved ambiguity.",
+            detail="Version governance reports an unresolved ambiguity.",
         ),
     ]
 

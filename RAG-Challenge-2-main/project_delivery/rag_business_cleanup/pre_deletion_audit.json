@@ -1,0 +1,13 @@
+{
+  "manifest_count_matches": true,
+  "unique_paths": true,
+  "record_order_matches": true,
+  "all_targets_exist": true,
+  "all_targets_inside_project": true,
+  "protected_scope_clear": true,
+  "record_hashes_valid": true,
+  "formal_python_files_checked": 24,
+  "parse_failures": [],
+  "references_from_formal_import_closure": [],
+  "safe_to_delete_by_static_import_audit": true
+}

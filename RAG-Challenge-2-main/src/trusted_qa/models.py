@@ -1,4 +1,4 @@
-"""Typed observation and decision models for Trusted QA shadow mode."""
+"""Typed observation and enforcement models for Trusted QA."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ class TrustedQAMode(str, Enum):
 
 
 class EnforcementScope(str, Enum):
-    """Supported enforcement boundary for the autumn-recruitment baseline."""
+    """Supported enforcement boundary for the formal runtime."""
 
     POST_ANSWER_ONLY = "POST_ANSWER_ONLY"
 
@@ -139,10 +139,7 @@ class RetrievalSignalSnapshot(BaseModel):
     version_resolution_issues: List[str] = Field(default_factory=list)
     citation_candidates_available: bool
     citation_candidate_count: int = Field(ge=0)
-    rerank_available: bool
-    rerank_score: Optional[float] = None
-    rerank_scores: List[float] = Field(default_factory=list)
-    rerank_margin: Optional[float] = None
+
     retrieval_state_valid: bool
     retrieval_state_issues: List[str] = Field(default_factory=list)
 

@@ -1,0 +1,99 @@
+{
+  "active_index": {
+    "path": "active_indexes/active-3.json",
+    "row_count": 4,
+    "sha256": "7b01873bdbd5e1196e8206fe47d6feed88d6eaf210de7ed2429656bd34d6bb08",
+    "strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH"
+  },
+  "document_catalog_version": "rd-document-catalog-v3",
+  "documents": [
+    {
+      "created_at": "2026-09-18T07:44:36.422839Z",
+      "document_id": "REQ-001",
+      "document_type": "requirements",
+      "project_id": "P-001",
+      "title": "需求规格说明书"
+    },
+    {
+      "created_at": "2026-09-18T07:44:36.507465Z",
+      "document_id": "DESIGN-001",
+      "document_type": "design",
+      "project_id": "P-001",
+      "title": "详细设计说明书"
+    }
+  ],
+  "embedding_cache": {
+    "bytes": 850,
+    "path": "embedding_cache.json",
+    "sha256": "8017a14385c106fd3a187eca0fa24da73178a0d792ab55148bba370d8248dc39"
+  },
+  "index_refresh_version": 3,
+  "manifest_sha256": "f1737aca8e208ec5e16eb067c955fc203824b821d9ed0aad23a26780fd2d8923",
+  "schema_version": "rd-version-store-v3",
+  "status": "COMPLETE",
+  "updated_at": "2026-09-18T07:44:36.613205+00:00",
+  "version_artifacts": {
+    "DESIGN-001@1.0": {
+      "chunk_count": 1,
+      "path": "versions/DESIGN-001_1.0.json",
+      "sha256": "80c3f3eb96fc1cfff6abc8fa0ec0f31d398564ad0298d0009333a9ebf9f38a72"
+    },
+    "REQ-001@1.0": {
+      "chunk_count": 3,
+      "path": "versions/REQ-001_1.0.json",
+      "sha256": "b48454dc2007d7e8c211fbf260bd2fa7d859eab27c143e4f125c505281b8d8ed"
+    },
+    "REQ-001@2.0": {
+      "chunk_count": 3,
+      "path": "versions/REQ-001_2.0.json",
+      "sha256": "0687524b4c59dd2903053f66bb991b83b10c7019f7582b8adf61afa155919980"
+    }
+  },
+  "versions": [
+    {
+      "activated_at": "2026-09-18T07:44:36.422839Z",
+      "created_at": "2026-09-18T07:44:36.422839Z",
+      "document_id": "REQ-001",
+      "metadata": {},
+      "previous_version_id": null,
+      "source_document_id": null,
+      "source_hash": "48c239dc499d39aa746caaf7a2b1e7ddb50575c670bde42e7ddd75c667f63b4a",
+      "source_name": "requirements_v1.json",
+      "source_path": null,
+      "status": "SUPERSEDED",
+      "superseded_at": "2026-09-18T07:44:36.574006Z",
+      "version_id": "REQ-001@1.0",
+      "version_label": "V1.0"
+    },
+    {
+      "activated_at": "2026-09-18T07:44:36.507465Z",
+      "created_at": "2026-09-18T07:44:36.507465Z",
+      "document_id": "DESIGN-001",
+      "metadata": {},
+      "previous_version_id": null,
+      "source_document_id": null,
+      "source_hash": "83e4928d66ddc6ac2353a5aaffe12348f52db1df980ab7337cb8a6730621d289",
+      "source_name": "design_v1.json",
+      "source_path": null,
+      "status": "ACTIVE",
+      "superseded_at": null,
+      "version_id": "DESIGN-001@1.0",
+      "version_label": "V1.0"
+    },
+    {
+      "activated_at": "2026-09-18T07:44:36.574006Z",
+      "created_at": "2026-09-18T07:44:36.574006Z",
+      "document_id": "REQ-001",
+      "metadata": {},
+      "previous_version_id": "REQ-001@1.0",
+      "source_document_id": null,
+      "source_hash": "05d14ffb59296b99feb477e371bd140ce5aaaff59dbe3119abca3f587cf51aa9",
+      "source_name": "requirements_v2.json",
+      "source_path": null,
+      "status": "ACTIVE",
+      "superseded_at": null,
+      "version_id": "REQ-001@2.0",
+      "version_label": "V2.0"
+    }
+  ]
+}

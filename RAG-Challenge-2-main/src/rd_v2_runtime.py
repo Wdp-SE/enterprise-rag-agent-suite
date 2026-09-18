@@ -18,12 +18,14 @@ from typing import Mapping, Optional, Protocol, Sequence
 
 import numpy as np
 
+from src.answer_generation import StructuredAnswerGenerator
 from src.artifact_lifecycle import sha256_file
 from src.document_lifecycle import DocumentCatalog, RetrievalScope
 from src.native_runtime import NativeRuntimePolicy, validate_embedding_batch
 from src.trusted_qa import (
     ShadowPolicyProfile,
     TrustedQAMode,
+    VersionResolutionStatus,
     apply_post_answer_enforcement,
     build_answer_evidence_audit,
     collect_retrieval_signals,
@@ -532,26 +534,6 @@ class FrozenDenseRetriever:
         return results
 
 
-class ExistingGenerationAdapter:
-    """Thin adapter around the existing generic structured-output generation."""
-
-    def __init__(self, *, provider: str, model: str, schema: str = "text"):
-        from src.api_requests import APIProcessor
-
-        self.processor = APIProcessor(provider=provider)
-        self.model = model
-        self.schema = schema
-
-    def generate(self, *, question: str, context: str) -> dict:
-        return self.processor.get_answer_from_rag_context(
-            question=question,
-            rag_context=context,
-            schema=self.schema,
-            model=self.model,
-            prompt_mode="generic",
-        )
-
-
 def _format_context(results: Sequence[Mapping[str, object]]) -> str:
     parts = []
     for result in results:
@@ -618,7 +600,7 @@ class RDV2QueryRuntime:
         settings: RDV2Settings,
         bundle: FrozenArtifactBundle,
         embedder: QueryEmbedder,
-        generator: Optional[ExistingGenerationAdapter] = None,
+        generator: Optional[StructuredAnswerGenerator] = None,
     ):
         from src.context_expansion import SectionContextExpander
 
@@ -680,7 +662,11 @@ class RDV2QueryRuntime:
         snapshot = collect_retrieval_signals(
             question_id=question_id,
             retrieval_results=evidence,
-            version_governance_enabled=False,
+            version_governance_enabled=True,
+            version_resolution_status=VersionResolutionStatus.RESOLVED,
+            eligible_document_count=len(
+                {item["document_id"] for item in evidence if item.get("document_id")}
+            ),
         )
         shadow_decision = decide_evidence_sufficiency(
             snapshot,
@@ -767,7 +753,7 @@ def create_runtime(
     settings: RDV2Settings | None = None,
     *,
     embedder: QueryEmbedder | None = None,
-    generator: ExistingGenerationAdapter | None = None,
+    generator: StructuredAnswerGenerator | None = None,
 ) -> RDV2QueryRuntime:
     settings = settings or RDV2Settings.from_env()
     bundle = FrozenArtifactValidator(settings).validate_and_load()
@@ -782,7 +768,7 @@ def create_runtime(
             max_length=settings.embedding_max_length,
         )
     if generator is None and settings.allow_external_generation:
-        generator = ExistingGenerationAdapter(
+        generator = StructuredAnswerGenerator(
             provider=settings.generation_provider,
             model=settings.generation_model,
         )

@@ -1,14 +1,9 @@
-# Known Limitations
+# 已知限制
 
-- V3 adds business lifecycle metadata around the frozen DENSE_ONLY + SECTION_PATH retrieval core. It does not retune embeddings, chunks, sections, similarity, or ranking.
-- Frozen V2 artifacts predate separate version IDs. The compatibility catalog maps each legacy document to one initial ACTIVE version. Real multi-version operation requires lifecycle artifacts produced by the V3 service.
-- The incremental service starts from section snapshots produced by the existing parser. It does not add support for arbitrary Word files or redesign parsing.
-- Embeddings are reused by normalized content hash. The active search snapshot is rebuilt from cached vectors; FAISS is not updated in place.
-- Exact matrix search is appropriate for the current roughly 5,090-chunk MVP corpus. No production QPS, horizontal scaling, or large-corpus claim is made.
-- Section Diff aligns normalized paths and hashes. Renamed or moved sections appear as removed plus added, and no semantic meaning is inferred.
-- RetrievalScope is a business filter, not a security boundary. V3 does not implement ACL, RBAC, authentication, tenants, or row-level authorization.
-- Version writes are exposed through a local service and CLI. There is no unauthenticated HTTP administration or upload endpoint.
-- Agent freshness depends on a reachable, consistent /documents catalog during Resume. Unknown freshness fails closed or requires human review.
-- External answer generation remains governed by the existing data policy. The V3 synthetic E2E and Version Diff make no online model call.
-- Human review remains mandatory for generated workflow drafts.
-
+- 正式 ingestion 接收已经规范化的 SectionSnapshot 和预计算向量，不包含任意 PDF、扫描件或 Office 文件的通用解析器。
+- 正式检索只有 DENSE_ONLY + SECTION_PATH，不提供词法召回、混合融合或在线重排。
+- 本地查询嵌入需要与冻结资产完全一致的模型快照和维度。
+- 外部回答生成默认关闭；开启后文档证据会发送给配置的 DashScope 模型。
+- Trusted QA 可验证结构、引用成员关系和确定性前置条件，不声明已完成语义蕴含证明。
+- 版本索引使用精确矩阵刷新，适合当前规模；大规模增量索引需要独立性能设计。
+- 项目不包含身份认证、租户隔离、审计日志持久化和生产部署编排。

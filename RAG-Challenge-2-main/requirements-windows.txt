@@ -1,7 +1,0 @@
---extra-index-url https://download.pytorch.org/whl/cpu
--r requirements.txt
-
-# The newer PyPI Windows wheel selected through Docling failed to load c10.dll
-# on the verified host. This official CPU pair is compatible with Docling 2.14.
-torch==2.4.0+cpu; sys_platform == "win32"
-torchvision==0.19.0+cpu; sys_platform == "win32"

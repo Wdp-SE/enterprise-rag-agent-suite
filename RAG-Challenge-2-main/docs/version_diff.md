@@ -1,26 +1,12 @@
-# Section-level Version Diff
+# 版本差异
 
-Version Diff is deterministic and does not call an LLM.
+版本差异以规范化 section_path 作为稳定章节身份，以内容哈希判断内容变化。
 
-Sections are aligned by normalized `section_path`. A unique aligned path is
-classified by content hash:
+输出类型：
 
-- present only in the new version: `ADDED`
-- present only in the old version: `REMOVED`
-- present in both with different hashes: `MODIFIED`
-- present in both with the same hash: `UNCHANGED`
+- ADDED：新版本新增章节。
+- REMOVED：新版本删除章节。
+- MODIFIED：章节身份不变但内容哈希变化。
+- UNCHANGED：章节身份与内容哈希均不变。
 
-Each row retains the old and new section IDs, page ranges, and content hashes.
-The response also contains counts for all four change types. Results are sorted
-by normalized path, so repeated calls over the same artifacts are stable.
-
-The API is
-`GET /documents/{document_id}/diff?from_version_id=...&to_version_id=...`.
-Both versions must belong to the requested logical document and both must have
-section snapshots.
-
-Known limits: renamed or moved sections are represented as removed plus added;
-semantic alignment is not attempted. Duplicate normalized section paths are
-rejected instead of guessed. The diff describes structural and hash changes,
-not the business meaning or correctness of those changes.
-
+每条差异保留旧、新章节快照和 document_id、from_version_id、to_version_id，可用于审计、变更说明和增量更新验证。

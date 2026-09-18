@@ -85,9 +85,8 @@ def decide_post_answer_enforcement(
                 PostAnswerEnforcementReason.ANSWER_CITATION_STATE_CONFLICT
             ]
     elif audit.generation_performed and audit.structured_output_valid is True:
-        # NOT_CHECKED preserves legacy mode, where citation membership is not
-        # part of the response contract. Citation-required Generic QA always
-        # supplies a checked True/False state here.
+        # A formal answer always supplies a checked True/False citation state.
+        # NOT_CHECKED is retained only for a caller that performs no generation.
         if audit.citation_membership_valid is False:
             if (audit.claimed_citation_count or 0) == 0:
                 reasons = [

@@ -1,0 +1,25 @@
+{
+  "business": "企业研发文档知识服务",
+  "formal_retrieval": "DENSE_ONLY + SECTION_PATH",
+  "manifest_approved_count": 302,
+  "manifest_remaining_files": 0,
+  "git_deleted_entries": 302,
+  "formal_python_files": 25,
+  "parse_failures": [],
+  "missing_local_imports": [],
+  "forbidden_source_paths_present": [],
+  "core_counts": {
+    "src_python": 15,
+    "scripts": 5,
+    "tests_python": 4,
+    "docs": 9
+  },
+  "ignored_residuals": {
+    "src/versioning": "compiled __pycache__ only",
+    "src/evaluation": "compiled __pycache__ only",
+    "candidate_knowledge": "empty directories only",
+    "examples": "empty directories only",
+    "data/rd_v2_prototype": "empty directories only"
+  },
+  "status": "PASS"
+}

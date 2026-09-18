@@ -1,28 +1,7 @@
-# Retrieval Scope
+# 范围检索
 
-`RetrievalScope` is one shared contract used by `/retrieve`, `/query`, the
-runtime retriever, the Agent adapter, and the Streamlit UI.
+RetrievalScope 支持 project_ids、document_types、document_ids、version_ids 与 include_superseded。
 
-| Business mode | Scope |
-| --- | --- |
-| All current knowledge | `active_only=true` |
-| Project | `project_ids=[...]`, `active_only=true` |
-| Document type | `document_types=[...]`, `active_only=true` |
-| One or more documents | `document_ids=[...]`, `active_only=true` |
-| Historical version | `version_ids=[...]`, `active_only=false` |
+默认只检索 ACTIVE 版本。只有显式设置 include_superseded=true 才允许历史版本进入候选集。指定 version_ids 时，版本必须存在且属于范围中的文档。
 
-The fields are combined with AND semantics. Values inside one field use OR
-semantics. Duplicate and blank values are rejected. `version_ids` with
-`active_only=true` is a validation error because the caller must acknowledge
-that an explicitly selected version can be historical.
-
-Scope is applied before ranking. The runtime selects all embedding rows whose
-version and document metadata match the scope, then computes exact normalized
-dot products inside that subset and returns its real Top K. It never takes a
-global Top K and filters afterward. The frozen policy remains
-`DENSE_ONLY + SECTION_PATH`; scope changes candidate membership, not embedding
-text, similarity math, chunking, or reranking.
-
-Scope expresses business retrieval range. It is not an ACL, RBAC rule, tenant
-boundary, or security control.
-
+范围筛选发生在相似度计算前，因此越权文档不会先被召回后再隐藏。范围仅改变候选集合，不改变向量、分数或排序规则。

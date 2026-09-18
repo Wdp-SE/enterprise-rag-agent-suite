@@ -1,6 +1,9 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
+
 
 setup(
-    name="erc2",
-    packages=find_packages(),
+    name="enterprise-rd-document-rag",
+    version="1.0.0",
+    description="Enterprise R&D document knowledge service",
+    packages=find_packages(include=["src", "src.*"]),
 )

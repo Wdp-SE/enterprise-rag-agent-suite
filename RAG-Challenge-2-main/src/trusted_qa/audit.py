@@ -1,4 +1,4 @@
-"""Post-generation observation for Trusted QA shadow mode."""
+"""Post-generation evidence and citation audit for Trusted QA."""
 
 from __future__ import annotations
 
@@ -106,4 +106,3 @@ def build_answer_evidence_audit(
         post_answer_shadow_decision=DecisionState.ANSWER,
         reason_codes=[],
     )
-

@@ -45,7 +45,10 @@ def embedding_worker_main(request_queue, response_queue, config: dict) -> None:
         return
 
     while True:
-        request = request_queue.get()
+        try:
+            request = request_queue.get()
+        except (EOFError, KeyboardInterrupt, OSError):
+            return
         if request is None:
             return
         request_id = request.get("id")
@@ -72,4 +75,3 @@ def embedding_worker_main(request_queue, response_queue, config: dict) -> None:
             response_queue.put(
                 {"type": "ERROR", "id": request_id, "code": type(exc).__name__}
             )
-

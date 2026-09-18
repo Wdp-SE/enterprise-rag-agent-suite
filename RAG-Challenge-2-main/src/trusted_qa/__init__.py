@@ -1,10 +1,9 @@
-"""Trusted QA signal instrumentation and non-enforcing shadow policy."""
+"""Trusted QA policy, citation audit, and fail-closed enforcement."""
 
 from src.trusted_qa.audit import (
     build_answer_evidence_audit,
     not_available_answer_audit,
 )
-from src.trusted_qa.evaluator import evaluate_shadow_decisions
 from src.trusted_qa.enforcement import (
     POST_ANSWER_POLICY_VERSION,
     apply_post_answer_enforcement,
@@ -25,9 +24,9 @@ from src.trusted_qa.models import (
     PreconditionResult,
     ReasonCode,
     RetrievalSignalSnapshot,
+    StructuredOutputState,
     TrustedQAMode,
     TrustedQATrace,
-    StructuredOutputState,
     VersionResolutionStatus,
 )
 from src.trusted_qa.policy import (
@@ -37,22 +36,6 @@ from src.trusted_qa.policy import (
     evaluate_preconditions,
 )
 from src.trusted_qa.signals import collect_retrieval_signals
-from src.trusted_qa.phase2 import (
-    HoldoutDifficulty,
-    HoldoutFreezeMetadata,
-    NegativeClass,
-    PostAnswerCandidateAction,
-    PostAnswerCandidateDecision,
-    PostAnswerCandidateReason,
-    TrustedQAHoldoutItem,
-    assert_exact_independence,
-    decide_post_answer_candidate,
-    evaluate_holdout_shadow,
-    evaluate_post_answer_candidates,
-    file_sha256,
-    load_frozen_holdout,
-    load_holdout_dataset,
-)
 
 __all__ = [
     "AnswerEvidenceAudit",
@@ -72,30 +55,15 @@ __all__ = [
     "ReasonCode",
     "RetrievalSignalSnapshot",
     "ShadowPolicyProfile",
+    "StructuredOutputState",
     "TrustedQAMode",
     "TrustedQATrace",
-    "StructuredOutputState",
     "VersionResolutionStatus",
-    "build_answer_evidence_audit",
     "apply_post_answer_enforcement",
+    "build_answer_evidence_audit",
     "collect_retrieval_signals",
     "decide_evidence_sufficiency",
     "decide_post_answer_enforcement",
     "evaluate_preconditions",
-    "evaluate_shadow_decisions",
     "not_available_answer_audit",
-    "HoldoutDifficulty",
-    "HoldoutFreezeMetadata",
-    "NegativeClass",
-    "PostAnswerCandidateAction",
-    "PostAnswerCandidateDecision",
-    "PostAnswerCandidateReason",
-    "TrustedQAHoldoutItem",
-    "assert_exact_independence",
-    "decide_post_answer_candidate",
-    "evaluate_holdout_shadow",
-    "evaluate_post_answer_candidates",
-    "file_sha256",
-    "load_frozen_holdout",
-    "load_holdout_dataset",
 ]
