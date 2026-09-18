@@ -1,29 +1,14 @@
-# R&D V2 Known Limitations
+# Known Limitations
 
-1. Retrieval metrics on the real long-document R&D corpus remain limited. The
-   frozen 20-question HOLDOUT result is Hit@1 0.20, Hit@5 0.40, Hit@20 0.40,
-   and MRR 0.2625.
-2. Dense retrieval remains weak for field and exact-term questions. Engineering
-   hardening does not solve that quality limitation.
-3. BM25 and hybrid implementations did not show a stable net gain. They remain
-   reproducible experimental/legacy paths and are disabled by default.
-4. Reranker value was not verified under the frozen constraints. Existing
-   optional rerankers require online services, so the final V2 disables them.
-5. The primary validated structure path is Word/DOC/DOCX to local canonical PDF
-   plus a Word structure sidecar. PDF-only heading heuristic reliability has not
-   been demonstrated at the same level; its two-case diagnostic stress result
-   was a miss at Top 20. FALLBACK remains a compatibility path.
-6. Citation Membership proves that `(document_id, page_number)` belongs to
-   retrieved evidence. It does not prove semantic support, factual correctness,
-   completeness, or absence of hallucination.
-7. Trusted QA fail-closed covers deterministic structured-output and citation
-   invariants. It is not a general factuality or hallucination detector.
-8. The minimal API has no production authentication, authorization, rate limit,
-   distributed task queue, multi-tenant isolation, or observability platform.
-9. External generation is disabled for the real R&D corpus until its data owner
-   explicitly authorizes transmission. The engineering sprint therefore makes
-   no claim about real-corpus end-to-end answer quality.
-
-This project does not claim Production Ready and does not claim zero
-hallucinations.
+- V3 adds business lifecycle metadata around the frozen DENSE_ONLY + SECTION_PATH retrieval core. It does not retune embeddings, chunks, sections, similarity, or ranking.
+- Frozen V2 artifacts predate separate version IDs. The compatibility catalog maps each legacy document to one initial ACTIVE version. Real multi-version operation requires lifecycle artifacts produced by the V3 service.
+- The incremental service starts from section snapshots produced by the existing parser. It does not add support for arbitrary Word files or redesign parsing.
+- Embeddings are reused by normalized content hash. The active search snapshot is rebuilt from cached vectors; FAISS is not updated in place.
+- Exact matrix search is appropriate for the current roughly 5,090-chunk MVP corpus. No production QPS, horizontal scaling, or large-corpus claim is made.
+- Section Diff aligns normalized paths and hashes. Renamed or moved sections appear as removed plus added, and no semantic meaning is inferred.
+- RetrievalScope is a business filter, not a security boundary. V3 does not implement ACL, RBAC, authentication, tenants, or row-level authorization.
+- Version writes are exposed through a local service and CLI. There is no unauthenticated HTTP administration or upload endpoint.
+- Agent freshness depends on a reachable, consistent /documents catalog during Resume. Unknown freshness fails closed or requires human review.
+- External answer generation remains governed by the existing data policy. The V3 synthetic E2E and Version Diff make no online model call.
+- Human review remains mandatory for generated workflow drafts.
 

@@ -76,7 +76,7 @@ def test_agent_safe_demo_invalid_docx_and_artifacts(tmp_path):
     assert record["summary"]["section_count"] > 0
     assert record["summary"]["tasks"]
     result = client.run_workflow(record, use_demo_rag=True)
-    assert result["workflow_status"] == "PARTIAL"
+    assert result["workflow_status"] == "REVIEW_REQUIRED"
     assert result["requires_human_review"] is True
     assert result["missing_field_count"] > 0
     draft = Path(result["artifacts"]["draft"])

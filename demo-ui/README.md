@@ -1,18 +1,11 @@
-# RAG + Document Workflow Agent Streamlit Demo
+# 企业研发文档 RAG 与审核工作流界面
 
-This is a local interview/demo layer over two frozen projects. It calls the existing RAG HTTP API and the existing Document Workflow Agent runner. It does not implement retrieval, Evidence identity, workflow, checkpoint, or finalization logic.
+Streamlit 页面展示版本化 RAG 知识底座和 Evidence-driven Document Workflow
+Agent。UI 不实现业务逻辑；Agent 页面只调用 `DocumentWorkflowFacade`。
 
-## Install
+## 启动
 
-From the workspace root, install only the UI dependency into the existing Agent environment:
-
-```powershell
-OpenManus-rag\.venv\Scripts\python.exe -m pip install -r demo-ui\requirements.txt
-```
-
-## Start the safe RAG service
-
-The commands below select the retained synthetic/public artifact and disable external generation. Keep this terminal open:
+先启动 RAG API：
 
 ```powershell
 cd RAG-Challenge-2-main
@@ -22,34 +15,31 @@ $env:RD_V2_ALLOW_EXTERNAL_GENERATION = 'false'
 .venv\Scripts\python.exe -m uvicorn src.rd_v2_api:app --host 127.0.0.1 --port 8765
 ```
 
-Confirm `http://127.0.0.1:8765/health` and `/artifacts/status` before the demo. With external generation disabled, `/retrieve` is the primary safe demo path. `/query` remains visible in the UI because it is part of the frozen API, but a successful answer depends on the RAG service generation configuration.
-
-## Start Streamlit
-
-In a second terminal:
+再启动 UI：
 
 ```powershell
 cd demo-ui
+..\OpenManus-rag\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ..\OpenManus-rag\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1 --server.port 8501
 ```
 
-Or run `powershell -ExecutionPolicy Bypass -File .\start_demo.ps1`. No separate Agent service is needed: `services/agent_client.py` calls the existing public Python runner synchronously. The UI uses `st.session_state`; ordinary expand/download interactions do not rerun the workflow.
+## Agent 页面
 
-## Demo data and outputs
+1. 选择 Project。
+2. 选择当前文档、指定文档或显式历史版本 Scope。
+3. 加载旗舰模板或上传结构化 DOCX。
+4. 检查解析出的 SectionTask/FieldTask。
+5. 运行范围受控的 Evidence 检索与字段起草。
+6. 查看 Query、Evidence、Version、Freshness、Draft 和 Missing。
+7. 填写审核人，编辑字段并逐章节批准或驳回。
+8. 全部必要章节通过后生成 Approved DOCX。
+9. 在历史任务中查看或恢复未完成工作流。
 
-The default data label is `Synthetic / Public`. Uploaded templates and outputs go under `demo-ui/runtime/`, which is ignored by Git. Each upload/run gets a new directory and the original template is never overwritten. Generated drafts always require human review. Do not point `/query` at unauthorized internal material if the configured RAG generation provider may send context to an external model. Set `DEMO_DATA_CLASSIFICATION` to a non-safe value to disable the `/query` button.
+上传和输出位于 `demo-ui/runtime/`，Git 默认忽略。真实未经授权资料不得
+发送公网模型。
 
-## Troubleshooting
-
-- **RAG Service Unavailable**: start the RAG command above and refresh Streamlit.
-- **Artifact Not Ready**: verify `RD_V2_ARTIFACT_ROOT` points to the completed safe artifact.
-- **Invalid DOCX**: use a valid structured `.docx` with supported headings/placeholders.
-- **Workflow PARTIAL**: this is expected when Evidence is insufficient; inspect MISSING and stop reason.
-- **Port occupied**: select another Streamlit port. If the RAG port changes, set `DEMO_RAG_BASE_URL` before starting Streamlit.
-
-Run the small adapter tests with:
+## 测试
 
 ```powershell
 ..\OpenManus-rag\.venv\Scripts\python.exe -m pytest tests -q
 ```
-

@@ -125,6 +125,10 @@ class Evidence(StrictModel):
     source_url: str | None = None
     source_type: str = Field(min_length=1)
     document_number: str | None = None
+    document_id: str | None = None
+    version_id: str | None = None
+    version_status: str | None = None
+    freshness: str | None = None
     chunk_id: str | None = None
     query: str | None = None
     section_path: list[str] | None = None
@@ -137,7 +141,7 @@ class Evidence(StrictModel):
     source_level: SourceLevel
     content_hash: str | None = None
 
-    @field_validator("title", "content", "organization", "source_type", "document_number", "chunk_id", "query", "section")
+    @field_validator("title", "content", "organization", "source_type", "document_number", "document_id", "version_id", "version_status", "freshness", "chunk_id", "query", "section")
     @classmethod
     def normalize_text_fields(cls, value: str | None) -> str | None:
         if value is None:
@@ -185,6 +189,8 @@ class Evidence(StrictModel):
         }
         if self.chunk_id is not None:
             payload["chunk_id"] = self.chunk_id
+        if self.version_id is not None:
+            payload["version_id"] = self.version_id
         canonical = json.dumps(
             payload,
             ensure_ascii=False,

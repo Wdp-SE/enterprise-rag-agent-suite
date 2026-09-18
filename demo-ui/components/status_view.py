@@ -4,9 +4,9 @@ import streamlit as st
 
 
 STATUS_COLOR = {
-    "COMPLETE": "#15803d", "READY": "#15803d", "HEALTHY": "#15803d",
-    "PARTIAL": "#b45309", "MISSING": "#b45309",
-    "FAILED": "#b91c1c", "UNAVAILABLE": "#b91c1c",
+    "COMPLETE": "#15803d", "APPROVED": "#15803d", "DRAFTED": "#15803d", "READY": "#15803d", "HEALTHY": "#15803d",
+    "PARTIAL": "#b45309", "MISSING": "#b45309", "INSUFFICIENT_EVIDENCE": "#b45309", "REVIEW_REQUIRED": "#b45309",
+    "FAILED": "#b91c1c", "REJECTED": "#b91c1c", "INVALID": "#b91c1c", "UNAVAILABLE": "#b91c1c",
     "RUNNING": "#1d4ed8", "PENDING": "#64748b",
 }
 
@@ -44,10 +44,6 @@ def render_about(artifact: dict | None) -> None:
         st.write(f"Policy: {(artifact or {}).get('retrieval_policy', 'DENSE_ONLY')}")
         st.write(f"Dense representation: {(artifact or {}).get('dense_representation', 'SECTION_PATH')}")
         st.markdown("**Agent**")
-        st.write("Document Workflow V2")
-        st.write("Timeout enabled · Retry controlled · Budget controlled · Checkpoint supported")
-        st.markdown("**Selected Relevant Regression**")
-        st.write("RAG: 290 passed / 0 failed")
-        st.write("Agent: 286 passed / 0 failed")
-        st.write("Total: 576 passed / 0 failed")
-        st.caption("不等同于 Entire Repository All Suites；live/sandbox suite 不在该统计内。")
+        st.write("Evidence-driven Document Workflow Agent")
+        st.write("Scope · Evidence Sufficiency · Drafting · Review · Checkpoint/Resume")
+        st.caption("测试结果以当前 README 与最终工程报告为准。")

@@ -1,0 +1,123 @@
+{
+  "data_policy": "SYNTHETIC_OFFLINE",
+  "online_models_called": false,
+  "scenario_a": {
+    "version_id": "REQ-001@1.0",
+    "text": "最大并发为 500。"
+  },
+  "scenario_b": {
+    "version_id": "REQ-001@2.0",
+    "text": "最大并发为 1000。"
+  },
+  "scenario_c": {
+    "version_id": "REQ-001@1.0",
+    "text": "最大并发为 500。"
+  },
+  "scenario_d_document_ids": [
+    "DESIGN-001"
+  ],
+  "scenario_e": {
+    "document_id": "REQ-001",
+    "from_version": "REQ-001@1.0",
+    "to_version": "REQ-001@2.0",
+    "summary": {
+      "ADDED": 1,
+      "REMOVED": 1,
+      "MODIFIED": 1,
+      "UNCHANGED": 1
+    },
+    "sections": [
+      {
+        "section_path": [
+          "吞吐指标"
+        ],
+        "change_type": "ADDED",
+        "old_section_id": null,
+        "new_section_id": "req-v2-throughput",
+        "old_page_range": null,
+        "new_page_range": [
+          5,
+          5
+        ],
+        "old_content_hash": null,
+        "new_content_hash": "cc4028bbe871189b1447ba29c885caa865b200c6ecf29898ba58b6c855d68588"
+      },
+      {
+        "section_path": [
+          "容量指标"
+        ],
+        "change_type": "MODIFIED",
+        "old_section_id": "req-v1-capacity",
+        "new_section_id": "req-v2-capacity",
+        "old_page_range": [
+          2,
+          2
+        ],
+        "new_page_range": [
+          4,
+          4
+        ],
+        "old_content_hash": "94cdd67a0882d9d390040fb976ac2bd18765213bb5c97b3bab00add0e0a3ff9f",
+        "new_content_hash": "cff4ae74a24509f82fcdf99771604c6a0f0cbdc015ad1f476acd2a7cefb409f6"
+      },
+      {
+        "section_path": [
+          "旧约束"
+        ],
+        "change_type": "REMOVED",
+        "old_section_id": "req-v1-legacy",
+        "new_section_id": null,
+        "old_page_range": [
+          3,
+          3
+        ],
+        "new_page_range": null,
+        "old_content_hash": "5f73e3108e68c37b000ea2368486e59a9f9773b9cfdcb7e729a4c662ede8e20c",
+        "new_content_hash": null
+      },
+      {
+        "section_path": [
+          "系统概述"
+        ],
+        "change_type": "UNCHANGED",
+        "old_section_id": "req-v1-overview",
+        "new_section_id": "req-v2-overview",
+        "old_page_range": [
+          1,
+          1
+        ],
+        "new_page_range": [
+          1,
+          1
+        ],
+        "old_content_hash": "d20c4384b5b75723d277a60a80376fe7ebf8919ee18005c0e9176dba0b702636",
+        "new_content_hash": "d20c4384b5b75723d277a60a80376fe7ebf8919ee18005c0e9176dba0b702636"
+      }
+    ]
+  },
+  "v1_build": {
+    "total_sections": 3,
+    "unchanged_sections": 0,
+    "modified_sections": 0,
+    "added_sections": 3,
+    "removed_sections": 0,
+    "reused_embeddings": 0,
+    "new_embeddings": 3,
+    "active_chunks": 3,
+    "processing_time": 0.031,
+    "index_refresh_strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH"
+  },
+  "v2_build": {
+    "total_sections": 3,
+    "unchanged_sections": 1,
+    "modified_sections": 1,
+    "added_sections": 1,
+    "removed_sections": 1,
+    "reused_embeddings": 1,
+    "new_embeddings": 2,
+    "active_chunks": 4,
+    "processing_time": 0.016,
+    "index_refresh_strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH"
+  },
+  "status": "PASS"
+}

@@ -1,0 +1,112 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from streamlit.testing.v1 import AppTest
+
+from services.rag_client import RAGClient
+
+
+class Response:
+    def __init__(self, payload):
+        self.payload = payload
+        self.status_code = 200
+
+    def raise_for_status(self):
+        return None
+
+    def json(self):
+        return self.payload
+
+
+class Session:
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.calls = []
+
+    def request(self, method, url, timeout, **kwargs):
+        self.calls.append((method, url, kwargs))
+        return Response(self.responses.pop(0))
+
+
+def test_client_catalog_scope_and_diff_contracts():
+    document = {
+        "document_id": "REQ", "title": "需求", "project_id": "P",
+        "document_type": "requirements", "active_version": {"version_id": "REQ@2"},
+        "versions": [],
+    }
+    hit = {
+        "rank": 1, "document_id": "REQ", "version_id": "REQ@2",
+        "version_label": "V2", "version_status": "ACTIVE", "page_number": 2,
+        "section_path": ["容量"], "similarity": 0.9, "content": "并发 1000",
+        "chunk_id": "REQ@2:c1",
+    }
+    diff = {
+        "document_id": "REQ", "from_version": "REQ@1", "to_version": "REQ@2",
+        "summary": {"MODIFIED": 1}, "sections": [],
+    }
+    session = Session([
+        {"documents": [document]},
+        {"query": "并发", "results": [hit]},
+        diff,
+    ])
+    client = RAGClient("http://localhost:8765", session=session)
+    assert client.documents()["documents"][0]["title"] == "需求"
+    scope = {"document_ids": ["REQ"], "active_only": True}
+    assert client.retrieve("并发", 3, scope)["results"][0]["version_id"] == "REQ@2"
+    assert session.calls[1][2]["json"]["scope"] == scope
+    assert client.diff("REQ", "REQ@1", "REQ@2")["summary"]["MODIFIED"] == 1
+    assert session.calls[2][2]["params"] == {
+        "from_version_id": "REQ@1", "to_version_id": "REQ@2",
+    }
+
+
+def test_streamlit_exposes_scope_and_version_diff_controls(monkeypatch):
+    monkeypatch.setenv("DEMO_RAG_BASE_URL", "http://127.0.0.1:1")
+    monkeypatch.setenv("DEMO_REQUEST_TIMEOUT_SECONDS", "0.2")
+    app = AppTest.from_file(Path(__file__).parents[1] / "app.py", default_timeout=60).run()
+    assert not app.exception
+    labels = [item.label for item in app.radio]
+    assert "检索范围" in labels
+    assert "功能" in labels
+    assert any("版本对比" in item.label for item in app.expander)
+
+
+
+def test_evidence_components_show_version_status_and_freshness(monkeypatch):
+    from components import evidence_view
+
+    rendered = []
+
+    class Context:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    monkeypatch.setattr(evidence_view.st, "markdown", lambda value, **kwargs: rendered.append(str(value)))
+    monkeypatch.setattr(evidence_view.st, "caption", lambda value, **kwargs: rendered.append(str(value)))
+    monkeypatch.setattr(evidence_view.st, "write", lambda value, **kwargs: rendered.append(str(value)))
+    monkeypatch.setattr(evidence_view.st, "divider", lambda: None)
+    monkeypatch.setattr(evidence_view.st, "expander", lambda *args, **kwargs: Context())
+
+    evidence_view.render_retrieval_results([
+        {
+            "rank": 1, "document_id": "REQ", "version_id": "REQ@2",
+            "version_label": "V2.0", "version_status": "ACTIVE",
+            "page_number": 2, "section_path": ["容量"], "similarity": 0.9,
+            "content": "最大并发 1000", "chunk_id": "REQ@2:c1",
+        }
+    ], {"REQ": "需求规格说明书"})
+    evidence_view.render_agent_evidence([
+        {
+            "evidence_id": "ev_1", "document_id": "REQ", "version_id": "REQ@2",
+            "freshness": "FRESH", "page_number": 2, "section_path": ["容量"],
+            "content": "最大并发 1000",
+        }
+    ], {"REQ": "需求规格说明书"})
+    combined = "\n".join(rendered)
+    assert "V2.0" in combined and "ACTIVE" in combined
+    assert "REQ@2" in combined and "FRESH" in combined
+

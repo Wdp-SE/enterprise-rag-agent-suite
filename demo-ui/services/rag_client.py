@@ -50,6 +50,28 @@ class RAGClient:
             raise ServiceError("RAG 返回结构不符合契约。", "Expected JSON object", "RAG_SCHEMA_INVALID")
         return payload
 
+    def documents(self) -> dict[str, Any]:
+        payload = self._request("GET", "/documents")
+        if not isinstance(payload.get("documents"), list):
+            raise ServiceError("文档目录响应不符合契约。", "Invalid /documents schema", "RAG_SCHEMA_INVALID")
+        return payload
+
+    def versions(self, document_id: str) -> dict[str, Any]:
+        payload = self._request("GET", f"/documents/{document_id}/versions")
+        if payload.get("document_id") != document_id or not isinstance(payload.get("versions"), list):
+            raise ServiceError("版本目录响应不符合契约。", "Invalid versions schema", "RAG_SCHEMA_INVALID")
+        return payload
+
+    def diff(self, document_id: str, from_version_id: str, to_version_id: str) -> dict[str, Any]:
+        payload = self._request(
+            "GET",
+            f"/documents/{document_id}/diff",
+            params={"from_version_id": from_version_id, "to_version_id": to_version_id},
+        )
+        if not {"document_id", "from_version", "to_version", "summary", "sections"}.issubset(payload):
+            raise ServiceError("版本对比响应不符合契约。", "Invalid diff schema", "RAG_SCHEMA_INVALID")
+        return payload
+
     def health(self) -> dict[str, Any]:
         return self._request("GET", "/health")
 
@@ -60,19 +82,26 @@ class RAGClient:
             raise ServiceError("Artifact 状态响应不完整。", "Missing required fields", "RAG_SCHEMA_INVALID")
         return payload
 
-    def query(self, question: str) -> dict[str, Any]:
+    def query(self, question: str, scope: dict[str, Any] | None = None) -> dict[str, Any]:
         if not question.strip():
-            raise ValueError("Question 不能为空")
-        payload = self._request("POST", "/query", json={"question": question.strip()})
+            raise ValueError("问题不能为空")
+        request_payload: dict[str, Any] = {"question": question.strip()}
+        if scope is not None:
+            request_payload["scope"] = scope
+        payload = self._request("POST", "/query", json=request_payload)
         if not {"answer", "sources", "status"}.issubset(payload) or not isinstance(payload["sources"], list):
             raise ServiceError("RAG 问答响应不符合契约。", "Invalid /query schema", "RAG_SCHEMA_INVALID")
         return payload
 
-    def retrieve(self, question: str, top_k: int = 5) -> dict[str, Any]:
+    def retrieve(self, question: str, top_k: int = 5,
+                 scope: dict[str, Any] | None = None) -> dict[str, Any]:
         question = question.strip()
         if not question or not 3 <= top_k <= 10:
-            raise ValueError("Question 不能为空，Top K 必须为 3 到 10")
-        payload = self._request("POST", "/retrieve", json={"query": question, "top_k": top_k})
+            raise ValueError("问题不能为空，Top K 必须为 3 到 10")
+        request_payload: dict[str, Any] = {"query": question, "top_k": top_k}
+        if scope is not None:
+            request_payload["scope"] = scope
+        payload = self._request("POST", "/retrieve", json=request_payload)
         results = payload.get("results")
         if payload.get("query") != question or not isinstance(results, list) or len(results) > top_k:
             raise ServiceError("Evidence Retrieval 响应不符合契约。", "Invalid /retrieve envelope", "RAG_SCHEMA_INVALID")

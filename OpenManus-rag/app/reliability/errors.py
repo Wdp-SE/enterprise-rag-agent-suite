@@ -14,9 +14,6 @@ from urllib.parse import urlsplit
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
-from app.exceptions import TokenLimitExceeded
-from app.sandbox.core.exceptions import SandboxResourceError, SandboxTimeoutError
-
 
 class ErrorCategory(str, Enum):
     NETWORK = "NETWORK"
@@ -318,14 +315,10 @@ class ErrorClassifier:
                 return self._make(ErrorCode.INVALID_INPUT, ErrorCategory.INPUT, message, False, source, operation, merged_details, cause_type)
             return self._make(ErrorCode.EXTERNAL_SERVICE_FAILED, ErrorCategory.SERVICE, message, status_code >= 500, source, operation, merged_details, cause_type)
 
-        if isinstance(error, (SandboxTimeoutError, asyncio.TimeoutError, TimeoutError, httpx.TimeoutException)):
+        if isinstance(error, (asyncio.TimeoutError, TimeoutError, httpx.TimeoutException)):
             return self._make(ErrorCode.OPERATION_TIMEOUT, ErrorCategory.TIMEOUT, message, True, source, operation, merged_details, cause_type)
         if isinstance(error, asyncio.CancelledError):
             return self._make(ErrorCode.CANCELLED, ErrorCategory.CANCELLATION, message, False, source, operation, merged_details, cause_type)
-        if isinstance(error, TokenLimitExceeded):
-            return self._make(ErrorCode.BUDGET_EXCEEDED, ErrorCategory.RESOURCE, message, False, source, operation, merged_details, cause_type)
-        if isinstance(error, SandboxResourceError):
-            return self._make(ErrorCode.RESOURCE_EXHAUSTED, ErrorCategory.RESOURCE, message, False, source, operation, merged_details, cause_type)
         if isinstance(error, (httpx.NetworkError, httpx.ProtocolError, ConnectionError, ssl.SSLError)):
             return self._make(ErrorCode.TRANSIENT_NETWORK, ErrorCategory.NETWORK, message, True, source, operation, merged_details, cause_type)
         if isinstance(error, (json.JSONDecodeError, UnicodeDecodeError)):

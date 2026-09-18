@@ -235,3 +235,17 @@ Legacy Competition Mode 默认仍为 `legacy_company`；通用模式可选择 `g
 
 原始竞赛实现来自 Ilya Rice 的 RAG Challenge 方案。本项目保留原许可证，并在此基础上完成
 面向通用企业文档、评测与可信边界的二次开发。请参阅 [LICENSE](LICENSE)。
+
+## RAG V3 Document Lifecycle
+
+V3 在 Frozen R&D V2 Runtime 外增加业务生命周期层：
+
+- 稳定 Document 与独立 DocumentVersion，单 ACTIVE 版本 fail closed。
+- /retrieve 和 /query 共用 RetrievalScope，默认仅检索 ACTIVE 版本。
+- Scope 在候选向量行阶段生效，返回范围内真实 Top K。
+- 新版本按 Section Hash 识别 UNCHANGED / MODIFIED / ADDED / REMOVED。
+- 相同内容按 SHA-256 复用 Embedding；ACTIVE 向量采用缓存向量矩阵刷新。
+- /documents、版本目录和确定性 Section Diff API。
+- 本地版本管理入口：scripts/manage_document_versions.py。
+
+详见 docs/version_governance.md、docs/retrieval_scope.md、docs/incremental_update.md 和 docs/version_diff.md。

@@ -13,12 +13,14 @@ from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.rd_v2_runtime import QueryRuntimeError, RDV2QueryRuntime, create_runtime
+from src.document_lifecycle import RetrievalScope
 
 
 class QueryRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(min_length=1, max_length=4000)
+    scope: Optional[RetrievalScope] = None
 
 
 class QueryResponse(BaseModel):
@@ -34,6 +36,7 @@ class RetrieveRequest(BaseModel):
 
     query: str = Field(min_length=1, max_length=4000)
     top_k: int = Field(default=5, ge=1, le=20)
+    scope: Optional[RetrievalScope] = None
 
 
 class RetrievalResult(BaseModel):
@@ -41,6 +44,11 @@ class RetrievalResult(BaseModel):
 
     chunk_id: str
     document_id: str
+    version_id: str
+    version_label: str
+    version_status: str
+    project_id: str
+    document_type: str
     section_id: str
     section_path: list[str]
     page_number: int = Field(ge=1)
@@ -62,6 +70,11 @@ def _serialize_retrieval_hit(hit: dict) -> dict:
     return {
         "chunk_id": hit["chunk_id"],
         "document_id": hit["document_id"],
+        "version_id": hit["version_id"],
+        "version_label": hit["version_label"],
+        "version_status": hit["version_status"],
+        "project_id": hit["project_id"],
+        "document_type": hit["document_type"],
         "section_id": hit["section_id"],
         "section_path": hit["section_path"],
         "page_number": hit["page_number"],
@@ -88,8 +101,8 @@ def create_app(
             app.state.rd_v2_runtime.close()
 
     app = FastAPI(
-        title="R&D Document RAG V2",
-        version="rd-v2-retrieval-final-v1.0",
+        title="R&D Document RAG V3",
+        version="rd-v3-lifecycle-v1.0",
         lifespan=lifespan,
     )
 
@@ -111,7 +124,7 @@ def create_app(
     async def query(payload: QueryRequest, request: Request) -> dict:
         try:
             return await asyncio.to_thread(
-                request.app.state.rd_v2_runtime.query, payload.question
+                request.app.state.rd_v2_runtime.query, payload.question, payload.scope
             )
         except QueryRuntimeError as exc:
             raise HTTPException(status_code=503, detail=exc.code) from exc
@@ -126,13 +139,43 @@ def create_app(
             raise HTTPException(status_code=503, detail="ARTIFACT_NOT_COMPLETE")
         try:
             hits = await asyncio.to_thread(
-                runtime.retriever.retrieve, payload.query.strip(), top_k=payload.top_k
+                runtime.retriever.retrieve,
+                payload.query.strip(),
+                top_k=payload.top_k,
+                scope=payload.scope,
             )
             return {"query": payload.query, "results": [_serialize_retrieval_hit(hit) for hit in hits]}
         except QueryRuntimeError as exc:
             raise HTTPException(status_code=503, detail=exc.code) from exc
         except Exception as exc:
             raise HTTPException(status_code=500, detail="RETRIEVAL_FAILED") from exc
+
+    @app.get("/documents")
+    async def documents(request: Request) -> dict:
+        return {"documents": request.app.state.rd_v2_runtime.catalog.document_rows()}
+
+    @app.get("/documents/{document_id}/versions")
+    async def document_versions(document_id: str, request: Request) -> dict:
+        try:
+            rows = request.app.state.rd_v2_runtime.catalog.version_rows(document_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="DOCUMENT_NOT_FOUND") from exc
+        return {"document_id": document_id, "versions": rows}
+
+    @app.get("/documents/{document_id}/diff")
+    async def document_diff(
+        document_id: str,
+        from_version_id: str,
+        to_version_id: str,
+        request: Request,
+    ) -> dict:
+        try:
+            result = request.app.state.rd_v2_runtime.catalog.diff(
+                document_id, from_version_id, to_version_id
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="VERSION_DIFF_NOT_AVAILABLE") from exc
+        return result.model_dump(mode="json")
 
     return app
 

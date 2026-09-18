@@ -10,87 +10,67 @@ from components.status_view import badge
 
 def render_template_summary(record: dict) -> None:
     summary = record["summary"]
-    st.markdown("#### Template Parse")
+    st.markdown("#### 模板解析结果")
     cols = st.columns(4)
-    cols[0].metric("Sections", summary["section_count"])
-    cols[1].metric("Tables", summary["table_count"])
-    cols[2].metric("Fields", summary["field_count"])
-    cols[3].metric("Size", f"{record['size'] / 1024:.1f} KB")
-    st.caption(f"Template: {record['filename']} · 支持结构化 Word (.docx) 模板")
+    cols[0].metric("章节", summary["section_count"])
+    cols[1].metric("表格", summary["table_count"])
+    cols[2].metric("字段", summary["field_count"])
+    cols[3].metric("大小", f"{record['size'] / 1024:.1f} KB")
+    st.caption(f"模板：{record['filename']} · Scope fingerprint：{record['scope_fingerprint'][:12]}")
     for section in summary["sections"]:
-        indent = "　" * max(0, section["level"] - 1)
-        st.write(f"{indent}{section['order']}. {section['title']}")
-    with st.expander("执行前 SectionTask 计划"):
+        st.write(f"{'　' * max(0, section['level'] - 1)}{section['order']}. {section['title']}")
+    with st.expander("执行前任务计划"):
         for task in summary["tasks"]:
-            st.markdown(
-                f"- **{task['section_title']}** · {badge(task['status'])} · "
-                f"Fields: {', '.join(task['required_fields'])}", unsafe_allow_html=True
-            )
+            names = [field["field_name"] for field in task["required_fields"]]
+            st.markdown(f"- **{task['section_title']}** · {badge(task['status'])} · 字段：{', '.join(names)}", unsafe_allow_html=True)
 
 
 def render_workflow_result(result: dict, document_names: dict[str, str]) -> None:
-    st.markdown("### Workflow Summary")
+    st.markdown("### 工作流结果")
     cols = st.columns(6)
-    cols[0].markdown(f"**Status**<br>{badge(result['workflow_status'])}", unsafe_allow_html=True)
-    cols[1].metric("Sections", result["template"]["section_count"])
-    cols[2].metric("RAG Calls", result["total_rag_calls"])
-    cols[3].metric("Unique Evidence", result["unique_evidence_count"])
-    cols[4].metric("Missing", result["missing_field_count"])
-    cols[5].markdown(
-        f"**Human Review**<br>{badge('YES' if result['requires_human_review'] else 'NO')}",
-        unsafe_allow_html=True,
-    )
-    if result["workflow_status"] == "PARTIAL":
-        st.warning("Workflow 为 PARTIAL：存在 Evidence 不足的字段。系统保留 MISSING，并要求人工审核。")
-    elif result["workflow_status"] == "FAILED":
-        st.error("Workflow FAILED：没有形成可交付草稿。")
-
-    st.markdown("### SectionTask")
+    cols[0].markdown(f"**状态**<br>{badge(result['workflow_status'])}", unsafe_allow_html=True)
+    cols[1].metric("章节", result["template"]["section_count"])
+    cols[2].metric("RAG 调用", result["total_rag_calls"])
+    cols[3].metric("Evidence", result["unique_evidence_count"])
+    cols[4].metric("待补字段", result["missing_field_count"])
+    cols[5].markdown(f"**全部通过**<br>{badge('YES' if result['all_sections_approved'] else 'NO')}", unsafe_allow_html=True)
+    st.caption(f"Scope：{result['scope']} · fingerprint：{result['scope_fingerprint'][:12]}")
     for section in result["sections"]:
-        label = f"{section['section_title']} · {section['status']} · Evidence {len(section['evidence_ids'])}"
+        if not section["fields"]:
+            continue
+        review_status = section.get("review", {}).get("status", "PENDING")
+        label = f"{section['section_title']} · {section['status']} · 审核 {review_status}"
         with st.expander(label):
-            metrics = st.columns(5)
-            metrics[0].metric("Status", section["status"])
-            metrics[1].metric("Queries", section["query_count"])
-            metrics[2].metric("RAG Calls", section["rag_calls"])
-            metrics[3].metric("Evidence", len(section["evidence_ids"]))
-            metrics[4].metric("Missing", len(section["missing_fields"]))
-            st.markdown("**Queries**")
-            if section["queries"]:
-                for query in section["queries"]:
-                    st.write(f"- {query}")
-            else:
-                st.caption("无新查询（可能从 checkpoint 恢复）。")
+            st.markdown("**检索 Query**")
+            for query in section.get("queries", []):
+                st.write(f"- {query}")
+            st.markdown("**字段草稿**")
+            for field in section["fields"]:
+                st.markdown(f"- **{field['field_name']}** · {field['status']} · {field['drafting_mode']}")
+                st.write(field["content"])
+                if field.get("missing_reason"):
+                    st.warning(field["missing_reason"])
             st.markdown("**Evidence**")
-            render_agent_evidence(section["evidence"], document_names)
-            if section["missing_fields"]:
-                st.markdown("**Missing Fields**")
-                for field in section["missing_fields"]:
-                    st.warning(f"{field} · INSUFFICIENT_EVIDENCE")
-            if section["stop_reason"]:
-                st.caption(f"Stop reason: {section['stop_reason']}")
-            st.markdown("**Draft Preview**")
-            st.write(section["draft_preview"])
-
-    if result["timeline"]:
-        with st.expander("Execution Timeline（仅展示真实 Trace Event）"):
-            for event in result["timeline"]:
-                st.write(
-                    f"{event.get('timestamp')} · {event.get('event_type')} · "
-                    f"{event.get('step_id') or '—'} · {event.get('operation') or '—'}"
-                )
+            render_agent_evidence(section.get("evidence", []), document_names)
+            review = section.get("review") or {}
+            if review.get("reviewer"):
+                st.caption(f"审核人：{review['reviewer']} · 意见：{review.get('comment') or '—'}")
 
 
 def render_downloads(result: dict, artifact_reader) -> None:
     st.markdown("### 下载输出")
-    artifacts = result["artifacts"]
-    columns = st.columns(3)
-    downloads = [
-        ("Download Draft DOCX", "draft", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
-        ("Download Evidence JSON", "evidence", "application/json"),
-        ("Download Execution Trace", "trace", "application/json"),
-    ]
-    for column, (label, key, mime) in zip(columns, downloads):
-        path = Path(artifacts[key])
-        column.download_button(label, data=artifact_reader(path), file_name=path.name,
-                               mime=mime, key=f"download_{result['workflow_id']}_{key}")
+    labels = {
+        "draft": ("下载草稿 DOCX", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+        "approved": ("下载正式 DOCX", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+        "evidence": ("下载 Evidence JSON", "application/json"),
+        "trace": ("下载执行 Trace", "application/json"),
+    }
+    available = [(key, value) for key, value in result["artifacts"].items() if value]
+    columns = st.columns(max(1, len(available)))
+    for column, (key, path_value) in zip(columns, available):
+        label, mime = labels[key]
+        path = Path(path_value)
+        column.download_button(
+            label, data=artifact_reader(path), file_name=path.name, mime=mime,
+            key=f"download_{result['workflow_id']}_{key}",
+        )

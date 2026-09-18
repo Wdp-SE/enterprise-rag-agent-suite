@@ -1,0 +1,97 @@
+{
+  "refresh_version": 3,
+  "rows": [
+    {
+      "chunk_id": "DESIGN-001@1.0:chunk:e5c3e921bbe290e9",
+      "content_hash": "73a925b6aecf9d0394f99679abdfbddcacfd3a8019f51f21f8817933bfcf4b14",
+      "document_id": "DESIGN-001",
+      "document_type": "design",
+      "page_end": 8,
+      "page_number": 8,
+      "position": 0,
+      "project_id": "P-001",
+      "section_id": "design-v1-overview",
+      "section_path": [
+        "总体设计"
+      ],
+      "text": "详细设计采用分层架构与本地版本目录。",
+      "version_id": "DESIGN-001@1.0"
+    },
+    {
+      "chunk_id": "REQ-001@2.0:chunk:47f12fb306b2d71f",
+      "content_hash": "d20c4384b5b75723d277a60a80376fe7ebf8919ee18005c0e9176dba0b702636",
+      "document_id": "REQ-001",
+      "document_type": "requirements",
+      "page_end": 1,
+      "page_number": 1,
+      "position": 0,
+      "project_id": "P-001",
+      "section_id": "req-v2-overview",
+      "section_path": [
+        "系统概述"
+      ],
+      "text": "本系统用于合成版本治理演示。",
+      "version_id": "REQ-001@2.0"
+    },
+    {
+      "chunk_id": "REQ-001@2.0:chunk:2fb452f0eb5c7515",
+      "content_hash": "cff4ae74a24509f82fcdf99771604c6a0f0cbdc015ad1f476acd2a7cefb409f6",
+      "document_id": "REQ-001",
+      "document_type": "requirements",
+      "page_end": 4,
+      "page_number": 4,
+      "position": 1,
+      "project_id": "P-001",
+      "section_id": "req-v2-capacity",
+      "section_path": [
+        "容量指标"
+      ],
+      "text": "最大并发为 1000。",
+      "version_id": "REQ-001@2.0"
+    },
+    {
+      "chunk_id": "REQ-001@2.0:chunk:b699504dd037f75b",
+      "content_hash": "cc4028bbe871189b1447ba29c885caa865b200c6ecf29898ba58b6c855d68588",
+      "document_id": "REQ-001",
+      "document_type": "requirements",
+      "page_end": 5,
+      "page_number": 5,
+      "position": 2,
+      "project_id": "P-001",
+      "section_id": "req-v2-throughput",
+      "section_path": [
+        "吞吐指标"
+      ],
+      "text": "吞吐能力为 200 MB/s。",
+      "version_id": "REQ-001@2.0"
+    }
+  ],
+  "schema_version": "rd-version-store-v3",
+  "strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH",
+  "vectors": [
+    [
+      0.0,
+      0.0,
+      1.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      1.0,
+      0.0,
+      0.0
+    ]
+  ]
+}

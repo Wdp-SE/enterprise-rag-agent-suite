@@ -1,5 +1,6 @@
-"""Template-driven, human-reviewed document drafting workflow."""
+"""Evidence-driven enterprise R&D document workflow product."""
 
-from .workflow import DocumentWorkflow
+from .facade import DocumentWorkflowFacade
+from .scope import WorkflowScope
 
-__all__ = ["DocumentWorkflow"]
+__all__ = ["DocumentWorkflowFacade", "WorkflowScope"]

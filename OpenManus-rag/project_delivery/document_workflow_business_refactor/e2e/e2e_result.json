@@ -1,0 +1,16 @@
+{
+  "data_policy": "synthetic/offline",
+  "scope": {
+    "active_only": true,
+    "project_ids": [
+      "DEMO-RD"
+    ]
+  },
+  "multi_evidence_draft": true,
+  "missing_fail_closed": true,
+  "section_reject": true,
+  "official_output_blocked_on_reject": true,
+  "approved_output": true,
+  "workflow_id": "dw_f2c58bcf02d943419c4783df21052953",
+  "safe_end_to_end": true
+}

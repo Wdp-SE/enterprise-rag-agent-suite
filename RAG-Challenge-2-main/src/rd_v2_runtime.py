@@ -19,6 +19,7 @@ from typing import Mapping, Optional, Protocol, Sequence
 import numpy as np
 
 from src.artifact_lifecycle import sha256_file
+from src.document_lifecycle import DocumentCatalog, RetrievalScope
 from src.native_runtime import NativeRuntimePolicy, validate_embedding_batch
 from src.trusted_qa import (
     ShadowPolicyProfile,
@@ -81,6 +82,7 @@ class RDV2Settings:
     generation_model: str = "qwen-turbo"
     allow_external_generation: bool = False
     trusted_qa_mode: str = "ENFORCE"
+    version_catalog: Optional[Path] = None
 
     @classmethod
     def from_env(cls, project_root: Path | str | None = None) -> "RDV2Settings":
@@ -105,6 +107,10 @@ class RDV2Settings:
         snapshot_value = Path(raw_snapshot) if raw_snapshot else None
         if snapshot_value is not None and not snapshot_value.is_absolute():
             snapshot_value = root / snapshot_value
+        raw_catalog = os.environ.get("RD_V3_VERSION_CATALOG")
+        catalog_value = Path(raw_catalog) if raw_catalog else None
+        if catalog_value is not None and not catalog_value.is_absolute():
+            catalog_value = root / catalog_value
         return cls(
             project_root=root,
             artifact_root=artifact_root,
@@ -122,6 +128,7 @@ class RDV2Settings:
                 "RD_V2_ALLOW_EXTERNAL_GENERATION", False
             ),
             trusted_qa_mode=os.environ.get("RD_V2_TRUSTED_QA_MODE", "ENFORCE"),
+            version_catalog=(catalog_value.resolve() if catalog_value else None),
         )
 
     def validate(self) -> None:
@@ -149,7 +156,9 @@ class FrozenArtifactBundle:
     manifest: dict
     policy: dict
     chunks: list[dict]
+    embeddings: np.ndarray
     index: object
+    catalog: DocumentCatalog
 
 
 def load_faiss_index(path: Path):
@@ -347,8 +356,47 @@ class FrozenArtifactValidator:
             raise ArtifactValidationError("ARTIFACT_COUNT_MISMATCH", "faiss")
         if len(chunks) != embedding_count or embedding_count != faiss_count:
             raise ArtifactValidationError("ARTIFACT_COUNT_MISMATCH")
+        catalog_path = self.settings.version_catalog
+        if catalog_path is None:
+            candidate = self.settings.artifact_root / "version_catalog.json"
+            catalog_path = candidate if candidate.is_file() else None
+        if catalog_path is not None:
+            try:
+                catalog = DocumentCatalog.from_payload(
+                    json.loads(catalog_path.read_text(encoding="utf-8"))
+                )
+            except Exception as exc:
+                raise ArtifactValidationError("VERSION_CATALOG_INVALID") from exc
+        else:
+            metadata_documents = []
+            normalization = (
+                self.settings.project_root
+                / "data"
+                / "rd_v2_corpus"
+                / "manifest"
+                / "normalization_manifest.json"
+            )
+            if normalization.is_file():
+                try:
+                    metadata_documents = json.loads(
+                        normalization.read_text(encoding="utf-8-sig")
+                    ).get("documents", [])
+                except Exception as exc:
+                    raise ArtifactValidationError("VERSION_CATALOG_INVALID") from exc
+            catalog = DocumentCatalog.from_legacy(
+                corpus_documents, chunks, metadata_documents
+            )
+        try:
+            chunks = [catalog.enrich_chunk(item) for item in chunks]
+        except Exception as exc:
+            raise ArtifactValidationError("VERSION_CATALOG_CHUNK_REFERENCE_INVALID") from exc
         return FrozenArtifactBundle(
-            manifest=manifest, policy=policy, chunks=chunks, index=index
+            manifest=manifest,
+            policy=policy,
+            chunks=chunks,
+            embeddings=embeddings,
+            index=index,
+            catalog=catalog,
         )
 
 
@@ -446,20 +494,36 @@ class FrozenDenseRetriever:
         self.bundle = bundle
         self.embedder = embedder
 
-    def retrieve(self, question: str, *, top_k: int) -> list[dict]:
+    def retrieve(
+        self,
+        question: str,
+        *,
+        top_k: int,
+        scope: RetrievalScope | Mapping[str, object] | None = None,
+    ) -> list[dict]:
+        scope = scope if isinstance(scope, RetrievalScope) else RetrievalScope.model_validate(scope or {})
         query_vector = self.embedder.encode([question])
         dimension = int(self.bundle.manifest["embedding_dimension"])
         validate_embedding_batch(query_vector, dimension=dimension)
-        limit = min(top_k, len(self.bundle.chunks))
-        scores, indices = self.bundle.index.search(
-            np.ascontiguousarray(query_vector, dtype=np.float32), limit
+        candidates = np.asarray(
+            [
+                index
+                for index, chunk in enumerate(self.bundle.chunks)
+                if self.bundle.catalog.matches(chunk, scope)
+            ],
+            dtype=np.int64,
         )
+        if not len(candidates):
+            return []
+        candidate_vectors = np.asarray(self.bundle.embeddings[candidates], dtype=np.float32)
+        candidate_scores = candidate_vectors @ np.asarray(query_vector[0], dtype=np.float32)
+        limit = min(top_k, len(candidates))
+        local_order = np.lexsort((candidates, -candidate_scores))[:limit]
         results = []
-        for rank, (row, score) in enumerate(zip(indices[0], scores[0]), start=1):
-            if int(row) < 0:
-                continue
-            item = dict(self.bundle.chunks[int(row)])
-            similarity = float(score)
+        for rank, local_index in enumerate(local_order, start=1):
+            row = int(candidates[int(local_index)])
+            item = dict(self.bundle.chunks[row])
+            similarity = float(candidate_scores[int(local_index)])
             item["distance"] = similarity
             item["dense_score"] = similarity
             item["retrieval_rank"] = rank
@@ -534,6 +598,8 @@ def build_safe_trace(results: Sequence[Mapping[str, object]]) -> list[dict]:
             {
                 "chunk_id": result.get("chunk_id"),
                 "document_id": result.get("document_id"),
+                "version_id": result.get("version_id"),
+                "version_status": result.get("version_status"),
                 "page_number": result.get("page", result.get("page_number")),
                 "section_id": result.get("section_id"),
                 "section_source": result.get("section_source"),
@@ -558,6 +624,7 @@ class RDV2QueryRuntime:
 
         self.settings = settings
         self.bundle = bundle
+        self.catalog = bundle.catalog
         self.retriever = FrozenDenseRetriever(bundle, embedder)
         self.embedder = embedder
         self.generator = generator
@@ -574,6 +641,9 @@ class RDV2QueryRuntime:
             "retrieval_policy_version": self.settings.policy_version,
             "retrieval_policy": FINAL_RETRIEVAL_POLICY,
             "dense_representation": FINAL_DENSE_REPRESENTATION,
+            "document_catalog_status": "VALID",
+            "document_count": len(self.catalog.documents),
+            "version_count": len(self.catalog.versions),
         }
 
     def close(self) -> None:
@@ -581,14 +651,20 @@ class RDV2QueryRuntime:
         if callable(close):
             close()
 
-    def query(self, question: str) -> dict:
+    def query(
+        self,
+        question: str,
+        scope: RetrievalScope | Mapping[str, object] | None = None,
+    ) -> dict:
         if not isinstance(question, str) or not question.strip():
             raise QueryRuntimeError("QUESTION_EMPTY")
         dense_hits = self.retriever.retrieve(
-            question.strip(), top_k=self.settings.dense_top_k
+            question.strip(), top_k=self.settings.dense_top_k, scope=scope
         )
         primary_hits = dense_hits[: self.settings.final_top_k]
         evidence = self.expander.expand(primary_hits)
+        validated_scope = scope if isinstance(scope, RetrievalScope) else RetrievalScope.model_validate(scope or {})
+        evidence = [item for item in evidence if self.catalog.matches(item, validated_scope)]
         trace = build_safe_trace(evidence)
         if self.generator is None:
             status = (

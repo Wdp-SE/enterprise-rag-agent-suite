@@ -12,7 +12,6 @@ from app.reliability.errors import (
     ErrorCode,
     ExecutionError,
 )
-from app.sandbox.core.exceptions import SandboxTimeoutError
 
 
 def classify(error):
@@ -87,9 +86,9 @@ def test_tls_eof_and_connection_reset_are_transient() -> None:
     assert reset.retryable is True
 
 
-def test_asyncio_and_sandbox_timeout_share_timeout_code() -> None:
+def test_asyncio_and_builtin_timeout_share_timeout_code() -> None:
     first = classify(asyncio.TimeoutError("operation timed out"))
-    second = classify(SandboxTimeoutError("sandbox timed out"))
+    second = classify(TimeoutError("operation timed out"))
     assert first.code is second.code is ErrorCode.OPERATION_TIMEOUT
     assert first.retryable is second.retryable is True
 

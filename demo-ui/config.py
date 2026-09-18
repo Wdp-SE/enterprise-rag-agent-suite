@@ -13,7 +13,7 @@ UI_ROOT = Path(__file__).resolve().parent
 WORKSPACE_ROOT = UI_ROOT.parent
 AGENT_ROOT = WORKSPACE_ROOT / "OpenManus-rag"
 RAG_ROOT = WORKSPACE_ROOT / "RAG-Challenge-2-main"
-SAFE_TEMPLATE = AGENT_ROOT / "project_delivery/document_workflow_v2/integration/demo/template.docx"
+SAFE_TEMPLATE = AGENT_ROOT / "project_delivery/document_workflow_business_refactor/demo/requirement_change_impact_template.docx"
 SAFE_ARTIFACT = RAG_ROOT / "data/rd_v2_corpus/retrieval_artifacts/rd-v2-retrieval-final-v1.0-safe-integration"
 NORMALIZATION_MANIFEST = RAG_ROOT / "data/rd_v2_corpus/manifest/normalization_manifest.json"
 

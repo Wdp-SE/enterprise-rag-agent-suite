@@ -1,0 +1,12 @@
+{
+  "corpus_chunks": 5090,
+  "documents": 3,
+  "versions": 3,
+  "artifact_and_catalog_startup_ms": 770.199,
+  "all_active_retrieval_median_ms": 8.23,
+  "single_document_retrieval_median_ms": 3.0,
+  "repeats": 10,
+  "embedding_call_included": false,
+  "full_rebuild_baseline_ms": null,
+  "production_qps_claimed": false
+}
