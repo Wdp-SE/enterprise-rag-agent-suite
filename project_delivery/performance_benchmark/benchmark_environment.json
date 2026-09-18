@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-09-18T16:19:52.229154+00:00",
+  "benchmark_date_local": "2026-09-19",
+  "benchmark_timezone": "中国标准时间",
+  "git_commit": "1ff9d5f705706063926a6343feda202ab560ca65",
+  "machine": {
+    "os_caption": "Microsoft Windows 11 家庭版 中文版",
+    "os_version": "10.0.26200",
+    "os_build": "26200",
+    "python_platform": "Windows-10-10.0.26200-SP0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13500H",
+    "logical_cpu_count": 16,
+    "ram_bytes": 16837021696
+  },
+  "rag_environment": {
+    "python_version": "3.11.3 | packaged by Anaconda, Inc. | (main, Apr 19 2023, 23:46:34) [MSC v.1916 64 bit (AMD64)]",
+    "executable": "E:\\工作项目\\秋招项目\\rag-agent-hardening\\RAG-Challenge-2-main\\.venv\\Scripts\\python.exe",
+    "pytorch_version": "2.4.0+cpu",
+    "faiss_version": "1.9.0.post1",
+    "transformers_version": "4.57.6",
+    "numpy_version": "1.26.4",
+    "embedding_model": "BAAI/bge-small-zh-v1.5",
+    "embedding_model_revision": "7999e1d3359715c523056ef9478215996d62a620",
+    "embedding_model_snapshot": "C:\\Users\\13982\\.cache\\huggingface\\hub\\models--BAAI--bge-small-zh-v1.5\\snapshots\\7999e1d3359715c523056ef9478215996d62a620",
+    "embedding_model_snapshot_exists": true,
+    "embedding_dimension": 512,
+    "retrieval_policy": "DENSE_ONLY",
+    "dense_representation": "SECTION_PATH",
+    "corpus_document_count": 3,
+    "corpus_version_count": 3,
+    "corpus_chunk_count": 5090,
+    "top_k": 5,
+    "dense_top_k": 20,
+    "llm_provider": "dashscope configured but disabled by data policy",
+    "online_model_calls": false,
+    "local_embedding_model": true
+  },
+  "agent_environment": {
+    "python_version": "3.12.13 (main, Apr 14 2026, 14:31:26) [MSC v.1944 64 bit (AMD64)]",
+    "executable": "E:\\工作项目\\秋招项目\\rag-agent-hardening\\OpenManus-rag\\.venv\\Scripts\\python.exe",
+    "python_docx": "1.2.0",
+    "pydantic": "2.10.6",
+    "httpx": "0.28.1",
+    "template": "需求变更影响分析报告（性能基准）",
+    "section_count": 8,
+    "field_count": 8,
+    "drafting_mode": "EXTRACTIVE",
+    "llm_provider": null,
+    "llm_calls": 0,
+    "online_model_calls": false,
+    "local_model": false
+  },
+  "methodology": {
+    "latency_warmup_runs": 5,
+    "latency_measured_runs": 30,
+    "incremental_independent_runs": 5,
+    "warm_cache": "reported per benchmark; retrieval uses a warm process/model after explicit warm-up",
+    "network": "loopback HTTP only for /retrieve; no external network",
+    "data_policy": "synthetic plus approved local frozen corpus"
+  }
+}

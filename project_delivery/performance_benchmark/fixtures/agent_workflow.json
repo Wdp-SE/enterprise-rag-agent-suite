@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "data_policy": "synthetic",
+  "template_name": "需求变更影响分析报告（性能基准）",
+  "project_id": "PERF-BENCH",
+  "sections": [
+    {"title": "01 变更背景", "field": "变更背景", "document_id": "PERF-DOC-01", "content": "变更背景说明：本次调整用于提升受控研发文档流程的版本一致性和审计完整性。"},
+    {"title": "02 需求变化", "field": "需求变化", "document_id": "PERF-DOC-02", "content": "需求变化说明：新增版本范围约束，并要求所有检索结果携带稳定文档与版本标识。"},
+    {"title": "03 设计影响", "field": "设计影响", "document_id": "PERF-DOC-03", "content": "设计影响说明：文档目录、证据模型和工作流状态需要保持相同的版本语义。"},
+    {"title": "04 接口影响", "field": "接口影响", "document_id": "PERF-DOC-04", "content": "接口影响说明：检索接口继续使用固定 TopK，并在请求中传递冻结的业务 Scope。"},
+    {"title": "05 数据影响", "field": "数据影响", "document_id": "PERF-DOC-05", "content": "数据影响说明：未变化章节保持原证据，变化章节生成新版本证据并保留历史记录。"},
+    {"title": "06 测试方案", "field": "测试方案", "document_id": "PERF-DOC-06", "content": "测试方案说明：覆盖全量重跑、中断恢复、版本陈旧检测和局部刷新场景。"},
+    {"title": "07 发布计划", "field": "发布计划", "document_id": "PERF-DOC-07", "content": "发布计划说明：完成自动检查和人工审核后生成批准文档，并保留可追溯执行记录。"},
+    {"title": "08 回滚方案", "field": "回滚方案", "document_id": "PERF-DOC-08", "content": "回滚方案说明：异常时恢复上一稳定版本，重新验证文档范围和全部必要引用。"}
+  ],
+  "stale_document_ids": ["PERF-DOC-01", "PERF-DOC-02"],
+  "resume_completion_points_percent": [25, 50, 75]
+}

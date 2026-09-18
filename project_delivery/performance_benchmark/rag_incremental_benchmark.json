@@ -1,0 +1,344 @@
+{
+  "schema_version": 1,
+  "benchmark": "RAG full rebuild versus incremental version update",
+  "captured_at": "2026-09-18T15:57:03.385467+00:00",
+  "status": "PASS",
+  "data_policy": "SYNTHETIC_OFFLINE",
+  "online_models_called": false,
+  "retrieval_policy": "DENSE_ONLY",
+  "dense_representation": "SECTION_PATH",
+  "embedding_model": "BAAI/bge-small-zh-v1.5",
+  "embedding_model_revision": "7999e1d3359715c523056ef9478215996d62a620",
+  "embedding_dimension": 512,
+  "model_state": "warm local model; lifecycle cache recreated for every run",
+  "full_rebuild_scope": "target document from normalized SectionSnapshot input",
+  "upstream_parse_scope": "excluded equally; formal lifecycle API receives normalized sections",
+  "index_refresh_strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH",
+  "warmup_pairs": 1,
+  "measured_independent_runs": 5,
+  "run_order": "alternating full/incremental within independent pairs",
+  "fixture": {
+    "v1_sections": 12,
+    "v2_sections": 12,
+    "unchanged_sections": 9,
+    "modified_sections": 2,
+    "added_sections": 1,
+    "removed_sections": 1,
+    "unchanged_share_of_v2_percent": 75.0
+  },
+  "counts": {
+    "total_sections": 12,
+    "total_chunks": 12,
+    "reused_chunks": 9,
+    "new_chunks": 3,
+    "total_embeddings_required_full": 12,
+    "new_embeddings_incremental": 3,
+    "reused_embeddings": 9,
+    "embedding_reuse_rate_percent": 75.0,
+    "embedding_compute_reduction_percent": 75.0
+  },
+  "full_rebuild": {
+    "total_seconds": {
+      "count": 5,
+      "mean": 0.562,
+      "p50": 0.555,
+      "p90": 0.642,
+      "p95": 0.65,
+      "min": 0.452,
+      "max": 0.658,
+      "std": 0.071
+    },
+    "embedding_seconds": {
+      "count": 5,
+      "mean": 0.336,
+      "p50": 0.329,
+      "p90": 0.416,
+      "p95": 0.418,
+      "min": 0.221,
+      "max": 0.419,
+      "std": 0.074
+    },
+    "index_refresh_seconds": {
+      "count": 5,
+      "mean": 0.068,
+      "p50": 0.071,
+      "p90": 0.074,
+      "p95": 0.075,
+      "min": 0.057,
+      "max": 0.075,
+      "std": 0.007
+    },
+    "document_processing_seconds": {
+      "count": 5,
+      "mean": 0.159,
+      "p50": 0.16,
+      "p90": 0.167,
+      "p95": 0.168,
+      "min": 0.141,
+      "max": 0.169,
+      "std": 0.01
+    },
+    "encoded_text_count": [
+      12
+    ]
+  },
+  "incremental_update": {
+    "total_seconds": {
+      "count": 5,
+      "mean": 0.376,
+      "p50": 0.381,
+      "p90": 0.415,
+      "p95": 0.419,
+      "min": 0.333,
+      "max": 0.423,
+      "std": 0.035
+    },
+    "embedding_seconds": {
+      "count": 5,
+      "mean": 0.102,
+      "p50": 0.114,
+      "p90": 0.133,
+      "p95": 0.139,
+      "min": 0.053,
+      "max": 0.145,
+      "std": 0.031
+    },
+    "index_refresh_seconds": {
+      "count": 5,
+      "mean": 0.07,
+      "p50": 0.068,
+      "p90": 0.08,
+      "p95": 0.083,
+      "min": 0.061,
+      "max": 0.086,
+      "std": 0.008
+    },
+    "document_processing_seconds": {
+      "count": 5,
+      "mean": 0.203,
+      "p50": 0.204,
+      "p90": 0.219,
+      "p95": 0.221,
+      "min": 0.183,
+      "max": 0.223,
+      "std": 0.014
+    },
+    "encoded_text_count": [
+      3
+    ]
+  },
+  "comparison": {
+    "full_rebuild_p50_seconds": 0.555,
+    "incremental_update_p50_seconds": 0.381,
+    "elapsed_reduction_percent": 31.351,
+    "embedding_elapsed_reduction_percent": 65.35
+  },
+  "raw_runs": {
+    "full_rebuild": [
+      {
+        "total_seconds": 0.5296920000109822,
+        "embedding_seconds": 0.29781189997447655,
+        "index_refresh_seconds": 0.07143789998372085,
+        "document_processing_seconds": 0.16044220005278476,
+        "encoded_text_count": 12,
+        "report": {
+          "total_sections": 12,
+          "unchanged_sections": 0,
+          "modified_sections": 0,
+          "added_sections": 12,
+          "removed_sections": 0,
+          "reused_embeddings": 0,
+          "new_embeddings": 12,
+          "active_chunks": 12,
+          "processing_time": 0.531,
+          "index_refresh_strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH"
+        }
+      },
+      {
+        "total_seconds": 0.4520632000057958,
+        "embedding_seconds": 0.22085760001209565,
+        "index_refresh_seconds": 0.07265990000450984,
+        "document_processing_seconds": 0.15854569998919033,
+        "encoded_text_count": 12,
+        "report": {
+          "total_sections": 12,
+          "unchanged_sections": 0,
+          "modified_sections": 0,
+          "added_sections": 12,
+          "removed_sections": 0,
+          "reused_embeddings": 0,
+          "new_embeddings": 12,
+          "active_chunks": 12,
+          "processing_time": 0.453,
+          "index_refresh_strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH"
+        }
+      },
+      {
+        "total_seconds": 0.6171407000219915,
+        "embedding_seconds": 0.41202530000009574,
+        "index_refresh_seconds": 0.06454479999956675,
+        "document_processing_seconds": 0.14057060002232902,
+        "encoded_text_count": 12,
+        "report": {
+          "total_sections": 12,
+          "unchanged_sections": 0,
+          "modified_sections": 0,
+          "added_sections": 12,
+          "removed_sections": 0,
+          "reused_embeddings": 0,
+          "new_embeddings": 12,
+          "active_chunks": 12,
+          "processing_time": 0.61,
+          "index_refresh_strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH"
+        }
+      },
+      {
+        "total_seconds": 0.6584212000016123,
+        "embedding_seconds": 0.419479499978479,
+        "index_refresh_seconds": 0.07514010000159033,
+        "document_processing_seconds": 0.16380160002154298,
+        "encoded_text_count": 12,
+        "report": {
+          "total_sections": 12,
+          "unchanged_sections": 0,
+          "modified_sections": 0,
+          "added_sections": 12,
+          "removed_sections": 0,
+          "reused_embeddings": 0,
+          "new_embeddings": 12,
+          "active_chunks": 12,
+          "processing_time": 0.641,
+          "index_refresh_strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH"
+        }
+      },
+      {
+        "total_seconds": 0.5548970999952871,
+        "embedding_seconds": 0.3287580999894999,
+        "index_refresh_seconds": 0.0568741999741178,
+        "document_processing_seconds": 0.16926480003166944,
+        "encoded_text_count": 12,
+        "report": {
+          "total_sections": 12,
+          "unchanged_sections": 0,
+          "modified_sections": 0,
+          "added_sections": 12,
+          "removed_sections": 0,
+          "reused_embeddings": 0,
+          "new_embeddings": 12,
+          "active_chunks": 12,
+          "processing_time": 0.547,
+          "index_refresh_strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH"
+        }
+      }
+    ],
+    "incremental_update": [
+      {
+        "total_seconds": 0.3391620000184048,
+        "embedding_seconds": 0.08537660000729375,
+        "index_refresh_seconds": 0.07121620001271367,
+        "document_processing_seconds": 0.18256919999839738,
+        "encoded_text_count": 3,
+        "report": {
+          "total_sections": 12,
+          "unchanged_sections": 9,
+          "modified_sections": 2,
+          "added_sections": 1,
+          "removed_sections": 1,
+          "reused_embeddings": 9,
+          "new_embeddings": 3,
+          "active_chunks": 12,
+          "processing_time": 0.344,
+          "index_refresh_strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH"
+        }
+      },
+      {
+        "total_seconds": 0.4231495999847539,
+        "embedding_seconds": 0.11387080000713468,
+        "index_refresh_seconds": 0.08579479999025352,
+        "document_processing_seconds": 0.22348399998736568,
+        "encoded_text_count": 3,
+        "report": {
+          "total_sections": 12,
+          "unchanged_sections": 9,
+          "modified_sections": 2,
+          "added_sections": 1,
+          "removed_sections": 1,
+          "reused_embeddings": 9,
+          "new_embeddings": 3,
+          "active_chunks": 12,
+          "processing_time": 0.422,
+          "index_refresh_strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH"
+        }
+      },
+      {
+        "total_seconds": 0.40363760001491755,
+        "embedding_seconds": 0.14467749997857027,
+        "index_refresh_seconds": 0.06553449999773875,
+        "document_processing_seconds": 0.19342560003860854,
+        "encoded_text_count": 3,
+        "report": {
+          "total_sections": 12,
+          "unchanged_sections": 9,
+          "modified_sections": 2,
+          "added_sections": 1,
+          "removed_sections": 1,
+          "reused_embeddings": 9,
+          "new_embeddings": 3,
+          "active_chunks": 12,
+          "processing_time": 0.406,
+          "index_refresh_strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH"
+        }
+      },
+      {
+        "total_seconds": 0.3811678999918513,
+        "embedding_seconds": 0.11590760000399314,
+        "index_refresh_seconds": 0.06127179999020882,
+        "document_processing_seconds": 0.20398849999764934,
+        "encoded_text_count": 3,
+        "report": {
+          "total_sections": 12,
+          "unchanged_sections": 9,
+          "modified_sections": 2,
+          "added_sections": 1,
+          "removed_sections": 1,
+          "reused_embeddings": 9,
+          "new_embeddings": 3,
+          "active_chunks": 12,
+          "processing_time": 0.39,
+          "index_refresh_strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH"
+        }
+      },
+      {
+        "total_seconds": 0.33290930002112873,
+        "embedding_seconds": 0.05264470001566224,
+        "index_refresh_seconds": 0.0684330000076443,
+        "document_processing_seconds": 0.2118315999978222,
+        "encoded_text_count": 3,
+        "report": {
+          "total_sections": 12,
+          "unchanged_sections": 9,
+          "modified_sections": 2,
+          "added_sections": 1,
+          "removed_sections": 1,
+          "reused_embeddings": 9,
+          "new_embeddings": 3,
+          "active_chunks": 12,
+          "processing_time": 0.328,
+          "index_refresh_strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH"
+        }
+      }
+    ]
+  },
+  "correctness": {
+    "active_scope": "PASS",
+    "historical_scope": "PASS",
+    "version_diff": "PASS",
+    "diff_summary": {
+      "ADDED": 1,
+      "REMOVED": 1,
+      "MODIFIED": 2,
+      "UNCHANGED": 9
+    }
+  },
+  "truthfulness_note": "The lifecycle performs incremental embedding reuse, then rewrites the exact active vector matrix from cached vectors; it does not perform an in-place FAISS mutation."
+}

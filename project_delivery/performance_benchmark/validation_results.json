@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-09-18T16:23:56.467741+00:00",
+  "core_business_code_changed": false,
+  "allowed_change_root": "project_delivery/performance_benchmark",
+  "rag_regression": {
+    "passed": 34,
+    "failed": 0,
+    "status": "PASS"
+  },
+  "agent_regression": {
+    "passed": 112,
+    "failed": 0,
+    "status": "PASS"
+  },
+  "ui_regression": {
+    "passed": 12,
+    "failed": 0,
+    "status": "PASS"
+  },
+  "compile_import": {
+    "rag": "PASS",
+    "agent": "PASS",
+    "ui": "PASS"
+  },
+  "pip_check": {
+    "rag": "PASS",
+    "agent": "PASS"
+  },
+  "git_diff_check": "PASS",
+  "safe_data_only": true,
+  "real_internal_data_sent_to_online_llm": false,
+  "notes": [
+    "RAG latency used loopback HTTP and the frozen local embedding snapshot.",
+    "Incremental and Agent comparisons used synthetic fixtures.",
+    "Agent pytest was scoped to OpenManus-rag/tests so protected workspace dependency caches were not collected as project tests."
+  ]
+}

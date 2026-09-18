@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "data_policy": "approved-local-corpus-query-set",
+  "top_k": 5,
+  "queries": [
+    {"id": "Q01", "category": "concept", "question": "系统的总体功能和组成是什么？"},
+    {"id": "Q02", "category": "concept", "question": "网络协议分析实验系统包含哪些能力？"},
+    {"id": "Q03", "category": "field", "question": "系统支持多少用户同时访问？"},
+    {"id": "Q04", "category": "field", "question": "系统响应时间要求是多少？"},
+    {"id": "Q05", "category": "exact-term", "question": "TCP UDP ARP ICMP"},
+    {"id": "Q06", "category": "exact-term", "question": "IPv4 IPv6 HTTP"},
+    {"id": "Q07", "category": "cross-section", "question": "软件功能与对应测试验证如何关联？"},
+    {"id": "Q08", "category": "cross-section", "question": "系统设计如何满足功能指标？"},
+    {"id": "Q09", "category": "document", "question": "需求指标中对实验项目数量有什么要求？"},
+    {"id": "Q10", "category": "document", "question": "详细设计中的总体架构如何划分？"},
+    {"id": "Q11", "category": "document", "question": "测试记录包含哪些测试环境信息？"},
+    {"id": "Q12", "category": "version", "question": "当前有效版本的文档状态和版本号是什么？"},
+    {"id": "Q13", "category": "field", "question": "系统支持哪些链路与通信协议？"},
+    {"id": "Q14", "category": "field", "question": "功能测试的通过条件是什么？"},
+    {"id": "Q15", "category": "cross-section", "question": "需求、设计和测试之间有哪些可追溯关系？"}
+  ]
+}
