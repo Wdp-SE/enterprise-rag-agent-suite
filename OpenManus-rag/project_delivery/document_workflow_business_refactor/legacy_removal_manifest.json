@@ -1,9 +1,21 @@
 {
-  "status": "PLANNED_AWAITING_EXPLICIT_APPROVAL",
+  "status": "DELETED_AND_VERIFIED",
   "agent_root": "E:\\工作项目\\秋招项目\\rag-agent-hardening\\OpenManus-rag",
   "target_count": 78,
   "removed_files_count": 506,
   "removed_python_lines": 23989,
+  "actual_deleted_files": 506,
+  "remaining_manifest_files": 0,
+  "retained_exceptions": [],
+  "recovery_commit": "ab984fbff30542d512c5ee1f3de66c430c7ccac5",
+  "recovery_tag": "backup/pre-legacy-removal-20260918",
+  "manifest_sha256_before_deletion": "2A628D5601B07147435DADAD9C99952A3D4F399D16CFE88234870B183378D123",
+  "scope_validation": {
+    "listed_files": 506,
+    "enumerated_files_before_deletion": 506,
+    "set_difference": 0,
+    "protected_path_matches": 0
+  },
   "targets": [
     "app\\agent",
     "app\\daytona",
