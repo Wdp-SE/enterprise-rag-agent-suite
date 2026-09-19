@@ -17,10 +17,162 @@ from services.rag_client import RAGClient, ServiceError
 st.set_page_config(page_title="研发文档 RAG + 文档工作流 Agent", page_icon="📄", layout="wide")
 st.markdown("""
 <style>
-  .block-container {padding-top: 2rem; max-width: 1280px;}
-  h1, h2, h3 {color: #153a68;}
-  [data-testid="stMetric"] {background:#f8fafc;border:1px solid #dbe4ee;padding:.65rem;border-radius:.5rem;}
-  .boundary {background:#eff6ff;border-left:4px solid #2563eb;padding:.75rem 1rem;border-radius:.25rem;}
+  :root {
+    --brand-950: #102a43;
+    --brand-800: #174a78;
+    --brand-600: #2475c7;
+    --ink-900: #172033;
+    --ink-600: #5d6b7d;
+    --line: #dbe5f0;
+    --surface: rgba(255, 255, 255, 0.94);
+    --canvas: #f4f7fb;
+  }
+
+  .stApp {
+    color: var(--ink-900);
+    background:
+      radial-gradient(circle at 94% 3%, rgba(74, 144, 226, 0.13), transparent 26rem),
+      linear-gradient(180deg, #f9fbfe 0%, var(--canvas) 38%, #f7f9fc 100%);
+  }
+
+  [data-testid="stHeader"] {background: rgba(249, 251, 254, 0.82); backdrop-filter: blur(12px);}
+  [data-testid="stToolbar"], #MainMenu, footer {visibility: hidden;}
+
+  .block-container {max-width: 1260px; padding: 2.35rem 2.4rem 4.5rem;}
+
+  h1 {
+    color: var(--brand-950);
+    font-size: clamp(2rem, 3vw, 2.75rem) !important;
+    line-height: 1.16 !important;
+    letter-spacing: -0.035em !important;
+    margin-bottom: 0.45rem !important;
+  }
+
+  h1::after {
+    content: "";
+    display: block;
+    width: 3.7rem;
+    height: 0.24rem;
+    margin-top: 0.85rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--brand-600), #48a9e6);
+  }
+
+  h2, h3, h4 {color: var(--brand-950); letter-spacing: -0.018em;}
+  h3 {margin-top: 1.5rem !important; padding-bottom: 0.55rem; border-bottom: 1px solid var(--line);}
+  [data-testid="stCaptionContainer"], .stCaption {color: var(--ink-600);}
+
+  [data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #f8fbff 0%, #edf4fb 100%);
+    border-right: 1px solid var(--line);
+  }
+  [data-testid="stSidebar"] > div:first-child {padding-top: 1.2rem;}
+  [data-testid="stSidebar"] h3 {border-bottom: 0; color: var(--brand-950);}
+
+  [data-testid="stTabs"] [data-baseweb="tab-list"] {
+    gap: 0.35rem;
+    padding: 0.38rem;
+    margin: 1.3rem 0 1rem;
+    border-radius: 0.9rem;
+    background: #eaf0f7;
+    border: 1px solid #dce6f0;
+  }
+  [data-testid="stTabs"] button[data-baseweb="tab"] {
+    height: 2.85rem;
+    padding: 0 1.25rem;
+    border-radius: 0.68rem;
+    color: #53657a;
+    font-weight: 650;
+  }
+  [data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {
+    color: var(--brand-800);
+    background: #ffffff;
+    box-shadow: 0 5px 16px rgba(34, 72, 110, 0.10);
+  }
+  [data-testid="stTabs"] [data-baseweb="tab-highlight"],
+  [data-testid="stTabs"] [data-baseweb="tab-border"] {display: none;}
+
+  .boundary {
+    margin: 0.35rem 0 1.15rem;
+    padding: 1rem 1.15rem;
+    color: #24415f;
+    background: linear-gradient(135deg, #eef6ff 0%, #f8fbff 100%);
+    border: 1px solid #cfe3f7;
+    border-left: 0.32rem solid var(--brand-600);
+    border-radius: 0.85rem;
+    box-shadow: 0 7px 20px rgba(36, 117, 199, 0.07);
+  }
+
+  [data-testid="stMetric"] {
+    min-height: 6.2rem;
+    padding: 0.85rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 0.9rem;
+    box-shadow: 0 6px 20px rgba(31, 63, 96, 0.06);
+  }
+  [data-testid="stMetricLabel"] {color: #607086;}
+  [data-testid="stMetricValue"] {color: var(--brand-950); font-size: 1.55rem; font-weight: 750;}
+
+  [data-testid="stExpander"] {
+    overflow: hidden;
+    margin: 0.55rem 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 0.85rem;
+    box-shadow: 0 5px 18px rgba(31, 63, 96, 0.045);
+  }
+  [data-testid="stExpander"] summary {min-height: 3rem; color: #2a415a; font-weight: 640;}
+  [data-testid="stAlert"] {border-radius: 0.8rem; border-width: 1px; box-shadow: 0 5px 16px rgba(31, 63, 96, 0.045);}
+
+  [data-testid="stTextArea"] textarea,
+  [data-testid="stTextInput"] input,
+  [data-baseweb="select"] > div,
+  [data-testid="stFileUploader"] section {
+    border-color: #cbd9e8 !important;
+    border-radius: 0.72rem !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+  }
+  [data-testid="stTextArea"] textarea:focus,
+  [data-testid="stTextInput"] input:focus,
+  [data-baseweb="select"] > div:focus-within {
+    border-color: var(--brand-600) !important;
+    box-shadow: 0 0 0 0.18rem rgba(36, 117, 199, 0.12) !important;
+  }
+
+  [data-testid="stRadio"] > div {gap: 0.5rem;}
+  [data-testid="stRadio"] label {padding: 0.3rem 0.55rem; border-radius: 0.55rem;}
+
+  .stButton > button, .stDownloadButton > button {
+    min-height: 2.65rem;
+    border-radius: 0.7rem;
+    border-color: #c7d6e6;
+    font-weight: 680;
+    box-shadow: 0 4px 12px rgba(31, 63, 96, 0.06);
+    transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+  }
+  .stButton > button:hover, .stDownloadButton > button:hover {
+    border-color: var(--brand-600);
+    transform: translateY(-1px);
+    box-shadow: 0 7px 16px rgba(31, 92, 150, 0.12);
+  }
+  .stButton > button[kind="primary"] {
+    color: #ffffff;
+    border: 0;
+    background: linear-gradient(135deg, #1f67ad 0%, #2f86d7 100%);
+    box-shadow: 0 7px 18px rgba(36, 117, 199, 0.22);
+  }
+
+  [data-testid="stMarkdownContainer"] p,
+  [data-testid="stMarkdownContainer"] li {line-height: 1.72;}
+  hr {margin: 1.45rem 0 !important; border-color: #e1e8f0 !important;}
+  code {color: #275a8d; background: #edf4fb; border-radius: 0.35rem;}
+
+  @media (max-width: 760px) {
+    .block-container {padding: 1.35rem 1rem 3rem;}
+    [data-testid="stTabs"] button[data-baseweb="tab"] {padding: 0 0.7rem;}
+    h1 {font-size: 1.85rem !important;}
+  }
 </style>
 """, unsafe_allow_html=True)
 
