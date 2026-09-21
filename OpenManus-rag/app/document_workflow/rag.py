@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import math
 import re
@@ -110,6 +111,63 @@ class HTTPRetrieveClient:
                 "evidence_by_item": evidence_by_item or {},
             },
             "impacts",
+        )
+
+    def build_candidate_version(
+        self,
+        *,
+        document_id: str,
+        project_id: str,
+        document_type: str,
+        title: str,
+        version_id: str,
+        version_label: str,
+        source_bytes: bytes,
+        source_name: str,
+        profile: dict,
+        expected_contents: list[str],
+    ) -> dict:
+        response = httpx.post(
+            f"{self.base_url}/engineering/candidates/build",
+            json={
+                "document_id": document_id,
+                "project_id": project_id,
+                "document_type": document_type,
+                "title": title,
+                "version_id": version_id,
+                "version_label": version_label,
+                "source_base64": base64.b64encode(source_bytes).decode("ascii"),
+                "source_name": source_name,
+                "profile": profile,
+                "expected_contents": expected_contents,
+            },
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        if not isinstance(payload, dict) or not payload.get("candidate_id") or not payload.get("status"):
+            raise ValueError("malformed candidate build response")
+        return payload
+
+    def activate_candidate_version(self, candidate_id: str) -> dict:
+        response = httpx.post(
+            f"{self.base_url}/engineering/candidates/{candidate_id}/activate",
+            json={},
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        if not isinstance(payload, dict) or payload.get("candidate_id") != candidate_id:
+            raise ValueError("malformed candidate activation response")
+        return payload
+
+    def retrieve_candidate_versions(
+        self, query_vector: list[float], scope: dict, *, top_k: int = 5
+    ) -> dict:
+        return self._post_engineering(
+            "/engineering/versions/retrieve",
+            {"query_vector": query_vector, "scope": scope, "top_k": top_k},
+            "results",
         )
 
     def active_versions(self) -> dict[str, str]:

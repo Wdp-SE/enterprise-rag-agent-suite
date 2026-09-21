@@ -553,8 +553,12 @@ class VersionLifecycleService:
             active_payload = json.loads(path.read_text(encoding="utf-8"))
             rows = active_payload.get("rows", [])
             vectors = np.asarray(active_payload.get("vectors", []), dtype=np.float32)
-            if len(rows) != int(self.active_index.get("row_count", -1)) or vectors.ndim != 2 or len(rows) != vectors.shape[0]:
+            if len(rows) != int(self.active_index.get("row_count", -1)):
                 raise ValueError("active index count mismatch")
+            if rows and (vectors.ndim != 2 or len(rows) != vectors.shape[0]):
+                raise ValueError("active index count mismatch")
+            if not rows and vectors.size:
+                raise ValueError("empty active index contains vectors")
             if any(
                 row.get("version_id") not in self.catalog.by_version
                 or self.catalog.by_version[row["version_id"]].status != VersionStatus.ACTIVE

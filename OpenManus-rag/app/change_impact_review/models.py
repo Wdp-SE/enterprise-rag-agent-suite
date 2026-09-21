@@ -186,4 +186,5 @@ class ChangeImpactTaskState(BaseModel):
     evidence_snapshot: dict[str, dict[str, Any]] = Field(default_factory=dict)
     trace: list[dict[str, Any]] = Field(default_factory=list)
     failure_reason: str | None = None
+    candidate_version_record: dict[str, Any] | None = None
 

@@ -40,12 +40,14 @@ class ChangeImpactWorkflow:
         runtime_root: str | Path,
         *,
         active_version_for_document: Callable[[str], str | None],
+        version_client=None,
     ):
         self.runtime_root = Path(runtime_root).resolve()
         self.tasks_root = self.runtime_root / "change_impact_tasks"
         self.tasks_root.mkdir(parents=True, exist_ok=True)
         self.checkpoints = ChangeImpactCheckpointStore(CheckpointStore(self.tasks_root / "checkpoints"))
         self.active_version_for_document = active_version_for_document
+        self.version_client = version_client
 
     def create_task(
         self,
@@ -197,6 +199,70 @@ class ChangeImpactWorkflow:
         ))
         self.checkpoints.save(state)
         return state, results
+
+    def finalize_candidate_version(
+        self,
+        task_id: str,
+        *,
+        version_id: str,
+        version_label: str,
+        document_type: str,
+        title: str,
+        profile: dict,
+    ) -> ChangeImpactTaskState:
+        state = self.get(task_id)
+        if state.status is not ChangeTaskStatus.CANDIDATE_READY:
+            raise ValueError("task candidate DOCX is not ready")
+        if self.version_client is None:
+            raise ValueError("RAG candidate version client is required")
+        candidate_path = Path(state.candidate_path)
+        if not candidate_path.is_file():
+            raise ValueError("candidate DOCX is missing")
+        approved_content = [
+            patch.proposed_content
+            for patch in state.patches
+            if patch.review_status is PatchReviewStatus.APPROVED
+        ]
+        started = time.perf_counter()
+        built = self.version_client.build_candidate_version(
+            document_id=state.base_document_id,
+            project_id=state.project_id,
+            document_type=document_type,
+            title=title,
+            version_id=version_id,
+            version_label=version_label,
+            source_bytes=candidate_path.read_bytes(),
+            source_name=candidate_path.name,
+            profile=profile,
+            expected_contents=approved_content,
+        )
+        state.candidate_version_record = dict(built)
+        if built.get("status") != "VALIDATED":
+            state.status = ChangeTaskStatus.FAILED
+            state.failure_reason = str(built.get("failure_reason") or "CANDIDATE_BUILD_FAILED")
+            state.trace.append(self._trace(
+                state, "CANDIDATE_BUILD", "FAILED", time.perf_counter() - started,
+                failure_reason=state.failure_reason,
+            ))
+            self.checkpoints.save(state)
+            return state
+        activated = self.version_client.activate_candidate_version(str(built["candidate_id"]))
+        state.candidate_version_record = dict(activated)
+        if activated.get("status") != "ACTIVE":
+            state.status = ChangeTaskStatus.FAILED
+            state.failure_reason = str(activated.get("failure_reason") or "CANDIDATE_ACTIVATION_FAILED")
+        else:
+            state.status = ChangeTaskStatus.COMPLETED
+            state.failure_reason = None
+        state.trace.append(self._trace(
+            state,
+            "SAFE_ACTIVATION",
+            state.status.value,
+            time.perf_counter() - started,
+            failure_reason=state.failure_reason,
+        ))
+        self.checkpoints.save(state)
+        return state
 
     @staticmethod
     def _trace(

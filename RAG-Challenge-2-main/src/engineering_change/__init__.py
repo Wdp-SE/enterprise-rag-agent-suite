@@ -14,6 +14,7 @@ from .analysis import (
     TraceStatus,
     compare_engineering_items,
 )
+from .candidates import CandidateStatus, CandidateVersionRecord, CandidateVersionService
 from .extraction import DocxEngineeringParser, EngineeringItemFactory, IdentifierExtractor
 from .models import (
     EngineeringItem,
@@ -26,6 +27,9 @@ from .models import (
 )
 
 __all__ = [
+    "CandidateStatus",
+    "CandidateVersionRecord",
+    "CandidateVersionService",
     "ChangeType",
     "DiscoverySource",
     "DocxEngineeringParser",

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import hashlib
 import re
 import unicodedata
@@ -15,10 +16,12 @@ from pydantic import BaseModel, ConfigDict, Field
 from src.rd_v2_runtime import QueryRuntimeError, RDV2QueryRuntime, create_runtime
 from src.document_lifecycle import RetrievalScope
 from src.engineering_change import (
+    CandidateVersionService,
     EngineeringImpactService,
     EngineeringItem,
     EngineeringItemRetriever,
     EngineeringRetrievalScope,
+    OrganizationProfile,
     TraceLink,
     compare_engineering_items,
 )
@@ -98,6 +101,29 @@ class EngineeringImpactRequest(BaseModel):
     evidence_by_item: dict[str, list[str]] = Field(default_factory=dict)
 
 
+class CandidateBuildRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    document_id: str = Field(min_length=1)
+    project_id: str = Field(min_length=1)
+    document_type: str = Field(min_length=1)
+    title: str = Field(min_length=1)
+    version_id: str = Field(min_length=1)
+    version_label: str = Field(min_length=1)
+    source_base64: str = Field(min_length=1)
+    source_name: str = Field(min_length=1)
+    profile: OrganizationProfile
+    expected_contents: list[str] = Field(default_factory=list)
+
+
+class CandidateRetrieveRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    query_vector: list[float] = Field(min_length=1)
+    scope: RetrievalScope = Field(default_factory=RetrievalScope)
+    top_k: int = Field(default=5, ge=1, le=20)
+
+
 def _serialize_retrieval_hit(hit: dict) -> dict:
     """Expose only provenance and raw text from a validated frozen chunk."""
     content = hit["text"]
@@ -124,12 +150,14 @@ def create_app(
     runtime: RDV2QueryRuntime | None = None,
     *,
     runtime_factory: Callable[[], RDV2QueryRuntime] = create_runtime,
+    candidate_service: CandidateVersionService | None = None,
 ) -> FastAPI:
     """Create the service; startup fails if frozen artifacts fail validation."""
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         app.state.rd_v2_runtime = runtime or runtime_factory()
+        app.state.engineering_candidate_service = candidate_service
         try:
             yield
         finally:
@@ -247,6 +275,66 @@ def create_app(
             return {"impacts": [item.model_dump(mode="json") for item in impacts]}
         except ValueError as exc:
             raise HTTPException(status_code=422, detail="ENGINEERING_IMPACT_INVALID") from exc
+
+    @app.post("/engineering/candidates/build")
+    async def build_engineering_candidate(payload: CandidateBuildRequest, request: Request) -> dict:
+        service = request.app.state.engineering_candidate_service
+        if service is None:
+            raise HTTPException(status_code=503, detail="ENGINEERING_VERSION_SERVICE_UNAVAILABLE")
+        try:
+            source_bytes = base64.b64decode(payload.source_base64, validate=True)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail="CANDIDATE_SOURCE_INVALID") from exc
+        record = await asyncio.to_thread(
+            service.build_candidate,
+            document_id=payload.document_id,
+            project_id=payload.project_id,
+            document_type=payload.document_type,
+            title=payload.title,
+            version_id=payload.version_id,
+            version_label=payload.version_label,
+            source_bytes=source_bytes,
+            source_name=payload.source_name,
+            profile=payload.profile,
+            expected_contents=payload.expected_contents,
+        )
+        return record.model_dump(mode="json")
+
+    @app.post("/engineering/candidates/{candidate_id}/activate")
+    async def activate_engineering_candidate(candidate_id: str, request: Request) -> dict:
+        service = request.app.state.engineering_candidate_service
+        if service is None:
+            raise HTTPException(status_code=503, detail="ENGINEERING_VERSION_SERVICE_UNAVAILABLE")
+        try:
+            record = await asyncio.to_thread(service.activate, candidate_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="CANDIDATE_NOT_FOUND") from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail="CANDIDATE_NOT_VALIDATED") from exc
+        return record.model_dump(mode="json")
+
+    @app.get("/engineering/candidates/{candidate_id}")
+    async def engineering_candidate(candidate_id: str, request: Request) -> dict:
+        service = request.app.state.engineering_candidate_service
+        if service is None:
+            raise HTTPException(status_code=503, detail="ENGINEERING_VERSION_SERVICE_UNAVAILABLE")
+        try:
+            return service.get(candidate_id).model_dump(mode="json")
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="CANDIDATE_NOT_FOUND") from exc
+
+    @app.post("/engineering/versions/retrieve")
+    async def retrieve_engineering_version(payload: CandidateRetrieveRequest, request: Request) -> dict:
+        service = request.app.state.engineering_candidate_service
+        if service is None:
+            raise HTTPException(status_code=503, detail="ENGINEERING_VERSION_SERVICE_UNAVAILABLE")
+        try:
+            results = await asyncio.to_thread(
+                service.retrieve, payload.query_vector, payload.scope, top_k=payload.top_k
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail="ENGINEERING_VERSION_RETRIEVAL_INVALID") from exc
+        return {"results": results}
 
     return app
 

@@ -10,9 +10,12 @@ from .workflow import ChangeImpactWorkflow
 class ChangeImpactReviewFacade(ChangeImpactWorkflow):
     """The UI-facing surface; orchestration remains in ChangeImpactWorkflow."""
 
-    def __init__(self, runtime_root: str | Path, *, active_version_for_document):
+    def __init__(
+        self, runtime_root: str | Path, *, active_version_for_document, version_client=None
+    ):
         super().__init__(
             runtime_root,
             active_version_for_document=active_version_for_document,
+            version_client=version_client,
         )
 
