@@ -12,48 +12,86 @@ def _document_name(document_id: object, names: dict[str, str]) -> str:
     return names.get(key, key)
 
 
+def _source_lines(*, document_name: str, version: object, section: object, page: object) -> None:
+    st.markdown(f"**《{document_name}》**")
+    st.markdown(f"版本：{version or '版本信息不可用'}  ")
+    st.markdown(f"章节：{_path(section)}  ")
+    st.markdown(f"页码：第 {page or '—'} 页")
+
+
+def _matching_trace(source: dict, trace: list[dict] | None) -> dict:
+    document_id = source.get("document_id") or source.get("document_number")
+    page = source.get("page_number") or source.get("page")
+    return next(
+        (
+            item for item in (trace or [])
+            if item.get("document_id") == document_id
+            and (item.get("page_number") or item.get("page")) == page
+        ),
+        {},
+    )
+
+
 def render_retrieval_results(results: list[dict], document_names: dict[str, str]) -> None:
     if not results:
-        st.warning("没有返回证据。")
+        st.warning("当前选择的资料范围内未找到足够依据，暂不生成该内容。")
         return
     for item in results:
         document_id = str(item.get("document_id") or "unknown")
         document_name = _document_name(document_id, document_names)
-        version = item.get("version_label") or item.get("version_id") or "版本未知"
-        status = item.get("version_status") or "状态未知"
-        title = (
-            f"查看完整证据 #{item.get('rank')} · {document_name} · "
-            f"{version} · 第 {item.get('page_number')} 页"
-        )
+        version = item.get("version_label") or "版本信息不可用"
+        status = {"ACTIVE": "当前版本", "SUPERSEDED": "历史版本"}.get(item.get("version_status"), "版本状态未知")
         content = str(item.get("content", ""))
-        st.markdown(
-            f"**第 {item.get('rank')} 条** · **文档：{document_name}** · "
-            f"**版本：{version}** · {status} · 第 {item.get('page_number')} 页 · "
-            f"相似度 {float(item.get('similarity', 0)):.4f}"
+        st.markdown(f"##### 第 {item.get('rank')} 条来源 · {status}")
+        _source_lines(
+            document_name=document_name,
+            version=version,
+            section=item.get("section_path"),
+            page=item.get("page_number"),
         )
-        st.caption(
-            f"章节：{_path(item.get('section_path'))}　|　文档 ID：{document_id}"
-            f"　|　版本 ID：{item.get('version_id') or '—'}"
-        )
+        st.caption(f"检索相似度：{float(item.get('similarity', 0)):.4f}")
         st.write(content[:180] + ("…" if len(content) > 180 else ""))
-        with st.expander(title):
+        with st.expander(f"展开第 {item.get('rank')} 条证据内容"):
             st.write(content)
-            st.caption(f"片段 ID：{item.get('chunk_id')}")
+            st.markdown("**技术详情**")
+            st.json({
+                "document_id": document_id,
+                "version_id": item.get("version_id"),
+                "section_id": item.get("section_id"),
+                "chunk_id": item.get("chunk_id"),
+                "version_status": item.get("version_status"),
+            })
         st.divider()
 
 
-def render_query_sources(sources: list[dict], document_names: dict[str, str]) -> None:
+def render_query_sources(
+    sources: list[dict], document_names: dict[str, str], *, trace: list[dict] | None = None
+) -> None:
     if not sources:
         st.warning("回答没有返回引用来源。")
         return
     for index, source in enumerate(sources, start=1):
+        trace_item = _matching_trace(source, trace)
         document_id = source.get("document_id") or source.get("document_number") or source.get("title")
         document_name = _document_name(document_id, document_names)
         page = source.get("page_number") or source.get("page") or "—"
-        version = source.get("version_label") or source.get("version_id") or "版本未知"
-        with st.expander(f"引用 #{index} · {document_name} · {version} · 第 {page} 页"):
-            st.caption(f"文档 ID：{document_id or 'unknown'}")
-            st.json(source)
+        version = source.get("version_label") or trace_item.get("version_label") or "版本信息不可用"
+        section = (
+            source.get("section_path")
+            or trace_item.get("section_path")
+            or source.get("section")
+            or trace_item.get("section_id")
+        )
+        st.markdown(f"##### 引用来源 {index}")
+        _source_lines(document_name=document_name, version=version, section=section, page=page)
+        with st.expander("技术详情", expanded=False):
+            st.json({
+                "document_id": document_id,
+                "version_id": source.get("version_id") or trace_item.get("version_id"),
+                "section_id": source.get("section_id") or trace_item.get("section_id"),
+                "chunk_id": source.get("chunk_id") or trace_item.get("chunk_id"),
+                "validated_source": source,
+            })
 
 
 def render_agent_evidence(evidence: list[dict], document_names: dict[str, str]) -> None:
@@ -67,13 +105,18 @@ def render_agent_evidence(evidence: list[dict], document_names: dict[str, str]) 
         page = item.get("page_number") or "—"
         section_path = item.get("section_path") or [item.get("section") or "—"]
         content = str(item.get("content", ""))
-        version = item.get("version_id") or "版本未知"
-        freshness = item.get("freshness") or "UNKNOWN"
-        st.markdown(
-            f"**{evidence_id}** · **文档：{document_name}** · "
-            f"**版本：{version}** · {freshness} · 第 {page} 页"
-        )
-        st.caption(f"章节：{_path(section_path)}　|　文档 ID：{document}")
+        version = item.get("version_label") or "版本信息不可用"
+        freshness = "有效" if item.get("freshness") == "FRESH" else "需刷新"
+        st.markdown(f"##### 来源 · {freshness}")
+        _source_lines(document_name=document_name, version=version, section=section_path, page=page)
         st.write(content[:160] + ("…" if len(content) > 160 else ""))
-        with st.expander(f"展开 {evidence_id} 完整内容"):
+        with st.expander("展开证据内容与技术详情"):
             st.write(content)
+            st.markdown("**技术详情**")
+            st.json({
+                "document_id": document,
+                "version_id": item.get("version_id"),
+                "chunk_id": item.get("chunk_id"),
+                "evidence_id": evidence_id,
+                "freshness": item.get("freshness"),
+            })

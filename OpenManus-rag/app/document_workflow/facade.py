@@ -128,7 +128,7 @@ class DocumentWorkflowFacade:
             raise ValueError("workflow paths outside runtime root")
         config = replace(self.config, output_root=self.outputs_root, checkpoint_root=output / "checkpoints", trace_root=output).validate()
         raw = DocumentWorkflow(self._client(use_demo_rag), config=config, scope=scope).run(source, output)
-        return self._serialize(raw["state"])
+        return self._serialize(raw["state"], execution_trace=raw.get("trace"))
 
     def resume_workflow(self, workflow_id: str, *, use_demo_rag: bool = False) -> dict:
         state = self.repository.get(workflow_id)
@@ -140,7 +140,7 @@ class DocumentWorkflowFacade:
         raw = DocumentWorkflow(self._client(use_demo_rag), config=config, scope=scope).resume(
             workflow_id, output=state.output_path, template=state.template_path,
         )
-        return self._serialize(raw["state"])
+        return self._serialize(raw["state"], execution_trace=raw.get("trace"))
 
     def list_workflows(self) -> list[dict]:
         return self.repository.list_workflows()
@@ -189,7 +189,14 @@ class DocumentWorkflowFacade:
         self.repository.save(state)
         return self._serialize(state)
 
-    def _serialize(self, state) -> dict:
+    def _serialize(self, state, *, execution_trace: dict | None = None) -> dict:
+        if execution_trace is None:
+            trace_path = Path(state.output_path) / "execution_trace.json"
+            try:
+                loaded_trace = json.loads(trace_path.read_text(encoding="utf-8"))
+                execution_trace = loaded_trace if isinstance(loaded_trace, dict) else {}
+            except (OSError, ValueError, TypeError):
+                execution_trace = {}
         schema = TemplateParser().parse(state.template_path)
         fields = {item.field_id: item for item in schema.fields}
         evidence_records = state.evidence_snapshot.get("evidence", [])
@@ -231,7 +238,8 @@ class DocumentWorkflowFacade:
             "unique_evidence_count": len(evidence_records),
             "missing_field_count": sum(item["status"] in {"MISSING", "INSUFFICIENT_EVIDENCE", "INVALID"} for section in sections for item in section["fields"]),
             "all_sections_approved": ReviewService.all_approved(state),
-            "last_stop_reason": state.last_stop_reason, "artifacts": artifacts,
+            "last_stop_reason": state.last_stop_reason,
+            "refresh_summary": execution_trace.get("refresh_summary"), "artifacts": artifacts,
         }
 
     def artifact_bytes(self, path: str | Path) -> bytes:

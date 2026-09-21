@@ -87,6 +87,8 @@ class DocumentWorkflow:
         cache = EvidenceCache(target_dir, target_dir / "evidence.json")
         checkpoint = CheckpointStore(self.config.checkpoint_root or target_dir / "checkpoints")
         freshness_events: list[dict] = []
+        refresh_affected_section_ids: set[str] = set()
+        refresh_reused_section_ids: set[str] = set()
         if state is None:
             if (target_dir / "draft.docx").exists():
                 raise FileExistsError("draft.docx already exists; choose a new output directory")
@@ -100,6 +102,7 @@ class DocumentWorkflow:
             checkpoint.save(state)
         else:
             run_id = state.workflow_id
+            preexisting_draft_ids = set(state.section_drafts)
             if state.template_hash != original_hash or state.template_id != schema.template_id or state.config_fingerprint != self.config.fingerprint():
                 raise CheckpointInvalid("template hash or workflow configuration mismatch")
             if set(state.section_states) != {task.section_id for task in tasks}:
@@ -120,6 +123,10 @@ class DocumentWorkflow:
                 }
                 for item in decisions
             ]
+            refresh_affected_section_ids = {
+                task.section_id for task in tasks if task.task_id in affected
+            }
+            refresh_reused_section_ids = preexisting_draft_ids - refresh_affected_section_ids
             for task in tasks:
                 if task.task_id in affected:
                     task.status = TaskStatus.PENDING
@@ -284,6 +291,25 @@ class DocumentWorkflow:
             "scope": self.scope.to_dict(), "scope_fingerprint": self.scope.fingerprint(),
             "drafting_mode": self.config.drafting_mode.value,
             "sections": trace_sections, "freshness_events": freshness_events,
+            "refresh_summary": (
+                {
+                    "total_sections": len(schema.sections),
+                    "affected_section_ids": sorted(refresh_affected_section_ids),
+                    "reused_section_ids": sorted(refresh_reused_section_ids),
+                    "re_retrieved_section_ids": sorted(
+                        item["section_id"] for item in trace_sections
+                        if item["section_id"] in refresh_affected_section_ids and item["rag_calls"] > 0
+                    ),
+                    "regenerated_section_ids": sorted(
+                        item["section_id"] for item in trace_sections
+                        if item["section_id"] in refresh_affected_section_ids
+                    ),
+                    "unchanged_section_ids": sorted(
+                        {item.section_id for item in schema.sections} - refresh_affected_section_ids
+                    ),
+                }
+                if refresh_affected_section_ids else None
+            ),
             "total_rag_calls": state.rag_call_count, "total_unique_evidence": len(cache.store),
             "errors": errors, "duration_ms": round((time.monotonic() - started) * 1000, 3),
             "requires_human_review": True,

@@ -167,6 +167,40 @@ def test_stale_resume_refreshes_only_affected_section(tmp_path: Path):
     assert not any("影响范围" in query for query, _ in newer.calls)
     freshness = resumed["trace"]["freshness_events"]
     assert any(item["freshness"] == "STALE" for item in freshness)
+    refresh = resumed["trace"]["refresh_summary"]
+    assert refresh["total_sections"] == len(resumed["schema"].sections)
+    assert len(refresh["affected_section_ids"]) == 1
+    assert len(refresh["reused_section_ids"]) == 1
+    assert len(refresh["re_retrieved_section_ids"]) == 1
+    assert len(refresh["regenerated_section_ids"]) == 1
+    assert len(refresh["unchanged_section_ids"]) == refresh["total_sections"] - len(refresh["affected_section_ids"])
+
+
+def test_stale_evidence_blocks_official_output(tmp_path: Path):
+    runtime = tmp_path / "runtime"
+    template = make_template(tmp_path / "stale-final.docx", ("变更内容",))
+    facade = DocumentWorkflowFacade(
+        runtime,
+        config=config(runtime),
+        rag_client=BusinessRAG(),
+    )
+    record = facade.create_workflow(
+        template, {"project_ids": ["P-001"], "active_only": True}
+    )
+    result = facade.run_workflow(record)
+    section = next(item for item in result["sections"] if item["fields"])
+    facade.review_section(
+        result["workflow_id"],
+        section_id=section["section_id"],
+        action="APPROVED",
+        reviewer="reviewer-a",
+    )
+    state = facade.repository.get(result["workflow_id"])
+    state.evidence_snapshot["evidence"][0]["freshness"] = "STALE"
+    facade.repository.save(state)
+
+    with pytest.raises(OutputIntegrityError, match="EVIDENCE_(MEMBERSHIP|FRESHNESS)_INVALID"):
+        facade.finalize_document(result["workflow_id"])
 
 
 def test_demo_client_respects_document_scope():

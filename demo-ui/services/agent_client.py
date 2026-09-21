@@ -38,7 +38,7 @@ class AgentClient:
         try:
             return self.facade.run_workflow(template_record, use_demo_rag=use_demo_rag)
         except Exception as exc:
-            raise ServiceError("文档工作流执行失败。", type(exc).__name__, "AGENT_FAILED") from exc
+            raise ServiceError("文档工作流执行失败。", str(exc), "AGENT_FAILED") from exc
 
     def list_workflows(self) -> list[dict[str, Any]]:
         return self.facade.list_workflows()
@@ -50,7 +50,7 @@ class AgentClient:
         try:
             return self.facade.resume_workflow(workflow_id)
         except Exception as exc:
-            raise ServiceError("恢复工作流失败。", type(exc).__name__, "RESUME_FAILED") from exc
+            raise ServiceError("恢复工作流失败。", str(exc), "RESUME_FAILED") from exc
 
     def review_section(
         self,

@@ -88,7 +88,9 @@ def test_evidence_components_show_version_status_and_freshness(monkeypatch):
     monkeypatch.setattr(evidence_view.st, "markdown", lambda value, **kwargs: rendered.append(str(value)))
     monkeypatch.setattr(evidence_view.st, "caption", lambda value, **kwargs: rendered.append(str(value)))
     monkeypatch.setattr(evidence_view.st, "write", lambda value, **kwargs: rendered.append(str(value)))
+    technical = []
     monkeypatch.setattr(evidence_view.st, "divider", lambda: None)
+    monkeypatch.setattr(evidence_view.st, "json", lambda value, **kwargs: technical.append(value))
     monkeypatch.setattr(evidence_view.st, "expander", lambda *args, **kwargs: Context())
 
     evidence_view.render_retrieval_results([
@@ -102,11 +104,15 @@ def test_evidence_components_show_version_status_and_freshness(monkeypatch):
     evidence_view.render_agent_evidence([
         {
             "evidence_id": "ev_1", "document_id": "REQ", "version_id": "REQ@2",
-            "freshness": "FRESH", "page_number": 2, "section_path": ["容量"],
+            "version_label": "V2.0", "freshness": "FRESH",
+            "page_number": 2, "section_path": ["容量"],
             "content": "最大并发 1000",
         }
     ], {"REQ": "需求规格说明书"})
     combined = "\n".join(rendered)
-    assert "V2.0" in combined and "ACTIVE" in combined
-    assert "REQ@2" in combined and "FRESH" in combined
+    assert "《需求规格说明书》" in combined
+    assert "版本：V2.0" in combined and "章节：容量" in combined and "页码：第 2 页" in combined
+    assert "当前版本" in combined and "有效" in combined
+    assert "REQ@2" not in combined and "ev_1" not in combined
+    assert any(item.get("version_id") == "REQ@2" for item in technical)
 

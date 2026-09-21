@@ -208,6 +208,7 @@ def test_query_loads_frozen_index_without_rebuild_and_keeps_trace_text_free(tmp_
     assert embedder.calls == 1
     assert result["trace"]
     assert all("text" not in row for row in result["trace"])
+    assert all({"version_label", "section_path"}.issubset(row) for row in result["trace"])
     assert not hasattr(runtime, "build")
 
 
@@ -225,6 +226,7 @@ def test_invalid_citation_is_fail_closed(tmp_path):
     assert result["answer"] == "N/A"
     assert result["sources"] == []
     assert result["trusted_qa"]["enforced"] is True
+    assert result["trusted_qa"]["post_validation_status"] == "EMPTY_VALID_CITATIONS"
 
 
 def test_citation_membership_keeps_composite_document_page_identity():

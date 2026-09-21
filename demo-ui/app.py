@@ -6,7 +6,9 @@ import hashlib
 
 import streamlit as st
 
+from components.business_messages import business_failure_message
 from components.evidence_view import render_query_sources, render_retrieval_results
+from components.scope_view import render_scope, version_status_label
 from components.status_view import render_about, render_sidebar_status
 from components.workflow_view import render_downloads, render_template_summary, render_workflow_result
 from config import DemoConfig, document_display_names, example_questions
@@ -182,14 +184,21 @@ def clients(config: DemoConfig):
     return RAGClient(config.rag_base_url, config.request_timeout_seconds), AgentClient(config)
 
 
-def technical_error(exc: Exception) -> None:
+def technical_error(exc: Exception, *, pending_review_count: int | None = None) -> None:
     public = exc.public_message if isinstance(exc, ServiceError) else str(exc)
-    st.error(public or "操作失败。")
-    with st.expander("Technical Details"):
+    technical = (
+        f"{exc.code} {exc.detail}" if isinstance(exc, ServiceError)
+        else f"{type(exc).__name__} {exc}"
+    )
+    message = business_failure_message(
+        technical, pending_review_count=pending_review_count
+    )
+    st.error(message or public or "操作失败。")
+    with st.expander("技术详情"):
         if isinstance(exc, ServiceError):
             st.code(f"code={exc.code}\ndetail={exc.detail}")
         else:
-            st.code(type(exc).__name__)
+            st.code(f"type={type(exc).__name__}\ndetail={exc}")
 
 
 config = DemoConfig.from_env()
@@ -225,11 +234,14 @@ with rag_tab:
         with st.expander(f"当前文档目录（{len(catalog_documents)} 份）"):
             for item in catalog_documents:
                 active = item.get("active_version") or {}
-                status = active.get("status") or "无有效版本"
+                status = (
+                    version_status_label(active.get("status"))
+                    if active else "无有效版本"
+                )
                 version = active.get("version_label") or "—"
                 st.markdown(f"- **{item.get('title') or item['document_id']}** · {version} · {status}")
                 st.caption(
-                    f"文档 ID：{item['document_id']}　|　项目：{item.get('project_id', '—')}"
+                    f"项目：{item.get('project_name') or item.get('project_id', '—')}"
                     f"　|　类型：{item.get('document_type', '—')}"
                 )
     else:
@@ -241,9 +253,8 @@ with rag_tab:
         ]
         if active_documents:
             with st.expander(f"当前知识库文档（{len(active_documents)} 份）"):
-                for document_id, name in active_documents:
+                for _, name in active_documents:
                     st.markdown(f"- **{name}**")
-                    st.caption(f"内部文档 ID：{document_id}")
 
     scope_mode = st.radio(
         "检索范围",
@@ -281,11 +292,13 @@ with rag_tab:
             document = next(item for item in catalog_documents if item["document_id"] == historical_document)
             versions = list(document.get("versions") or [])
             version_labels = {
-                str(item["version_id"]): f"{item['version_label']} · {item['status']}"
-                + (" · 历史版本" if item["status"] == "SUPERSEDED" else "")
+                str(item["version_id"]): f"{item['version_label']} · {version_status_label(item['status'])}"
                 for item in versions
             }
-            defaults = [version_id for version_id, label in version_labels.items() if "SUPERSEDED" in label][:1]
+            defaults = [
+                str(item["version_id"]) for item in versions
+                if item["status"] == "SUPERSEDED"
+            ][:1]
             selected_versions = st.multiselect(
                 "选择版本", list(version_labels), default=defaults or list(version_labels)[:1],
                 format_func=lambda value: version_labels[value], key="scope_versions",
@@ -294,6 +307,7 @@ with rag_tab:
         scope_valid = bool(selected_versions)
     if not scope_valid:
         st.warning("请先完成检索范围选择。")
+    render_scope(scope, catalog_documents)
 
     mode = st.radio("功能", ["RAG 问答", "证据检索"], horizontal=True, key="rag_mode")
     selected = st.selectbox("示例问题", example_questions(), key="rag_example")
@@ -303,11 +317,18 @@ with rag_tab:
         if st.button("检索证据", type="primary", disabled=not bool(rag_health) or not scope_valid, key="retrieve_button"):
             try:
                 with st.spinner("正在检索证据……"):
-                    st.session_state.rag_result = {"mode": mode, "payload": rag.retrieve(question, top_k, scope)}
+                    st.session_state.rag_result = {
+                        "mode": mode, "scope": dict(scope),
+                        "payload": rag.retrieve(question, top_k, scope),
+                    }
             except Exception as exc:
                 technical_error(exc)
         current = st.session_state.get("rag_result")
         if current and current.get("mode") == mode:
+            render_scope(
+                current.get("scope", scope), catalog_documents,
+                title="本次检索实际使用的资料范围",
+            )
             render_retrieval_results(current["payload"]["results"], document_names)
     else:
         if not config.online_generation_allowed:
@@ -319,16 +340,35 @@ with rag_tab:
         ):
             try:
                 with st.spinner("正在生成 RAG 回答……"):
-                    st.session_state.rag_result = {"mode": mode, "payload": rag.query(question, scope)}
+                    st.session_state.rag_result = {
+                        "mode": mode, "scope": dict(scope),
+                        "payload": rag.query(question, scope),
+                    }
             except Exception as exc:
                 technical_error(exc)
         current = st.session_state.get("rag_result")
         if current and current.get("mode") == mode:
             payload = current["payload"]
+            render_scope(
+                current.get("scope", scope), catalog_documents,
+                title="本次问答实际使用的资料范围",
+            )
             st.markdown("### RAG 回答")
-            st.write(payload["answer"])
+            failure = business_failure_message(
+                (payload.get("trusted_qa") or {}).get("post_validation_status")
+            )
+            if failure:
+                st.warning(failure)
+            elif payload.get("status") in {"ABSTAINED", "FAIL_CLOSED"}:
+                st.warning("当前回答未通过资料与引用校验，本次结果已停止进入正式流程。")
+            if payload.get("answer") == "N/A":
+                st.caption("未生成回答")
+            else:
+                st.write(payload["answer"])
             st.markdown("### 引用来源")
-            render_query_sources(payload["sources"], document_names)
+            render_query_sources(
+                payload["sources"], document_names, trace=payload.get("trace")
+            )
 
     with st.expander("版本对比"):
         versioned_documents = [item for item in catalog_documents if len(item.get("versions") or []) >= 2]
@@ -344,7 +384,7 @@ with rag_tab:
             )
             diff_document = next(item for item in versioned_documents if item["document_id"] == diff_document_id)
             diff_versions = {
-                str(item["version_id"]): f"{item['version_label']} · {item['status']}"
+                str(item["version_id"]): f"{item['version_label']} · {version_status_label(item['status'])}"
                 for item in diff_document["versions"]
             }
             version_ids = list(diff_versions)
@@ -396,7 +436,7 @@ with agent_tab:
         agent_scope_valid = bool(selected_documents)
     elif scope_mode == "指定版本 / 历史版本":
         versions = {
-            str(version["version_id"]): f"{item.get('title') or item['document_id']} · {version['version_label']} · {version['status']}"
+            str(version["version_id"]): f"{item.get('title') or item['document_id']} · {version['version_label']} · {version_status_label(version['status'])}"
             for item in project_documents for version in item.get("versions", [])
         }
         selected_versions = st.multiselect(
@@ -407,6 +447,7 @@ with agent_tab:
         agent_scope_valid = bool(selected_versions)
     if not agent_scope_valid:
         st.warning("请先完成项目和文档范围选择。")
+    render_scope(agent_scope, catalog_documents)
 
     with st.expander("历史任务", expanded=False):
         try:
@@ -417,7 +458,7 @@ with agent_tab:
                 cols = st.columns([4, 2, 2, 2])
                 cols[0].write(f"{item['workflow_id']} · {item['template_name']}")
                 cols[1].write(item["workflow_status"])
-                cols[2].write(f"STALE {item['stale_evidence_count']}")
+                cols[2].write(f"需刷新 {item['stale_evidence_count']}")
                 if cols[3].button("查看", key=f"history_view_{item['workflow_id']}"):
                     st.session_state.workflow_result = agent.get_workflow(item["workflow_id"])
                 if item["workflow_status"] != "APPROVED" and st.button("继续执行", key=f"history_resume_{item['workflow_id']}"):
@@ -470,6 +511,10 @@ with agent_tab:
     result = st.session_state.get("workflow_result")
     if result:
         st.markdown("### Step 6：Evidence 与字段草稿")
+        render_scope(
+            result["scope"], catalog_documents,
+            title="本次工作流实际使用的资料范围",
+        )
         render_workflow_result(result, document_names)
         st.markdown("### Step 7：人工逐章节审核")
         reviewer = st.text_input("审核人", key=f"reviewer_{result['workflow_id']}")
@@ -506,6 +551,10 @@ with agent_tab:
                     except Exception as exc:
                         technical_error(exc)
         st.markdown("### Step 8–9：生成正式文档")
+        pending_review_count = sum(
+            bool(section["fields"]) and section.get("review", {}).get("status") != "APPROVED"
+            for section in result["sections"]
+        )
         if st.button(
             "生成 Approved DOCX", type="primary", disabled=not result["all_sections_approved"],
             key=f"finalize_{result['workflow_id']}",
@@ -514,9 +563,13 @@ with agent_tab:
                 st.session_state.workflow_result = agent.finalize_document(result["workflow_id"])
                 st.rerun()
             except Exception as exc:
-                technical_error(exc)
+                technical_error(exc, pending_review_count=pending_review_count)
         if not result["all_sections_approved"]:
-            st.info("所有必要章节通过审核后，才能生成正式文档。")
+            st.info(
+                business_failure_message(
+                    "REVIEW_REQUIRED", pending_review_count=pending_review_count
+                )
+            )
         render_downloads(result, agent.artifact_bytes)
 
 st.divider()
