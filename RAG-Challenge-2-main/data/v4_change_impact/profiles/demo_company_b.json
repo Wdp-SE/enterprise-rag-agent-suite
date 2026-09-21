@@ -1,0 +1,10 @@
+{
+  "organization_id": "demo_company_b",
+  "identifier_patterns": {
+    "REQUIREMENT": ["PRD-[A-Z]+-\\d{3}"],
+    "TEST_CASE": ["CASE-[A-Z]+-\\d{3}", "TEST\\.[A-Z]+\\.\\d{3}"]
+  },
+  "document_type_mapping": {"产品需求": "REQUIREMENT", "验收方案": "TEST_CASE"},
+  "section_aliases": {"业务需求": "REQUIREMENTS", "验收场景": "ACCEPTANCE"},
+  "version_status_mapping": {"当前": "ACTIVE", "归档": "SUPERSEDED"}
+}

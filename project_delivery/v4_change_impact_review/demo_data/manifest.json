@@ -1,0 +1,40 @@
+{
+  "classification": "FULLY_SYNTHETIC",
+  "organization_id": "demo_company_a",
+  "organization_name": "星海软件科技有限公司（虚构）",
+  "project_id": "PAYMENT",
+  "documents": [
+    "requirements_v1.docx",
+    "requirements_v2.docx",
+    "system_design_v1.docx",
+    "api_spec_v1.docx",
+    "test_cases_v1.docx",
+    "runbook_v1.docx"
+  ],
+  "trace_links": [
+    {
+      "source": "REQ-023",
+      "target": "DES-014",
+      "provenance": "EXPLICIT",
+      "status": "CONFIRMED"
+    },
+    {
+      "source": "REQ-023",
+      "target": "API-008",
+      "provenance": "EXPLICIT",
+      "status": "CONFIRMED"
+    },
+    {
+      "source": "REQ-023",
+      "target": "TC-102",
+      "provenance": "EXPLICIT",
+      "status": "CONFIRMED"
+    },
+    {
+      "source": "REQ-023",
+      "target": "OPS-006",
+      "provenance": "SEMANTIC",
+      "status": "SUGGESTED"
+    }
+  ]
+}

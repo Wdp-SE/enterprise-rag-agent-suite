@@ -1,0 +1,25 @@
+{
+  "organization_id": "demo_company_a",
+  "identifier_patterns": {
+    "REQUIREMENT": ["REQ-\\d{3}"],
+    "DESIGN": ["DES-\\d{3}"],
+    "API": ["API-\\d{3}"],
+    "TEST_CASE": ["TC-\\d{3}"],
+    "RUNBOOK": ["OPS-\\d{3}"]
+  },
+  "document_type_mapping": {
+    "需求规格说明书": "REQUIREMENT",
+    "系统设计说明书": "DESIGN",
+    "接口规范": "API",
+    "测试用例": "TEST_CASE",
+    "运维手册": "RUNBOOK"
+  },
+  "section_aliases": {
+    "功能需求": "REQUIREMENTS",
+    "系统设计": "DESIGN",
+    "接口定义": "API",
+    "验收测试": "ACCEPTANCE",
+    "运行手册": "OPERATIONS"
+  },
+  "version_status_mapping": {"有效": "ACTIVE", "历史": "SUPERSEDED"}
+}
