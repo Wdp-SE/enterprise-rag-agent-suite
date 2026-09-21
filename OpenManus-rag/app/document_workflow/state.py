@@ -60,7 +60,7 @@ class CheckpointStore:
         self.root.mkdir(parents=True, exist_ok=True)
 
     def path(self, workflow_id: str) -> Path:
-        if not workflow_id.startswith("dw_") or not all(char.isalnum() or char == "_" for char in workflow_id):
+        if not workflow_id.startswith(("dw_", "cir_")) or not all(char.isalnum() or char == "_" for char in workflow_id):
             raise CheckpointInvalid("invalid workflow_id")
         return self.root / f"{workflow_id}.json"
 
@@ -80,6 +80,55 @@ class CheckpointStore:
             if temporary is not None and temporary.exists():
                 temporary.unlink()
         return target
+
+    def save_payload(
+        self,
+        record_id: str,
+        payload: dict,
+        *,
+        schema_version: str,
+        requires_human_review: bool,
+    ) -> Path:
+        value = dict(payload)
+        value["checkpoint_schema_version"] = schema_version
+        value["checkpoint_record_id"] = record_id
+        value["requires_human_review"] = requires_human_review
+        target = self.path(record_id)
+        temporary: Path | None = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                "w", encoding="utf-8", dir=self.root,
+                prefix=".checkpoint.", suffix=".tmp", delete=False,
+            ) as handle:
+                temporary = Path(handle.name)
+                json.dump(value, handle, ensure_ascii=False, sort_keys=True)
+                handle.write("\n")
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temporary, target)
+        finally:
+            if temporary is not None and temporary.exists():
+                temporary.unlink()
+        return target
+
+    def load_payload(self, record_id: str, *, schema_version: str) -> dict:
+        try:
+            payload = json.loads(self.path(record_id).read_text(encoding="utf-8"))
+            if (
+                not isinstance(payload, dict)
+                or payload.get("checkpoint_schema_version") != schema_version
+                or payload.get("checkpoint_record_id") != record_id
+                or payload.get("requires_human_review") is not True
+            ):
+                raise CheckpointInvalid("checkpoint payload schema or identity invalid")
+            payload.pop("checkpoint_schema_version", None)
+            payload.pop("checkpoint_record_id", None)
+            payload.pop("requires_human_review", None)
+            return payload
+        except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+            if isinstance(exc, CheckpointInvalid):
+                raise
+            raise CheckpointInvalid("checkpoint payload missing or malformed") from exc
 
     def load(self, workflow_id: str) -> WorkflowState:
         try:
