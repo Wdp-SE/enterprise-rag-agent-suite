@@ -55,6 +55,63 @@ class HTTPRetrieveClient:
                 raise ValueError("invalid /retrieve score or hash")
         return payload
 
+    def _post_engineering(self, endpoint: str, payload: dict, result_key: str) -> dict:
+        response = httpx.post(f"{self.base_url}{endpoint}", json=payload, timeout=self.timeout)
+        response.raise_for_status()
+        result = response.json()
+        if not isinstance(result, dict) or not isinstance(result.get(result_key), list):
+            raise ValueError(f"malformed {endpoint} response")
+        return result
+
+    def diff_engineering_items(self, old_items: list[dict], new_items: list[dict]) -> dict:
+        return self._post_engineering(
+            "/engineering/items/diff",
+            {"old_items": old_items, "new_items": new_items},
+            "changes",
+        )
+
+    def retrieve_engineering_items(
+        self,
+        query: str,
+        items: list[dict],
+        scope: dict,
+        *,
+        dense_item_ids: list[str] | None = None,
+        top_k: int = 5,
+    ) -> dict:
+        return self._post_engineering(
+            "/engineering/items/retrieve",
+            {
+                "query": query,
+                "items": items,
+                "scope": scope,
+                "dense_item_ids": dense_item_ids or [],
+                "top_k": top_k,
+            },
+            "results",
+        )
+
+    def discover_engineering_impacts(
+        self,
+        changed_item_id: str,
+        items: list[dict],
+        trace_links: list[dict],
+        *,
+        dense_item_ids: list[str] | None = None,
+        evidence_by_item: dict[str, list[str]] | None = None,
+    ) -> dict:
+        return self._post_engineering(
+            "/engineering/impacts/discover",
+            {
+                "changed_item_id": changed_item_id,
+                "items": items,
+                "trace_links": trace_links,
+                "dense_item_ids": dense_item_ids or [],
+                "evidence_by_item": evidence_by_item or {},
+            },
+            "impacts",
+        )
+
     def active_versions(self) -> dict[str, str]:
         response = httpx.get(f"{self.base_url}/documents", timeout=self.timeout)
         response.raise_for_status()

@@ -14,6 +14,14 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from src.rd_v2_runtime import QueryRuntimeError, RDV2QueryRuntime, create_runtime
 from src.document_lifecycle import RetrievalScope
+from src.engineering_change import (
+    EngineeringImpactService,
+    EngineeringItem,
+    EngineeringItemRetriever,
+    EngineeringRetrievalScope,
+    TraceLink,
+    compare_engineering_items,
+)
 
 
 class QueryRequest(BaseModel):
@@ -61,6 +69,33 @@ class RetrievalResult(BaseModel):
 class RetrieveResponse(BaseModel):
     query: str
     results: list[RetrievalResult]
+
+
+class EngineeringDiffRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    old_items: list[EngineeringItem]
+    new_items: list[EngineeringItem]
+
+
+class EngineeringRetrieveRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    query: str = Field(min_length=1, max_length=4000)
+    items: list[EngineeringItem]
+    scope: EngineeringRetrievalScope = Field(default_factory=EngineeringRetrievalScope)
+    dense_item_ids: list[str] = Field(default_factory=list)
+    top_k: int = Field(default=5, ge=1, le=20)
+
+
+class EngineeringImpactRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    changed_item_id: str = Field(min_length=1)
+    items: list[EngineeringItem]
+    trace_links: list[TraceLink]
+    dense_item_ids: list[str] = Field(default_factory=list)
+    evidence_by_item: dict[str, list[str]] = Field(default_factory=dict)
 
 
 def _serialize_retrieval_hit(hit: dict) -> dict:
@@ -176,6 +211,42 @@ def create_app(
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="VERSION_DIFF_NOT_AVAILABLE") from exc
         return result.model_dump(mode="json")
+
+    @app.post("/engineering/items/diff")
+    async def engineering_item_diff(payload: EngineeringDiffRequest) -> dict:
+        try:
+            changes = compare_engineering_items(payload.old_items, payload.new_items)
+            return {"changes": [item.model_dump(mode="json") for item in changes]}
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail="ENGINEERING_DIFF_INVALID") from exc
+
+    @app.post("/engineering/items/retrieve")
+    async def engineering_item_retrieve(payload: EngineeringRetrieveRequest) -> dict:
+        try:
+            results = EngineeringItemRetriever().retrieve(
+                payload.query,
+                payload.items,
+                payload.scope,
+                dense_item_ids=payload.dense_item_ids,
+                top_k=payload.top_k,
+            )
+            return {"query": payload.query, "results": [item.model_dump(mode="json") for item in results]}
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail="ENGINEERING_RETRIEVAL_INVALID") from exc
+
+    @app.post("/engineering/impacts/discover")
+    async def engineering_impacts(payload: EngineeringImpactRequest) -> dict:
+        try:
+            impacts = EngineeringImpactService().discover(
+                changed_item_id=payload.changed_item_id,
+                items=payload.items,
+                trace_links=payload.trace_links,
+                dense_item_ids=payload.dense_item_ids,
+                evidence_by_item=payload.evidence_by_item,
+            )
+            return {"impacts": [item.model_dump(mode="json") for item in impacts]}
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail="ENGINEERING_IMPACT_INVALID") from exc
 
     return app
 

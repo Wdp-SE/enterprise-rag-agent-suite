@@ -1,5 +1,19 @@
 """Engineering change domain public surface."""
 
+from .analysis import (
+    ChangeType,
+    DiscoverySource,
+    EngineeringImpactService,
+    EngineeringItemChange,
+    EngineeringItemRetriever,
+    EngineeringRetrievalHit,
+    EngineeringRetrievalScope,
+    ImpactDiscovery,
+    TraceLink,
+    TraceProvenance,
+    TraceStatus,
+    compare_engineering_items,
+)
 from .extraction import DocxEngineeringParser, EngineeringItemFactory, IdentifierExtractor
 from .models import (
     EngineeringItem,
@@ -12,15 +26,26 @@ from .models import (
 )
 
 __all__ = [
+    "ChangeType",
+    "DiscoverySource",
     "DocxEngineeringParser",
+    "EngineeringImpactService",
     "EngineeringItem",
+    "EngineeringItemChange",
     "EngineeringItemFactory",
+    "EngineeringItemRetriever",
     "EngineeringItemType",
+    "EngineeringRetrievalHit",
+    "EngineeringRetrievalScope",
     "IdentifierExtractor",
     "IdentifierMatch",
+    "ImpactDiscovery",
     "OrganizationProfile",
     "ParsedEngineeringSection",
+    "TraceLink",
+    "TraceProvenance",
+    "TraceStatus",
+    "compare_engineering_items",
     "content_hash",
     "normalize_text",
 ]
-
