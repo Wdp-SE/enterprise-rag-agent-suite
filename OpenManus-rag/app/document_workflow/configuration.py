@@ -18,6 +18,7 @@ class DocumentWorkflowConfig:
     rag_timeout_seconds: float = 30.0
     rag_retry_limit: int = 1
     rag_top_k: int = 5
+    max_evidence_count: int = 5
     no_progress_threshold: int = 3
     max_workflow_steps: int = 80
     max_section_steps: int = 20
@@ -38,6 +39,7 @@ class DocumentWorkflowConfig:
             rag_timeout_seconds=float(get("RAG_TIMEOUT_SECONDS", "30")),
             rag_retry_limit=int(get("RAG_RETRY_LIMIT", "1")),
             rag_top_k=int(get("RAG_TOP_K", "5")),
+            max_evidence_count=int(get("MAX_EVIDENCE_COUNT", "5")),
             no_progress_threshold=int(get("NO_PROGRESS_THRESHOLD", "3")),
             max_workflow_steps=int(get("MAX_WORKFLOW_STEPS", "80")),
             max_section_steps=int(get("MAX_SECTION_STEPS", "20")),
@@ -59,6 +61,8 @@ class DocumentWorkflowConfig:
             raise ValueError("timeouts must be positive")
         if self.rag_retry_limit < 0 or not 1 <= self.rag_top_k <= 20:
             raise ValueError("invalid RAG retry limit or top_k")
+        if self.max_evidence_count <= 0:
+            raise ValueError("max_evidence_count must be positive")
         if min(self.no_progress_threshold, self.max_workflow_steps, self.max_section_steps, self.execution_budget) <= 0:
             raise ValueError("invalid workflow limit or budget")
         if not self.data_classification.strip():
@@ -72,7 +76,7 @@ class DocumentWorkflowConfig:
 
     def fingerprint(self) -> str:
         critical = (
-            self.rag_base_url, self.rag_top_k, self.no_progress_threshold,
+            self.rag_base_url, self.rag_top_k, self.max_evidence_count, self.no_progress_threshold,
             self.max_workflow_steps, self.max_section_steps, self.execution_budget,
             self.drafting_mode.value, self.data_classification,
         )

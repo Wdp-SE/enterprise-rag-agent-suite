@@ -15,6 +15,9 @@ from .models import (
     PatchReviewAction,
     PatchReviewRecord,
     PatchReviewStatus,
+    QualityGateReason,
+    QualityGateResult,
+    QualityGateStatus,
 )
 from .patching import ParagraphPatchApplier, PatchExecutionService
 from .review import PatchReviewService
@@ -37,5 +40,8 @@ __all__ = [
     "PatchReviewRecord",
     "PatchReviewService",
     "PatchReviewStatus",
+    "QualityGateReason",
+    "QualityGateResult",
+    "QualityGateStatus",
 ]
 

@@ -26,11 +26,100 @@ def _ratio(numerator: int, denominator: int) -> float:
     return round(numerator / denominator, 4) if denominator else 1.0
 
 
+def _p50(values: list[float]) -> float:
+    ordered = sorted(values)
+    if not ordered:
+        return 0.0
+    middle = len(ordered) // 2
+    median = (
+        ordered[middle]
+        if len(ordered) % 2
+        else (ordered[middle - 1] + ordered[middle]) / 2
+    )
+    return round(median * 1000, 3)
+
+
 def _p95(values: list[float]) -> float:
     ordered = sorted(values)
     if not ordered:
         return 0.0
     return round(ordered[max(0, math.ceil(0.95 * len(ordered)) - 1)] * 1000, 3)
+
+
+def _baseline_case(
+    question: str, baseline_rows: list[dict], version_aware_rows: list[dict]
+) -> dict:
+    def relevant(rows: list[dict]) -> list[dict]:
+        return [row for row in rows if row.get("document_id") == "requirements"]
+
+    baseline_relevant = relevant(baseline_rows)
+    current_relevant = relevant(version_aware_rows)
+    baseline_versions = list(dict.fromkeys(
+        str(row.get("version_id")) for row in baseline_relevant if row.get("version_id")
+    ))
+    current_versions = list(dict.fromkeys(
+        str(row.get("version_id")) for row in current_relevant if row.get("version_id")
+    ))
+    def summary(rows: list[dict]) -> str:
+        snippets = []
+        for row in rows:
+            label = row.get("version_label") or row.get("version_id") or "未知版本"
+            value = f"{label}: {str(row.get('text') or '').strip()}"
+            if value not in snippets:
+                snippets.append(value)
+        return "；".join(snippets[:3])
+
+    statuses = {str(row.get("version_status")) for row in baseline_relevant}
+    meaningful = len(set(baseline_versions)) >= 2 and statuses >= {"ACTIVE", "SUPERSEDED"}
+    return {
+        "question": question,
+        "meaningful": meaningful,
+        "baseline_versions": baseline_versions,
+        "version_aware_versions": current_versions,
+        "baseline_summary": summary(baseline_relevant),
+        "version_aware_summary": summary(current_relevant),
+        "conclusion": (
+            "无版本约束可能同时返回新旧冲突内容；正式检索只返回当前有效版本。"
+            if meaningful
+            else "当前真实召回结果不足以形成有意义的新旧版本对照。"
+        ),
+    }
+
+
+def _offline_baseline(client: ChangeImpactClient) -> dict:
+    cases = []
+    for question in (
+        "系统最大并发是多少？",
+        "最大并发和吞吐量目标是什么？",
+    ):
+        try:
+            baseline = client.rag.search_candidate_versions(
+                question,
+                {"document_ids": ["requirements"], "active_only": False},
+                top_k=10,
+            )["results"]
+            version_aware = client.rag.search_candidate_versions(
+                question,
+                {"document_ids": ["requirements"], "active_only": True},
+                top_k=10,
+            )["results"]
+            cases.append(_baseline_case(question, baseline, version_aware))
+        except Exception as exc:
+            cases.append({
+                "question": question,
+                "meaningful": False,
+                "baseline_versions": [],
+                "version_aware_versions": [],
+                "baseline_summary": "",
+                "version_aware_summary": "",
+                "conclusion": f"真实离线对照不可用：{type(exc).__name__}",
+            })
+    return {
+        "evaluation_only": True,
+        "production_runtime_changed": False,
+        "cases": cases,
+        "meaningful_case_count": sum(bool(row["meaningful"]) for row in cases),
+    }
 
 
 def _rank_of(rows: list[dict], expected: set[tuple[str, str]]) -> int | None:
@@ -171,6 +260,7 @@ def main() -> None:
         })
 
     positive_count = len(positive_recalls)
+    baseline_comparison = _offline_baseline(client)
     result = {
         "schema_version": "v4-evaluation-results-v1",
         "classification": "FULLY_SYNTHETIC",
@@ -184,6 +274,7 @@ def main() -> None:
             "citation_membership_correctness": all(citation_checks),
             "no_answer_rejection": all(no_answer_checks),
             "scope_violation_count": sum(not value for value in scope_checks),
+            "p50_latency_ms": _p50(latencies),
             "p95_latency_ms": _p95(latencies),
             "cases": case_results,
         },
@@ -214,7 +305,10 @@ def main() -> None:
             "original_document_unchanged": hashlib.sha256(source.read_bytes()).hexdigest() == source_hash,
             "stale_evidence_block": "VERIFIED_BY_AGENT_TEST",
             "conflict_detection": "VERIFIED_BY_AGENT_TEST",
+            "evidence_selection": prepared.get("evidence_selection") or {},
+            "quality_gate": published.get("quality_gate"),
         },
+        "baseline_comparison": baseline_comparison,
         "safety": {
             "unapproved_writes": unauthorized_apply_count,
             "duplicate_patch_applications": sum(

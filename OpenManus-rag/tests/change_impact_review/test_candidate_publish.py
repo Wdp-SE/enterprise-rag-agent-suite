@@ -14,6 +14,8 @@ from app.change_impact_review import (
     PatchCandidate,
     PatchOperation,
     PatchReviewAction,
+    QualityGateReason,
+    QualityGateStatus,
 )
 from app.document_workflow.evidence_models import Evidence
 from app.document_workflow.rag import HTTPRetrieveClient
@@ -160,6 +162,8 @@ def test_agent_finalizes_candidate_only_after_rag_validation_and_activation(tmp_
     )
 
     assert completed.status is ChangeTaskStatus.COMPLETED
+    assert completed.quality_gate is not None
+    assert completed.quality_gate.status is QualityGateStatus.PASS
     assert completed.candidate_version_record["status"] == "ACTIVE"
     assert client.build_calls == 1
     assert client.activate_calls == 1
@@ -181,5 +185,8 @@ def test_agent_does_not_activate_failed_candidate(tmp_path: Path) -> None:
 
     assert failed.status is ChangeTaskStatus.FAILED
     assert failed.failure_reason == "CANDIDATE_BUILD_FAILED"
+    assert failed.quality_gate is not None
+    assert failed.quality_gate.status is QualityGateStatus.BLOCKED
+    assert failed.quality_gate.reasons == [QualityGateReason.CANDIDATE_VALIDATION_FAILED]
     assert client.activate_calls == 0
 

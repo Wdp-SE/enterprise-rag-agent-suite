@@ -24,6 +24,8 @@ from .models import (
     PatchCandidate,
     PatchReviewAction,
     PatchReviewStatus,
+    QualityGateReason,
+    QualityGateResult,
 )
 from .patching import PatchExecutionService
 from .review import PatchReviewService
@@ -175,8 +177,10 @@ class ChangeImpactWorkflow:
                 output=output,
                 current_version_id=current_version_id,
                 applied_keys=state.applied_keys,
+                expected_scope=state.scope,
             )
             results.append(result)
+            state.quality_gate = result.quality_gate
             if result.status is PatchApplyStatus.APPLIED and output != candidate:
                 os.replace(output, candidate)
                 current_source = candidate
@@ -244,6 +248,11 @@ class ChangeImpactWorkflow:
         if built.get("status") != "VALIDATED":
             state.status = ChangeTaskStatus.FAILED
             state.failure_reason = str(built.get("failure_reason") or "CANDIDATE_BUILD_FAILED")
+            state.quality_gate = QualityGateResult.blocked(
+                QualityGateReason.CANDIDATE_VALIDATION_FAILED,
+                PatchApplyStatus.PENDING,
+                failure_reason=state.failure_reason,
+            )
             state.trace.append(self._trace(
                 state, "CANDIDATE_BUILD", "FAILED", time.perf_counter() - started,
                 failure_reason=state.failure_reason,
@@ -256,9 +265,15 @@ class ChangeImpactWorkflow:
         if activated.get("status") != "ACTIVE":
             state.status = ChangeTaskStatus.FAILED
             state.failure_reason = str(activated.get("failure_reason") or "CANDIDATE_ACTIVATION_FAILED")
+            state.quality_gate = QualityGateResult.blocked(
+                QualityGateReason.CANDIDATE_VALIDATION_FAILED,
+                PatchApplyStatus.PENDING,
+                failure_reason=state.failure_reason,
+            )
         else:
             state.status = ChangeTaskStatus.COMPLETED
             state.failure_reason = None
+            state.quality_gate = QualityGateResult.passed(PatchApplyStatus.APPLIED)
         state.trace.append(self._trace(
             state,
             "SAFE_ACTIVATION",
@@ -291,5 +306,10 @@ class ChangeImpactWorkflow:
             "document_version": state.base_version_id,
             "prompt_version": None,
             "failure_reason": failure_reason,
+            "quality_gate": (
+                state.quality_gate.model_dump(mode="json")
+                if state.quality_gate is not None
+                else None
+            ),
         }
 

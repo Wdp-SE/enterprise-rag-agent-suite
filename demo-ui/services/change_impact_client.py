@@ -120,7 +120,13 @@ class ChangeImpactClient:
 
     def prepare_demo(self) -> dict[str, Any]:
         from app.change_impact_review import PatchCandidate, PatchOperation
+        from app.document_workflow.configuration import DocumentWorkflowConfig
         from app.document_workflow.evidence_models import Evidence
+        from app.document_workflow.evidence_selection import (
+            EvidenceSelectionPolicy,
+            EvidenceSelector,
+        )
+        from app.document_workflow.scope import WorkflowScope
 
         inventory = self._inventory()
         self._ensure_seeded(inventory)
@@ -199,6 +205,18 @@ class ChangeImpactClient:
         )
         assert requirement_evidence.evidence_id and requirement_evidence.content_hash
         evidence_objects[requirement_evidence.evidence_id] = requirement_evidence
+        selection = EvidenceSelector(
+            EvidenceSelectionPolicy(
+                DocumentWorkflowConfig.from_env().max_evidence_count
+            )
+        ).select(
+            list(evidence_objects.values()),
+            WorkflowScope.from_dict(scope),
+            required_evidence_ids=(requirement_evidence.evidence_id,),
+        )
+        selected_evidence_ids = {item.evidence_id for item in selection.selected}
+        if requirement_evidence.evidence_id not in selected_evidence_ids:
+            raise RuntimeError("critical requirement Evidence was not selected")
         design_source = DEMO_ROOT / "system_design_v1.docx"
         design_document = Document(design_source)
         paragraph_index = next(
@@ -242,6 +260,13 @@ class ChangeImpactClient:
             "evidence": {
                 evidence_id: item.model_dump(mode="json")
                 for evidence_id, item in evidence_objects.items()
+            },
+            "evidence_selection": {
+                **selection.stats.model_dump(),
+                "max_evidence_count": DocumentWorkflowConfig.from_env().max_evidence_count,
+                "selected_evidence_ids": sorted(
+                    item for item in selected_evidence_ids if item is not None
+                ),
             },
         }
 

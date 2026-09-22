@@ -18,6 +18,7 @@ from app.reliability.trace import TraceContext, TraceRecorder, TraceSpanKind
 from .configuration import DocumentWorkflowConfig
 from .drafting import DraftPolicy, FieldDraftingService
 from .evidence import EvidenceCache
+from .evidence_selection import EvidenceSelectionPolicy, EvidenceSelector
 from .freshness import EvidenceFreshnessValidator
 from .integrity import OutputIntegrityValidator
 from .models import FieldDraftStatus, SectionDraft, TaskStatus, WorkflowStatus
@@ -51,8 +52,15 @@ class DocumentWorkflow:
         self.requested_scope = scope
         self.scope = scope or WorkflowScope()
         self.rag_tool = RAGTool(rag_client, config.rag_top_k, self.scope)
+        self.evidence_selector = EvidenceSelector(
+            EvidenceSelectionPolicy(config.max_evidence_count)
+        )
         self.drafting = drafting_service or FieldDraftingService(
-            DraftPolicy(config.drafting_mode, config.data_classification)
+            DraftPolicy(
+                config.drafting_mode,
+                config.data_classification,
+                max_evidence=config.max_evidence_count,
+            )
         )
         self.sufficiency = EvidenceSufficiencyService()
 
@@ -172,6 +180,7 @@ class DocumentWorkflow:
             detector = NoProgressDetector(threshold=self.config.no_progress_threshold)
             field_drafts = []
             section_calls = 0
+            section_evidence_selection: list[dict] = []
             for field in task.required_fields:
                 existing = cache.for_field(task.task_id, field.field_id)
                 decision = self.sufficiency.evaluate(field, existing)
@@ -234,7 +243,15 @@ class DocumentWorkflow:
                     decision = self.sufficiency.evaluate(field, cache.for_field(task.task_id, field.field_id))
                     if task.stop_reason in {"RAG_ERROR", "MAX_SECTION_STEPS"}:
                         break
-                evidence = cache.for_field(task.task_id, field.field_id)
+                selection = self.evidence_selector.select(
+                    cache.for_field(task.task_id, field.field_id),
+                    self.scope,
+                )
+                evidence = list(selection.selected)
+                section_evidence_selection.append({
+                    "field_id": field.field_id,
+                    **selection.stats.model_dump(),
+                })
                 decision = self.sufficiency.evaluate(field, evidence)
                 field_drafts.append(self.drafting.draft(field, sections[task.section_id], evidence, decision))
             missing_ids = [
@@ -265,6 +282,7 @@ class DocumentWorkflow:
                 "rag_calls": section_calls, "evidence_ids": list(task.evidence_ids),
                 "status": task.status.value, "stop_reason": task.stop_reason,
                 "missing_fields": list(task.missing_fields),
+                "evidence_selection": section_evidence_selection,
             })
         ordered_drafts = [drafts[task.section_id] for task in tasks]
         state.workflow_status = WorkflowStatus.REVIEW_REQUIRED.value
@@ -311,6 +329,20 @@ class DocumentWorkflow:
                 if refresh_affected_section_ids else None
             ),
             "total_rag_calls": state.rag_call_count, "total_unique_evidence": len(cache.store),
+            "evidence_selection": {
+                key: sum(
+                    field[key]
+                    for section in trace_sections
+                    for field in section.get("evidence_selection", [])
+                )
+                for key in (
+                    "retrieved_evidence_count",
+                    "valid_evidence_count",
+                    "deduplicated_evidence_count",
+                    "selected_evidence_count",
+                )
+            },
+            "max_evidence_count": self.config.max_evidence_count,
             "errors": errors, "duration_ms": round((time.monotonic() - started) * 1000, 3),
             "requires_human_review": True,
         }

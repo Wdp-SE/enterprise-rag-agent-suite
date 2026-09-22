@@ -75,6 +75,55 @@ class PatchApplyStatus(str, Enum):
     CONFLICT = "CONFLICT"
 
 
+class QualityGateStatus(str, Enum):
+    PASS = "PASS"
+    BLOCKED = "BLOCKED"
+
+
+class QualityGateReason(str, Enum):
+    NO_EVIDENCE = "NO_EVIDENCE"
+    OUT_OF_SCOPE_EVIDENCE = "OUT_OF_SCOPE_EVIDENCE"
+    STALE_EVIDENCE = "STALE_EVIDENCE"
+    BASE_VERSION_MISMATCH = "BASE_VERSION_MISMATCH"
+    TARGET_CHANGED = "TARGET_CHANGED"
+    ALREADY_APPLIED = "ALREADY_APPLIED"
+    REVIEW_REQUIRED = "REVIEW_REQUIRED"
+    CANDIDATE_VALIDATION_FAILED = "CANDIDATE_VALIDATION_FAILED"
+
+
+class QualityGateResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: QualityGateStatus
+    reasons: list[QualityGateReason] = Field(default_factory=list)
+    patch_apply_status: PatchApplyStatus = PatchApplyStatus.PENDING
+    failure_reason: str | None = None
+
+    @classmethod
+    def passed(
+        cls, patch_apply_status: PatchApplyStatus = PatchApplyStatus.PENDING
+    ) -> "QualityGateResult":
+        return cls(
+            status=QualityGateStatus.PASS,
+            patch_apply_status=patch_apply_status,
+        )
+
+    @classmethod
+    def blocked(
+        cls,
+        reason: QualityGateReason,
+        patch_apply_status: PatchApplyStatus,
+        *,
+        failure_reason: str | None = None,
+    ) -> "QualityGateResult":
+        return cls(
+            status=QualityGateStatus.BLOCKED,
+            reasons=[reason],
+            patch_apply_status=patch_apply_status,
+            failure_reason=failure_reason,
+        )
+
+
 class ChangeTaskStatus(str, Enum):
     PENDING = "PENDING"
     IMPACT_READY = "IMPACT_READY"
@@ -164,6 +213,7 @@ class PatchApplyResult(BaseModel):
     output_path: str | None = None
     failure_reason: str | None = None
     idempotency_key: str
+    quality_gate: QualityGateResult | None = None
 
 
 class ChangeImpactTaskState(BaseModel):
@@ -187,5 +237,6 @@ class ChangeImpactTaskState(BaseModel):
     trace: list[dict[str, Any]] = Field(default_factory=list)
     failure_reason: str | None = None
     candidate_version_record: dict[str, Any] | None = None
+    quality_gate: QualityGateResult | None = None
     rag_calls: int = Field(default=0, ge=0)
 

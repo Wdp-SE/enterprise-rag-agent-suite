@@ -1,4 +1,4 @@
-"""Streamlit interview demo for the frozen RAG and Document Workflow projects."""
+"""Prototype Final UI for version-trusted knowledge and change review."""
 
 from __future__ import annotations
 
@@ -10,6 +10,13 @@ import streamlit as st
 from components.business_messages import business_failure_message
 from components.change_impact_view import render_workbench_summary
 from components.evidence_view import render_query_sources, render_retrieval_results
+from components.prototype_final_view import (
+    load_evaluation_report,
+    render_evaluation,
+    render_overview,
+    render_trace,
+    render_versions,
+)
 from components.scope_view import render_scope, version_status_label
 from components.status_view import render_about, render_sidebar_status
 from components.workflow_view import render_downloads, render_template_summary, render_workflow_result
@@ -19,7 +26,7 @@ from services.change_impact_client import ChangeImpactClient
 from services.rag_client import RAGClient, ServiceError
 
 
-st.set_page_config(page_title="研发文档 RAG + 文档工作流 Agent", page_icon="📄", layout="wide")
+st.set_page_config(page_title="版本可信研发知识与变更审查系统", page_icon="📄", layout="wide")
 st.markdown("""
 <style>
   :root {
@@ -173,6 +180,23 @@ st.markdown("""
   hr {margin: 1.45rem 0 !important; border-color: #e1e8f0 !important;}
   code {color: #275a8d; background: #edf4fb; border-radius: 0.35rem;}
 
+  .product-flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0.55rem 0 1.5rem;
+    padding: 1rem 1.1rem;
+    color: #173b50;
+    background: #edf5f6;
+    border-left: 0.35rem solid #167d8d;
+  }
+  .product-flow span::before, .product-flow b + span::before {
+    content: "›";
+    margin-right: 0.35rem;
+    color: #6c8790;
+  }
+
   @media (max-width: 760px) {
     .block-container {padding: 1.35rem 1rem 3rem;}
     [data-testid="stTabs"] button[data-baseweb="tab"] {padding: 0 0.7rem;}
@@ -230,15 +254,27 @@ agent_status = agent.status()
 render_sidebar_status(rag_health, artifact_status, agent_status, config.demo_data_classification)
 render_about(artifact_status)
 
-st.title("研发文档 RAG + 文档工作流 Agent")
-st.caption("RAG 负责可靠检索研发资料，Agent 负责按 Word 模板拆解任务并组织 Evidence，生成待人工审核的文档草稿。")
+st.title("版本可信研发知识与变更审查系统")
+st.caption("面向软件研发变更：只使用允许版本的资料，追溯引用依据，审查局部修改，并安全发布新的文档版本。")
 
-rag_tab, agent_tab, change_tab = st.tabs([
-    "研发文档 RAG", "文档工作流 Agent", "工程变更审核工作台"
+overview_tab, versions_tab, rag_tab, change_tab, trace_tab, evaluation_tab, agent_tab = st.tabs([
+    "项目概览",
+    "文档与版本",
+    "可信检索与版本差异",
+    "变更影响与修改审核",
+    "执行轨迹",
+    "评测结果",
+    "扩展：文档起草",
 ])
 
+with overview_tab:
+    render_overview(catalog_documents, st.session_state.get("v4_change_result"))
+
+with versions_tab:
+    render_versions(catalog_documents)
+
 with rag_tab:
-    st.markdown('<div class="boundary"><b>RAG 问答</b>生成最终答案；<b>证据检索</b>返回供 Agent 使用的原始证据。</div>', unsafe_allow_html=True)
+    st.markdown('<div class="boundary"><b>可信问答</b>只使用允许的文档版本；<b>引用检索</b>保留文档、章节、页码和版本来源。</div>', unsafe_allow_html=True)
     if catalog_documents:
         with st.expander(f"当前文档目录（{len(catalog_documents)} 份）"):
             for item in catalog_documents:
@@ -423,7 +459,9 @@ with rag_tab:
         st.info("启动提示：请先启动本地 RAG 服务，再刷新页面。")
 
 with agent_tab:
-    st.markdown("### Step 1–2：选择项目与文档版本范围")
+    st.markdown("### 扩展能力：按模板起草文档")
+    st.caption("原文档工作流 Agent 作为稳定的扩展能力保留；Prototype Final 的主流程是版本变化、影响分析、修改审核与安全发布。")
+    st.markdown("#### Step 1–2：选择项目与文档版本范围")
     projects = sorted({str(item.get("project_id")) for item in catalog_documents if item.get("project_id")})
     if not projects:
         projects = ["DEMO-RD"]
@@ -582,14 +620,14 @@ with agent_tab:
         render_downloads(result, agent.artifact_bytes)
 
 with change_tab:
-    st.markdown("### 企业研发文档变更影响分析与人工审核闭环")
+    st.markdown("### 研发文档变更影响分析与人工审核")
     st.markdown(
         "**当前组织：** demo_company_a　　**当前项目：** PAYMENT　　"
         "**数据：** 完全合成"
     )
     st.markdown(
-        '<div class="boundary">Requirement Change → Impact → Evidence → Patch → '
-        'Human Review → Candidate Version → Safe Activation</div>',
+        '<div class="boundary">需求版本变化 → 影响分析 → 引用依据 → 修改建议 → '
+        '人工审核 → 候选版本 → 安全发布</div>',
         unsafe_allow_html=True,
     )
     change_status = change_impact.status()
@@ -615,7 +653,7 @@ with change_tab:
         patches = state.get("patches", [])
         if patches:
             patch = patches[0]
-            st.markdown("### Human Review")
+            st.markdown("### 人工审核")
             reviewer = st.text_input("审核人", key=f"v4_reviewer_{state['task_id']}")
             edited = st.text_area(
                 "审核后的建议内容",
@@ -625,7 +663,7 @@ with change_tab:
             comment = st.text_input("审核意见", key=f"v4_comment_{patch['patch_id']}")
             approve, save_edit, reject = st.columns(3)
             if approve.button(
-                "批准 Patch",
+                "批准修改",
                 disabled=not reviewer.strip(),
                 key=f"v4_approve_{patch['patch_id']}",
             ):
@@ -654,7 +692,7 @@ with change_tab:
                 except Exception as exc:
                     technical_error(exc)
             if reject.button(
-                "拒绝 Patch",
+                "拒绝修改",
                 disabled=not reviewer.strip(),
                 key=f"v4_reject_{patch['patch_id']}",
             ):
@@ -670,7 +708,7 @@ with change_tab:
 
         apply_col, publish_col = st.columns(2)
         if apply_col.button(
-            "应用已批准 Patch",
+            "应用已批准修改",
             disabled=state["status"] != "APPLY_READY",
             key=f"v4_apply_{state['task_id']}",
         ):
@@ -696,12 +734,18 @@ with change_tab:
         candidate_path = state.get("candidate_path")
         if candidate_path and Path(candidate_path).is_file():
             st.download_button(
-                "下载 Candidate DOCX",
+                "下载候选版本文档",
                 data=Path(candidate_path).read_bytes(),
                 file_name="system_design_v2_candidate.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 key=f"v4_download_{state['task_id']}",
             )
 
+with trace_tab:
+    render_trace(st.session_state.get("v4_change_result"))
+
+with evaluation_tab:
+    render_evaluation(load_evaluation_report())
+
 st.divider()
-st.caption("Word Template → Document Workflow Agent → RAG /retrieve → Evidence → Draft → Human Review")
+st.caption("研发资料 → 版本治理 → 可信检索 → 变更影响 → 修改审核 → 候选版本 → 安全发布")
