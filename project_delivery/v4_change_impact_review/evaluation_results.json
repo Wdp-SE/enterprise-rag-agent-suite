@@ -1,0 +1,111 @@
+{
+  "schema_version": "v4-evaluation-results-v1",
+  "classification": "FULLY_SYNTHETIC",
+  "rag": {
+    "case_count": 7,
+    "hit_at_5": 1.0,
+    "recall_at_5": 1.0,
+    "mrr": 1.0,
+    "exact_identifier_hit_at_5": true,
+    "current_version_correctness": true,
+    "citation_membership_correctness": true,
+    "no_answer_rejection": true,
+    "scope_violation_count": 0,
+    "p95_latency_ms": 109.513,
+    "cases": [
+      {
+        "case_id": "exact-id",
+        "category": "Exact ID Query",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "result_count": 1,
+        "latency_ms": 58.995
+      },
+      {
+        "case_id": "cross-document",
+        "category": "Cross-document Query",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "result_count": 1,
+        "latency_ms": 109.513
+      },
+      {
+        "case_id": "semantic",
+        "category": "Semantic Query",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "result_count": 1,
+        "latency_ms": 74.606
+      },
+      {
+        "case_id": "version-conflict",
+        "category": "Version Conflict",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "result_count": 1,
+        "latency_ms": 68.306
+      },
+      {
+        "case_id": "no-answer",
+        "category": "No Answer",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 0.0,
+        "result_count": 0,
+        "latency_ms": 61.103
+      },
+      {
+        "case_id": "scope-violation",
+        "category": "Scope Violation",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 0.0,
+        "result_count": 0,
+        "latency_ms": 66.045
+      },
+      {
+        "case_id": "terminology",
+        "category": "Terminology / Abbreviation",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "result_count": 1,
+        "latency_ms": 79.639
+      }
+    ]
+  },
+  "agent": {
+    "impact_recall": 1.0,
+    "impact_precision": 1.0,
+    "confirmed_impacts": [
+      "API-008",
+      "DES-014",
+      "TC-102"
+    ],
+    "suggested_impacts": [
+      "OPS-006"
+    ],
+    "patch_target_correctness": true,
+    "evidence_coverage": 1.0,
+    "unauthorized_apply_count": 0,
+    "duplicate_patch_apply_count": 0,
+    "resume_correctness": true,
+    "rag_call_count": 9,
+    "workflow_latency_ms": 9878.84,
+    "candidate_status": "ACTIVE",
+    "original_document_unchanged": true,
+    "stale_evidence_block": "VERIFIED_BY_AGENT_TEST",
+    "conflict_detection": "VERIFIED_BY_AGENT_TEST"
+  },
+  "safety": {
+    "unapproved_writes": 0,
+    "duplicate_patch_applications": 0,
+    "unblocked_stale_evidence": 0,
+    "scope_error_references": 0,
+    "lost_active_version_on_publish_failure": 0
+  }
+}

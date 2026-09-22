@@ -187,4 +187,5 @@ class ChangeImpactTaskState(BaseModel):
     trace: list[dict[str, Any]] = Field(default_factory=list)
     failure_reason: str | None = None
     candidate_version_record: dict[str, Any] | None = None
+    rag_calls: int = Field(default=0, ge=0)
 

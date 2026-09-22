@@ -3,16 +3,19 @@
 from __future__ import annotations
 
 import hashlib
+from pathlib import Path
 
 import streamlit as st
 
 from components.business_messages import business_failure_message
+from components.change_impact_view import render_workbench_summary
 from components.evidence_view import render_query_sources, render_retrieval_results
 from components.scope_view import render_scope, version_status_label
 from components.status_view import render_about, render_sidebar_status
 from components.workflow_view import render_downloads, render_template_summary, render_workflow_result
 from config import DemoConfig, document_display_names, example_questions
 from services.agent_client import AgentClient
+from services.change_impact_client import ChangeImpactClient
 from services.rag_client import RAGClient, ServiceError
 
 
@@ -181,7 +184,11 @@ st.markdown("""
 
 @st.cache_resource
 def clients(config: DemoConfig):
-    return RAGClient(config.rag_base_url, config.request_timeout_seconds), AgentClient(config)
+    return (
+        RAGClient(config.rag_base_url, config.request_timeout_seconds),
+        AgentClient(config),
+        ChangeImpactClient(config),
+    )
 
 
 def technical_error(exc: Exception, *, pending_review_count: int | None = None) -> None:
@@ -203,7 +210,7 @@ def technical_error(exc: Exception, *, pending_review_count: int | None = None) 
 
 config = DemoConfig.from_env()
 document_names = document_display_names()
-rag, agent = clients(config)
+rag, agent, change_impact = clients(config)
 try:
     rag_health = rag.health()
 except Exception:
@@ -226,7 +233,9 @@ render_about(artifact_status)
 st.title("研发文档 RAG + 文档工作流 Agent")
 st.caption("RAG 负责可靠检索研发资料，Agent 负责按 Word 模板拆解任务并组织 Evidence，生成待人工审核的文档草稿。")
 
-rag_tab, agent_tab = st.tabs(["研发文档 RAG", "文档工作流 Agent"])
+rag_tab, agent_tab, change_tab = st.tabs([
+    "研发文档 RAG", "文档工作流 Agent", "工程变更审核工作台"
+])
 
 with rag_tab:
     st.markdown('<div class="boundary"><b>RAG 问答</b>生成最终答案；<b>证据检索</b>返回供 Agent 使用的原始证据。</div>', unsafe_allow_html=True)
@@ -571,6 +580,128 @@ with agent_tab:
                 )
             )
         render_downloads(result, agent.artifact_bytes)
+
+with change_tab:
+    st.markdown("### 企业研发文档变更影响分析与人工审核闭环")
+    st.markdown(
+        "**当前组织：** demo_company_a　　**当前项目：** PAYMENT　　"
+        "**数据：** 完全合成"
+    )
+    st.markdown(
+        '<div class="boundary">Requirement Change → Impact → Evidence → Patch → '
+        'Human Review → Candidate Version → Safe Activation</div>',
+        unsafe_allow_html=True,
+    )
+    change_status = change_impact.status()
+    if not rag_health:
+        st.info("请先启动启用了 V4 版本存储的本地 RAG 服务；页面其余功能不受影响。")
+    if st.button(
+        "准备合成变更任务",
+        type="primary",
+        disabled=not bool(rag_health) or not change_status["ready"],
+        key="v4_prepare",
+    ):
+        try:
+            with st.spinner("正在解析版本、识别变化并发现影响……"):
+                st.session_state.v4_change_result = change_impact.prepare_demo()
+            st.rerun()
+        except Exception as exc:
+            technical_error(exc)
+
+    v4_result = st.session_state.get("v4_change_result")
+    render_workbench_summary(v4_result)
+    if v4_result:
+        state = v4_result["state"]
+        patches = state.get("patches", [])
+        if patches:
+            patch = patches[0]
+            st.markdown("### Human Review")
+            reviewer = st.text_input("审核人", key=f"v4_reviewer_{state['task_id']}")
+            edited = st.text_area(
+                "审核后的建议内容",
+                value=patch["proposed_content"],
+                key=f"v4_patch_edit_{patch['patch_id']}",
+            )
+            comment = st.text_input("审核意见", key=f"v4_comment_{patch['patch_id']}")
+            approve, save_edit, reject = st.columns(3)
+            if approve.button(
+                "批准 Patch",
+                disabled=not reviewer.strip(),
+                key=f"v4_approve_{patch['patch_id']}",
+            ):
+                try:
+                    v4_result["state"] = change_impact.review_patch(
+                        state["task_id"], patch["patch_id"],
+                        action="APPROVE", reviewer=reviewer, comment=comment,
+                    )
+                    st.session_state.v4_change_result = v4_result
+                    st.rerun()
+                except Exception as exc:
+                    technical_error(exc)
+            if save_edit.button(
+                "保存人工修改",
+                disabled=not reviewer.strip() or edited.strip() == patch["proposed_content"].strip(),
+                key=f"v4_edit_{patch['patch_id']}",
+            ):
+                try:
+                    v4_result["state"] = change_impact.review_patch(
+                        state["task_id"], patch["patch_id"],
+                        action="EDIT", reviewer=reviewer, comment=comment,
+                        edited_content=edited,
+                    )
+                    st.session_state.v4_change_result = v4_result
+                    st.rerun()
+                except Exception as exc:
+                    technical_error(exc)
+            if reject.button(
+                "拒绝 Patch",
+                disabled=not reviewer.strip(),
+                key=f"v4_reject_{patch['patch_id']}",
+            ):
+                try:
+                    v4_result["state"] = change_impact.review_patch(
+                        state["task_id"], patch["patch_id"],
+                        action="REJECT", reviewer=reviewer, comment=comment,
+                    )
+                    st.session_state.v4_change_result = v4_result
+                    st.rerun()
+                except Exception as exc:
+                    technical_error(exc)
+
+        apply_col, publish_col = st.columns(2)
+        if apply_col.button(
+            "应用已批准 Patch",
+            disabled=state["status"] != "APPLY_READY",
+            key=f"v4_apply_{state['task_id']}",
+        ):
+            try:
+                applied = change_impact.apply(state["task_id"])
+                v4_result["state"] = applied["state"]
+                v4_result["apply_results"] = applied["apply_results"]
+                st.session_state.v4_change_result = v4_result
+                st.rerun()
+            except Exception as exc:
+                technical_error(exc)
+        if publish_col.button(
+            "校验并安全发布新版本",
+            disabled=state["status"] != "CANDIDATE_READY",
+            key=f"v4_publish_{state['task_id']}",
+        ):
+            try:
+                v4_result["state"] = change_impact.publish(state["task_id"])
+                st.session_state.v4_change_result = v4_result
+                st.rerun()
+            except Exception as exc:
+                technical_error(exc)
+        candidate_path = state.get("candidate_path")
+        if candidate_path and Path(candidate_path).is_file():
+            st.download_button(
+                "下载 Candidate DOCX",
+                data=Path(candidate_path).read_bytes(),
+                file_name="system_design_v2_candidate.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                key=f"v4_download_{state['task_id']}",
+            )
 
 st.divider()
 st.caption("Word Template → Document Workflow Agent → RAG /retrieve → Evidence → Draft → Human Review")

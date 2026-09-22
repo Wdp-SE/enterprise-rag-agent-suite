@@ -1,0 +1,79 @@
+{
+  "schema_version": "v4-evaluation-dataset-v1",
+  "classification": "FULLY_SYNTHETIC",
+  "organization_id": "demo_company_a",
+  "project_id": "PAYMENT",
+  "rag_cases": [
+    {
+      "case_id": "exact-id",
+      "category": "Exact ID Query",
+      "mode": "engineering_items",
+      "query": "REQ-023 的变更内容是什么？",
+      "scope": {"organization_ids": ["demo_company_a"], "project_ids": ["PAYMENT"]},
+      "expected_external_identifiers": ["REQ-023"],
+      "positive": true
+    },
+    {
+      "case_id": "cross-document",
+      "category": "Cross-document Query",
+      "mode": "version_search",
+      "query": "REQ-023 对系统设计的并发连接池有什么影响？",
+      "scope": {"document_ids": ["system_design"], "active_only": true},
+      "expected_documents": [{"document_id": "system_design", "version_id": "design-v2"}],
+      "positive": true
+    },
+    {
+      "case_id": "semantic",
+      "category": "Semantic Query",
+      "mode": "version_search",
+      "query": "批处理吞吐目标提高后，连接池和异步状态返回如何调整？",
+      "scope": {"document_ids": ["system_design"], "active_only": true},
+      "expected_documents": [{"document_id": "system_design", "version_id": "design-v2"}],
+      "positive": true
+    },
+    {
+      "case_id": "version-conflict",
+      "category": "Version Conflict",
+      "mode": "version_search",
+      "query": "DES-014 旧版 500 并发同步返回",
+      "scope": {"document_ids": ["system_design"], "active_only": true},
+      "expected_documents": [{"document_id": "system_design", "version_id": "design-v2"}],
+      "forbidden_version_ids": ["design-v1"],
+      "positive": true
+    },
+    {
+      "case_id": "no-answer",
+      "category": "No Answer",
+      "mode": "engineering_items",
+      "query": "SEC-999 量子密钥轮换策略",
+      "scope": {"organization_ids": ["demo_company_a"], "project_ids": ["PAYMENT"]},
+      "expected_external_identifiers": [],
+      "positive": false
+    },
+    {
+      "case_id": "scope-violation",
+      "category": "Scope Violation",
+      "mode": "engineering_items",
+      "query": "REQ-023",
+      "scope": {"organization_ids": ["demo_company_a"], "project_ids": ["OTHER"]},
+      "expected_external_identifiers": [],
+      "positive": false
+    },
+    {
+      "case_id": "terminology",
+      "category": "Terminology / Abbreviation",
+      "mode": "version_search",
+      "query": "API 异步 batch job 状态接口",
+      "scope": {"document_ids": ["api_spec"], "active_only": true},
+      "expected_documents": [{"document_id": "api_spec", "version_id": "api-v1"}],
+      "positive": true
+    }
+  ],
+  "agent_gold": {
+    "changed_external_identifier": "REQ-023",
+    "confirmed_impacts": ["DES-014", "API-008", "TC-102"],
+    "suggested_impacts": ["OPS-006"],
+    "patch_target_document_id": "system_design",
+    "patch_base_version_id": "design-v1"
+  }
+}

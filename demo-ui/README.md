@@ -50,3 +50,14 @@ cd demo-ui
 ```powershell
 ..\OpenManus-rag\.venv\Scripts\python.exe -m pytest tests -q
 ```
+## V4 工程变更审核工作台
+
+V4 需要在启动 RAG 前增加候选版本库目录：
+
+```powershell
+$env:RD_V4_VERSION_STORE_ROOT = (Join-Path $env:TEMP 'rag-agent-v4-demo-store')
+```
+
+UI 的第三个页签使用完全合成的 `demo_company_a / PAYMENT` 资料，演示需求 Diff、已确认/疑似影响、Evidence、局部段落 Patch、单审核人确认、冲突检测、Candidate 校验和安全激活。首次载入会通过 RAG HTTP API 初始化合成版本；Agent 不读取 FAISS。详细步骤见 `project_delivery/v4_change_impact_review/demo_script.md`。
+
+该页面只证明 OrganizationProfile 适配边界和单项目业务闭环。`organization_id` 不是租户隔离；语义命中只是 Suggested Impact；原始 DOCX 不会被覆盖。

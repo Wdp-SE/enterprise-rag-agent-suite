@@ -193,6 +193,22 @@ class CandidateVersionService:
     def get(self, candidate_id: str) -> CandidateVersionRecord:
         return self.records[candidate_id]
 
+    def document_rows(self) -> list[dict[str, Any]]:
+        return self.lifecycle.catalog.document_rows()
+
+    def search_text(
+        self,
+        query: str,
+        scope: RetrievalScope | None = None,
+        *,
+        top_k: int = 5,
+    ) -> list[dict[str, Any]]:
+        normalized = query.strip()
+        if not normalized:
+            raise ValueError("query cannot be blank")
+        vector = self.embedder.encode([normalized])
+        return self.retrieve(vector[0], scope, top_k=top_k)
+
     def retrieve(
         self,
         query_vector: Sequence[float],

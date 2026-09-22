@@ -30,4 +30,8 @@
 当前版本增加稳定 Document / DocumentVersion 模型、单 ACTIVE 约束、默认 ACTIVE-only 检索、项目/类型/多文档/历史版本 Scope、增量 Section 变更检测、内容哈希 Embedding 复用、确定性 Version Diff，以及 Agent Resume Evidence Freshness。冻结的 DENSE_ONLY + SECTION_PATH 检索数学保持不变。
 
 V3 使用 data/synthetic_versioned_corpus 下的公开合成数据完成离线 E2E；没有把真实内部资料发送给在线模型。工程报告位于 project_delivery/rag_v3_lifecycle/v3_engineering_report.md。
+## V4 变更影响审核闭环
 
+V4 在 V3 Stable 上增加 EngineeringItem、OrganizationProfile、需求项 Diff、Confirmed/Suggested 影响发现、Evidence 支撑的段落 Patch、Human Review、冲突与幂等检查，以及 Candidate Version 完整校验后的安全激活。核心仍使用既有 Dense 检索、HTTP Agent↔RAG 边界、Checkpoint 和 Version Governance；没有迁移 LangGraph、Hybrid、React 或数据库。
+
+实现与验证报告位于 `project_delivery/v4_change_impact_review/`。主 Demo 数据完全合成，第二套 OrganizationProfile 只验证配置适配性，不代表多租户平台。

@@ -233,6 +233,8 @@ class EngineeringImpactService:
             ):
                 raw_evidence = link.metadata.get("evidence_ids", [])
                 evidence = [str(item) for item in raw_evidence] if isinstance(raw_evidence, list) else []
+                if not evidence:
+                    evidence = list(evidence_by_item.get(link.target_item_id, []))
                 impacts.append(ImpactDiscovery(
                     changed_item_id=changed_item_id,
                     impacted_item_id=link.target_item_id,

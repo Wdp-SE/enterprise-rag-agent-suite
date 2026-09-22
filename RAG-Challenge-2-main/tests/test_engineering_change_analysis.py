@@ -179,3 +179,21 @@ def test_v4_engineering_http_contracts_keep_existing_fastapi_boundary(tmp_path) 
         assert impact.json()["impacts"][0]["discovery_source"] == "EXPLICIT_TRACE"
         assert impact.json()["impacts"][0]["review_status"] == "CONFIRMED"
 
+def test_explicit_trace_uses_retrieved_evidence_when_link_has_no_snapshot() -> None:
+    requirement = item("REQ-023", version="requirements-v2")
+    design = item("DES-014", document="design", item_type=EngineeringItemType.DESIGN)
+    trace = TraceLink.create(
+        source_item_id=requirement.item_id,
+        target_item_id=design.item_id,
+        provenance=TraceProvenance.EXPLICIT,
+        status=TraceStatus.CONFIRMED,
+    )
+
+    impacts = EngineeringImpactService().discover(
+        changed_item_id=requirement.item_id,
+        items=[requirement, design],
+        trace_links=[trace],
+        evidence_by_item={design.item_id: ["ev_design"]},
+    )
+
+    assert impacts[0].evidence_ids == ["ev_design"]

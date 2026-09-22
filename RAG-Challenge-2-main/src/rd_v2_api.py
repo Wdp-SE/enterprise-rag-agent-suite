@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import hashlib
+import os
 import re
 import unicodedata
 from contextlib import asynccontextmanager
@@ -124,6 +125,14 @@ class CandidateRetrieveRequest(BaseModel):
     top_k: int = Field(default=5, ge=1, le=20)
 
 
+class CandidateSearchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    query: str = Field(min_length=1, max_length=4000)
+    scope: RetrievalScope = Field(default_factory=RetrievalScope)
+    top_k: int = Field(default=5, ge=1, le=20)
+
+
 def _serialize_retrieval_hit(hit: dict) -> dict:
     """Expose only provenance and raw text from a validated frozen chunk."""
     content = hit["text"]
@@ -157,7 +166,13 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         app.state.rd_v2_runtime = runtime or runtime_factory()
-        app.state.engineering_candidate_service = candidate_service
+        configured_candidate_service = candidate_service
+        candidate_root = os.environ.get("RD_V4_VERSION_STORE_ROOT")
+        if configured_candidate_service is None and candidate_root:
+            configured_candidate_service = CandidateVersionService(
+                candidate_root, app.state.rd_v2_runtime.embedder
+            )
+        app.state.engineering_candidate_service = configured_candidate_service
         try:
             yield
         finally:
@@ -322,6 +337,26 @@ def create_app(
             return service.get(candidate_id).model_dump(mode="json")
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="CANDIDATE_NOT_FOUND") from exc
+
+    @app.get("/engineering/versions/documents")
+    async def engineering_version_documents(request: Request) -> dict:
+        service = request.app.state.engineering_candidate_service
+        if service is None:
+            raise HTTPException(status_code=503, detail="ENGINEERING_VERSION_SERVICE_UNAVAILABLE")
+        return {"documents": service.document_rows()}
+
+    @app.post("/engineering/versions/search")
+    async def search_engineering_versions(payload: CandidateSearchRequest, request: Request) -> dict:
+        service = request.app.state.engineering_candidate_service
+        if service is None:
+            raise HTTPException(status_code=503, detail="ENGINEERING_VERSION_SERVICE_UNAVAILABLE")
+        try:
+            results = await asyncio.to_thread(
+                service.search_text, payload.query, payload.scope, top_k=payload.top_k
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail="ENGINEERING_VERSION_SEARCH_INVALID") from exc
+        return {"results": results}
 
     @app.post("/engineering/versions/retrieve")
     async def retrieve_engineering_version(payload: CandidateRetrieveRequest, request: Request) -> dict:

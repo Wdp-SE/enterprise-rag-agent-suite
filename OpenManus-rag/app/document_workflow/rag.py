@@ -161,6 +161,25 @@ class HTTPRetrieveClient:
             raise ValueError("malformed candidate activation response")
         return payload
 
+    def candidate_version_documents(self) -> dict:
+        response = httpx.get(
+            f"{self.base_url}/engineering/versions/documents", timeout=self.timeout
+        )
+        response.raise_for_status()
+        payload = response.json()
+        if not isinstance(payload, dict) or not isinstance(payload.get("documents"), list):
+            raise ValueError("malformed engineering version catalog response")
+        return payload
+
+    def search_candidate_versions(
+        self, query: str, scope: dict, *, top_k: int = 5
+    ) -> dict:
+        return self._post_engineering(
+            "/engineering/versions/search",
+            {"query": query, "scope": scope, "top_k": top_k},
+            "results",
+        )
+
     def retrieve_candidate_versions(
         self, query_vector: list[float], scope: dict, *, top_k: int = 5
     ) -> dict:

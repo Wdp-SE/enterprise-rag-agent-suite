@@ -61,6 +61,7 @@ class ChangeImpactWorkflow:
         impacts: Sequence[dict],
         patches: Sequence[PatchCandidate],
         evidence: Sequence[Evidence],
+        rag_calls: int = 0,
     ) -> ChangeImpactTaskState:
         source_path = Path(source).resolve()
         if source_path.suffix.lower() != ".docx" or not source_path.is_file():
@@ -92,6 +93,7 @@ class ChangeImpactWorkflow:
             patches=normalized_patches,
             impacts=[ImpactCandidate.model_validate(item) for item in impacts],
             evidence_snapshot=evidence_snapshot,
+            rag_calls=rag_calls,
         )
         state.trace.append(self._trace(state, "CREATE_TASK", "COMPLETE", 0.0))
         self.checkpoints.save(state)
@@ -148,6 +150,7 @@ class ChangeImpactWorkflow:
         }
         service = PatchExecutionService(self.active_version_for_document)
         approved = [item for item in state.patches if item.review_status is PatchReviewStatus.APPROVED]
+        state.rag_calls += 1 + sum(len(item.evidence_ids) for item in approved)
         if not approved:
             raise ValueError("no approved PatchCandidate is available")
         results: list[PatchApplyResult] = []
@@ -224,6 +227,7 @@ class ChangeImpactWorkflow:
             if patch.review_status is PatchReviewStatus.APPROVED
         ]
         started = time.perf_counter()
+        state.rag_calls += 1
         built = self.version_client.build_candidate_version(
             document_id=state.base_document_id,
             project_id=state.project_id,
@@ -246,6 +250,7 @@ class ChangeImpactWorkflow:
             ))
             self.checkpoints.save(state)
             return state
+        state.rag_calls += 1
         activated = self.version_client.activate_candidate_version(str(built["candidate_id"]))
         state.candidate_version_record = dict(activated)
         if activated.get("status") != "ACTIVE":
@@ -278,7 +283,7 @@ class ChangeImpactWorkflow:
             "step": step,
             "status": status,
             "latency": round(latency, 6),
-            "rag_calls": 0,
+            "rag_calls": state.rag_calls,
             "llm_calls": 0,
             "evidence_count": len(state.evidence_snapshot),
             "organization_id": state.organization_id,
