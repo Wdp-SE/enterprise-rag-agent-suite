@@ -72,7 +72,11 @@ def _sha(value: str) -> str:
 
 
 def _write_json(path: Path, payload: dict) -> None:
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
 
 
 def main() -> None:
@@ -152,6 +156,7 @@ def main() -> None:
     chunk_path.write_text(
         "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in chunks),
         encoding="utf-8",
+        newline="\n",
     )
     embedder = DeterministicHashEmbedder(dimension=DIMENSION)
     vectors = embedder.encode(

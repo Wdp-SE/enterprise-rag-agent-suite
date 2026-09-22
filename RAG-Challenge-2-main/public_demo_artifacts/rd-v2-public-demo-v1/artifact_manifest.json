@@ -19,18 +19,18 @@
   "artifacts": {
     "corpus_manifest": {
       "path": "public_demo_artifacts/rd-v2-public-demo-v1/corpus_manifest.json",
-      "sha256": "709ec8a49125f2ad3d17d1489e2b310c7d747e6262e554746b742ec29a2acd70",
-      "bytes": 159
+      "sha256": "df30a28d44878ef8742917290e1d0cbcf33cb44b052e400646d3fdaed3cd4585",
+      "bytes": 152
     },
     "structure_sidecar_manifest": {
       "path": "public_demo_artifacts/rd-v2-public-demo-v1/structure_sidecar_manifest.json",
-      "sha256": "a561b6edc61f35ddf479ba74c024e4158fa995e0047d8d7adfa17d747d3ebd10",
-      "bytes": 119
+      "sha256": "d001e3ed32f57a833347a1bfc27b7350514894ad4e9d5b756f4595b75bb0c1ef",
+      "bytes": 113
     },
     "chunk_artifact": {
       "path": "public_demo_artifacts/rd-v2-public-demo-v1/child_chunks.jsonl",
-      "sha256": "7f244e6116c542cfd2cb93420873624c91bd86845737c41f480dfba5ec46478d",
-      "bytes": 6260
+      "sha256": "5ec26cb5c4c89bc99264f33aaafef0fd1dbf8b26c33d393ddcc67ee5223b2164",
+      "bytes": 6249
     },
     "embedding_artifact": {
       "path": "public_demo_artifacts/rd-v2-public-demo-v1/embeddings.npy",
@@ -44,8 +44,8 @@
     },
     "retrieval_policy": {
       "path": "public_demo_artifacts/rd-v2-public-demo-v1/retrieval_policy.json",
-      "sha256": "bb2d37d23b4a6f4ed146c7410f64332515261d53c32d0d380ed9e108707210ce",
-      "bytes": 297
+      "sha256": "fb5e1dbe02ca2892eafd2c70cf3449a2c9b9f0239964feda88980e20e5ba51da",
+      "bytes": 286
     }
   },
   "body_text_included": true,

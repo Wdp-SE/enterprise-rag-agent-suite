@@ -1,10 +1,34 @@
 from __future__ import annotations
 
+import hashlib
+import json
+from pathlib import Path
+
 import numpy as np
 import pytest
 
 from src.rd_v2_api import CandidateServiceRegistry
 from src.rd_v2_runtime import DeterministicHashEmbedder
+
+
+def test_public_artifact_text_payloads_use_lf_and_match_manifest() -> None:
+    root = Path(__file__).parents[1]
+    artifact_root = root / "public_demo_artifacts/rd-v2-public-demo-v1"
+    manifest = json.loads(
+        (artifact_root / "artifact_manifest.json").read_text(encoding="utf-8")
+    )
+
+    for role in (
+        "corpus_manifest",
+        "structure_sidecar_manifest",
+        "chunk_artifact",
+        "retrieval_policy",
+    ):
+        metadata = manifest["artifacts"][role]
+        payload = (root / metadata["path"]).read_bytes()
+        assert b"\r" not in payload, role
+        assert len(payload) == metadata["bytes"], role
+        assert hashlib.sha256(payload).hexdigest() == metadata["sha256"], role
 
 
 def test_public_hash_embedder_is_deterministic_normalized_and_semantic_by_shared_terms() -> None:
