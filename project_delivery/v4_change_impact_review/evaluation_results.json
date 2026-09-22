@@ -11,8 +11,8 @@
     "citation_membership_correctness": true,
     "no_answer_rejection": true,
     "scope_violation_count": 0,
-    "p50_latency_ms": 66.852,
-    "p95_latency_ms": 77.057,
+    "p50_latency_ms": 64.33,
+    "p95_latency_ms": 68.384,
     "cases": [
       {
         "case_id": "exact-id",
@@ -21,7 +21,7 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "result_count": 1,
-        "latency_ms": 52.166
+        "latency_ms": 49.654
       },
       {
         "case_id": "cross-document",
@@ -30,7 +30,7 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "result_count": 1,
-        "latency_ms": 71.471
+        "latency_ms": 64.33
       },
       {
         "case_id": "semantic",
@@ -39,7 +39,7 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "result_count": 1,
-        "latency_ms": 67.17
+        "latency_ms": 68.384
       },
       {
         "case_id": "version-conflict",
@@ -48,7 +48,7 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "result_count": 1,
-        "latency_ms": 77.057
+        "latency_ms": 66.483
       },
       {
         "case_id": "no-answer",
@@ -57,7 +57,7 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 0.0,
         "result_count": 0,
-        "latency_ms": 35.69
+        "latency_ms": 47.069
       },
       {
         "case_id": "scope-violation",
@@ -66,7 +66,7 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 0.0,
         "result_count": 0,
-        "latency_ms": 45.449
+        "latency_ms": 34.975
       },
       {
         "case_id": "terminology",
@@ -75,7 +75,7 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "result_count": 1,
-        "latency_ms": 66.852
+        "latency_ms": 66.989
       }
     ]
   },
@@ -96,7 +96,7 @@
     "duplicate_patch_apply_count": 0,
     "resume_correctness": true,
     "rag_call_count": 9,
-    "workflow_latency_ms": 33238.263,
+    "workflow_latency_ms": 7942.516,
     "candidate_status": "ACTIVE",
     "original_document_unchanged": true,
     "stale_evidence_block": "VERIFIED_BY_AGENT_TEST",
@@ -108,10 +108,10 @@
       "selected_evidence_count": 5,
       "max_evidence_count": 5,
       "selected_evidence_ids": [
-        "ev_348b7a69cde1c21cb635",
         "ev_73bcfca5a93a33a659c3",
         "ev_79aeb3b1960ec9acbc81",
         "ev_81b2015ee91362b5bd78",
+        "ev_a763dc06afd5b1ce8a54",
         "ev_bb5e74279e62104a0f35"
       ]
     },

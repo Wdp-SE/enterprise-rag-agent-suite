@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "status": "COMPLETE",
+  "input_fingerprint": "9ca69f0ab858a6312015aea44458ee383001e07a4f1af17899b48bbfb58e080e",
+  "completed_batches": 1,
+  "total_batches": 1,
+  "body_text_logged": false,
+  "completed_at": "2026-09-22T00:00:00+00:00"
+}

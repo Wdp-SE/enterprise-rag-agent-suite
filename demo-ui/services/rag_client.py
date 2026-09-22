@@ -1,4 +1,4 @@
-"""Thin HTTP client for the frozen RAG V2 public API."""
+"""Thin HTTP client for the version-aware RAG public API."""
 
 from __future__ import annotations
 
@@ -19,29 +19,58 @@ class ServiceError(RuntimeError):
 
 
 class RAGClient:
-    def __init__(self, base_url: str, timeout: float = 45.0, session: requests.Session | None = None):
+    def __init__(
+        self,
+        base_url: str,
+        timeout: float = 45.0,
+        session: requests.Session | None = None,
+        *,
+        session_id: str | None = None,
+        retry_limit: int = 0,
+    ):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.session = session or requests.Session()
+        self.session_id = session_id
+        self.retry_limit = retry_limit
 
     def _request(self, method: str, endpoint: str, **kwargs) -> dict[str, Any]:
-        try:
-            response = self.session.request(
-                method, f"{self.base_url}{endpoint}", timeout=self.timeout, **kwargs
-            )
-            response.raise_for_status()
-        except requests.Timeout as exc:
-            raise ServiceError("RAG 请求超时，请稍后重试。", type(exc).__name__, "RAG_TIMEOUT") from exc
-        except requests.ConnectionError as exc:
-            raise ServiceError(
-                "RAG Service Unavailable。请先启动本地 RAG 服务。",
-                type(exc).__name__, "RAG_UNAVAILABLE",
-            ) from exc
-        except requests.HTTPError as exc:
-            status = exc.response.status_code if exc.response is not None else "unknown"
-            raise ServiceError(
-                f"RAG 服务返回 HTTP {status}。", f"HTTPStatus={status}", "RAG_HTTP_ERROR"
-            ) from exc
+        if self.session_id:
+            headers = dict(kwargs.pop("headers", {}))
+            headers["X-Demo-Session-ID"] = self.session_id
+            kwargs["headers"] = headers
+        response = None
+        for attempt in range(self.retry_limit + 1):
+            try:
+                response = self.session.request(
+                    method, f"{self.base_url}{endpoint}", timeout=self.timeout, **kwargs
+                )
+                response.raise_for_status()
+                break
+            except requests.Timeout as exc:
+                if attempt < self.retry_limit:
+                    continue
+                raise ServiceError(
+                    "RAG 请求超时，公共免费演示后端可能正在启动，请稍后重试。",
+                    type(exc).__name__,
+                    "RAG_TIMEOUT",
+                ) from exc
+            except requests.ConnectionError as exc:
+                if attempt < self.retry_limit:
+                    continue
+                raise ServiceError(
+                    "RAG Service Unavailable。公共免费演示后端可能正在启动，请稍后重试。",
+                    type(exc).__name__,
+                    "RAG_UNAVAILABLE",
+                ) from exc
+            except requests.HTTPError as exc:
+                status = exc.response.status_code if exc.response is not None else "unknown"
+                if attempt < self.retry_limit and isinstance(status, int) and status >= 500:
+                    continue
+                raise ServiceError(
+                    f"RAG 服务返回 HTTP {status}。", f"HTTPStatus={status}", "RAG_HTTP_ERROR"
+                ) from exc
+        assert response is not None
         try:
             payload = response.json()
         except ValueError as exc:
@@ -93,8 +122,12 @@ class RAGClient:
             raise ServiceError("RAG 问答响应不符合契约。", "Invalid /query schema", "RAG_SCHEMA_INVALID")
         return payload
 
-    def retrieve(self, question: str, top_k: int = 5,
-                 scope: dict[str, Any] | None = None) -> dict[str, Any]:
+    def retrieve(
+        self,
+        question: str,
+        top_k: int = 5,
+        scope: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         question = question.strip()
         if not question or not 3 <= top_k <= 10:
             raise ValueError("问题不能为空，Top K 必须为 3 到 10")
@@ -109,4 +142,3 @@ class RAGClient:
         if any(not isinstance(item, dict) or not required.issubset(item) for item in results):
             raise ServiceError("Evidence 结果字段不完整。", "Invalid retrieval hit", "RAG_SCHEMA_INVALID")
         return payload
-

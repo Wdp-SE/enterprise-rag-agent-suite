@@ -7,8 +7,10 @@ import base64
 import hashlib
 import os
 import re
+import threading
 import unicodedata
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any, Callable, Optional
 
 from fastapi import FastAPI, HTTPException, Request
@@ -26,6 +28,59 @@ from src.engineering_change import (
     TraceLink,
     compare_engineering_items,
 )
+
+
+class PublicQueryBudget:
+    """In-memory per-session public demo budget; restart intentionally resets it."""
+
+    _SESSION_ID = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
+
+    def __init__(self, limit: int):
+        if limit < 0:
+            raise ValueError("public query budget must not be negative")
+        self.limit = limit
+        self._used: dict[str, int] = {}
+        self._lock = threading.Lock()
+
+    def consume(self, session_id: str) -> bool:
+        if not self._SESSION_ID.fullmatch(session_id or ""):
+            raise ValueError("invalid public demo session")
+        with self._lock:
+            used = self._used.get(session_id, 0)
+            if used >= self.limit:
+                return False
+            self._used[session_id] = used + 1
+            return True
+
+
+class CandidateServiceRegistry:
+    """Create one temporary candidate store per untrusted public demo session."""
+
+    _SESSION_ID = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
+
+    def __init__(
+        self,
+        root: str | Path,
+        embedder: object,
+        *,
+        service_factory: Callable[[Path, object], object] = CandidateVersionService,
+    ):
+        self.root = Path(root).resolve()
+        self.embedder = embedder
+        self.service_factory = service_factory
+        self._services: dict[str, object] = {}
+        self._lock = threading.Lock()
+
+    def get(self, session_id: str):
+        if not self._SESSION_ID.fullmatch(session_id or ""):
+            raise ValueError("invalid public demo session")
+        with self._lock:
+            service = self._services.get(session_id)
+            if service is None:
+                session_root = self.root / "sessions" / session_id
+                service = self.service_factory(session_root, self.embedder)
+                self._services[session_id] = service
+            return service
 
 
 class QueryRequest(BaseModel):
@@ -168,11 +223,22 @@ def create_app(
         app.state.rd_v2_runtime = runtime or runtime_factory()
         configured_candidate_service = candidate_service
         candidate_root = os.environ.get("RD_V4_VERSION_STORE_ROOT")
+        app.state.engineering_candidate_registry = None
         if configured_candidate_service is None and candidate_root:
-            configured_candidate_service = CandidateVersionService(
-                candidate_root, app.state.rd_v2_runtime.embedder
-            )
+            if os.environ.get("APP_ENV", "local").strip().casefold() == "public_demo":
+                app.state.engineering_candidate_registry = CandidateServiceRegistry(
+                    candidate_root, app.state.rd_v2_runtime.embedder
+                )
+            else:
+                configured_candidate_service = CandidateVersionService(
+                    candidate_root, app.state.rd_v2_runtime.embedder
+                )
         app.state.engineering_candidate_service = configured_candidate_service
+        app.state.public_query_budget = None
+        if os.environ.get("APP_ENV", "local").strip().casefold() == "public_demo":
+            app.state.public_query_budget = PublicQueryBudget(
+                int(os.environ.get("MAX_LLM_CALLS_PER_SESSION", "3"))
+            )
         try:
             yield
         finally:
@@ -183,6 +249,15 @@ def create_app(
         version="rd-v3-lifecycle-v1.0",
         lifespan=lifespan,
     )
+
+    def candidate_service_for(request: Request):
+        registry = request.app.state.engineering_candidate_registry
+        if registry is not None:
+            try:
+                return registry.get(request.headers.get("X-Demo-Session-ID", ""))
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail="PUBLIC_DEMO_SESSION_REQUIRED") from exc
+        return request.app.state.engineering_candidate_service
 
     @app.get("/health")
     async def health(request: Request) -> dict:
@@ -200,6 +275,14 @@ def create_app(
 
     @app.post("/query", response_model=QueryResponse)
     async def query(payload: QueryRequest, request: Request) -> dict:
+        budget = request.app.state.public_query_budget
+        if budget is not None:
+            try:
+                allowed = budget.consume(request.headers.get("X-Demo-Session-ID", ""))
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail="PUBLIC_DEMO_SESSION_REQUIRED") from exc
+            if not allowed:
+                raise HTTPException(status_code=429, detail="LLM_SESSION_BUDGET_EXHAUSTED")
         try:
             return await asyncio.to_thread(
                 request.app.state.rd_v2_runtime.query, payload.question, payload.scope
@@ -293,7 +376,7 @@ def create_app(
 
     @app.post("/engineering/candidates/build")
     async def build_engineering_candidate(payload: CandidateBuildRequest, request: Request) -> dict:
-        service = request.app.state.engineering_candidate_service
+        service = candidate_service_for(request)
         if service is None:
             raise HTTPException(status_code=503, detail="ENGINEERING_VERSION_SERVICE_UNAVAILABLE")
         try:
@@ -317,7 +400,7 @@ def create_app(
 
     @app.post("/engineering/candidates/{candidate_id}/activate")
     async def activate_engineering_candidate(candidate_id: str, request: Request) -> dict:
-        service = request.app.state.engineering_candidate_service
+        service = candidate_service_for(request)
         if service is None:
             raise HTTPException(status_code=503, detail="ENGINEERING_VERSION_SERVICE_UNAVAILABLE")
         try:
@@ -330,7 +413,7 @@ def create_app(
 
     @app.get("/engineering/candidates/{candidate_id}")
     async def engineering_candidate(candidate_id: str, request: Request) -> dict:
-        service = request.app.state.engineering_candidate_service
+        service = candidate_service_for(request)
         if service is None:
             raise HTTPException(status_code=503, detail="ENGINEERING_VERSION_SERVICE_UNAVAILABLE")
         try:
@@ -340,14 +423,14 @@ def create_app(
 
     @app.get("/engineering/versions/documents")
     async def engineering_version_documents(request: Request) -> dict:
-        service = request.app.state.engineering_candidate_service
+        service = candidate_service_for(request)
         if service is None:
             raise HTTPException(status_code=503, detail="ENGINEERING_VERSION_SERVICE_UNAVAILABLE")
         return {"documents": service.document_rows()}
 
     @app.post("/engineering/versions/search")
     async def search_engineering_versions(payload: CandidateSearchRequest, request: Request) -> dict:
-        service = request.app.state.engineering_candidate_service
+        service = candidate_service_for(request)
         if service is None:
             raise HTTPException(status_code=503, detail="ENGINEERING_VERSION_SERVICE_UNAVAILABLE")
         try:
@@ -360,7 +443,7 @@ def create_app(
 
     @app.post("/engineering/versions/retrieve")
     async def retrieve_engineering_version(payload: CandidateRetrieveRequest, request: Request) -> dict:
-        service = request.app.state.engineering_candidate_service
+        service = candidate_service_for(request)
         if service is None:
             raise HTTPException(status_code=503, detail="ENGINEERING_VERSION_SERVICE_UNAVAILABLE")
         try:

@@ -1,0 +1,254 @@
+{
+  "schema_version": "v4-engineering-inventory-v1",
+  "classification": "FULLY_SYNTHETIC",
+  "profile": {
+    "organization_id": "demo_company_b",
+    "identifier_patterns": {
+      "REQUIREMENT": [
+        "REQ-\\d{3}"
+      ],
+      "DESIGN": [
+        "DES-\\d{3}"
+      ],
+      "API": [
+        "API-\\d{3}"
+      ],
+      "TEST_CASE": [
+        "TC-\\d{3}"
+      ],
+      "RUNBOOK": [
+        "OPS-\\d{3}"
+      ]
+    },
+    "document_type_mapping": {
+      "需求规格说明书": "REQUIREMENT",
+      "系统设计说明书": "DESIGN",
+      "接口规范": "API",
+      "测试用例": "TEST_CASE",
+      "运维手册": "RUNBOOK"
+    },
+    "section_aliases": {
+      "功能需求": "REQUIREMENTS",
+      "系统设计": "DESIGN",
+      "接口定义": "API",
+      "验收测试": "ACCEPTANCE",
+      "运行手册": "OPERATIONS"
+    },
+    "version_status_mapping": {
+      "有效": "ACTIVE",
+      "历史": "SUPERSEDED"
+    }
+  },
+  "documents": [
+    {
+      "filename": "audit_requirements_v1.docx",
+      "document_id": "audit_requirements",
+      "version_id": "audit-requirements-v1",
+      "version_label": "V1.0",
+      "document_type": "需求规格说明书",
+      "title": "audit_requirements_v1"
+    },
+    {
+      "filename": "audit_requirements_v2.docx",
+      "document_id": "audit_requirements",
+      "version_id": "audit-requirements-v2",
+      "version_label": "V2.0",
+      "document_type": "需求规格说明书",
+      "title": "audit_requirements_v2"
+    },
+    {
+      "filename": "audit_design_v1.docx",
+      "document_id": "audit_design",
+      "version_id": "audit-design-v1",
+      "version_label": "V1.0",
+      "document_type": "系统设计说明书",
+      "title": "audit_design_v1"
+    },
+    {
+      "filename": "audit_test_cases_v1.docx",
+      "document_id": "audit_test_cases",
+      "version_id": "audit-test-v1",
+      "version_label": "V1.0",
+      "document_type": "测试用例",
+      "title": "audit_test_cases_v1"
+    },
+    {
+      "filename": "audit_runbook_v1.docx",
+      "document_id": "audit_runbook",
+      "version_id": "audit-runbook-v1",
+      "version_label": "V1.0",
+      "document_type": "运维手册",
+      "title": "audit_runbook_v1"
+    }
+  ],
+  "items": [
+    {
+      "item_id": "item_1e3ef08a9bc4a8484af5",
+      "item_type": "REQUIREMENT",
+      "organization_id": "demo_company_b",
+      "project_id": "AUDIT",
+      "document_id": "audit_requirements",
+      "version_id": "audit-requirements-v1",
+      "section_id": "sec_fb194d856a762bee",
+      "external_identifier": "REQ-071",
+      "title": "REQ-071 · 数据留存要求",
+      "content": "REQ-071 审计日志在线可检索保存 7 天,超过周期后进入归档。",
+      "content_hash": "e3ac3957a2106be7b24acd65a203d0c32387e4f939f5a256acfd5593565e8b49",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "远岚审计平台需求规格说明书 V1.0",
+          "数据留存要求"
+        ],
+        "source_document_type": "需求规格说明书",
+        "default_document_item_type": "REQUIREMENT"
+      }
+    },
+    {
+      "item_id": "item_c69fba8463552eb17add",
+      "item_type": "REQUIREMENT",
+      "organization_id": "demo_company_b",
+      "project_id": "AUDIT",
+      "document_id": "audit_requirements",
+      "version_id": "audit-requirements-v2",
+      "section_id": "sec_33d30620e1e5bdce",
+      "external_identifier": "REQ-071",
+      "title": "REQ-071 · 合规与留存",
+      "content": "REQ-071 审计日志在线可检索保存周期由 7 天调整为 30 天,并按日期分区。\nREQ-072 第 31 天起转入低成本归档并保留完整性校验。\n关联设计 DES-031,关联测试 TC-207。",
+      "content_hash": "41a2d142f980037e5a3e1f9abeeb50ac335b3a8b4e5e8fd49714960985410ca9",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "远岚审计平台需求规格说明书 V2.0",
+          "合规与留存"
+        ],
+        "source_document_type": "需求规格说明书",
+        "default_document_item_type": "REQUIREMENT"
+      }
+    },
+    {
+      "item_id": "item_d56421e69b24bc7147c1",
+      "item_type": "REQUIREMENT",
+      "organization_id": "demo_company_b",
+      "project_id": "AUDIT",
+      "document_id": "audit_requirements",
+      "version_id": "audit-requirements-v2",
+      "section_id": "sec_33d30620e1e5bdce",
+      "external_identifier": "REQ-072",
+      "title": "REQ-072 · 合规与留存",
+      "content": "REQ-071 审计日志在线可检索保存周期由 7 天调整为 30 天,并按日期分区。\nREQ-072 第 31 天起转入低成本归档并保留完整性校验。\n关联设计 DES-031,关联测试 TC-207。",
+      "content_hash": "41a2d142f980037e5a3e1f9abeeb50ac335b3a8b4e5e8fd49714960985410ca9",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "远岚审计平台需求规格说明书 V2.0",
+          "合规与留存"
+        ],
+        "source_document_type": "需求规格说明书",
+        "default_document_item_type": "REQUIREMENT"
+      }
+    },
+    {
+      "item_id": "item_8a48b775fa5414459869",
+      "item_type": "DESIGN",
+      "organization_id": "demo_company_b",
+      "project_id": "AUDIT",
+      "document_id": "audit_design",
+      "version_id": "audit-design-v1",
+      "section_id": "sec_f2d4bfb2c9122da4",
+      "external_identifier": "DES-031",
+      "title": "DES-031 · 存储与归档设计",
+      "content": "DES-031 面向 REQ-071:审计日志按日期分区,在线存储仅保留 7 天,之后转入归档。\n索引服务只覆盖在线存储分区。",
+      "content_hash": "51ddbe8f8831d05e19773820a022479fc901964d266e912caa64070eafbbf531",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "远岚审计平台系统设计说明书 V1.0",
+          "存储与归档设计"
+        ],
+        "source_document_type": "系统设计说明书",
+        "default_document_item_type": "DESIGN"
+      }
+    },
+    {
+      "item_id": "item_1477cb1564dcc369e769",
+      "item_type": "TEST_CASE",
+      "organization_id": "demo_company_b",
+      "project_id": "AUDIT",
+      "document_id": "audit_test_cases",
+      "version_id": "audit-test-v1",
+      "section_id": "sec_df459b924957d3bb",
+      "external_identifier": "TC-207",
+      "title": "TC-207 · 合规验收",
+      "content": "TC-207 验证 REQ-071:第 7 天日志仍可查询,第 8 天日志只可从归档读取。",
+      "content_hash": "38503760268da02b1170f6475312c4374eb7ba92df4cdccbe9e2df06ff138b81",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "远岚审计平台测试用例 V1.0",
+          "合规验收"
+        ],
+        "source_document_type": "测试用例",
+        "default_document_item_type": "TEST_CASE"
+      }
+    },
+    {
+      "item_id": "item_ada2c3b736b16ead8d4a",
+      "item_type": "RUNBOOK",
+      "organization_id": "demo_company_b",
+      "project_id": "AUDIT",
+      "document_id": "audit_runbook",
+      "version_id": "audit-runbook-v1",
+      "section_id": "sec_c8069e6a1e088e1e",
+      "external_identifier": "OPS-031",
+      "title": "OPS-031 · 存储容量巡检",
+      "content": "OPS-031 每日检查在线日志分区容量,并在保存周期接近阈值时告警。",
+      "content_hash": "2ca4768f15d0289f256ee35376c4e3a459af60b1389fc680d9d0282b7fbb143b",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "远岚审计平台运维手册 V1.0",
+          "存储容量巡检"
+        ],
+        "source_document_type": "运维手册",
+        "default_document_item_type": "RUNBOOK"
+      }
+    }
+  ],
+  "trace_links": [
+    {
+      "trace_link_id": "trace_2fd311a4745c0752182d",
+      "source_item_id": "item_c69fba8463552eb17add",
+      "target_item_id": "item_8a48b775fa5414459869",
+      "provenance": "EXPLICIT",
+      "status": "CONFIRMED",
+      "metadata": {
+        "source": "independent synthetic Case B trace"
+      }
+    },
+    {
+      "trace_link_id": "trace_1d5be78e179a3d3c2b59",
+      "source_item_id": "item_c69fba8463552eb17add",
+      "target_item_id": "item_1477cb1564dcc369e769",
+      "provenance": "EXPLICIT",
+      "status": "CONFIRMED",
+      "metadata": {
+        "source": "independent synthetic Case B trace"
+      }
+    }
+  ],
+  "changed_external_identifier": "REQ-071",
+  "patch_target_external_identifier": "DES-031"
+}

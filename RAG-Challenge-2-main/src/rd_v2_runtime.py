@@ -408,6 +408,50 @@ class QueryEmbedder(Protocol):
     def close(self) -> None: ...
 
 
+class DeterministicHashEmbedder:
+    """Small dependency-free embedder for the tracked synthetic public artifact."""
+
+    def __init__(self, *, dimension: int, query_prefix: str = ""):
+        if dimension < 8:
+            raise ValueError("dimension must be at least 8")
+        self.dimension = dimension
+        self.query_prefix = query_prefix
+
+    @staticmethod
+    def _tokens(text: str) -> list[str]:
+        import unicodedata
+
+        normalized = "".join(
+            character.casefold()
+            for character in unicodedata.normalize("NFKC", text)
+            if not character.isspace()
+        )
+        tokens: list[str] = []
+        for width in (1, 2, 3):
+            tokens.extend(
+                normalized[index:index + width]
+                for index in range(max(0, len(normalized) - width + 1))
+            )
+        return tokens
+
+    def encode(self, texts: Sequence[str]) -> np.ndarray:
+        vectors = np.zeros((len(texts), self.dimension), dtype=np.float32)
+        for row, raw in enumerate(texts):
+            for token in self._tokens(self.query_prefix + str(raw)):
+                digest = hashlib.sha256(token.encode("utf-8")).digest()
+                index = int.from_bytes(digest[:4], "big") % self.dimension
+                vectors[row, index] += 1.0
+            norm = float(np.linalg.norm(vectors[row]))
+            if norm == 0.0:
+                vectors[row, 0] = 1.0
+            else:
+                vectors[row] /= norm
+        return vectors
+
+    def close(self) -> None:
+        return None
+
+
 class LocalEmbeddingProcessClient:
     """Persistent spawned worker; PyTorch never shares a process with FAISS."""
 
@@ -761,15 +805,21 @@ def create_runtime(
     settings = settings or RDV2Settings.from_env()
     bundle = FrozenArtifactValidator(settings).validate_and_load()
     if embedder is None:
-        snapshot = settings.embedding_snapshot or _discover_snapshot(bundle.manifest)
-        if snapshot is None:
-            raise QueryRuntimeError("EMBEDDING_MODEL_SNAPSHOT_NOT_CONFIGURED")
-        embedder = LocalEmbeddingProcessClient(
-            snapshot=snapshot,
-            dimension=int(bundle.manifest["embedding_dimension"]),
-            query_prefix=str(bundle.manifest["query_prefix"]),
-            max_length=settings.embedding_max_length,
-        )
+        if os.environ.get("APP_ENV", "local").strip().casefold() == "public_demo":
+            embedder = DeterministicHashEmbedder(
+                dimension=int(bundle.manifest["embedding_dimension"]),
+                query_prefix=str(bundle.manifest.get("query_prefix", "")),
+            )
+        else:
+            snapshot = settings.embedding_snapshot or _discover_snapshot(bundle.manifest)
+            if snapshot is None:
+                raise QueryRuntimeError("EMBEDDING_MODEL_SNAPSHOT_NOT_CONFIGURED")
+            embedder = LocalEmbeddingProcessClient(
+                snapshot=snapshot,
+                dimension=int(bundle.manifest["embedding_dimension"]),
+                query_prefix=str(bundle.manifest["query_prefix"]),
+                max_length=settings.embedding_max_length,
+            )
     if generator is None and settings.allow_external_generation:
         generator = StructuredAnswerGenerator(
             provider=settings.generation_provider,

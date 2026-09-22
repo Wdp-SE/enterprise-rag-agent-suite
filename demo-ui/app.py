@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import uuid
 from pathlib import Path
 
 import streamlit as st
@@ -11,7 +12,9 @@ from components.business_messages import business_failure_message
 from components.change_impact_view import render_workbench_summary
 from components.evidence_view import render_query_sources, render_retrieval_results
 from components.prototype_final_view import (
+    load_cross_case_report,
     load_evaluation_report,
+    render_cross_case_evaluation,
     render_evaluation,
     render_overview,
     render_trace,
@@ -23,7 +26,9 @@ from components.workflow_view import render_downloads, render_template_summary, 
 from config import DemoConfig, document_display_names, example_questions
 from services.agent_client import AgentClient
 from services.change_impact_client import ChangeImpactClient
+from services.demo_cases import load_demo_cases
 from services.rag_client import RAGClient, ServiceError
+from services.session_guard import LLMSessionBudget
 
 
 st.set_page_config(page_title="版本可信研发知识与变更审查系统", page_icon="📄", layout="wide")
@@ -206,15 +211,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-@st.cache_resource
-def clients(config: DemoConfig):
-    return (
-        RAGClient(config.rag_base_url, config.request_timeout_seconds),
-        AgentClient(config),
-        ChangeImpactClient(config),
-    )
-
-
 def technical_error(exc: Exception, *, pending_review_count: int | None = None) -> None:
     public = exc.public_message if isinstance(exc, ServiceError) else str(exc)
     technical = (
@@ -225,16 +221,46 @@ def technical_error(exc: Exception, *, pending_review_count: int | None = None) 
         technical, pending_review_count=pending_review_count
     )
     st.error(message or public or "操作失败。")
-    with st.expander("技术详情"):
-        if isinstance(exc, ServiceError):
-            st.code(f"code={exc.code}\ndetail={exc.detail}")
-        else:
-            st.code(f"type={type(exc).__name__}\ndetail={exc}")
+    if not st.session_state.get("_public_demo", False):
+        with st.expander("技术详情"):
+            if isinstance(exc, ServiceError):
+                st.code(f"code={exc.code}\ndetail={exc.detail}")
+            else:
+                st.code(f"type={type(exc).__name__}\ndetail={exc}")
 
 
-config = DemoConfig.from_env()
+base_config = DemoConfig.from_env()
+st.session_state["_public_demo"] = base_config.is_public_demo
+session_id = st.session_state.setdefault("_demo_session_id", uuid.uuid4().hex)
+demo_cases = load_demo_cases()
+selected_case_id = st.selectbox(
+    "演示案例",
+    list(demo_cases),
+    format_func=lambda value: demo_cases[value].title,
+    key="demo_case_selector",
+)
+if st.session_state.get("_active_demo_case") != selected_case_id:
+    for state_key in (
+        "v4_change_result", "rag_result", "version_diff", "workflow_result",
+        "template_record", "uploaded_digest",
+    ):
+        st.session_state.pop(state_key, None)
+    st.session_state["_active_demo_case"] = selected_case_id
+config = base_config.for_session(session_id, selected_case_id)
+selected_case = demo_cases[selected_case_id]
 document_names = document_display_names()
-rag, agent, change_impact = clients(config)
+rag = RAGClient(
+    config.rag_base_url,
+    config.request_timeout_seconds,
+    session_id=session_id,
+    retry_limit=config.rag_retry_limit,
+)
+agent = AgentClient(config)
+change_impact = ChangeImpactClient(config, selected_case)
+budget = st.session_state.get("_llm_budget")
+if not isinstance(budget, LLMSessionBudget) or budget.limit != config.max_llm_calls_per_session:
+    budget = LLMSessionBudget(config.max_llm_calls_per_session)
+    st.session_state["_llm_budget"] = budget
 try:
     rag_health = rag.health()
 except Exception:
@@ -256,6 +282,12 @@ render_about(artifact_status)
 
 st.title("版本可信研发知识与变更审查系统")
 st.caption("面向软件研发变更：只使用允许版本的资料，追溯引用依据，审查局部修改，并安全发布新的文档版本。")
+st.caption(selected_case.description)
+if config.is_public_demo:
+    st.info(
+        "**Public Demo** · 所有研发资料均为合成数据；Session 操作是临时的，"
+        "免费服务可能存在首次访问冷启动。本原型不代表生产部署。"
+    )
 
 overview_tab, versions_tab, rag_tab, change_tab, trace_tab, evaluation_tab, agent_tab = st.tabs([
     "项目概览",
@@ -378,12 +410,28 @@ with rag_tab:
     else:
         if not config.online_generation_allowed:
             st.warning("当前 Data 未标记为安全数据，已禁用可能调用在线模型的 RAG 问答。")
+        budget_exhausted = config.is_public_demo and budget.remaining == 0
+        if config.is_public_demo:
+            st.caption(f"本 Session 剩余在线模型调用额度：{budget.remaining}")
+            if budget_exhausted:
+                st.warning("公共 Demo 调用额度已用完，本次请求已停止，不会返回假结果。")
         if st.button(
             "生成回答", type="primary",
-            disabled=not bool(rag_health) or not config.online_generation_allowed or not scope_valid,
+            disabled=(
+                not bool(rag_health)
+                or not config.online_generation_allowed
+                or not scope_valid
+                or budget_exhausted
+            ),
             key="query_button",
         ):
             try:
+                if config.is_public_demo and not budget.reserve():
+                    raise ServiceError(
+                        "公共 Demo 调用额度已用完，本次请求已停止。",
+                        "MAX_LLM_CALLS_PER_SESSION",
+                        "LLM_BUDGET_EXHAUSTED",
+                    )
                 with st.spinner("正在生成 RAG 回答……"):
                     st.session_state.rag_result = {
                         "mode": mode, "scope": dict(scope),
@@ -456,7 +504,12 @@ with rag_tab:
                         st.json(row)
 
     if not rag_health:
-        st.info("启动提示：请先启动本地 RAG 服务，再刷新页面。")
+        if config.is_public_demo:
+            st.info("公共免费演示后端可能正在启动，请稍后重试。")
+            if st.button("重新连接", key="reconnect_backend"):
+                st.rerun()
+        else:
+            st.info("启动提示：请先启动本地 RAG 服务，再刷新页面。")
 
 with agent_tab:
     st.markdown("### 扩展能力：按模板起草文档")
@@ -622,9 +675,11 @@ with agent_tab:
 with change_tab:
     st.markdown("### 研发文档变更影响分析与人工审核")
     st.markdown(
-        "**当前组织：** demo_company_a　　**当前项目：** PAYMENT　　"
+        f"**当前组织：** {selected_case.organization_id}　　"
+        f"**当前项目：** {selected_case.project_id}　　"
         "**数据：** 完全合成"
     )
+    st.caption(f"{selected_case.title} · {selected_case.description}")
     st.markdown(
         '<div class="boundary">需求版本变化 → 影响分析 → 引用依据 → 修改建议 → '
         '人工审核 → 候选版本 → 安全发布</div>',
@@ -632,7 +687,7 @@ with change_tab:
     )
     change_status = change_impact.status()
     if not rag_health:
-        st.info("请先启动启用了 V4 版本存储的本地 RAG 服务；页面其余功能不受影响。")
+        st.info("RAG 版本服务暂不可用；页面说明与案例信息仍可查看。")
     if st.button(
         "准备合成变更任务",
         type="primary",
@@ -736,7 +791,7 @@ with change_tab:
             st.download_button(
                 "下载候选版本文档",
                 data=Path(candidate_path).read_bytes(),
-                file_name="system_design_v2_candidate.docx",
+                file_name=f"{selected_case.candidate_version_id}_candidate.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 key=f"v4_download_{state['task_id']}",
             )
@@ -746,6 +801,7 @@ with trace_tab:
 
 with evaluation_tab:
     render_evaluation(load_evaluation_report())
+    render_cross_case_evaluation(load_cross_case_report())
 
 st.divider()
 st.caption("研发资料 → 版本治理 → 可信检索 → 变更影响 → 修改审核 → 候选版本 → 安全发布")

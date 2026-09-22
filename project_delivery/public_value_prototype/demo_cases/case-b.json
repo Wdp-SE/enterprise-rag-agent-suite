@@ -1,0 +1,29 @@
+{
+  "case_id": "case-b",
+  "title": "Case B：审计日志留存周期变更",
+  "description": "日志在线保存周期由 7 天调整为 30 天，用于验证同一流程可处理结构不同的变更。",
+  "organization_id": "demo_company_b",
+  "organization_name": "远岚研发中心（虚构）",
+  "project_id": "AUDIT",
+  "data_root": "project_delivery/public_value_prototype/demo_cases/case_b",
+  "baseline_documents": [
+    "audit_requirements_v1.docx",
+    "audit_requirements_v2.docx",
+    "audit_design_v1.docx",
+    "audit_test_cases_v1.docx",
+    "audit_runbook_v1.docx"
+  ],
+  "changed_external_identifier": "REQ-071",
+  "requirement_old_version_id": "audit-requirements-v1",
+  "requirement_new_version_id": "audit-requirements-v2",
+  "patch_target_external_identifier": "DES-031",
+  "patch_document_filename": "audit_design_v1.docx",
+  "patch_target_document_id": "audit_design",
+  "patch_base_version_id": "audit-design-v1",
+  "patch_target_section_id": "DESIGN",
+  "patch_proposed_content": "DES-031 面向 REQ-071：审计日志按日期分区，在线可检索保存 30 天，第 31 天起转入低成本归档并保留完整性校验。",
+  "patch_reason": "REQ-071 的在线留存周期与归档边界发生变化",
+  "candidate_version_id": "audit-design-v2",
+  "candidate_version_label": "V2.0",
+  "candidate_title": "审计日志系统设计说明书"
+}

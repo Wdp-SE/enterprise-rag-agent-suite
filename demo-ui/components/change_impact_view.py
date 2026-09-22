@@ -25,7 +25,7 @@ APPLY_STATUS_LABELS = {
 def render_workbench_summary(result: dict | None) -> None:
     st.markdown("### 需求变化")
     if not result:
-        st.caption("准备任务后展示 REQ-023 从 500 并发到 1000 并发的版本变化。")
+        st.caption("准备任务后展示所选案例的需求版本变化。")
     else:
         changes = result.get("changes", [])
         modified = [item for item in changes if item.get("change_type") != "UNCHANGED"]

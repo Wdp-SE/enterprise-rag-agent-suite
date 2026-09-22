@@ -17,6 +17,13 @@ EVALUATION_RESULTS = (
     / "evaluation_results.json"
 )
 
+CROSS_CASE_RESULTS = (
+    WORKSPACE_ROOT
+    / "project_delivery"
+    / "public_value_prototype"
+    / "cross_case_results.json"
+)
+
 TASK_STATUS_LABELS = {
     "PENDING": "待开始",
     "IMPACT_READY": "影响已识别",
@@ -223,6 +230,43 @@ def load_evaluation_report(path: str | Path = EVALUATION_RESULTS) -> dict[str, A
     if not isinstance(payload, dict):
         raise ValueError("evaluation result must be a JSON object")
     return payload
+
+
+def load_cross_case_report(path: str | Path = CROSS_CASE_RESULTS) -> dict[str, Any]:
+    source = Path(path)
+    if not source.is_file():
+        return {}
+    payload = json.loads(source.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("cross-case result must be a JSON object")
+    return payload
+
+
+def render_cross_case_evaluation(report: dict[str, Any]) -> None:
+    st.markdown("#### 跨案例复用验证")
+    if not report:
+        st.caption("尚未找到跨案例评测结果。")
+        return
+    st.caption(report.get("claim_boundary") or "仅报告两套合成案例的可重复验证结果。")
+    for case in report.get("cases") or []:
+        with st.expander(
+            f"{case.get('title') or case.get('case_id')} · "
+            f"{'通过' if case.get('passed') else '未通过'}",
+            expanded=True,
+        ):
+            checks = case.get("checks") or {}
+            st.write(
+                "　".join(
+                    f"{'✅' if passed else '⛔'} {name}"
+                    for name, passed in checks.items()
+                )
+            )
+            metrics = case.get("metrics") or {}
+            cols = st.columns(4)
+            cols[0].metric("影响候选", metrics.get("impact_candidates_found", 0))
+            cols[1].metric("已确认关系", metrics.get("confirmed_trace_count", 0))
+            cols[2].metric("疑似影响", metrics.get("suggested_impact_count", 0))
+            cols[3].metric("LLM 调用", metrics.get("llm_calls", 0))
 
 
 def render_overview(catalog: list[dict], result: dict | None) -> None:

@@ -1,0 +1,19 @@
+{
+  "classification": "FULLY_SYNTHETIC",
+  "organization_id": "demo_company_b",
+  "organization_name": "远岚研发中心（虚构）",
+  "project_id": "AUDIT",
+  "documents": [
+    "audit_requirements_v1.docx",
+    "audit_requirements_v2.docx",
+    "audit_design_v1.docx",
+    "audit_test_cases_v1.docx",
+    "audit_runbook_v1.docx"
+  ],
+  "change": "日志在线保存周期由 7 天调整为 30 天",
+  "confirmed_trace_targets": [
+    "DES-031",
+    "TC-207"
+  ],
+  "suggested_impact_target": "OPS-031"
+}

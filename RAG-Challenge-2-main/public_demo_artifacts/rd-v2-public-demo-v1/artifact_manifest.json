@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "artifact_id": "rd-v2-public-demo-v1",
+  "status": "COMPLETE",
+  "created_at": "2026-09-22T00:00:00+00:00",
+  "corpus_version": "public-synthetic-two-case/1.0",
+  "source_hashes": [],
+  "canonical_pdf_hashes": [],
+  "embedding_representation": "SECTION_PATH",
+  "embedding_model": "deterministic-hash-ngrams",
+  "embedding_model_revision": "public-demo-v1",
+  "embedding_dimension": 128,
+  "query_prefix": "",
+  "chunk_count": 11,
+  "embedding_count": 11,
+  "faiss_vector_count": 11,
+  "faiss_index_type": "IndexFlatIP",
+  "retrieval_policy_version": "rd-v2-retrieval-final-v1.0",
+  "artifacts": {
+    "corpus_manifest": {
+      "path": "public_demo_artifacts/rd-v2-public-demo-v1/corpus_manifest.json",
+      "sha256": "709ec8a49125f2ad3d17d1489e2b310c7d747e6262e554746b742ec29a2acd70",
+      "bytes": 159
+    },
+    "structure_sidecar_manifest": {
+      "path": "public_demo_artifacts/rd-v2-public-demo-v1/structure_sidecar_manifest.json",
+      "sha256": "a561b6edc61f35ddf479ba74c024e4158fa995e0047d8d7adfa17d747d3ebd10",
+      "bytes": 119
+    },
+    "chunk_artifact": {
+      "path": "public_demo_artifacts/rd-v2-public-demo-v1/child_chunks.jsonl",
+      "sha256": "7f244e6116c542cfd2cb93420873624c91bd86845737c41f480dfba5ec46478d",
+      "bytes": 6260
+    },
+    "embedding_artifact": {
+      "path": "public_demo_artifacts/rd-v2-public-demo-v1/embeddings.npy",
+      "sha256": "57ff4655e48b6109f6eba21d316720b39919c8c1c391f315f407516647c32de4",
+      "bytes": 5760
+    },
+    "faiss_index": {
+      "path": "public_demo_artifacts/rd-v2-public-demo-v1/child_vectors.faiss",
+      "sha256": "fabce291ef1b416b3ba49eaf66ed0ad467681881c3e965f2787d3d92e9c365f7",
+      "bytes": 5677
+    },
+    "retrieval_policy": {
+      "path": "public_demo_artifacts/rd-v2-public-demo-v1/retrieval_policy.json",
+      "sha256": "bb2d37d23b4a6f4ed146c7410f64332515261d53c32d0d380ed9e108707210ce",
+      "bytes": 297
+    }
+  },
+  "body_text_included": true,
+  "online_models_called": false,
+  "classification": "FULLY_SYNTHETIC",
+  "demo_cases": [
+    "case-a",
+    "case-b"
+  ]
+}

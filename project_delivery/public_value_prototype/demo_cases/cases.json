@@ -1,0 +1,4 @@
+{
+  "schema_version": "public-demo-cases-v1",
+  "cases": ["case-a.json", "case-b.json"]
+}

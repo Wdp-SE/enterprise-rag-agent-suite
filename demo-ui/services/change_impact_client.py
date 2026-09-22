@@ -1,4 +1,4 @@
-"""UI adapter for the synthetic V4 engineering change review workflow."""
+"""UI adapter for data-driven synthetic engineering change cases."""
 
 from __future__ import annotations
 
@@ -6,22 +6,19 @@ import hashlib
 import json
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 
 from docx import Document
 
-from config import AGENT_ROOT, WORKSPACE_ROOT, DemoConfig
+from config import AGENT_ROOT, DemoConfig
+from services.demo_cases import DemoCase, load_demo_cases
 from services.rag_client import ServiceError
 
 
-DEMO_ROOT = WORKSPACE_ROOT / "project_delivery" / "v4_change_impact_review" / "demo_data"
-INVENTORY_PATH = DEMO_ROOT / "engineering_inventory.json"
-
-
 class ChangeImpactClient:
-    def __init__(self, config: DemoConfig):
+    def __init__(self, config: DemoConfig, demo_case: DemoCase | None = None):
         self.config = config
+        self.demo_case = demo_case or load_demo_cases()[config.demo_case_id]
         if str(AGENT_ROOT) not in sys.path:
             sys.path.insert(0, str(AGENT_ROOT))
         from app.change_impact_review import ChangeImpactReviewFacade
@@ -30,29 +27,33 @@ class ChangeImpactClient:
         self.rag = HTTPRetrieveClient(
             config.rag_base_url,
             timeout=config.request_timeout_seconds,
-            retry_limit=0,
+            retry_limit=config.rag_retry_limit,
+            session_id=config.session_id,
         )
         self.facade = ChangeImpactReviewFacade(
-            config.runtime_root / "v4",
+            config.runtime_root / "change-review",
             active_version_for_document=self._active_version,
             version_client=self.rag,
         )
 
     def status(self) -> dict[str, Any]:
         return {
-            "ready": INVENTORY_PATH.is_file(),
-            "profile": "demo_company_a",
-            "project": "PAYMENT",
+            "ready": self.demo_case.inventory_path.is_file(),
+            "case_id": self.demo_case.case_id,
+            "case_title": self.demo_case.title,
+            "description": self.demo_case.description,
+            "profile": self.demo_case.organization_id,
+            "project": self.demo_case.project_id,
             "classification": "FULLY_SYNTHETIC",
         }
 
     def _inventory(self) -> dict:
         try:
-            payload = json.loads(INVENTORY_PATH.read_text(encoding="utf-8"))
+            payload = json.loads(self.demo_case.inventory_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
-            raise ServiceError("V4 合成资料清单不可用。", str(exc), "V4_FIXTURE_MISSING") from exc
+            raise ServiceError("合成资料清单不可用。", str(exc), "CASE_FIXTURE_MISSING") from exc
         if payload.get("schema_version") != "v4-engineering-inventory-v1":
-            raise ServiceError("V4 合成资料清单版本不匹配。", "schema mismatch", "V4_FIXTURE_INVALID")
+            raise ServiceError("合成资料清单版本不匹配。", "schema mismatch", "CASE_FIXTURE_INVALID")
         return payload
 
     def _version_documents(self) -> list[dict]:
@@ -61,8 +62,7 @@ class ChangeImpactClient:
     def _active_version(self, document_id: str) -> str | None:
         for document in self._version_documents():
             if document.get("document_id") == document_id:
-                active = document.get("active_version") or {}
-                return active.get("version_id")
+                return (document.get("active_version") or {}).get("version_id")
         return None
 
     def _ensure_seeded(self, inventory: dict) -> None:
@@ -70,38 +70,37 @@ class ChangeImpactClient:
             catalog = self._version_documents()
         except Exception as exc:
             raise ServiceError(
-                "V4 版本服务未启用，请按启动文档设置 RD_V4_VERSION_STORE_ROOT 后重启 RAG。",
+                "版本服务未启用，请配置候选版本存储后重启 RAG。",
                 str(exc),
-                "V4_VERSION_SERVICE_UNAVAILABLE",
+                "VERSION_SERVICE_UNAVAILABLE",
             ) from exc
         known_versions = {
             version["version_id"]
             for document in catalog
             for version in document.get("versions", [])
         }
-        profile = inventory["profile"]
         for record in inventory["documents"]:
             version_id = record["version_id"]
             if version_id in known_versions:
                 continue
-            source = DEMO_ROOT / record["filename"]
+            source = self.demo_case.data_root / record["filename"]
             built = self.rag.build_candidate_version(
                 document_id=record["document_id"],
-                project_id="PAYMENT",
+                project_id=self.demo_case.project_id,
                 document_type=record["document_type"],
                 title=record["title"],
                 version_id=version_id,
                 version_label=record["version_label"],
                 source_bytes=source.read_bytes(),
                 source_name=record["filename"],
-                profile=profile,
+                profile=inventory["profile"],
                 expected_contents=[],
             )
             if built.get("status") == "FAILED":
                 raise ServiceError(
                     "合成文档版本构建失败，旧有效版本保持不变。",
                     str(built.get("failure_reason")),
-                    "V4_SEED_BUILD_FAILED",
+                    "SEED_BUILD_FAILED",
                 )
             if built.get("status") == "VALIDATED":
                 activated = self.rag.activate_candidate_version(str(built["candidate_id"]))
@@ -109,7 +108,7 @@ class ChangeImpactClient:
                     raise ServiceError(
                         "合成文档版本激活失败，旧有效版本保持不变。",
                         str(activated.get("failure_reason")),
-                        "V4_SEED_ACTIVATION_FAILED",
+                        "SEED_ACTIVATION_FAILED",
                     )
             known_versions.add(version_id)
 
@@ -122,23 +121,25 @@ class ChangeImpactClient:
         from app.change_impact_review import PatchCandidate, PatchOperation
         from app.document_workflow.configuration import DocumentWorkflowConfig
         from app.document_workflow.evidence_models import Evidence
-        from app.document_workflow.evidence_selection import (
-            EvidenceSelectionPolicy,
-            EvidenceSelector,
-        )
+        from app.document_workflow.evidence_selection import EvidenceSelectionPolicy, EvidenceSelector
         from app.document_workflow.scope import WorkflowScope
 
+        case = self.demo_case
         inventory = self._inventory()
         self._ensure_seeded(inventory)
         items = inventory["items"]
-        old_items = [item for item in items if item["version_id"] == "requirements-v1"]
-        new_items = [item for item in items if item["version_id"] == "requirements-v2"]
+        old_items = [item for item in items if item["version_id"] == case.requirement_old_version_id]
+        new_items = [item for item in items if item["version_id"] == case.requirement_new_version_id]
         changes = self.rag.diff_engineering_items(old_items, new_items)["changes"]
         changed = next(
-            item for item in new_items if item["external_identifier"] == inventory["changed_external_identifier"]
+            item for item in new_items
+            if item["external_identifier"] == case.changed_external_identifier
         )
-        active_items = [item for item in items if item["version_id"] != "requirements-v1"]
-        scope = {"project_ids": ["PAYMENT"], "active_only": True}
+        active_items = [
+            item for item in items
+            if item["version_id"] != case.requirement_old_version_id
+        ]
+        scope = {"project_ids": [case.project_id], "active_only": True}
         dense = self.rag.search_candidate_versions(changed["content"], scope, top_k=20)["results"]
         by_location = {
             (item["document_id"], item["version_id"], item["section_id"]): item
@@ -149,18 +150,14 @@ class ChangeImpactClient:
         evidence_objects: dict[str, Evidence] = {}
         for row in dense:
             item = by_location.get((row["document_id"], row["version_id"], row["section_id"]))
-            if (
-                item is None
-                or item["item_id"] == changed["item_id"]
-                or item["document_id"] == changed["document_id"]
-            ):
+            if item is None or item["item_id"] == changed["item_id"] or item["document_id"] == changed["document_id"]:
                 continue
             if item["item_id"] not in dense_ids:
                 dense_ids.append(item["item_id"])
             evidence = Evidence(
                 title=row.get("document_title") or row["document_id"],
                 content=row["text"],
-                organization="星海软件科技有限公司（虚构）",
+                organization=case.organization_name,
                 source_type="RAG",
                 document_id=row["document_id"],
                 project_id=row["project_id"],
@@ -185,16 +182,20 @@ class ChangeImpactClient:
             dense_item_ids=dense_ids,
             evidence_by_item=evidence_by_item,
         )["impacts"]
+        version_record = next(
+            record for record in inventory["documents"]
+            if record["version_id"] == case.requirement_new_version_id
+        )
         requirement_evidence = Evidence(
-            title="需求规格说明书",
+            title=version_record["title"],
             content=changed["content"],
-            organization="星海软件科技有限公司（虚构）",
+            organization=case.organization_name,
             source_type="RAG",
             document_id=changed["document_id"],
             project_id=changed["project_id"],
             document_type=changed["item_type"],
             version_id=changed["version_id"],
-            version_label="V2.0",
+            version_label=version_record["version_label"],
             version_status="ACTIVE",
             chunk_id=f"{changed['version_id']}:{changed['section_id']}:{changed['item_id']}",
             query=changed["external_identifier"],
@@ -205,55 +206,54 @@ class ChangeImpactClient:
         )
         assert requirement_evidence.evidence_id and requirement_evidence.content_hash
         evidence_objects[requirement_evidence.evidence_id] = requirement_evidence
-        selection = EvidenceSelector(
-            EvidenceSelectionPolicy(
-                DocumentWorkflowConfig.from_env().max_evidence_count
-            )
-        ).select(
+        maximum = DocumentWorkflowConfig.from_env().max_evidence_count
+        selection = EvidenceSelector(EvidenceSelectionPolicy(maximum)).select(
             list(evidence_objects.values()),
             WorkflowScope.from_dict(scope),
             required_evidence_ids=(requirement_evidence.evidence_id,),
         )
-        selected_evidence_ids = {item.evidence_id for item in selection.selected}
+        selected_evidence_ids = {
+            item.evidence_id for item in selection.selected if item.evidence_id
+        }
         if requirement_evidence.evidence_id not in selected_evidence_ids:
             raise RuntimeError("critical requirement Evidence was not selected")
-        design_source = DEMO_ROOT / "system_design_v1.docx"
-        design_document = Document(design_source)
+
+        patch_source = case.data_root / case.patch_document_filename
+        patch_document = Document(patch_source)
         paragraph_index = next(
-            index for index, paragraph in enumerate(design_document.paragraphs)
-            if "DES-014" in paragraph.text
+            index for index, paragraph in enumerate(patch_document.paragraphs)
+            if case.patch_target_external_identifier in paragraph.text
         )
-        original = design_document.paragraphs[paragraph_index].text
-        proposed = (
-            "DES-014 面向 REQ-023：批处理服务按最大并发 1000 配置连接池，"
-            "支持 200 MB/s 吞吐目标，并通过异步任务状态返回结果。"
-        )
+        original = patch_document.paragraphs[paragraph_index].text
         patch = PatchCandidate.create(
-            target_document_id="system_design",
-            base_version_id="design-v1",
-            target_section_id="DESIGN",
+            target_document_id=case.patch_target_document_id,
+            base_version_id=case.patch_base_version_id,
+            target_section_id=case.patch_target_section_id,
             target_anchor=f"paragraph:{paragraph_index}",
             operation=PatchOperation.REPLACE_PARAGRAPH,
             original_content=original,
-            proposed_content=proposed,
-            reason="REQ-023 的并发、吞吐量和接口模式发生变化",
+            proposed_content=case.patch_proposed_content,
+            reason=case.patch_reason,
             evidence_ids=[requirement_evidence.evidence_id],
-            evidence_content_hashes={requirement_evidence.evidence_id: requirement_evidence.content_hash},
+            evidence_content_hashes={
+                requirement_evidence.evidence_id: requirement_evidence.content_hash
+            },
             scope_fingerprint=self._scope_fingerprint(scope),
         )
         state = self.facade.create_task(
-            organization_id="demo_company_a",
-            project_id="PAYMENT",
+            organization_id=case.organization_id,
+            project_id=case.project_id,
             scope=scope,
-            base_document_id="system_design",
-            base_version_id="design-v1",
-            source=design_source,
+            base_document_id=case.patch_target_document_id,
+            base_version_id=case.patch_base_version_id,
+            source=patch_source,
             impacts=impacts,
             patches=[patch],
             evidence=list(evidence_objects.values()),
             rag_calls=3,
         )
         return {
+            "case_id": case.case_id,
             "state": state.model_dump(mode="json"),
             "changes": changes,
             "items": {item["item_id"]: item for item in active_items},
@@ -263,10 +263,8 @@ class ChangeImpactClient:
             },
             "evidence_selection": {
                 **selection.stats.model_dump(),
-                "max_evidence_count": DocumentWorkflowConfig.from_env().max_evidence_count,
-                "selected_evidence_ids": sorted(
-                    item for item in selected_evidence_ids if item is not None
-                ),
+                "max_evidence_count": maximum,
+                "selected_evidence_ids": sorted(selected_evidence_ids),
             },
         }
 
@@ -293,7 +291,7 @@ class ChangeImpactClient:
         return state.model_dump(mode="json")
 
     def apply(self, task_id: str) -> dict:
-        current_version_id = self._active_version("system_design") or ""
+        current_version_id = self._active_version(self.demo_case.patch_target_document_id) or ""
         state, results = self.facade.apply_reviewed_patches(
             task_id, current_version_id=current_version_id
         )
@@ -306,15 +304,15 @@ class ChangeImpactClient:
         inventory = self._inventory()
         document_type = "系统设计说明书"
         for row in self._version_documents():
-            if row.get("document_id") == "system_design":
+            if row.get("document_id") == self.demo_case.patch_target_document_id:
                 document_type = str(row.get("document_type") or document_type)
                 break
         state = self.facade.finalize_candidate_version(
             task_id,
-            version_id="design-v2",
-            version_label="V2.0",
+            version_id=self.demo_case.candidate_version_id,
+            version_label=self.demo_case.candidate_version_label,
             document_type=document_type,
-            title="系统设计说明书",
+            title=self.demo_case.candidate_title,
             profile=inventory["profile"],
         )
         return state.model_dump(mode="json")

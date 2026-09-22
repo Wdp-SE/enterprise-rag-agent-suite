@@ -125,3 +125,18 @@ def test_v3_api_catalog_versions_diff_and_backward_compatible_retrieve(tmp_path)
         assert diff.status_code == 200
         assert diff.json()["summary"]["MODIFIED"] == 1
 
+
+
+def test_public_query_budget_requires_session_and_fails_closed(monkeypatch, tmp_path):
+    monkeypatch.setenv("APP_ENV", "public_demo")
+    monkeypatch.setenv("MAX_LLM_CALLS_PER_SESSION", "1")
+    runtime = _runtime(tmp_path)
+    with TestClient(create_app(runtime)) as client:
+        missing = client.post("/query", json={"question": "并发"})
+        assert missing.status_code == 400
+        headers = {"X-Demo-Session-ID": "session_12345678"}
+        first = client.post("/query", json={"question": "并发"}, headers=headers)
+        second = client.post("/query", json={"question": "并发"}, headers=headers)
+        assert first.status_code == 200
+        assert second.status_code == 429
+        assert second.json()["detail"] == "LLM_SESSION_BUDGET_EXHAUSTED"

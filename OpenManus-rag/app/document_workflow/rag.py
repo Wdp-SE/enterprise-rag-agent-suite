@@ -21,10 +21,24 @@ class RetrievalClient(Protocol):
 
 
 class HTTPRetrieveClient:
-    def __init__(self, base_url: str, timeout: float = 30.0, retry_limit: int = 0):
+    def __init__(
+        self,
+        base_url: str,
+        timeout: float = 30.0,
+        retry_limit: int = 0,
+        *,
+        session_id: str | None = None,
+    ):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.retry_limit = retry_limit
+        self.session_id = session_id
+
+    def _request_options(self) -> dict:
+        options: dict = {"timeout": self.timeout}
+        if self.session_id:
+            options["headers"] = {"X-Demo-Session-ID": self.session_id}
+        return options
 
     def retrieve(self, query: str, top_k: int, scope: dict | None = None) -> dict:
         payload: dict | None = None
@@ -33,7 +47,7 @@ class HTTPRetrieveClient:
                 request_payload: dict[str, object] = {"query": query, "top_k": top_k}
                 if scope is not None:
                     request_payload["scope"] = scope
-                response = httpx.post(f"{self.base_url}/retrieve", json=request_payload, timeout=self.timeout)
+                response = httpx.post(f"{self.base_url}/retrieve", json=request_payload, **self._request_options())
                 response.raise_for_status()
                 payload = response.json()
                 break
@@ -57,7 +71,7 @@ class HTTPRetrieveClient:
         return payload
 
     def _post_engineering(self, endpoint: str, payload: dict, result_key: str) -> dict:
-        response = httpx.post(f"{self.base_url}{endpoint}", json=payload, timeout=self.timeout)
+        response = httpx.post(f"{self.base_url}{endpoint}", json=payload, **self._request_options())
         response.raise_for_status()
         result = response.json()
         if not isinstance(result, dict) or not isinstance(result.get(result_key), list):
@@ -141,7 +155,7 @@ class HTTPRetrieveClient:
                 "profile": profile,
                 "expected_contents": expected_contents,
             },
-            timeout=self.timeout,
+            **self._request_options(),
         )
         response.raise_for_status()
         payload = response.json()
@@ -153,7 +167,7 @@ class HTTPRetrieveClient:
         response = httpx.post(
             f"{self.base_url}/engineering/candidates/{candidate_id}/activate",
             json={},
-            timeout=self.timeout,
+            **self._request_options(),
         )
         response.raise_for_status()
         payload = response.json()
@@ -163,7 +177,8 @@ class HTTPRetrieveClient:
 
     def candidate_version_documents(self) -> dict:
         response = httpx.get(
-            f"{self.base_url}/engineering/versions/documents", timeout=self.timeout
+            f"{self.base_url}/engineering/versions/documents",
+            **self._request_options(),
         )
         response.raise_for_status()
         payload = response.json()
@@ -190,7 +205,7 @@ class HTTPRetrieveClient:
         )
 
     def active_versions(self) -> dict[str, str]:
-        response = httpx.get(f"{self.base_url}/documents", timeout=self.timeout)
+        response = httpx.get(f"{self.base_url}/documents", **self._request_options())
         response.raise_for_status()
         payload = response.json()
         documents = payload.get("documents") if isinstance(payload, dict) else None
