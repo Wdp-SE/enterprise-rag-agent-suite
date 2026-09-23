@@ -3,15 +3,23 @@
 from __future__ import annotations
 
 import hashlib
+import inspect
+from html import escape
 import uuid
 from pathlib import Path
 
 import streamlit as st
 
 from components.business_messages import business_failure_message
-from components.change_impact_view import render_workbench_summary
+from components.change_impact_view import (
+    render_workbench_analysis,
+    render_workbench_review,
+    render_workbench_publication,
+)
+from components.product_experience import build_status_cards, build_workflow_progress
 from components.evidence_view import render_query_sources, render_retrieval_results
 from components.prototype_final_view import (
+    TASK_STATUS_LABELS,
     load_cross_case_report,
     load_evaluation_report,
     render_cross_case_evaluation,
@@ -31,7 +39,7 @@ from services.rag_client import RAGClient, ServiceError
 from services.session_guard import LLMSessionBudget
 
 
-st.set_page_config(page_title="版本可信研发知识与变更审查系统", page_icon="📄", layout="wide")
+st.set_page_config(page_title="版本可信研发知识与变更审查系统", page_icon="📄", layout="wide", initial_sidebar_state="collapsed")
 st.markdown("""
 <style>
   :root {
@@ -47,12 +55,10 @@ st.markdown("""
 
   .stApp {
     color: var(--ink-900);
-    background:
-      radial-gradient(circle at 94% 3%, rgba(74, 144, 226, 0.13), transparent 26rem),
-      linear-gradient(180deg, #f9fbfe 0%, var(--canvas) 38%, #f7f9fc 100%);
+    background: var(--canvas);
   }
 
-  [data-testid="stHeader"] {background: rgba(249, 251, 254, 0.82); backdrop-filter: blur(12px);}
+  [data-testid="stHeader"] {background: #ffffff;}
   [data-testid="stToolbar"], #MainMenu, footer {visibility: hidden;}
 
   .block-container {max-width: 1260px; padding: 2.35rem 2.4rem 4.5rem;}
@@ -72,7 +78,7 @@ st.markdown("""
     height: 0.24rem;
     margin-top: 0.85rem;
     border-radius: 999px;
-    background: linear-gradient(90deg, var(--brand-600), #48a9e6);
+    background: var(--brand-600);
   }
 
   h2, h3, h4 {color: var(--brand-950); letter-spacing: -0.018em;}
@@ -80,7 +86,7 @@ st.markdown("""
   [data-testid="stCaptionContainer"], .stCaption {color: var(--ink-600);}
 
   [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #f8fbff 0%, #edf4fb 100%);
+    background: #f7f9fc;
     border-right: 1px solid var(--line);
   }
   [data-testid="stSidebar"] > div:first-child {padding-top: 1.2rem;}
@@ -104,7 +110,7 @@ st.markdown("""
   [data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {
     color: var(--brand-800);
     background: #ffffff;
-    box-shadow: 0 5px 16px rgba(34, 72, 110, 0.10);
+    box-shadow: none;
   }
   [data-testid="stTabs"] [data-baseweb="tab-highlight"],
   [data-testid="stTabs"] [data-baseweb="tab-border"] {display: none;}
@@ -113,11 +119,11 @@ st.markdown("""
     margin: 0.35rem 0 1.15rem;
     padding: 1rem 1.15rem;
     color: #24415f;
-    background: linear-gradient(135deg, #eef6ff 0%, #f8fbff 100%);
+    background: #f5f9ff;
     border: 1px solid #cfe3f7;
     border-left: 0.32rem solid var(--brand-600);
     border-radius: 0.85rem;
-    box-shadow: 0 7px 20px rgba(36, 117, 199, 0.07);
+    box-shadow: none;
   }
 
   [data-testid="stMetric"] {
@@ -126,7 +132,7 @@ st.markdown("""
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 0.9rem;
-    box-shadow: 0 6px 20px rgba(31, 63, 96, 0.06);
+    box-shadow: none;
   }
   [data-testid="stMetricLabel"] {color: #607086;}
   [data-testid="stMetricValue"] {color: var(--brand-950); font-size: 1.55rem; font-weight: 750;}
@@ -137,10 +143,10 @@ st.markdown("""
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 0.85rem;
-    box-shadow: 0 5px 18px rgba(31, 63, 96, 0.045);
+    box-shadow: none;
   }
   [data-testid="stExpander"] summary {min-height: 3rem; color: #2a415a; font-weight: 640;}
-  [data-testid="stAlert"] {border-radius: 0.8rem; border-width: 1px; box-shadow: 0 5px 16px rgba(31, 63, 96, 0.045);}
+  [data-testid="stAlert"] {border-radius: 0.6rem; border-width: 1px; box-shadow: none;}
 
   [data-testid="stTextArea"] textarea,
   [data-testid="stTextInput"] input,
@@ -165,19 +171,19 @@ st.markdown("""
     border-radius: 0.7rem;
     border-color: #c7d6e6;
     font-weight: 680;
-    box-shadow: 0 4px 12px rgba(31, 63, 96, 0.06);
+    box-shadow: none;
     transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
   }
   .stButton > button:hover, .stDownloadButton > button:hover {
     border-color: var(--brand-600);
-    transform: translateY(-1px);
-    box-shadow: 0 7px 16px rgba(31, 92, 150, 0.12);
+    transform: none;
+    box-shadow: none;
   }
   .stButton > button[kind="primary"] {
     color: #ffffff;
     border: 0;
-    background: linear-gradient(135deg, #1f67ad 0%, #2f86d7 100%);
-    box-shadow: 0 7px 18px rgba(36, 117, 199, 0.22);
+    background: var(--brand-600);
+    box-shadow: none;
   }
 
   [data-testid="stMarkdownContainer"] p,
@@ -185,27 +191,59 @@ st.markdown("""
   hr {margin: 1.45rem 0 !important; border-color: #e1e8f0 !important;}
   code {color: #275a8d; background: #edf4fb; border-radius: 0.35rem;}
 
-  .product-flow {
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0.65rem 0 0.35rem;
+  }
+  .status-item {
+    padding: 0.85rem 0.9rem;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 0.65rem;
+  }
+  .status-item small {display: block; color: var(--ink-600);}
+  .status-item strong {
+    display: block;
+    margin-top: 0.3rem;
+    color: var(--brand-950);
+    font-size: 1.22rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .st-key-mobile_quick_start {display: none;}
+  .review-path {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 0.35rem;
-    margin: 0.55rem 0 1.5rem;
-    padding: 1rem 1.1rem;
-    color: #173b50;
-    background: #edf5f6;
-    border-left: 0.35rem solid #167d8d;
+    gap: 0.7rem;
+    margin: 0.5rem 0 1.5rem;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
   }
-  .product-flow span::before, .product-flow b + span::before {
-    content: "›";
-    margin-right: 0.35rem;
-    color: #6c8790;
+  .review-path span {
+    flex: 1 1 9rem;
+    padding: 0.45rem 0.6rem;
+    border-left: 0.18rem solid var(--brand-600);
+    color: var(--brand-950);
+    font-weight: 620;
   }
-
+  .stButton > button:focus-visible,
+  .stDownloadButton > button:focus-visible {
+    outline: 2px solid var(--brand-600);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stButton > button, .stDownloadButton > button {transition: none;}
+  }
   @media (max-width: 760px) {
     .block-container {padding: 1.35rem 1rem 3rem;}
     [data-testid="stTabs"] button[data-baseweb="tab"] {padding: 0 0.7rem;}
     h1 {font-size: 1.85rem !important;}
+    .st-key-mobile_quick_start {display: block; margin: 0.6rem 0 1rem;}
+    .status-grid {grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem;}
+    .status-item:last-child {grid-column: 1 / -1;}
   }
 </style>
 """, unsafe_allow_html=True)
@@ -233,12 +271,10 @@ base_config = DemoConfig.from_env()
 st.session_state["_public_demo"] = base_config.is_public_demo
 session_id = st.session_state.setdefault("_demo_session_id", uuid.uuid4().hex)
 demo_cases = load_demo_cases()
-selected_case_id = st.selectbox(
-    "演示案例",
-    list(demo_cases),
-    format_func=lambda value: demo_cases[value].title,
-    key="demo_case_selector",
-)
+selected_case_id = st.session_state.get("demo_case_selector", "case-a")
+if selected_case_id not in demo_cases:
+    selected_case_id = "case-a"
+    st.session_state["demo_case_selector"] = selected_case_id
 if st.session_state.get("_active_demo_case") != selected_case_id:
     for state_key in (
         "v4_change_result", "rag_result", "version_diff", "workflow_result",
@@ -280,31 +316,97 @@ agent_status = agent.status()
 render_sidebar_status(rag_health, artifact_status, agent_status, config.demo_data_classification)
 render_about(artifact_status)
 
-st.title("版本可信研发知识与变更审查系统")
-st.caption("面向软件研发变更：只使用允许版本的资料，追溯引用依据，审查局部修改，并安全发布新的文档版本。")
-st.caption(selected_case.description)
-if config.is_public_demo:
-    st.info(
-        "**Public Demo** · 所有研发资料均为合成数据；Session 操作是临时的，"
-        "免费服务可能存在首次访问冷启动。本原型不代表生产部署。"
-    )
+def open_change_analysis() -> None:
+    if "on_change" in inspect.signature(st.tabs).parameters:
+        st.session_state["product_nav"] = "变更分析"
+    else:
+        st.session_state["_analysis_navigation_hint"] = True
+    st.session_state["_intro_dismissed"] = True
 
-overview_tab, versions_tab, rag_tab, change_tab, trace_tab, evaluation_tab, agent_tab = st.tabs([
-    "项目概览",
-    "文档与版本",
-    "可信检索与版本差异",
-    "变更影响与修改审核",
-    "执行轨迹",
-    "评测结果",
-    "扩展：文档起草",
-])
+
+st.title("版本可信研发知识与变更审查系统")
+st.write(
+    "面向软件研发变更场景，基于版本管理、引用依据和人工审核流程，"
+    "帮助团队发现需求变化影响并安全更新研发文档。"
+)
+
+nav_labels = [
+    "工作台", "变更分析", "修改审核", "版本发布",
+    "知识检索", "执行轨迹", "评测结果", "扩展工具",
+]
+if "on_change" in inspect.signature(st.tabs).parameters:
+    nav_tabs = st.tabs(nav_labels, key="product_nav", on_change="rerun")
+else:
+    nav_tabs = st.tabs(nav_labels)
+(
+    overview_tab, analysis_tab, review_tab, publish_tab,
+    rag_tab, trace_tab, evaluation_tab, agent_tab,
+) = nav_tabs
 
 with overview_tab:
-    render_overview(catalog_documents, st.session_state.get("v4_change_result"))
+    if st.session_state.get("_analysis_navigation_hint"):
+        st.info("请点击上方的“变更分析”标签，继续当前案例。")
+    if config.is_public_demo:
+        st.info("Public Demo：所有研发资料均为合成数据，用于展示版本可信检索与变更审查流程。")
+    with st.container(key="mobile_quick_start"):
+        st.button(
+            "开始一次变更审查", type="primary",
+            key="mobile_start_analysis", on_click=open_change_analysis,
+        )
+    cards = build_status_cards(
+        selected_case, catalog_documents, rag_health, artifact_status, agent_status
+    )
+    st.markdown("### 当前项目状态")
+    status_labels = (
+        ("当前项目", "project"),
+        ("当前需求版本", "current_version"),
+        ("研发文档", "document_count"),
+        ("文档版本", "version_count"),
+        ("系统状态", "system_status"),
+    )
+    status_html = "".join(
+        '<div class="status-item"><small>' + label + '</small><strong>'
+        + escape(str(cards[key])) + '</strong></div>'
+        for label, key in status_labels
+    )
+    st.markdown(f'<div class="status-grid">{status_html}</div>', unsafe_allow_html=True)
+    if cards["current_version_id"] != "—":
+        st.caption(f"当前需求文档版本标识：{cards['current_version_id']}")
+    st.markdown("### 开始一次变更审查")
+    with st.container(border=True):
+        entry, quick_demo = st.columns([3, 2])
+        with entry:
+            st.markdown("**需求发生变化？选择案例后开始分析。**")
+            st.selectbox(
+                "选择案例",
+                list(demo_cases),
+                format_func=lambda value: demo_cases[value].title,
+                key="demo_case_selector",
+            )
+            st.caption(selected_case.description)
+            st.button("开始分析", type="primary", key="start_analysis", on_click=open_change_analysis)
+        with quick_demo:
+            st.markdown("**快速体验 Demo**")
+            st.caption("预计 3 分钟 · 版本变化、影响分析、引用依据、修改审核、安全发布。")
+            st.button("开始 Demo", key="start_demo", on_click=open_change_analysis)
 
-with versions_tab:
+    st.markdown("### 审查流程")
+    st.markdown(
+        '<div class="review-path"><span>① 检测需求变化</span>'
+        '<span>② 分析影响文档</span><span>③ 查看引用依据</span>'
+        '<span>④ 审核修改建议</span><span>⑤ 发布新版本</span></div>',
+        unsafe_allow_html=True,
+    )
+    if not st.session_state.get("_intro_dismissed", False):
+        st.info(
+            "建议体验流程：选择变更案例 → 查看影响分析 → 检查引用依据 → "
+            "审核局部修改 → 发布候选版本。"
+        )
+        if st.button("隐藏引导", key="dismiss_intro"):
+            st.session_state["_intro_dismissed"] = True
+            st.rerun()
+    st.divider()
     render_versions(catalog_documents)
-
 with rag_tab:
     st.markdown('<div class="boundary"><b>可信问答</b>只使用允许的文档版本；<b>引用检索</b>保留文档、章节、页码和版本来源。</div>', unsafe_allow_html=True)
     if catalog_documents:
@@ -675,24 +777,42 @@ with agent_tab:
             )
         render_downloads(result, agent.artifact_bytes)
 
-with change_tab:
-    st.markdown("### 研发文档变更影响分析与人工审核")
-    st.markdown(
+def render_review_progress(result: dict | None) -> None:
+    state = (result or {}).get("state") or {}
+    status = TASK_STATUS_LABELS.get(state.get("status"), "尚未开始")
+    st.markdown("#### 任务进度")
+    st.caption(f"任务：{state.get('task_id') or '尚未创建'}　|　状态：{status}")
+    symbols = {"已完成": "✓", "待人工审核": "◉", "待校验": "◉", "已阻断": "⛔"}
+    with st.container(border=True):
+        for label, step_status in build_workflow_progress(result):
+            st.write(f"{symbols.get(step_status, '○')} {label}：{step_status}")
+
+
+v4_result = st.session_state.get("v4_change_result")
+with analysis_tab:
+    st.markdown("### 本次变更")
+    st.write(
         f"**当前组织：** {selected_case.organization_id}　　"
         f"**当前项目：** {selected_case.project_id}　　"
         "**数据：** 完全合成"
     )
-    st.caption(f"{selected_case.title} · {selected_case.description}")
-    st.markdown(
-        '<div class="boundary">需求版本变化 → 影响分析 → 引用依据 → 修改建议 → '
-        '人工审核 → 候选版本 → 安全发布</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown(f"**{selected_case.title}**")
+    st.write(selected_case.description)
+    if v4_result:
+        affected = [
+            (v4_result.get("items") or {}).get(row.get("impacted_item_id"), {}).get("external_identifier")
+            for row in (v4_result.get("state") or {}).get("impacts") or []
+        ]
+        if affected:
+            st.caption("已发现影响目标：" + "、".join(str(item) for item in affected if item))
+    else:
+        st.caption("运行分析后，将展示受影响文档和可追溯的引用依据。")
+    render_review_progress(v4_result)
     change_status = change_impact.status()
     if not rag_health:
         st.info("RAG 版本服务暂不可用；页面说明与案例信息仍可查看。")
     if st.button(
-        "准备合成变更任务",
+        "运行变更分析",
         type="primary",
         disabled=not bool(rag_health) or not change_status["ready"],
         key="v4_prepare",
@@ -703,9 +823,14 @@ with change_tab:
             st.rerun()
         except Exception as exc:
             technical_error(exc)
+    render_workbench_analysis(v4_result)
 
-    v4_result = st.session_state.get("v4_change_result")
-    render_workbench_summary(v4_result)
+with review_tab:
+    st.markdown("### 修改审核")
+    render_review_progress(v4_result)
+    render_workbench_review(v4_result)
+    if not v4_result:
+        st.info("请先到“变更分析”运行分析，再审核局部修改。")
     if v4_result:
         state = v4_result["state"]
         patches = state.get("patches", [])
@@ -764,6 +889,14 @@ with change_tab:
                 except Exception as exc:
                     technical_error(exc)
 
+with publish_tab:
+    st.markdown("### 版本发布")
+    render_review_progress(v4_result)
+    render_workbench_publication(v4_result)
+    if not v4_result:
+        st.info("请先完成变更分析和人工审核。")
+    if v4_result:
+        state = v4_result["state"]
         apply_col, publish_col = st.columns(2)
         if apply_col.button(
             "应用已批准修改",

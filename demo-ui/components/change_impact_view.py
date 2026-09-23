@@ -22,7 +22,7 @@ APPLY_STATUS_LABELS = {
 }
 
 
-def render_workbench_summary(result: dict | None) -> None:
+def render_workbench_analysis(result: dict | None) -> None:
     st.markdown("### 需求变化")
     if not result:
         st.caption("准备任务后展示所选案例的需求版本变化。")
@@ -93,33 +93,58 @@ def render_workbench_summary(result: dict | None) -> None:
                         }
                     )
 
+
+def render_workbench_review(result: dict | None) -> None:
     st.markdown("### 修改前与修改建议")
     if not result:
-        st.caption("当前只修改指定段落，不进行整篇文档重写。")
-    else:
-        for patch in result["state"].get("patches", []):
-            before, after = st.columns(2)
-            before.markdown("**修改前**")
-            before.write(patch["original_content"])
-            after.markdown("**修改建议**")
-            after.write(patch["proposed_content"])
-            st.caption(
-                f"审核：{REVIEW_STATUS_LABELS.get(patch['review_status'], patch['review_status'])}"
-                f"　|　应用：{APPLY_STATUS_LABELS.get(patch['apply_status'], patch['apply_status'])}"
-                f"　|　基础版本：{patch['base_version_id']}"
-            )
-            st.write(f"修改原因：{patch['reason']}")
-            with st.expander("技术详情"):
-                st.json(
-                    {
-                        "patch_id": patch["patch_id"],
-                        "target_anchor": patch["target_anchor"],
-                        "operation": patch["operation"],
-                        "review_status": patch["review_status"],
-                        "apply_status": patch["apply_status"],
-                    }
-                )
+        st.caption("完成变更分析后，这里会显示待审核的局部修改与对应依据。")
+        return
 
+    evidence_by_id = result.get("evidence") or {}
+    for patch in result["state"].get("patches", []):
+        before, after, source = st.columns(3)
+        before.markdown("**修改前**")
+        before.write(patch["original_content"])
+        after.markdown("**建议修改**")
+        after.write(patch["proposed_content"])
+        source.markdown("**引用依据**")
+        linked = [
+            evidence_by_id[evidence_id]
+            for evidence_id in patch.get("evidence_ids") or []
+            if evidence_id in evidence_by_id
+        ]
+        if not linked:
+            source.caption("当前修改没有可展示的关联依据。")
+        for evidence in linked:
+            title = evidence.get("title") or evidence.get("document_id") or "研发文档"
+            version = evidence.get("version_label") or "当前有效版本"
+            section = " / ".join(evidence.get("section_path") or [])
+            page = evidence.get("page_number")
+            source.write(f"《{title}》 · {version}")
+            source.caption(
+                f"章节：{section or '—'}"
+                + (f"　|　第 {page} 页" if page else "")
+            )
+            with source.expander("查看依据片段"):
+                st.write(evidence.get("content") or "—")
+        st.caption(
+            f"审核：{REVIEW_STATUS_LABELS.get(patch['review_status'], patch['review_status'])}"
+            f"　|　应用：{APPLY_STATUS_LABELS.get(patch['apply_status'], patch['apply_status'])}"
+            f"　|　基础版本：{patch['base_version_id']}"
+        )
+        st.write(f"修改原因：{patch['reason']}")
+        with st.expander("技术详情"):
+            st.json(
+                {
+                    "patch_id": patch["patch_id"],
+                    "target_anchor": patch["target_anchor"],
+                    "operation": patch["operation"],
+                    "review_status": patch["review_status"],
+                    "apply_status": patch["apply_status"],
+                }
+            )
+
+def render_workbench_publication(result: dict | None) -> None:
     st.markdown("### 安全校验")
     if result:
         state = result["state"]
@@ -158,3 +183,10 @@ def render_workbench_summary(result: dict | None) -> None:
                 st.json(record)
     else:
         st.caption("批准的修改先生成候选版本；全部校验通过后才会安全发布。")
+
+
+def render_workbench_summary(result: dict | None) -> None:
+    """Compatibility wrapper for existing presentation callers."""
+    render_workbench_analysis(result)
+    render_workbench_review(result)
+    render_workbench_publication(result)
