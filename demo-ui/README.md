@@ -1,63 +1,61 @@
-# 企业研发文档 RAG 与审核工作流界面
+# 研发变更审查工作台（Streamlit）
 
-Streamlit 页面展示版本化 RAG 知识底座和 Evidence-driven Document Workflow
-Agent。UI 不实现业务逻辑；Agent 页面只调用 `DocumentWorkflowFacade`。
+本界面把版本可信研发知识服务与人工审查 Agent 组织成一条业务路径：选择需求变更案例 → 分析影响与引用依据 → 审核局部修改 → 校验候选版本并安全发布。业务判定、检索和发布仍由现有 RAG / Agent 服务执行；界面只读取和展示真实状态。公开演示只使用合成资料。
 
-## 启动
+![公开合成资料下的工作台首页](../project_delivery/ui_product_experience/public_workbench.png)
 
-先启动 RAG API：
+## 从新克隆仓库启动
+
+先按[根目录 Quick Start](../README.md)创建 Python 3.12 环境并安装依赖，然后在仓库根目录执行：
+
+```powershell
+.\start_prototype.ps1
+```
+
+打开 http://127.0.0.1:8502。脚本使用已跟踪的 `RAG-Challenge-2-main/public_demo_artifacts/rd-v2-public-demo-v1`，将候选版本、上传与输出写入系统临时目录；不需要私有原文、旧 `runtime/` 或个人 API Key。端口被占用时可传入 `-RagPort` 和 `-UiPort`。
+
+## 手动启动
+
+以下命令假定已安装根目录 Quick Start 的依赖，分别在两个 PowerShell 窗口运行。
+
+RAG 窗口，从仓库根目录进入 `RAG-Challenge-2-main`：
 
 ```powershell
 cd RAG-Challenge-2-main
+$env:APP_ENV = 'public_demo'
 $env:RD_V2_PROJECT_ROOT = (Get-Location).Path
-$env:RD_V2_ARTIFACT_ROOT = (Resolve-Path 'data\rd_v2_corpus\retrieval_artifacts\rd-v2-retrieval-final-v1.0-safe-integration').Path
+$env:RD_V2_ARTIFACT_ROOT = (Resolve-Path 'public_demo_artifacts\rd-v2-public-demo-v1').Path
 $env:RD_V2_ALLOW_EXTERNAL_GENERATION = 'false'
-.venv\Scripts\python.exe -m uvicorn src.rd_v2_api:app --host 127.0.0.1 --port 8765
+$env:RD_V4_VERSION_STORE_ROOT = Join-Path $env:TEMP 'rag-agent-public-candidates'
+New-Item -ItemType Directory -Path $env:RD_V4_VERSION_STORE_ROOT -Force | Out-Null
+.\.venv\Scripts\python.exe -m uvicorn src.rd_v2_api:app --host 127.0.0.1 --port 8765
 ```
 
-再启动 UI：
+UI 窗口，从仓库根目录进入 `demo-ui`：
 
 ```powershell
 cd demo-ui
-..\OpenManus-rag\.venv\Scripts\python.exe -m pip install -r requirements.txt
-..\OpenManus-rag\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1 --server.port 8501
+$env:APP_ENV = 'public_demo'
+$env:RAG_API_BASE_URL = 'http://127.0.0.1:8765'
+$env:DEMO_RUNTIME_ROOT = Join-Path $env:TEMP 'rag-agent-public-ui'
+$env:DEMO_ALLOW_RAG_QUERY = 'false'
+..\OpenManus-rag\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1 --server.port 8502
 ```
 
-## Agent 页面
+## 界面与演示路径
 
-1. 选择 Project。
-2. 选择当前文档、指定文档或显式历史版本 Scope。
-3. 加载旗舰模板或上传结构化 DOCX。
-4. 检查解析出的 SectionTask/FieldTask。
-5. 运行范围受控的 Evidence 检索与字段起草。
-6. 查看 Query、Evidence、Version、Freshness、Draft 和 Missing。
-7. 填写审核人，编辑字段并逐章节批准或驳回。
-8. 全部必要章节通过后生成 Approved DOCX。
-9. 在历史任务中查看或恢复未完成工作流。
+首页“工作台”展示系统定位、案例选择、实时文档与版本状态。选择 Case A（并发 500 → 1000）或 Case B（审计日志 7 → 30 天），点击“开始分析”，再在“变更分析”运行现有工作流。到“修改审核”并排检查修改前、建议修改和关联 Evidence，填写审核意见并批准、编辑或驳回。到“版本发布”应用已批准修改，检查候选版本和确定性门禁，再安全发布。
 
-上传和输出位于 `demo-ui/runtime/`，Git 默认忽略。真实未经授权资料不得
-发送公网模型。
+“知识检索”可演示版本范围内的原始证据与差异；“执行轨迹”“评测结果”用于解释过程；“扩展工具”保留 Word 模板起草与审核流程。公开资料默认禁用需要在线模型的 `/query`，主审查流程不依赖 DashScope Key。完整首次使用步骤见[演示流程](../project_delivery/ui_product_experience/demo_user_flow.md)。
 
-## Demo 可解释性与边界
+## 公网配置
 
-- RAG 与 Agent 页面都会展示当前资料范围；恢复工作流时以 Checkpoint 保存的范围为准。该 Scope 是业务检索范围约束，不等同于 ACL/RBAC。
-- RAG 与 Agent 的来源统一展示文档名称、版本、章节和页码；内部 ID 收入“技术详情”。Citation / Evidence 提供可追溯性，不等同于自动证明答案事实正确。
-- 文档版本更新触发局部刷新时，页面展示真实受影响、复用、重新检索和重新生成章节；没有刷新时不显示该摘要。
-- 当前项目是研发文档场景 MVP，正式向量检索后端为 FAISS，采用单审核人工作流；不宣称生产级或零幻觉。
+Streamlit Community Cloud 的入口是 `demo-ui/app.py`，Python 3.12。把 [Secrets 示例](.streamlit/secrets.toml.example)中的配置项填入平台设置，将 `RAG_API_BASE_URL` 设为实际 Render URL；不要提交真实 `secrets.toml`。现有服务与部署核对步骤见[部署指南](../project_delivery/public_value_prototype/free_deployment_guide.md)。
 
-## 测试
+## 验证与边界
 
 ```powershell
-..\OpenManus-rag\.venv\Scripts\python.exe -m pytest tests -q
-```
-## V4 工程变更审核工作台
-
-V4 需要在启动 RAG 前增加候选版本库目录：
-
-```powershell
-$env:RD_V4_VERSION_STORE_ROOT = (Join-Path $env:TEMP 'rag-agent-v4-demo-store')
+..\OpenManus-rag\.venv\Scripts\python.exe -m pytest -p no:cacheprovider tests -q
 ```
 
-UI 的第三个页签使用完全合成的 `demo_company_a / PAYMENT` 资料，演示需求 Diff、已确认/疑似影响、Evidence、局部段落 Patch、单审核人确认、冲突检测、Candidate 校验和安全激活。首次载入会通过 RAG HTTP API 初始化合成版本；Agent 不读取 FAISS。详细步骤见 `project_delivery/v4_change_impact_review/demo_script.md`。
-
-该页面只证明 OrganizationProfile 适配边界和单项目业务闭环。`organization_id` 不是租户隔离；语义命中只是 Suggested Impact；原始 DOCX 不会被覆盖。
+Scope 是业务范围约束，不等同 ACL/RBAC；Evidence 提供可追溯来源，不自动证明结论正确；疑似影响始终是人工审核建议。当前是单审核人原型，原始 DOCX 不被局部修改流程覆盖。用户资料和运行输出不得提交到公开仓库。

@@ -24,18 +24,26 @@
 - citation：引用仅允许使用本次证据中的 document_id 与 page_number。
 - artifact validation：启动前校验状态、哈希、数量、维度和归一化。
 
-## 安装与启动
+## 公开合成 Demo 安装与启动
 
-在本目录执行：
+新克隆仓库在本目录使用 Python 3.12；公开路径加载已跟踪的轻量资产，不需要 `data/rd_v2_corpus/` 内的本机资料或真实 API Key：
 
-    .venv\Scripts\python.exe -m pip install -r requirements.txt
-    copy .env.example .env
-    .venv\Scripts\python.exe main.py validate-artifacts
-    .venv\Scripts\python.exe main.py serve --host 127.0.0.1 --port 8765
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-render.txt
+$env:APP_ENV = 'public_demo'
+$env:RD_V2_PROJECT_ROOT = (Get-Location).Path
+$env:RD_V2_ARTIFACT_ROOT = (Resolve-Path 'public_demo_artifacts\rd-v2-public-demo-v1').Path
+$env:RD_V2_ALLOW_EXTERNAL_GENERATION = 'false'
+$env:RD_V4_VERSION_STORE_ROOT = Join-Path $env:TEMP 'rag-agent-public-candidates'
+New-Item -ItemType Directory -Path $env:RD_V4_VERSION_STORE_ROOT -Force | Out-Null
+.\.venv\Scripts\python.exe main.py validate-artifacts
+.\.venv\Scripts\python.exe main.py serve --host 127.0.0.1 --port 8765
+```
 
-服务地址为 http://127.0.0.1:8765，接口文档为 http://127.0.0.1:8765/docs。
+服务地址为 http://127.0.0.1:8765，接口文档为 http://127.0.0.1:8765/docs。仓库根目录的 `start_prototype.ps1` 可同时启动 RAG 与 Streamlit 工作台。公开资料默认禁用在线生成：`/retrieve` 可用，`/query` 返回生成被数据策略禁用。只有确认资料允许发送给在线模型后，才另行配置密钥并显式开启生成。
 
-默认 RD_V2_ALLOW_EXTERNAL_GENERATION=false，此时 /retrieve 可用，/query 返回生成被数据策略禁用。只有确认文档允许发送给在线模型后，才配置 DASHSCOPE_API_KEY 并显式开启生成。
+`.env.example` 保留为其他本地运行配置示例；其中的 `data/rd_v2_corpus` 路径不属于公开克隆所需资产。
 
 ## 文档版本写入
 
@@ -71,15 +79,20 @@
 - scripts：资产校验、运行时 Smoke、范围基准和版本 E2E。
 - tests：正式业务回归测试。
 - docs：架构、检索、版本治理和限制。
-- data/rd_v2_corpus：本地正式语料与冻结资产，不应提交私有原文。
+- public_demo_artifacts/rd-v2-public-demo-v1：仓库已跟踪的合成资料与轻量检索资产。
+- data/rd_v2_corpus：本机资料与冻结资产，公开克隆不包含私有原文。
 - data/synthetic_versioned_corpus：可公开的版本生命周期测试数据。
 - reports/v3_versioned_e2e_run：版本能力验证证据。
 
 ## 验证
 
-    .venv\Scripts\python.exe -m pytest -q
-    .venv\Scripts\python.exe scripts\run_v3_versioned_e2e.py
-    .venv\Scripts\python.exe scripts\run_rd_v2_offline_runtime_smoke.py
-    git diff --check
+在本目录运行正式测试和只读公开 Demo Smoke：
 
-更多边界见 docs/known_limitations.md。
+```powershell
+.\.venv\Scripts\python.exe -m pip install "pytest>=8,<9"
+.\.venv\Scripts\python.exe -m pytest tests -q
+.\.venv\Scripts\python.exe scripts\public_demo_smoke.py --base-url http://127.0.0.1:8765
+git diff --check
+```
+
+更完整的本地版本 E2E 与离线运行检查见项目脚本，但可能需要额外的本机资产；公开演示启动不依赖这些资产。更多边界见 [已知限制](docs/known_limitations.md)。
