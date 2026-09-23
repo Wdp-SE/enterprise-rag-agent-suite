@@ -95,6 +95,8 @@ class DemoConfig:
 
     @property
     def online_generation_allowed(self) -> bool:
+        if self.is_public_demo:
+            return self.allow_rag_query
         return self.allow_rag_query or self.demo_data_classification.casefold() in {
             "synthetic", "public", "synthetic / public", "approved redacted"
         }

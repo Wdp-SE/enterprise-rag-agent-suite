@@ -40,6 +40,14 @@ def test_llm_budget_fails_closed_without_fake_result() -> None:
     assert budget.remaining == 0
 
 
+def test_public_query_requires_explicit_enablement_for_synthetic_data() -> None:
+    disabled = DemoConfig(app_env="public_demo", allow_rag_query=False)
+    enabled = DemoConfig(app_env="public_demo", allow_rag_query=True)
+
+    assert disabled.online_generation_allowed is False
+    assert enabled.online_generation_allowed is True
+
+
 def test_two_demo_cases_are_independent_and_reference_existing_synthetic_files() -> None:
     cases = load_demo_cases()
     assert list(cases) == ["case-a", "case-b"]

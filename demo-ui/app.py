@@ -409,9 +409,12 @@ with rag_tab:
             render_retrieval_results(current["payload"]["results"], document_names)
     else:
         if not config.online_generation_allowed:
-            st.warning("当前 Data 未标记为安全数据，已禁用可能调用在线模型的 RAG 问答。")
-        budget_exhausted = config.is_public_demo and budget.remaining == 0
-        if config.is_public_demo:
+            if config.is_public_demo:
+                st.info("当前公共演示只开放证据检索；在线回答尚未启用。")
+            else:
+                st.warning("当前 Data 未标记为安全数据，已禁用可能调用在线模型的 RAG 问答。")
+        budget_exhausted = config.is_public_demo and config.online_generation_allowed and budget.remaining == 0
+        if config.is_public_demo and config.online_generation_allowed:
             st.caption(f"本 Session 剩余在线模型调用额度：{budget.remaining}")
             if budget_exhausted:
                 st.warning("公共 Demo 调用额度已用完，本次请求已停止，不会返回假结果。")

@@ -27,3 +27,6 @@ def test_public_ui_shows_case_selector_and_cold_start_reconnect(monkeypatch, tmp
     assert "Public Demo" in page
     assert "公共免费演示后端可能正在启动，请稍后重试" in page
     assert app.button(key="reconnect_backend").label == "重新连接"
+    assert "当前公共演示只开放证据检索" in page
+    assert "剩余在线模型调用额度" not in page
+    assert app.button(key="query_button").disabled is True
