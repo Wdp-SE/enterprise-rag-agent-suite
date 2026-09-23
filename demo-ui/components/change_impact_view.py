@@ -21,23 +21,44 @@ APPLY_STATUS_LABELS = {
     "CONFLICT": "目标已变化",
 }
 
+CHANGE_TYPE_LABELS = {
+    "MODIFIED": "已修改",
+    "ADDED": "新增需求",
+    "REMOVED": "已移除",
+}
+CHANGE_TYPE_ORDER = {"MODIFIED": 0, "ADDED": 1, "REMOVED": 2}
+
 
 def render_workbench_analysis(result: dict | None) -> None:
     st.markdown("### 需求变化")
     if not result:
         st.caption("准备任务后展示所选案例的需求版本变化。")
     else:
-        changes = result.get("changes", [])
-        modified = [item for item in changes if item.get("change_type") != "UNCHANGED"]
-        for item in modified:
+        visible_changes = [
+            item for item in result.get("changes", [])
+            if item.get("change_type") != "UNCHANGED"
+        ]
+        visible_changes.sort(key=lambda item: (
+            CHANGE_TYPE_ORDER.get(item.get("change_type"), 99),
+            item["external_identifier"],
+        ))
+        for item in visible_changes:
+            change_type = item.get("change_type")
+            label = CHANGE_TYPE_LABELS.get(change_type, change_type or "变化")
             with st.expander(
-                f"已识别变化 · {item['external_identifier']}", expanded=True
+                f"已识别变化 · {item['external_identifier']} · {label}", expanded=True
             ):
                 left, right = st.columns(2)
                 left.markdown("**变更前**")
-                left.write(item.get("old_content") or "—")
+                left.write(
+                    "新增需求，无历史版本内容"
+                    if change_type == "ADDED" else item.get("old_content") or "—"
+                )
                 right.markdown("**变更后**")
-                right.write(item.get("new_content") or "—")
+                right.write(
+                    "需求已移除，无当前版本内容"
+                    if change_type == "REMOVED" else item.get("new_content") or "—"
+                )
                 with st.expander("技术详情"):
                     st.json(item)
 
