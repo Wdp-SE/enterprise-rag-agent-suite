@@ -5,3 +5,4 @@ RAG-Challenge-2-main/public_demo_artifacts/rd-v2-public-demo-v1/*.faiss binary
 # Preserve hash-verified upstream snapshots and manifest bytes across platforms.
 RAG-Challenge-2-main/public_corpus/sources/** -text whitespace=cr-at-eol
 RAG-Challenge-2-main/public_corpus/corpus_manifest.json -text whitespace=cr-at-eol
+RAG-Challenge-2-main/public_corpus/chunks.json text eol=lf

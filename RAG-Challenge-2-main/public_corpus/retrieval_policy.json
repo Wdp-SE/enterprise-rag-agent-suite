@@ -3,7 +3,7 @@
   "benchmark_query_count": 46,
   "benchmark_corpus_sha256": "44b2b53a5f769619af859f5b466a908a46e8bf6a3ce1ca6960f5ee594427ebd1",
   "index_artifacts_sha256": {
-    "chunks.json": "cbf78ecc1245a6f5cf90f817f041a48b8267ad2cd7ec3941ba8663fa3fbacf32",
+    "chunks.json": "e41c16f7feabc7c6ecddca95ebb77e698be4a3dc997b87925acb50311b2b60ed",
     "dense_vectors.npy": "52eded25c5a89a292a917eb1ff6f6b9b5dcc5228e59202278a1cd74b95dccade"
   },
   "quality_rule": "highest Hit@1, then MRR, then Hit@5; lower P95 resolves a quality tie",

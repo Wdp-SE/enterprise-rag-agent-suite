@@ -105,7 +105,9 @@ def build_index(root: Path = ROOT) -> dict:
         for c in chunks
     ])
     (root / "chunks.json").write_text(
-        json.dumps(chunks, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8"
+        json.dumps(chunks, ensure_ascii=False, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+        newline="\n",
     )
     np.save(root / "dense_vectors.npy", vectors)
     return {"files": len(manifest["sources"]), "chunks": len(chunks), "dimension": vectors.shape[1]}
