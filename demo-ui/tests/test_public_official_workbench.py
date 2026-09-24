@@ -117,6 +117,49 @@ def test_rag_and_agent_pages_offer_return_home_navigation(monkeypatch):
     assert app.session_state["official_nav"] == "总览"
 
 
+def test_review_subpage_returns_to_agent_then_home(monkeypatch):
+    _mock_client(monkeypatch)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "新建变更审查").click().run()
+    app.text_area(key="official_proposed_text").set_value("假设将启动参数提高到第一优先级。").run()
+    next(button for button in app.button if button.label == "开始变更审查").click().run()
+
+    next(button for button in app.button if button.label == "人工审核").click().run()
+    assert app.session_state["official_nav"] == "人工审核"
+    assert "返回审查" in {button.label for button in app.button}
+    assert "返回首页" in {button.label for button in app.button}
+
+    next(button for button in app.button if button.label == "返回审查").click().run()
+    assert app.session_state["official_nav"] == "新建变更审查"
+    assert app.session_state["official_review"]["sandbox_only"] is True
+
+    next(button for button in app.button if button.label == "返回首页").click().run()
+    assert app.session_state["official_nav"] == "总览"
+
+
+def test_workbench_theme_keeps_neutral_base_and_equal_home_cards():
+    from components.public_theme import PUBLIC_CSS
+
+    assert "--canvas:#f4f5f6" in PUBLIC_CSS
+    assert "--ink:#171b20" in PUBLIC_CSS
+    assert "background:var(--ink)!important" not in PUBLIC_CSS
+    assert ".st-key-public_rag_module,.st-key-public_agent_module {" in PUBLIC_CSS
+    assert "background:var(--paper)!important;color:var(--ink);" in PUBLIC_CSS
+    assert "border:1px solid var(--line-strong)!important;border-radius:5px!important;" in PUBLIC_CSS
+    assert ".st-key-generated_answer {" in PUBLIC_CSS
+
+
+def test_stale_navigation_state_recovers_to_home(monkeypatch):
+    _mock_client(monkeypatch)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    app.session_state["official_nav"] = "removed page"
+    app.run()
+
+    assert not app.exception
+    assert app.session_state["official_nav"] == "总览"
+    assert [item.value for item in app.title] == ["版本可信研发知识与变更审查系统"]
+
+
 def test_public_agent_change_and_review_are_session_local(monkeypatch):
     _mock_client(monkeypatch)
     first = AppTest.from_file(APP, default_timeout=40).run()

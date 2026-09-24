@@ -121,20 +121,40 @@ def _consistency(notes: list[dict], *, primary: dict | None = None) -> None:
                 )
 
 
+NAV_GROUPS = (
+    ("知识服务", ("总览", "版本检索与问答", "版本与历史", "资料与来源")),
+    ("变更审查", ("新建变更审查", "可能相关资料", "修改前后对照", "人工审核")),
+    ("系统说明", ("检索评测", "已知限制", "系统说明")),
+)
+NAV_PAGES = frozenset(page for _, pages in NAV_GROUPS for page in pages)
+PAGE_PARENTS = {
+    "可能相关资料": "新建变更审查",
+    "修改前后对照": "新建变更审查",
+    "人工审核": "新建变更审查",
+}
+
+
 def _navigate(destination: str) -> None:
-    st.session_state["official_nav"] = destination
+    st.session_state["official_nav"] = destination if destination in NAV_PAGES else "总览"
 
 
-def _page_header(section: str, title: str, *, page_key: str) -> None:
-    breadcrumb, home = st.columns([5, 1], gap="small")
-    with breadcrumb:
-        st.markdown(
-            f'<div class="breadcrumbs">首页　/　<strong>{escape(section)}</strong></div>',
-            unsafe_allow_html=True,
-        )
-    with home:
-        st.button("返回首页", key=f"return_home_{page_key}", on_click=_navigate,
-                  args=("总览",), use_container_width=True)
+def _page_header(section: str, title: str, *, page_key: str, parent: str | None = None) -> None:
+    with st.container(key=f"page_header_{page_key}"):
+        path = f"首页　/　<strong>{escape(section)}</strong>"
+        if parent:
+            path += f"　/　<strong>{escape(title)}</strong>"
+            breadcrumb, back, home = st.columns([6, 1, 1], gap="small")
+        else:
+            breadcrumb, home = st.columns([7, 1], gap="small")
+        with breadcrumb:
+            st.markdown(f'<div class="breadcrumbs">{path}</div>', unsafe_allow_html=True)
+        if parent:
+            with back:
+                st.button("返回审查", key=f"return_parent_{page_key}", on_click=_navigate,
+                          args=(parent,), use_container_width=True)
+        with home:
+            st.button("返回首页", key=f"return_home_{page_key}", on_click=_navigate,
+                      args=("总览",), use_container_width=True)
     st.title(title)
 
 
@@ -465,11 +485,10 @@ def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None
 
 
 def _review_subpage(choice: str) -> None:
-    _page_header("变更审查", choice, page_key=choice)
+    _page_header("变更审查", choice, page_key="review", parent=PAGE_PARENTS[choice])
     result = st.session_state.get("official_review")
     if not result:
         st.info("当前会话还没有假设变更审查结果。请先选择真实资料并提交假设修改。")
-        st.button("返回新建变更审查", on_click=_navigate, args=("新建变更审查",))
         return
     st.caption("以下内容仅属于当前会话；已确认引用关系与检索建议会明确区分。")
     if choice == "可能相关资料":
@@ -481,8 +500,7 @@ def _review_subpage(choice: str) -> None:
 
 
 def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None) -> None:
-    st.markdown('<div class="masthead"><span class="kicker">知识服务 / 固定版本</span></div>', unsafe_allow_html=True)
-    st.title("版本与历史")
+    _page_header("知识服务", "版本与历史", page_key="versions")
     st.write("公开知识空间固定在相邻的官方发布版本。历史资料不会被当成当前版本静默引用。")
     if not ready:
         st.info("知识服务暂不可用，连接恢复后可查看各版本的真实资料。")
@@ -508,8 +526,7 @@ def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None
 
 
 def _sources(client: PublicKnowledgeClient, ready: bool) -> None:
-    st.markdown('<div class="masthead"><span class="kicker">知识服务 / 资料归属</span></div>', unsafe_allow_html=True)
-    st.title("资料与来源")
+    _page_header("知识服务", "资料与来源", page_key="sources")
     st.write("本工作台使用 Apache DolphinScheduler 官方公开资料；每条结果均保留固定版本与原文链接。")
     st.caption("独立工程演示，并非 Apache 官方产品；英文官方资料不会被自动翻译成中文原文。")
     if not ready:
@@ -542,8 +559,7 @@ def _sources(client: PublicKnowledgeClient, ready: bool) -> None:
 
 
 def _benchmark(workspace: dict | None) -> None:
-    st.markdown('<div class="masthead"><span class="kicker">系统说明 / 实测决策</span></div>', unsafe_allow_html=True)
-    st.title("检索评测")
+    _page_header("系统说明", "检索评测", page_key="benchmark")
     st.subheader("技术选型依据")
     st.write("检索策略由真实 Benchmark 指标决定，而不是按照技术复杂度选择。")
     policy = str(workspace.get("retrieval_policy", "由服务配置") if workspace else "由服务配置").upper()
@@ -584,8 +600,7 @@ def _benchmark(workspace: dict | None) -> None:
 
 
 def _limits() -> None:
-    st.markdown('<div class="masthead"><span class="kicker">系统说明 / 使用边界</span></div>', unsafe_allow_html=True)
-    st.title("已知限制")
+    _page_header("系统说明", "已知限制", page_key="limits")
     for title, detail in (
         ("资料范围", "当前知识库是 DolphinScheduler 官方公开资料的有限子集，不能覆盖全部功能。"),
         ("检索与回答", "检索候选不等于最终答案；无答案问题仍可能返回看似相关的片段。"),
@@ -600,8 +615,7 @@ def _limits() -> None:
 
 
 def _about(workspace: dict | None) -> None:
-    st.markdown('<div class="masthead"><span class="kicker">系统说明 / 资料与流程</span></div>', unsafe_allow_html=True)
-    st.title("系统说明")
+    _page_header("系统说明", "系统说明", page_key="about")
     st.write("RAG 负责查资料、看版本与引用并提醒可核验差异；Agent 负责协助用户审查一次会话内的假设变更。")
     st.markdown('<div class="flow-track"><span>官方公开资料</span><span>版本检索</span><span>引用核对</span><span>可能相关资料</span><span>人工审核</span></div>', unsafe_allow_html=True)
     st.info("本工作台是独立工程演示，不代表 Apache DolphinScheduler 官方或内部系统。")
@@ -610,16 +624,12 @@ def _about(workspace: dict | None) -> None:
     st.markdown("[Apache DolphinScheduler 官方仓库](https://github.com/apache/dolphinscheduler)　·　[官方 Releases](https://github.com/apache/dolphinscheduler/releases)")
 
 
-NAV_GROUPS = (
-    ("知识服务", ("总览", "版本检索与问答", "版本与历史", "资料与来源")),
-    ("变更审查", ("新建变更审查", "可能相关资料", "修改前后对照", "人工审核")),
-    ("系统说明", ("检索评测", "已知限制", "系统说明")),
-)
-
-
 def render() -> None:
     st.markdown(CSS, unsafe_allow_html=True)
     choice = st.session_state.setdefault("official_nav", "总览")
+    if choice not in NAV_PAGES:
+        choice = "总览"
+        st.session_state["official_nav"] = choice
     client = _client()
     workspace = _request(client.workspace, fallback="知识服务暂未连接，页面仍可浏览。")
     ready = bool(workspace)
