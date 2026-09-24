@@ -10,6 +10,7 @@ import requests
 from config import DemoConfig
 from services.agent_client import AgentClient
 from services.rag_client import RAGClient, ServiceError
+from services.public_knowledge_client import PublicKnowledgeClient
 
 
 class Response:
@@ -118,3 +119,21 @@ def test_agent_safe_demo_invalid_docx_and_artifacts(tmp_path):
         payload = json.loads(client.artifact_bytes(result["artifacts"][key]))
         assert isinstance(payload, dict)
 
+def test_public_generation_timeout_is_never_retried():
+    session = Session([requests.Timeout("late answer"), Response({"status": "OK"})])
+    client = PublicKnowledgeClient(
+        "http://localhost:8765", session=session, retry_limit=2, session_id="session_12345678",
+    )
+    with pytest.raises(ServiceError) as failure:
+        client.query_official("parameter priority", version="3.4.3", language="all")
+    assert failure.value.code == "RAG_TIMEOUT"
+    assert len(session.calls) == 1
+
+
+def test_public_generation_budget_error_keeps_retrieval_available():
+    session = Session([Response({}, status=429)])
+    client = PublicKnowledgeClient("http://localhost:8765", session=session)
+    with pytest.raises(ServiceError) as failure:
+        client.query_official("parameter priority", version="3.4.3", language="all")
+    assert failure.value.code == "LLM_BUDGET_EXHAUSTED"
+    assert "\u68c0\u7d22" in failure.value.public_message

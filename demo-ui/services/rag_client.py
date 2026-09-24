@@ -34,13 +34,18 @@ class RAGClient:
         self.session_id = session_id
         self.retry_limit = retry_limit
 
-    def _request(self, method: str, endpoint: str, **kwargs) -> dict[str, Any]:
+    def _request(
+        self, method: str, endpoint: str, *, retry_limit: int | None = None, **kwargs
+    ) -> dict[str, Any]:
+        retries = self.retry_limit if retry_limit is None else retry_limit
+        if retries < 0:
+            raise ValueError("retry_limit must be nonnegative")
         if self.session_id:
             headers = dict(kwargs.pop("headers", {}))
             headers["X-Demo-Session-ID"] = self.session_id
             kwargs["headers"] = headers
         response = None
-        for attempt in range(self.retry_limit + 1):
+        for attempt in range(retries + 1):
             try:
                 response = self.session.request(
                     method, f"{self.base_url}{endpoint}", timeout=self.timeout, **kwargs
@@ -48,7 +53,7 @@ class RAGClient:
                 response.raise_for_status()
                 break
             except requests.Timeout as exc:
-                if attempt < self.retry_limit:
+                if attempt < retries:
                     continue
                 raise ServiceError(
                     "RAG 请求超时，公共免费演示后端可能正在启动，请稍后重试。",
@@ -56,7 +61,7 @@ class RAGClient:
                     "RAG_TIMEOUT",
                 ) from exc
             except requests.ConnectionError as exc:
-                if attempt < self.retry_limit:
+                if attempt < retries:
                     continue
                 raise ServiceError(
                     "知识服务暂不可用。公共免费演示后端可能正在启动，请稍后重试。",
@@ -65,11 +70,11 @@ class RAGClient:
                 ) from exc
             except requests.HTTPError as exc:
                 status = exc.response.status_code if exc.response is not None else "unknown"
-                if attempt < self.retry_limit and isinstance(status, int) and status >= 500:
+                if attempt < retries and isinstance(status, int) and status >= 500:
                     continue
-                if status == 429 and endpoint == "/engineering/versions/query":
+                if status == 429 and endpoint in ("/engineering/versions/query", "/public/query"):
                     raise ServiceError(
-                        "本次会话的生成次数已用完，仍可继续检索引用依据。",
+                        "在线生成额度已用完，仍可继续检索引用依据。",
                         "HTTPStatus=429", "LLM_BUDGET_EXHAUSTED",
                     ) from exc
                 raise ServiceError(

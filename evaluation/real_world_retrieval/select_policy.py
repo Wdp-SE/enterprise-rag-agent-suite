@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -35,6 +36,10 @@ def select() -> dict:
         "default_policy": winner,
         "benchmark_query_count": benchmark["query_count"],
         "benchmark_corpus_sha256": benchmark["corpus_sha256"],
+        "index_artifacts_sha256": {
+            name: hashlib.sha256((CORPUS / name).read_bytes()).hexdigest()
+            for name in ("chunks.json", "dense_vectors.npy")
+        },
         "quality_rule": "highest Hit@1, then MRR, then Hit@5; lower P95 resolves a quality tie",
         "conditional_router_enabled": False,
         "reranker_enabled": False,
@@ -64,7 +69,8 @@ def select() -> dict:
         )
     text = f"""# Retrieval policy decision
 
-Corpus: pinned Apache DolphinScheduler 3.4.2 / 3.4.3; {benchmark['query_count']} queries; Top-{benchmark['top_k']}.
+Corpus: pinned Apache DolphinScheduler 3.4.2 / 3.4.3; {benchmark['query_count']} queries (43 answerable and 3 no-answer probes); Top-{benchmark['top_k']}.
+Hit@K, MRR and nDCG use the answerable queries as their denominator. The policy-selection set is also the reported set; there is no held-out user-query validation.
 The benchmark uses the same corpus, query set, version scope and language scope for all evaluated policies.
 Ground truth is manually curated and verified by exact source markers. This is a small selected-corpus benchmark, not a claim about all DolphinScheduler material.
 
@@ -74,6 +80,7 @@ Ground truth is manually curated and verified by exact source markers. This is a
 
 Selected default: **{winner}**. Selection rule: {policy['quality_rule']}.
 No conditional router: cross-document and hard-query groups are small, and no alternate strategy improves both recall and latency consistently enough to justify routing.
+For cross-document questions, Hit@5 means *either* cited source appears. The selected policy found both required sources in Top-5 for {scores[winner]['by_category']['cross_document']['cross_document_both_source_at_5']:.0%} of the four questions; do not treat any-source Hit@5 as complete multi-source recall.
 Hybrid remains experimental. Rerank was **NOT EVALUATED**: a reproducible multilingual reranker was not available within the lightweight public deployment constraints.
 
 The Dense baseline is a 512-dimensional deterministic character-ngram hash and cosine ranking. It is a compact lexical dense baseline, **not** a neural semantic embedding model.

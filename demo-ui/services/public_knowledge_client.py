@@ -23,7 +23,7 @@ class PublicKnowledgeClient(RAGClient):
 
     def query_official(self, question: str, *, version: str, language: str) -> dict:
         return self._request(
-            "POST", "/public/query",
+            "POST", "/public/query", retry_limit=0,
             json={"query": question, "version": version, "language": language},
         )
 

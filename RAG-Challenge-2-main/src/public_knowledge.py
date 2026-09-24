@@ -136,6 +136,13 @@ class PublicKnowledgeIndex:
         for source in self.manifest["sources"]:
             if hashlib.sha256((root / source["local_path"]).read_bytes()).hexdigest() != source["sha256"]:
                 raise ValueError("public corpus source hash mismatch")
+        artifact_hashes = self.policy.get("index_artifacts_sha256")
+        if not isinstance(artifact_hashes, dict):
+            raise ValueError("public corpus index artifact hash mismatch")
+        for name in ("chunks.json", "dense_vectors.npy"):
+            actual_hash = hashlib.sha256((root / name).read_bytes()).hexdigest()
+            if actual_hash != artifact_hashes.get(name):
+                raise ValueError(f"public corpus index artifact hash mismatch: {name}")
 
     def _bm25(self, query: str) -> np.ndarray:
         scores = np.zeros(len(self.chunks), dtype=np.float32)

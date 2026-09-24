@@ -300,17 +300,29 @@ def _review_steps(stage: int) -> None:
 
 def _impact_panel(result: dict) -> None:
     st.subheader("影响候选")
-    st.caption("只有官方资料明确引用的关系标记为已确认；检索相关的资料仅供建议核对，不代表实际影响已确定。")
+    st.caption("检索到的相关段落仅供建议核对，不代表实际影响已确定。")
+    references = result.get("confirmed_relations", [])
+    if references:
+        st.subheader("已确认文档关联")
+        st.caption("官方 PR 明确引用 DSIP，仅确认两份文档有关联；不证明所选段落受影响。")
+        for reference in references:
+            with st.container(border=True):
+                st.markdown("**官方实现 PR #18464 → DSIP #18454**")
+                st.caption(f"明确引用所在章节：{reference['source_heading']}")
+                excerpt = reference["source_excerpt"]
+                st.write(excerpt[:300] + ("…" if len(excerpt) > 300 else ""))
+                st.markdown(f"[查看明确引用的官方原文]({reference['source_url']})")
+                if len(excerpt) > 300:
+                    with st.expander("查看完整引用原文"):
+                        st.write(excerpt)
     impacts = result.get("impacts", [])
     if not impacts:
         st.info("未检索到足够相关的其他资料；仍可人工审核当前段落。")
         return
     for item in impacts:
         evidence = item["evidence"]
-        confirmed = item.get("relation") == "confirmed"
-        label = "已确认关系" if confirmed else "建议核对"
         with st.container(border=True):
-            st.markdown(f"**{label} · {evidence.get('heading') or evidence.get('document_key')}**")
+            st.markdown(f"**建议核对 · {evidence.get('heading') or evidence.get('document_key')}**")
             st.caption(f"{evidence.get('version', '')}　｜　{evidence.get('locale', '')}　｜　可能受影响")
             st.write(item.get("reason", "请核对官方原文与显式引用。"))
             content = evidence.get("content", "")
@@ -528,7 +540,12 @@ def _benchmark(workspace: dict | None) -> None:
     except (OSError, ValueError):
         st.info("本地评测记录暂不可用。当前页面不展示推测指标，请查看仓库中的真实检索评测文件。")
         return
-    st.caption(f"{report['query_count']} 条经官方原文核验的问题，同一语料、版本范围与 Top-{report['top_k']}；下表为本地进程内检索，不包含网络或模型生成。")
+    bm25_overall = report["results"]["bm25"]["overall"]
+    st.caption(
+        f"{report['query_count']} 条经官方原文核验的问题，其中 {bm25_overall['answerable']} 条可回答、"
+        f"{bm25_overall['no_answer_queries']} 条无答案探针；Hit/MRR 的分母为可回答题。"
+        f"同一语料、版本范围与 Top-{report['top_k']}；延迟为本地进程内检索。"
+    )
     names = {"dense": "Dense", "bm25": "BM25", "hybrid": "Hybrid"}
     fields = (("hit_at_1", "Hit@1"), ("hit_at_3", "Hit@3"), ("hit_at_5", "Hit@5"),
               ("mrr", "MRR"), ("ndcg_at_5", "nDCG@5"), ("p50_ms", "P50 ms"), ("p95_ms", "P95 ms"))
@@ -542,6 +559,13 @@ def _benchmark(workspace: dict | None) -> None:
         rows.append("| " + key + " | NOT EVALUATED | " + " | ".join("—" for _ in fields[1:]) + " |")
     st.markdown("\n".join((header, rule, *rows)))
     st.info(f"这只代表所选官方资料子集与 {report['query_count']} 条查询。无答案问题也可能返回检索候选，候选不等于正确答案。")
+    selected_results = report["results"].get(policy.lower(), report["results"]["bm25"])
+    cross = selected_results["by_category"]["cross_document"]
+    both_count = round(cross["cross_document_both_source_at_5"] * cross["queries"])
+    st.caption(
+        f"跨文档题的双来源 Top-5 完整命中：{both_count}/{cross['queries']}；"
+        "表中 Hit@5 只要求命中任一来源，不能代表多来源答案已完整找到。"
+    )
 
 
 def _limits() -> None:

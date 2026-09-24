@@ -71,3 +71,30 @@ def test_public_query_checks_citation_membership_and_budget(monkeypatch):
         ).json()
         assert result["status"] == "ABSTAINED"
         assert result["sources"] == []
+def test_public_query_has_a_total_budget_even_when_session_ids_rotate(monkeypatch):
+    class Generator:
+        def __init__(self, citation_id):
+            self.citation_id = citation_id
+            self.calls = 0
+
+        def generate(self, *, question, context):
+            self.calls += 1
+            return {
+                "final_answer": "supported answer",
+                "relevant_sources": [{"document_id": self.citation_id, "page_number": 1}],
+            }
+
+    index = PublicKnowledgeIndex()
+    generator = Generator(index.search(QUESTION)[0]["chunk_id"])
+    monkeypatch.setenv("MAX_LLM_CALLS_PER_SESSION", "1")
+    monkeypatch.setenv("MAX_LLM_CALLS_PER_PROCESS", "2")
+    with TestClient(create_app(index=index, generator=generator)) as client:
+        responses = [
+            client.post(
+                "/public/query", json={"query": QUESTION},
+                headers={"X-Demo-Session-ID": f"session_{number:08d}"},
+            )
+            for number in range(3)
+        ]
+    assert [response.status_code for response in responses] == [200, 200, 429]
+    assert generator.calls == 2

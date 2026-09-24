@@ -98,6 +98,39 @@ def test_public_agent_change_and_review_are_session_local(monkeypatch):
     assert "official_review" not in second.session_state
     assert "official_review_decision" not in second.session_state
 
+def test_public_agent_shows_explicit_document_reference_without_confirming_paragraph_impact(monkeypatch):
+    _mock_client(monkeypatch)
+    import public_workbench
+
+    analyze = public_workbench._analyze_hypothetical
+
+    def with_document_reference(client, selected, proposed):
+        result = analyze(client, selected, proposed)
+        result["confirmed_relations"] = [{
+            "relation_type": "DOCUMENT_REFERENCE",
+            "source_document_id": "3.4.3:en:proposals/dsip-107-implementation",
+            "target_document_id": "3.4.3:en:proposals/dsip-107-proposal",
+            "source_chunk_id": "3.4.3:en:proposals/dsip-107-implementation:2",
+            "source_heading": "Purpose of the pull request",
+            "source_url": "https://github.com/apache/dolphinscheduler/pull/18464",
+            "source_excerpt": "This pull request is an independent part of DSIP #18454.",
+        }]
+        return result
+
+    monkeypatch.setattr(public_workbench, "_analyze_hypothetical", with_document_reference)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "新建变更审查").click().run()
+    app.text_area(key="official_proposed_text").set_value("假设将启动参数提高到第一优先级。").run()
+    next(button for button in app.button if button.label == "开始变更审查").click().run()
+    assert not app.exception
+    assert "已确认文档关联" in {item.value for item in app.subheader}
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
+    assert "independent part of DSIP #18454" in visible
+    assert "https://github.com/apache/dolphinscheduler/pull/18464" in visible
+    assert "不证明所选段落受影响" in visible
+    assert "建议核对" in visible
+    assert "已确认关系" not in visible
+
 
 def test_public_navigation_exposes_versions_sources_evaluation_and_limits(monkeypatch):
     _mock_client(monkeypatch)
@@ -111,6 +144,8 @@ def test_public_navigation_exposes_versions_sources_evaluation_and_limits(monkey
     assert "字符哈希向量基线" in visible
     assert "BM25" in visible
     assert "Rerank" in visible
+    assert "43 条可回答" in visible
+    assert "双来源" in visible and "0/4" in visible
 
 
 def test_verified_consistency_notice_names_primary_basis_and_both_versions(monkeypatch):

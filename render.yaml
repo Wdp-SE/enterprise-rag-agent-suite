@@ -16,5 +16,7 @@ services:
         value: "false"
       - key: MAX_LLM_CALLS_PER_SESSION
         value: "3"
+      - key: MAX_LLM_CALLS_PER_PROCESS
+        value: "30"
       - key: DASHSCOPE_API_KEY
         sync: false

@@ -1,19 +1,21 @@
 # Retrieval policy decision
 
-Corpus: pinned Apache DolphinScheduler 3.4.2 / 3.4.3; 46 queries; Top-5.
+Corpus: pinned Apache DolphinScheduler 3.4.2 / 3.4.3; 46 queries (43 answerable and 3 no-answer probes); Top-5.
+Hit@K, MRR and nDCG use the answerable queries as their denominator. The policy-selection set is also the reported set; there is no held-out user-query validation.
 The benchmark uses the same corpus, query set, version scope and language scope for all evaluated policies.
 Ground truth is manually curated and verified by exact source markers. This is a small selected-corpus benchmark, not a claim about all DolphinScheduler material.
 
 | Policy | Hit@1 | Hit@3 | Hit@5 | MRR | nDCG@5 | P50 ms | P95 ms |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| dense | 0.2093 | 0.3721 | 0.4186 | 0.2934 | 0.3254 | 1.34 | 3.69 |
-| bm25 | 0.3953 | 0.6977 | 0.7907 | 0.5558 | 0.6209 | 1.33 | 2.53 |
-| hybrid | 0.3023 | 0.5814 | 0.6047 | 0.4322 | 0.4874 | 1.82 | 3.32 |
+| dense | 0.2093 | 0.3721 | 0.4186 | 0.2934 | 0.3254 | 1.78 | 2.85 |
+| bm25 | 0.3953 | 0.6977 | 0.7907 | 0.5558 | 0.6209 | 1.54 | 2.89 |
+| hybrid | 0.3023 | 0.5814 | 0.6047 | 0.4322 | 0.4874 | 1.81 | 3.25 |
 | dense_rerank | NOT EVALUATED | — | — | — | — | — | — |
 | hybrid_rerank | NOT EVALUATED | — | — | — | — | — | — |
 
 Selected default: **bm25**. Selection rule: highest Hit@1, then MRR, then Hit@5; lower P95 resolves a quality tie.
 No conditional router: cross-document and hard-query groups are small, and no alternate strategy improves both recall and latency consistently enough to justify routing.
+For cross-document questions, Hit@5 means *either* cited source appears. The selected policy found both required sources in Top-5 for 0% of the four questions; do not treat any-source Hit@5 as complete multi-source recall.
 Hybrid remains experimental. Rerank was **NOT EVALUATED**: a reproducible multilingual reranker was not available within the lightweight public deployment constraints.
 
 The Dense baseline is a 512-dimensional deterministic character-ngram hash and cosine ranking. It is a compact lexical dense baseline, **not** a neural semantic embedding model.

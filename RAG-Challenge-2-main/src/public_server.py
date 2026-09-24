@@ -21,10 +21,12 @@ from src.public_knowledge import PublicKnowledgeIndex
 class SessionBudget:
     _VALID = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
 
-    def __init__(self, limit: int):
-        if limit < 0:
-            raise ValueError("session limit must be nonnegative")
+    def __init__(self, limit: int, total_limit: int):
+        if limit < 0 or total_limit < 0:
+            raise ValueError("generation limits must be nonnegative")
         self.limit = limit
+        self.total_limit = total_limit
+        self.total_used = 0
         self.counts: dict[str, int] = {}
         self.lock = threading.Lock()
 
@@ -33,9 +35,10 @@ class SessionBudget:
             raise ValueError("invalid public session")
         with self.lock:
             used = self.counts.get(session_id, 0)
-            if used >= self.limit:
+            if used >= self.limit or self.total_used >= self.total_limit:
                 return False
             self.counts[session_id] = used + 1
+            self.total_used += 1
             return True
 
 
@@ -67,7 +70,8 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None) -> 
                 model=os.environ.get("RD_V2_GENERATION_MODEL", "qwen-turbo"),
             )
         app.state.public_query_budget = SessionBudget(
-            int(os.environ.get("MAX_LLM_CALLS_PER_SESSION", "3"))
+            int(os.environ.get("MAX_LLM_CALLS_PER_SESSION", "3")),
+            int(os.environ.get("MAX_LLM_CALLS_PER_PROCESS", "30")),
         )
         yield
 

@@ -64,14 +64,33 @@ def test_official_change_calls_rag_http_diff_search_impact_without_baseline_writ
     assert hashlib.sha256((CORPUS / "corpus_manifest.json").read_bytes()).hexdigest() == before
 
 
-def test_dsip_explicit_reference_is_confirmed_but_other_impacts_are_suggestions():
+def test_dsip_reference_confirms_documents_without_confirming_unrelated_paragraph_impact():
     gateway = Gateway()
-    selected = next(row for row in CHUNKS if row["document_key"] == "proposals/dsip-107-proposal")
+    selected = next(
+        row for row in CHUNKS
+        if row["document_key"] == "proposals/dsip-107-proposal"
+        and row["heading"] == "Code of Conduct"
+    )
     result = PublicReviewAgent(gateway).analyze(selected, selected["content"] + " Hypothetical review change.")
-    assert len(result["confirmed_relations"]) == 1
-    assert result["impacts"][0]["relation"] == "confirmed"
-    assert "pull/18464" in result["confirmed_relations"][0]["metadata"]["source_url"]
-    assert all(row["relation"] == "suggested" for row in result["impacts"][1:])
+    assert result["confirmed_relations"] == [{
+        "relation_type": "DOCUMENT_REFERENCE",
+        "source_document_id": "3.4.3:en:proposals/dsip-107-implementation",
+        "target_document_id": "3.4.3:en:proposals/dsip-107-proposal",
+        "source_chunk_id": "3.4.3:en:proposals/dsip-107-implementation:2",
+        "source_heading": "Purpose of the pull request",
+        "source_url": "https://github.com/apache/dolphinscheduler/pull/18464",
+        "source_excerpt": next(
+            row["content"] for row in CHUNKS
+            if row["chunk_id"] == "3.4.3:en:proposals/dsip-107-implementation:2"
+        ),
+    }]
+    assert "independent part of DSIP #18454" in result["confirmed_relations"][0]["source_excerpt"]
+    assert result["impacts"]
+    assert all(row["relation"] == "suggested" for row in result["impacts"])
+    assert all(
+        row["evidence"]["chunk_id"] != "3.4.3:en:proposals/dsip-107-implementation:2"
+        for row in result["impacts"]
+    )
 
 
 def test_rejects_history_unknown_source_and_unchanged_content():

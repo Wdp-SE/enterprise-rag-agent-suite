@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -106,4 +107,24 @@ def test_public_index_rejects_policy_from_a_different_corpus(tmp_path):
     policy["benchmark_corpus_sha256"] = "0" * 64
     policy_path.write_text(json.dumps(policy), encoding="utf-8")
     with pytest.raises(ValueError, match="does not match pinned corpus"):
+        PublicKnowledgeIndex(tmp_path)
+
+
+@pytest.mark.parametrize("artifact", ["chunks.json", "dense_vectors.npy"])
+def test_public_index_rejects_tampered_prebuilt_artifact(tmp_path, artifact):
+    for name in ("corpus_manifest.json", "chunks.json", "dense_vectors.npy", "retrieval_policy.json"):
+        (tmp_path / name).write_bytes((ROOT / name).read_bytes())
+    shutil.copytree(ROOT / "sources", tmp_path / "sources")
+
+    artifact_path = tmp_path / artifact
+    if artifact == "chunks.json":
+        chunks = json.loads(artifact_path.read_text(encoding="utf-8"))
+        chunks[0]["content"] = "伪造的官方资料内容"
+        artifact_path.write_text(json.dumps(chunks, ensure_ascii=False), encoding="utf-8")
+    else:
+        tampered = bytearray(artifact_path.read_bytes())
+        tampered[-1] ^= 1
+        artifact_path.write_bytes(tampered)
+
+    with pytest.raises(ValueError, match="public corpus index artifact hash mismatch"):
         PublicKnowledgeIndex(tmp_path)

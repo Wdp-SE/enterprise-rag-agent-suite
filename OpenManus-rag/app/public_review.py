@@ -7,7 +7,6 @@ and human review. It never calls candidate activation or writes upstream data.
 from __future__ import annotations
 
 import hashlib
-import json
 import re
 import unicodedata
 from typing import Protocol
@@ -43,43 +42,34 @@ def _item(source: dict, content: str) -> dict:
     }
 
 
-def _confirmed_dsip_link(
+def _confirmed_dsip_document_reference(
     gateway: PublicKnowledgeGateway, selected: dict, current_version: str,
-) -> tuple[dict | None, dict | None]:
+) -> dict | None:
     proposal = "proposals/dsip-107-proposal"
     implementation = "proposals/dsip-107-implementation"
     if selected["document_key"] not in (proposal, implementation):
-        return None, None
-    other = implementation if selected["document_key"] == proposal else proposal
-    other_id = f"{current_version}:en:{other}"
-    candidates = gateway.document(other_id)
-    if other == implementation:
-        counterpart = next(
-            (row for row in candidates if "DSIP #18454" in row["content"]), None
-        )
-    else:
-        counterpart = next(iter(candidates), None)
-    if counterpart is None:
-        return None, None
-    # The PR body explicitly states it is an independent part of DSIP #18454.
-    # This confirms the proposal/implementation reference, not automatic impact.
-    canonical = json.dumps({
-        "source_item_id": selected["chunk_id"],
-        "target_item_id": counterpart["chunk_id"],
-        "provenance": "EXPLICIT",
-    }, sort_keys=True, separators=(",", ":"))
-    link = {
-        "trace_link_id": f"trace_{hashlib.sha256(canonical.encode()).hexdigest()[:20]}",
-        "source_item_id": selected["chunk_id"],
-        "target_item_id": counterpart["chunk_id"],
-        "provenance": "EXPLICIT", "status": "CONFIRMED",
-        "metadata": {
-            "evidence_ids": [counterpart["chunk_id"]],
-            "source_url": "https://github.com/apache/dolphinscheduler/pull/18464",
-            "reason": "官方实现 PR #18464 正文明确引用 DSIP #18454。",
-        },
+        return None
+    implementation_id = f"{current_version}:en:{implementation}"
+    source = next(
+        (
+            row for row in gateway.document(implementation_id)
+            if row["document_key"] == implementation
+            and row["source_url"] == "https://github.com/apache/dolphinscheduler/pull/18464"
+            and "independent part of DSIP #18454" in row["content"]
+        ),
+        None,
+    )
+    if source is None:
+        return None
+    return {
+        "relation_type": "DOCUMENT_REFERENCE",
+        "source_document_id": implementation_id,
+        "target_document_id": f"{current_version}:en:{proposal}",
+        "source_chunk_id": source["chunk_id"],
+        "source_heading": source["heading"],
+        "source_url": source["source_url"],
+        "source_excerpt": source["content"],
     }
-    return counterpart, link
 
 
 class PublicReviewAgent:
@@ -111,14 +101,13 @@ class PublicReviewAgent:
             if row["chunk_id"] != selected["chunk_id"]
             and row["document_id"] != selected["document_id"]
         ][:5]
-        counterpart, confirmed = _confirmed_dsip_link(self.gateway, selected, current_version)
-        if counterpart:
-            related = [counterpart] + [row for row in related if row["chunk_id"] != counterpart["chunk_id"]][:4]
-        links = [confirmed] if confirmed else []
+        document_reference = _confirmed_dsip_document_reference(
+            self.gateway, selected, current_version
+        )
         impacts = self.gateway.engineering_impacts({
             "changed_item_id": selected["chunk_id"],
             "items": [old_item] + [_item(row, row["content"]) for row in related],
-            "trace_links": links,
+            "trace_links": [],
             # Existing API field name is historical; candidates come from the
             # measured public BM25 retrieval policy, not a Dense claim.
             "dense_item_ids": [row["chunk_id"] for row in related],
@@ -130,15 +119,11 @@ class PublicReviewAgent:
             "selected_source": selected,
             "impacts": [{
                 "status": row["review_status"],
-                "relation": "confirmed" if row["review_status"] == "CONFIRMED" else "suggested",
-                "reason": (
-                    "官方实现 PR #18464 正文明确引用 DSIP #18454。"
-                    if row["review_status"] == "CONFIRMED"
-                    else "检索发现主题相关，可能受影响；尚无可核验的显式引用。"
-                ),
+                "relation": "suggested",
+                "reason": "检索发现主题相关，可能受影响；尚无可核验的段落级显式引用。",
                 "evidence": by_id[row["impacted_item_id"]],
             } for row in impacts],
-            "confirmed_relations": links,
+            "confirmed_relations": [document_reference] if document_reference else [],
             "patch_candidate": {
                 "target_chunk_id": selected["chunk_id"],
                 "before": selected["content"], "proposed_after": proposed,
