@@ -82,6 +82,29 @@ def test_public_rag_keeps_answer_before_real_cited_source(monkeypatch):
     assert "证据可信度" not in text
 
 
+def test_evidence_image_markdown_uses_text_placeholder_instead_of_missing_asset(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    image_chunk = {
+        **CHUNK,
+        "content": "Dependencies support execution tracking.\n\n"
+                   "![Apache DolphinScheduler](../../../img/introduction_ui.png)",
+    }
+    monkeypatch.setattr(PublicKnowledgeClient, "search", lambda self, question, **scope: {
+        "query": question, "results": [dict(image_chunk)], "retrieval_policy": "bm25",
+        "consistency_notes": [],
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本检索与问答").click().run()
+    next(button for button in app.button if button.label == "仅查看检索证据").click().run()
+
+    assert not app.exception
+    rendered = "\n".join(item.value for item in app.markdown)
+    assert "[图片：Apache DolphinScheduler]" in rendered
+    assert "![Apache DolphinScheduler]" not in rendered
+
+
 def test_public_rag_without_generation_shows_compact_evidence_fallback(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
@@ -102,22 +125,36 @@ def test_public_rag_without_generation_shows_compact_evidence_fallback(monkeypat
     assert "仅查看检索证据" in {button.label for button in app.button}
 
 
-def test_rag_and_agent_pages_offer_return_home_navigation(monkeypatch):
+def test_breadcrumbs_are_clickable_and_back_returns_to_previous_module(monkeypatch):
     _mock_client(monkeypatch)
     app = AppTest.from_file(APP, default_timeout=40).run()
 
     next(button for button in app.button if button.label == "版本检索与问答").click().run()
-    assert "返回首页" in {button.label for button in app.button}
-    next(button for button in app.button if button.label == "返回首页").click().run()
+    labels = {button.label for button in app.button}
+    assert {"←", "首页", "知识检索"} <= labels
+    assert "返回首页" not in labels
+    assert any(
+        'class="breadcrumbs-current"' in item.value
+        and 'aria-current="page"' in item.value
+        and "版本检索与问答" in item.value
+        for item in app.markdown
+    )
+
+    next(button for button in app.button if button.label == "新建变更审查").click().run()
+    next(button for button in app.button if button.label == "←").click().run()
+    assert app.session_state["official_nav"] == "版本检索与问答"
+
+    next(button for button in app.button if button.label == "首页").click().run()
     assert app.session_state["official_nav"] == "总览"
 
     next(button for button in app.button if button.label == "新建变更审查").click().run()
-    assert "返回首页" in {button.label for button in app.button}
-    next(button for button in app.button if button.label == "返回首页").click().run()
+    next(button for button in app.button if button.label == "变更审查").click().run()
+    assert app.session_state["official_nav"] == "新建变更审查"
+    next(button for button in app.button if button.label == "首页").click().run()
     assert app.session_state["official_nav"] == "总览"
 
 
-def test_review_subpage_returns_to_agent_then_home(monkeypatch):
+def test_review_subpage_breadcrumb_and_back_history(monkeypatch):
     _mock_client(monkeypatch)
     app = AppTest.from_file(APP, default_timeout=40).run()
     next(button for button in app.button if button.label == "新建变更审查").click().run()
@@ -126,15 +163,31 @@ def test_review_subpage_returns_to_agent_then_home(monkeypatch):
 
     next(button for button in app.button if button.label == "人工审核").click().run()
     assert app.session_state["official_nav"] == "人工审核"
-    assert "返回审查" in {button.label for button in app.button}
-    assert "返回首页" in {button.label for button in app.button}
+    assert {"←", "首页", "变更审查"} <= {button.label for button in app.button}
+    assert "返回审查" not in {button.label for button in app.button}
 
-    next(button for button in app.button if button.label == "返回审查").click().run()
+    next(button for button in app.button if button.label == "变更审查").click().run()
     assert app.session_state["official_nav"] == "新建变更审查"
     assert app.session_state["official_review"]["sandbox_only"] is True
 
-    next(button for button in app.button if button.label == "返回首页").click().run()
-    assert app.session_state["official_nav"] == "总览"
+    next(button for button in app.button if button.label == "←").click().run()
+    assert app.session_state["official_nav"] == "人工审核"
+
+
+def test_rag_actions_alerts_and_typography_use_neutral_accessible_styles(monkeypatch):
+    _mock_client(monkeypatch)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本检索与问答").click().run()
+    assert app.button(key="knowledge_generate")
+    assert app.button(key="knowledge_search")
+
+    from components.public_theme import PUBLIC_CSS
+
+    assert ".st-key-knowledge_generate button" in PUBLIC_CSS
+    assert ".st-key-knowledge_search button" in PUBLIC_CSS
+    assert "[data-testid=\"stAlert\"]" in PUBLIC_CSS
+    assert "background:var(--paper)!important" in PUBLIC_CSS
+    assert "font-size:1.14rem" in PUBLIC_CSS
 
 
 def test_workbench_theme_keeps_neutral_base_and_equal_home_cards():
@@ -147,6 +200,17 @@ def test_workbench_theme_keeps_neutral_base_and_equal_home_cards():
     assert "background:var(--paper)!important;color:var(--ink);" in PUBLIC_CSS
     assert "border:1px solid var(--line-strong)!important;border-radius:5px!important;" in PUBLIC_CSS
     assert ".st-key-generated_answer {" in PUBLIC_CSS
+    assert "--blue-soft" not in PUBLIC_CSS
+
+
+def test_wide_layout_uses_full_main_column_and_unframed_back_arrow():
+    from components.public_theme import PUBLIC_CSS
+
+    assert "max-width:none!important;width:100%!important;margin:0!important;" in PUBLIC_CSS
+    assert ".block-container {background:var(--paper);" in PUBLIC_CSS
+    assert '[data-testid="stHeader"] {background:var(--paper);}' in PUBLIC_CSS
+    assert "width:clamp(240px,16vw,280px)!important;" in PUBLIC_CSS
+    assert "background:transparent!important;color:var(--ink)!important;border:0!important;box-shadow:none!important;" in PUBLIC_CSS
 
 
 def test_stale_navigation_state_recovers_to_home(monkeypatch):
@@ -296,4 +360,4 @@ def test_switching_source_resets_previous_unsent_draft(monkeypatch):
     app.selectbox(key="official_change_chunk").set_value(second["chunk_id"]).run()
     assert not app.exception
     assert app.text_area(key="official_proposed_text").value == second["content"]
-    assert app.session_state.get("official_review_decision") is None
+    assert app.session_state.filtered_state.get("official_review_decision") is None

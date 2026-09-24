@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import uuid
 from pathlib import Path
@@ -55,6 +56,15 @@ def _remember_document_titles(docs: list[dict]) -> None:
                    for row in docs if row.get("document_id")})
 
 
+def _replace_markdown_images(content: str) -> str:
+    """Keep source image descriptions without requesting assets absent from the public corpus."""
+    return re.sub(
+        r"!\[([^\]]*)\]\([^)]*\)",
+        lambda match: f"[图片：{match.group(1).strip() or '未命名图片'}]",
+        content,
+    )
+
+
 def _source_card(row: dict, *, index: int) -> None:
     section = row.get("heading") or "正文"
     document_title = st.session_state.get("official_document_titles", {}).get(row.get("document_id")) or row.get("document_key") or "官方资料"
@@ -69,7 +79,7 @@ def _source_card(row: dict, *, index: int) -> None:
     with st.container(border=True, key=f"source_card_{index}"):
         st.markdown(f"**[{index}] {document_title}**")
         st.caption(f"章节：{section}　｜　{version_label} {version}　｜　{row.get('locale', '')}　｜　{source_label}")
-        content = row.get("content", "")
+        content = _replace_markdown_images(row.get("content", ""))
         st.write(content[:340] + ("…" if len(content) > 340 else ""))
         if row.get("source_url"):
             st.markdown(f"[查看官方原文]({row['source_url']})")
@@ -132,29 +142,65 @@ PAGE_PARENTS = {
     "修改前后对照": "新建变更审查",
     "人工审核": "新建变更审查",
 }
+SECTION_ROUTES = {
+    "知识检索": "版本检索与问答",
+    "知识服务": "版本检索与问答",
+    "变更审查": "新建变更审查",
+    "系统说明": "系统说明",
+}
 
 
 def _navigate(destination: str) -> None:
-    st.session_state["official_nav"] = destination if destination in NAV_PAGES else "总览"
+    destination = destination if destination in NAV_PAGES else "总览"
+    current = st.session_state.get("official_nav", "总览")
+    if current not in NAV_PAGES:
+        current = "总览"
+    if current != destination:
+        history = [page for page in st.session_state.get("official_nav_history", []) if page in NAV_PAGES]
+        history.append(current)
+        st.session_state["official_nav_history"] = history[-24:]
+    st.session_state["official_nav"] = destination
+
+
+def _navigate_back() -> None:
+    current = st.session_state.get("official_nav", "总览")
+    history = [page for page in st.session_state.get("official_nav_history", []) if page in NAV_PAGES]
+    while history:
+        previous = history.pop()
+        if previous != current:
+            st.session_state["official_nav_history"] = history
+            st.session_state["official_nav"] = previous
+            return
+    st.session_state["official_nav_history"] = history
+    st.session_state["official_nav"] = PAGE_PARENTS.get(current, "总览")
 
 
 def _page_header(section: str, title: str, *, page_key: str, parent: str | None = None) -> None:
     with st.container(key=f"page_header_{page_key}"):
-        path = f"首页　/　<strong>{escape(section)}</strong>"
-        if parent:
-            path += f"　/　<strong>{escape(title)}</strong>"
-            breadcrumb, back, home = st.columns([6, 1, 1], gap="small")
-        else:
-            breadcrumb, home = st.columns([7, 1], gap="small")
-        with breadcrumb:
-            st.markdown(f'<div class="breadcrumbs">{path}</div>', unsafe_allow_html=True)
-        if parent:
-            with back:
-                st.button("返回审查", key=f"return_parent_{page_key}", on_click=_navigate,
-                          args=(parent,), use_container_width=True)
-        with home:
-            st.button("返回首页", key=f"return_home_{page_key}", on_click=_navigate,
-                      args=("总览",), use_container_width=True)
+        back, trail = st.columns([.22, 4.2], gap="small")
+        with back:
+            st.button("←", key=f"nav_back_{page_key}", help="返回上一个操作模块",
+                      on_click=_navigate_back)
+        with trail:
+            home, first_separator, group, second_separator, current = st.columns(
+                [.65, .12, 1.05, .12, 1.75], gap="small"
+            )
+            with home:
+                st.button("首页", key=f"breadcrumb_home_{page_key}", help="跳转到工作台总览",
+                          on_click=_navigate, args=("总览",))
+            with first_separator:
+                st.markdown('<div class="breadcrumb-separator">›</div>', unsafe_allow_html=True)
+            with group:
+                st.button(section, key=f"breadcrumb_section_{page_key}",
+                          on_click=_navigate, args=(SECTION_ROUTES.get(section, parent or "总览"),))
+            if section != title:
+                with second_separator:
+                    st.markdown('<div class="breadcrumb-separator">›</div>', unsafe_allow_html=True)
+                with current:
+                    st.markdown(
+                        f'<div class="breadcrumbs-current" aria-current="page">{escape(title)}</div>',
+                        unsafe_allow_html=True,
+                    )
     st.title(title)
 
 
@@ -255,9 +301,11 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
     question = st.text_area("你的问题", value=examples[0], height=100, key="official_question")
     generate_col, search_col = st.columns([1, 1], gap="small")
     with generate_col:
-        ask_now = st.button("生成带引用回答", type="primary", disabled=not ready or not question.strip(), use_container_width=True)
+        ask_now = st.button("生成带引用回答", type="primary", key="knowledge_generate",
+                            disabled=not ready or not question.strip(), use_container_width=True)
     with search_col:
-        search_now = st.button("仅查看检索证据", disabled=not ready or not question.strip(), use_container_width=True)
+        search_now = st.button("仅查看检索证据", key="knowledge_search",
+                               disabled=not ready or not question.strip(), use_container_width=True)
     budget_limit = int(_setting("MAX_LLM_CALLS_PER_SESSION", "3"))
     remaining = budget_limit - st.session_state.get("official_generation_calls", 0)
     if remaining <= 0:
@@ -346,7 +394,7 @@ def _impact_panel(result: dict) -> None:
             with st.container(border=True):
                 st.markdown("**官方实现 PR #18464 → DSIP #18454**")
                 st.caption(f"明确引用所在章节：{reference['source_heading']}")
-                excerpt = reference["source_excerpt"]
+                excerpt = _replace_markdown_images(reference["source_excerpt"])
                 st.write(excerpt[:300] + ("…" if len(excerpt) > 300 else ""))
                 st.markdown(f"[查看明确引用的官方原文]({reference['source_url']})")
                 if len(excerpt) > 300:
@@ -362,7 +410,7 @@ def _impact_panel(result: dict) -> None:
             st.markdown(f"**建议核对 · {evidence.get('heading') or evidence.get('document_key')}**")
             st.caption(f"{evidence.get('version', '')}　｜　{evidence.get('locale', '')}　｜　可能受影响")
             st.write(item.get("reason", "请核对官方原文与显式引用。"))
-            content = evidence.get("content", "")
+            content = _replace_markdown_images(evidence.get("content", ""))
             st.write(content[:300] + ("…" if len(content) > 300 else ""))
             st.markdown(f"[查看官方原文]({evidence['source_url']})")
             if len(content) > 300:
@@ -627,9 +675,13 @@ def _about(workspace: dict | None) -> None:
 def render() -> None:
     st.markdown(CSS, unsafe_allow_html=True)
     choice = st.session_state.setdefault("official_nav", "总览")
+    st.session_state.setdefault("official_nav_history", [])
     if choice not in NAV_PAGES:
         choice = "总览"
         st.session_state["official_nav"] = choice
+        st.session_state["official_nav_history"] = [
+            page for page in st.session_state["official_nav_history"] if page in NAV_PAGES
+        ]
     client = _client()
     workspace = _request(client.workspace, fallback="知识服务暂未连接，页面仍可浏览。")
     ready = bool(workspace)
