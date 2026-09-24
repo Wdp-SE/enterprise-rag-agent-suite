@@ -16,6 +16,15 @@ STEPS = (
 )
 
 
+def case_knowledge_scope(mode: str, case: Any) -> dict:
+    """The current case is the default; global search requires an explicit choice."""
+    if mode == "当前案例":
+        return {"project_ids": [case.project_id], "active_only": True}
+    if mode == "全部资料":
+        return {"active_only": True}
+    raise ValueError("未知检索范围")
+
+
 def build_status_cards(
     case: Any,
     catalog: list[dict],
@@ -23,11 +32,14 @@ def build_status_cards(
     artifact_status: dict | None,
     agent_status: dict,
 ) -> dict[str, str | int]:
+    project_catalog = [
+        document for document in catalog
+        if document.get("project_id") == case.project_id
+    ]
     requirement = next(
         (
-            document for document in catalog
-            if document.get("project_id") == case.project_id
-            and document.get("document_type") == "REQUIREMENT"
+            document for document in project_catalog
+            if document.get("document_type") in {"REQUIREMENT", "需求规格说明书"}
         ),
         None,
     )
@@ -45,9 +57,9 @@ def build_status_cards(
         "project": case.project_id,
         "current_version": current_version,
         "current_version_id": current_version_id,
-        "document_count": len(catalog),
-        "version_count": sum(len(item.get("versions") or []) for item in catalog),
-        "system_status": "Ready" if ready else "待连接",
+        "document_count": len(project_catalog),
+        "version_count": sum(len(item.get("versions") or []) for item in project_catalog),
+        "system_status": "就绪" if ready else "待连接",
     }
 
 

@@ -1,46 +1,60 @@
-# 免费公网部署与验收指南
+# 官方公开资料工作台：部署与验收
 
-本仓库的公开演示使用合成研发资料。RAG 服务和 Streamlit 应用已经各有公网地址；新版本是否已上线取决于平台实际部署的 GitHub 提交，不能只凭网址存在判断。
+本地尚未提交/推送的新版使用 **Apache DolphinScheduler 官方公开资料**。下列现有公网地址已经存在，但重新部署前仍可能运行旧版合成案例；请在平台核对部署提交，不能只凭网址可访问判断新版已上线。
 
 - GitHub：[Wdp-SE/enterprise-rag-agent-suite](https://github.com/Wdp-SE/enterprise-rag-agent-suite)
-- 部署分支：`feature/public-value-prototype`
+- 分支：`feature/public-value-prototype`（本轮不提交、不推送）
 - [Streamlit 工作台](https://enterprise-rag-agent-suite-bfmkgsimdisxcewgco7ydk.streamlit.app/)
-- [Render RAG API 文档](https://version-aware-rag-public-demo.onrender.com/docs)
-- [Render RAG 健康状态](https://version-aware-rag-public-demo.onrender.com/health)
+- [Render API 文档](https://version-aware-rag-public-demo.onrender.com/docs)
+- [Render 健康状态](https://version-aware-rag-public-demo.onrender.com/health)
 
-## Render：版本可信 RAG
+## Render：FastAPI
 
-仓库根目录的 `render.yaml` 是配置来源：`RAG-Challenge-2-main` 为根目录，Free Web Service，Python 3.12.8，构建命令 `pip install -r requirements-render.txt`，启动命令 `uvicorn src.rd_v2_api:app --host 0.0.0.0 --port $PORT`，健康检查 `/health`。
+[render.yaml](../../render.yaml) 已指定 Free Web Service、`RAG-Challenge-2-main` 根目录、Python 3.12.8、`pip install -r requirements-render.txt`、`uvicorn src.public_server:app --host 0.0.0.0 --port $PORT` 和 `/health`。原有合成 Artifact 与旧 FastAPI 入口只保留在仓库内供回归夹具使用；公网服务仅从仓库内 `public_corpus/` 加载 **52 份官方资料、659 个片段、BM25 策略文件**供 `/public/*` 公开知识端点使用。启动时不抓取网络资料、不运行 OCR、不重建 Embedding/FAISS；不需要 PostgreSQL、Redis、持久磁盘或 Worker。
 
-正式公网配置加载 `public_demo_artifacts/rd-v2-public-demo-v1`，设置 `APP_ENV=public_demo`、临时候选版本目录 `/tmp/public-demo-candidates`，并保持 `RD_V2_ALLOW_EXTERNAL_GENERATION=false`。它不依赖被 Git 忽略的 `data/rd_v2_corpus/`，也不在启动时重建 OCR、Embedding 或 FAISS。当前演示无需数据库、Redis、持久磁盘、Worker 或个人模型密钥。
+新部署清单使用 `APP_ENV=public_demo`、`RD_V2_ALLOW_EXTERNAL_GENERATION=false` 与每会话预算；当前公开入口不依赖历史合成 Artifact。无模型密钥时可用 `/public/search`、真实文档目录与假设变更审查；`/public/query` 会明确返回 `GENERATION_NOT_CONFIGURED` 并给出检索候选，不伪造答案。**要启用有引用的生成式回答**，由部署者在 Render 平台输入 `DASHSCOPE_API_KEY`，并把 `RD_V2_ALLOW_EXTERNAL_GENERATION` 设为 `true`。不要将密钥写入代码、日志或文档。服务端会校验 LLM 引用确实来自本次检索，并限制每 Session 调用次数。
 
-只读验证：
+部署新版后的只读核验：
 
 ```powershell
-cd RAG-Challenge-2-main
-.\.venv\Scripts\python.exe scripts\public_demo_smoke.py --base-url https://version-aware-rag-public-demo.onrender.com
+$base = 'https://version-aware-rag-public-demo.onrender.com'
+Invoke-RestMethod "$base/health"
+Invoke-RestMethod "$base/public/workspace"
+Invoke-RestMethod "$base/public/documents"
+$body = @{ query = 'DolphinScheduler 参数优先级从高到低是什么？'; version = '3.4.3'; language = 'zh_preferred' } | ConvertTo-Json
+Invoke-RestMethod "$base/public/search" -Method Post -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($body))
 ```
 
-该命令只调用 `/health` 与 `/retrieve`，检查当前有效版本；不调用 `/query`、不发布候选版本。部署失败时检查 Render Build/Runtime 日志、Python 版本、根目录、依赖、资产相对路径和 `$PORT`。Render Free 空闲后可能休眠，首次请求须允许冷启动时间。
+`/public/workspace` 应显示 3.4.2 / 3.4.3、52 个来源与默认 BM25。若线上仍返回 404，说明 Render 尚未部署本轮代码。Render Free 可能冷启动；观察 Build/Runtime logs 和根目录、依赖、资产路径、`$PORT`、内存。原有 `scripts/public_demo_smoke.py` 面向历史合成接口，**不能用于**新版公开服务；请以 `/public/workspace` 与真实资料检索验收。
 
-## Streamlit Community Cloud：业务工作台
-
-已有应用的设置应为：
+## Streamlit Community Cloud
 
 | 字段 | 值 |
-|---|---|
+| --- | --- |
 | Repository | `Wdp-SE/enterprise-rag-agent-suite` |
 | Branch | `feature/public-value-prototype` |
 | Main file path | `demo-ui/app.py` |
 | Python | 3.12 |
-| 依赖 | `demo-ui/requirements.txt` |
+| Dependency file | `demo-ui/requirements.txt` |
 
-在 Streamlit Cloud 的 Secrets 页面按 [示例](../../demo-ui/.streamlit/secrets.toml.example) 配置 `APP_ENV="public_demo"`、`RAG_API_BASE_URL="https://version-aware-rag-public-demo.onrender.com"`、临时 `DEMO_RUNTIME_ROOT`、`DEMO_ALLOW_RAG_QUERY=false`、超时/重试与 Session 预算。不要将实际 `secrets.toml` 或 API Key 提交到 Git。公开主流程不需要 `DASHSCOPE_API_KEY`；在线生成保持禁用。
+按 [Secrets 示例](../../demo-ui/.streamlit/secrets.toml.example)设置 `APP_ENV="public_demo"`、`DEMO_LEGACY_FIXTURES=false`、`RAG_API_BASE_URL="https://version-aware-rag-public-demo.onrender.com"`、超时/重试和 `MAX_LLM_CALLS_PER_SESSION=3`。**不要**把 `DASHSCOPE_API_KEY` 放进 Streamlit：模型调用只由 Render 后端执行。`DEMO_LEGACY_FIXTURES=true` 仅用于历史合成夹具，不应设置在公网 App。
 
-发布新 UI 后先在平台确认部署提交与目标提交一致，再用真实浏览器完成：工作台加载、RAG Ready、Case A / Case B 分析、引用依据、Patch Review、候选版本和安全发布，并在另一 Session 检查隔离。主页截图来自本分支的本地公开合成配置，不代替线上验收。
+部署后用真实浏览器验收：首页两个模块和 Apache 来源声明；中文、英文、中英混合检索；历史版本 Scope；配置了模型时的有引用回答；DSIP-107 假设变更的已确认 PR 关系与其他“建议”关系；人工审核；另开 Session 不看到前一会话草案。确认公共资料 Manifest 的哈希不变。
 
-## 本地复现
+## 本地复现和回归
 
-新克隆用户按[根目录 Quick Start](../../README.md)安装 Python 3.12 环境，再执行 `start_prototype.ps1`。脚本使用仓库已跟踪的公开合成资产和系统临时运行目录；不需要私有语料或历史 `runtime/`。
+按[根目录 Quick Start](../../README.md)装好依赖后执行 `./start_prototype.ps1`，打开 <http://127.0.0.1:8502/>。有密钥时可运行 `./start_prototype.ps1 -EnableGeneration`；无需提供密钥也可完成其余 Smoke。端口占用时指定 `-RagPort` 与 `-UiPort`。原有三个未跟踪 DOCX、用户 runtime 与私有文件不参与新 Clone 启动。
 
-平台参考：[Render Blueprint](https://render.com/docs/blueprint-spec)、[Render Free](https://render.com/docs/free)、[Streamlit Cloud 部署](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/deploy)、[Streamlit Secrets](https://docs.streamlit.io/develop/concepts/connections/secrets-management)。本地性能报告不等于公网端到端延迟，免费服务也不提供生产 SLA。
+```powershell
+Push-Location RAG-Challenge-2-main
+& .\.venv\Scripts\python.exe -m pytest tests -q
+Pop-Location
+Push-Location OpenManus-rag
+& .\.venv\Scripts\python.exe -m pytest tests -q
+Pop-Location
+Push-Location demo-ui
+& ..\OpenManus-rag\.venv\Scripts\python.exe -m pytest -p no:cacheprovider tests -q
+Pop-Location
+```
+
+真实检索对照、Ground Truth 和逐条结果在 [evaluation/real_world_retrieval](../../evaluation/real_world_retrieval/)；固定来源、SHA-256、Apache LICENSE/NOTICE 在 [public_corpus](../../RAG-Challenge-2-main/public_corpus/)。本地检索 P50/P95 不包括公网冷启动、HTTP 与 LLM 时间，也不是生产 SLA。

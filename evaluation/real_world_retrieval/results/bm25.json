@@ -1,0 +1,1106 @@
+[
+  {
+    "id": "ds-001",
+    "category": "zh",
+    "query": "DolphinScheduler 参数优先级从高到低是什么？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/parameter/priority:1",
+      "3.4.3:zh:guide/parameter/context:1",
+      "3.4.3:zh:architecture/design:10",
+      "3.4.3:zh:guide/parameter/context:8",
+      "3.4.3:zh:guide/parameter/priority:2"
+    ],
+    "candidates": 5,
+    "latency_ms": 2.328,
+    "error": null
+  },
+  {
+    "id": "ds-002",
+    "category": "zh",
+    "query": "全局参数在哪里配置？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/parameter/global:1",
+      "3.4.3:zh:guide/parameter/context:2",
+      "3.4.3:zh:guide/parameter/global:4",
+      "3.4.3:zh:guide/parameter/context:7",
+      "3.4.3:zh:guide/task/switch:6"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.483,
+    "error": null
+  },
+  {
+    "id": "ds-003",
+    "category": "zh",
+    "query": "本地参数的作用范围是什么？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/parameter/context:2",
+      "3.4.3:zh:guide/parameter/context:1",
+      "3.4.3:zh:guide/parameter/local:2",
+      "3.4.3:zh:guide/parameter/local:1",
+      "3.4.3:zh:guide/parameter/context:4"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.228,
+    "error": null
+  },
+  {
+    "id": "ds-004",
+    "category": "zh",
+    "query": "内置参数 system.biz.date 表示什么？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      1,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/parameter/built-in:1",
+      "3.4.3:zh:guide/parameter/local:3",
+      "3.4.3:zh:guide/parameter/built-in:2",
+      "3.4.3:zh:guide/parameter/built-in:3",
+      "3.4.3:zh:guide/parameter/priority:1"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.089,
+    "error": null
+  },
+  {
+    "id": "ds-005",
+    "category": "zh",
+    "query": "启动参数在哪里设置？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/parameter/startup-parameter:2",
+      "3.4.3:zh:guide/parameter/startup-parameter:5",
+      "3.4.3:zh:guide/project/workflow-definition:8",
+      "3.4.3:zh:guide/parameter/startup-parameter:1",
+      "3.4.3:zh:guide/parameter/startup-parameter:7"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.138,
+    "error": null
+  },
+  {
+    "id": "ds-006",
+    "category": "zh",
+    "query": "依赖节点可以检查什么？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/task/dependent:1",
+      "3.4.3:zh:guide/task/dependent:4",
+      "3.4.3:zh:guide/task/dependent:3",
+      "3.4.3:zh:architecture/design:9",
+      "3.4.3:zh:architecture/task-structure:36"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.047,
+    "error": null
+  },
+  {
+    "id": "ds-007",
+    "category": "zh",
+    "query": "Switch 任务如何设置分支条件？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/task/switch:3",
+      "3.4.3:zh:guide/task/switch:6",
+      "3.4.3:zh:guide/task/switch:1",
+      "3.4.3:zh:guide/task/switch:2",
+      "3.4.3:zh:architecture/task-structure:32"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.179,
+    "error": null
+  },
+  {
+    "id": "ds-008",
+    "category": "zh",
+    "query": "如何创建工作流定义？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/task/dependent:2",
+      "3.4.3:zh:guide/project/workflow-definition:2",
+      "3.4.3:zh:guide/project/workflow-definition:4",
+      "3.4.3:zh:guide/task/switch:2",
+      "3.4.3:zh:guide/project/workflow-definition:3"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.221,
+    "error": null
+  },
+  {
+    "id": "ds-009",
+    "category": "zh",
+    "query": "工作流实例的日志在哪里查看？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/project/workflow-instance:4",
+      "3.4.3:zh:guide/project/workflow-instance:2",
+      "3.4.3:zh:guide/project/workflow-instance:1",
+      "3.4.3:zh:guide/project/workflow-instance:3",
+      "3.4.3:zh:guide/project/workflow-instance:5"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.254,
+    "error": null
+  },
+  {
+    "id": "ds-010",
+    "category": "zh",
+    "query": "升级 DolphinScheduler 前要备份什么？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/upgrade/upgrade:2",
+      "3.4.3:zh:architecture/configuration:6",
+      "3.4.3:zh:guide/upgrade/upgrade:5",
+      "3.4.3:zh:guide/upgrade/upgrade:11",
+      "3.4.3:zh:guide/upgrade/incompatible:5"
+    ],
+    "candidates": 5,
+    "latency_ms": 0.95,
+    "error": null
+  },
+  {
+    "id": "ds-011",
+    "category": "en",
+    "query": "What is the API server health-check endpoint?",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:architecture/configuration:51",
+      "3.4.3:en:architecture/configuration:10",
+      "3.4.3:en:guide/api/open-api:3",
+      "3.4.3:en:architecture/configuration:13",
+      "3.4.3:en:architecture/configuration:49"
+    ],
+    "candidates": 5,
+    "latency_ms": 2.595,
+    "error": null
+  },
+  {
+    "id": "ds-012",
+    "category": "en",
+    "query": "What is the default dependency check interval?",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/task/dependent:4",
+      "3.4.3:en:guide/task/dependent:1",
+      "3.4.3:en:guide/project/workflow-definition:17",
+      "3.4.3:en:architecture/configuration:40",
+      "3.4.3:zh:architecture/task-structure:5"
+    ],
+    "candidates": 5,
+    "latency_ms": 2.943,
+    "error": null
+  },
+  {
+    "id": "ds-013",
+    "category": "en",
+    "query": "Which parameter source has the highest priority?",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/parameter/priority:5",
+      "3.4.3:en:guide/parameter/priority:1",
+      "3.4.3:en:architecture/design:22",
+      "3.4.3:en:guide/project/workflow-definition:14",
+      "3.4.3:en:architecture/design:23"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.974,
+    "error": null
+  },
+  {
+    "id": "ds-014",
+    "category": "en",
+    "query": "What is system.workflow.instance.id?",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/parameter/built-in:2",
+      "3.4.3:zh:guide/parameter/built-in:1",
+      "3.4.3:en:guide/parameter/context:10",
+      "3.4.3:en:guide/project/workflow-definition:18",
+      "3.4.3:en:architecture/design:14"
+    ],
+    "candidates": 5,
+    "latency_ms": 0.886,
+    "error": null
+  },
+  {
+    "id": "ds-015",
+    "category": "en",
+    "query": "Where are global parameters configured?",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/parameter/context:2",
+      "3.4.3:en:guide/parameter/startup-parameter:1",
+      "3.4.3:en:guide/task/switch:6",
+      "3.4.3:en:guide/parameter/global:1",
+      "3.4.3:en:guide/task/switch:3"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.21,
+    "error": null
+  },
+  {
+    "id": "ds-016",
+    "category": "en",
+    "query": "How do I create an Open API token?",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/api/open-api:3",
+      "3.4.3:en:guide/api/open-api:2",
+      "3.4.3:en:guide/api/open-api:4",
+      "3.4.3:zh:guide/api/open-api:3",
+      "3.4.3:en:guide/parameter/context:5"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.245,
+    "error": null
+  },
+  {
+    "id": "ds-017",
+    "category": "en",
+    "query": "What does Serial Discard do?",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/project/workflow-definition:8",
+      "3.4.3:en:contribute/backend/mechanism/global-parameter:5",
+      "3.4.3:en:contribute/backend/mechanism/global-parameter:4",
+      "3.4.3:en:guide/project/workflow-definition:15",
+      "3.4.3:en:proposals/dsip-107-implementation:5"
+    ],
+    "candidates": 5,
+    "latency_ms": 0.724,
+    "error": null
+  },
+  {
+    "id": "ds-018",
+    "category": "mixed",
+    "query": "worker group 默认是什么？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:architecture/configuration:39",
+      "3.4.3:en:architecture/task-structure:26",
+      "3.4.3:en:architecture/task-structure:31",
+      "3.4.3:en:architecture/task-structure:15",
+      "3.4.3:zh:architecture/configuration:12"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.001,
+    "error": null
+  },
+  {
+    "id": "ds-019",
+    "category": "mixed",
+    "query": "workflow timeout alarm 在哪里配置？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/project/workflow-definition:15",
+      "3.4.3:en:guide/project/workflow-definition:4",
+      "3.4.3:zh:guide/task/switch:6",
+      "3.4.3:en:guide/project/workflow-definition:14",
+      "3.4.3:en:architecture/design:9"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.431,
+    "error": null
+  },
+  {
+    "id": "ds-020",
+    "category": "mixed",
+    "query": "Parameter Context 和 Startup Parameter 哪个优先？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/parameter/context:7",
+      "3.4.3:en:guide/parameter/priority:1",
+      "3.4.3:en:guide/parameter/priority:5",
+      "3.4.3:zh:guide/parameter/context:1",
+      "3.4.3:en:guide/parameter/context:10"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.37,
+    "error": null
+  },
+  {
+    "id": "ds-021",
+    "category": "mixed",
+    "query": "Dependent task 的 Check interval 默认多久？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/task/dependent:4",
+      "3.4.3:en:guide/task/dependent:1",
+      "3.4.3:en:architecture/task-structure:46",
+      "3.4.3:zh:architecture/task-structure:40",
+      "3.4.3:en:architecture/task-structure:42"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.443,
+    "error": null
+  },
+  {
+    "id": "ds-022",
+    "category": "mixed",
+    "query": "Open API 的 token 要怎样创建？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/api/open-api:3",
+      "3.4.3:zh:guide/api/open-api:2",
+      "3.4.3:en:guide/api/open-api:2",
+      "3.4.3:zh:guide/api/open-api:4",
+      "3.4.3:zh:guide/api/open-api:3"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.533,
+    "error": null
+  },
+  {
+    "id": "ds-023",
+    "category": "mixed",
+    "query": "3.4.3 的 missed_fire_policy 对旧 schedule 默认什么？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:proposals/dsip-107-implementation:3",
+      "3.4.3:en:guide/upgrade/incompatible:8",
+      "3.4.3:en:proposals/dsip-107-proposal:3",
+      "3.4.3:zh:guide/upgrade/incompatible:7",
+      "3.4.3:en:release-notes:9"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.954,
+    "error": null
+  },
+  {
+    "id": "ds-024",
+    "category": "exact",
+    "query": "system.task.definition.code",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/parameter/built-in:2",
+      "3.4.3:zh:guide/parameter/built-in:1",
+      "3.4.3:en:about/introduction:1",
+      "3.4.3:en:architecture/design:1",
+      "3.4.3:en:architecture/design:2"
+    ],
+    "candidates": 5,
+    "latency_ms": 0.59,
+    "error": null
+  },
+  {
+    "id": "ds-025",
+    "category": "exact",
+    "query": "system.biz.curdate",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/parameter/built-in:1",
+      "3.4.3:zh:guide/parameter/built-in:1",
+      "3.4.3:en:about/introduction:1",
+      "3.4.3:en:architecture/design:1",
+      "3.4.3:en:architecture/design:2"
+    ],
+    "candidates": 5,
+    "latency_ms": 0.467,
+    "error": null
+  },
+  {
+    "id": "ds-026",
+    "category": "exact",
+    "query": "/dolphinscheduler/actuator/health",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/api/healthcheck:2",
+      "3.4.3:zh:guide/api/healthcheck:2",
+      "3.4.3:en:guide/api/healthcheck:3",
+      "3.4.3:en:guide/api/healthcheck:4",
+      "3.4.3:zh:guide/api/healthcheck:3"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.042,
+    "error": null
+  },
+  {
+    "id": "ds-027",
+    "category": "exact",
+    "query": "missed_fire_policy",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:proposals/dsip-107-implementation:3",
+      "3.4.3:en:guide/upgrade/incompatible:8",
+      "3.4.3:zh:guide/upgrade/incompatible:7",
+      "3.4.3:en:about/introduction:1",
+      "3.4.3:en:architecture/design:1"
+    ],
+    "candidates": 5,
+    "latency_ms": 0.466,
+    "error": null
+  },
+  {
+    "id": "ds-028",
+    "category": "exact",
+    "query": "DSIP-107",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:release-notes:1",
+      "3.4.3:en:about/introduction:1",
+      "3.4.3:en:architecture/design:1",
+      "3.4.3:en:architecture/design:2",
+      "3.4.3:en:architecture/design:3"
+    ],
+    "candidates": 5,
+    "latency_ms": 0.418,
+    "error": null
+  },
+  {
+    "id": "ds-029",
+    "category": "exact",
+    "query": "DSIP-95",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.2:en:release-notes:1",
+      "3.4.2:en:guide/parameter/priority:1",
+      "3.4.2:en:guide/parameter/priority:2",
+      "3.4.2:en:guide/parameter/priority:3",
+      "3.4.2:en:guide/project/workflow-definition:1"
+    ],
+    "candidates": 5,
+    "latency_ms": 0.39,
+    "error": null
+  },
+  {
+    "id": "ds-030",
+    "category": "version",
+    "query": "3.4.3 新增的调度 misfire policy 对应哪个 DSIP？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:proposals/dsip-107-proposal:1",
+      "3.4.3:en:release-notes:1",
+      "3.4.3:en:proposals/dsip-107-implementation:2",
+      "3.4.3:en:proposals/dsip-107-proposal:6",
+      "3.4.3:en:proposals/dsip-107-proposal:2"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.655,
+    "error": null
+  },
+  {
+    "id": "ds-031",
+    "category": "version",
+    "query": "3.4.3 的 schedules 表新增了什么字段？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/upgrade/incompatible:7",
+      "3.4.3:zh:guide/upgrade/incompatible:4",
+      "3.4.3:zh:architecture/task-structure:3",
+      "3.4.3:zh:architecture/task-structure:2",
+      "3.4.3:en:guide/upgrade/incompatible:8"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.226,
+    "error": null
+  },
+  {
+    "id": "ds-032",
+    "category": "version",
+    "query": "3.4.2 的 HTTP TRACE 配置改动对应哪个 DSIP？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.2:en:release-notes:1",
+      "3.4.2:zh:architecture/configuration:21",
+      "3.4.2:zh:architecture/configuration:19",
+      "3.4.2:zh:guide/upgrade/incompatible:6",
+      "3.4.2:zh:architecture/configuration:44"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.715,
+    "error": null
+  },
+  {
+    "id": "ds-033",
+    "category": "version",
+    "query": "3.4.2 API complement data 的依赖能力是什么改动？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.2:en:release-notes:1",
+      "3.4.2:zh:guide/project/workflow-definition:1",
+      "3.4.2:en:guide/project/workflow-definition:15",
+      "3.4.2:en:guide/upgrade/incompatible:6",
+      "3.4.2:en:guide/project/workflow-definition:16"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.676,
+    "error": null
+  },
+  {
+    "id": "ds-034",
+    "category": "version",
+    "query": "3.4.3 参数优先级文档有哪些更新？",
+    "answerable": true,
+    "relevant_count": 2,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/parameter/context:1",
+      "3.4.3:zh:guide/parameter/priority:1",
+      "3.4.3:zh:guide/upgrade/incompatible:1",
+      "3.4.3:zh:contribute/backend/mechanism/global-parameter:2",
+      "3.4.3:zh:architecture/task-structure:6"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.432,
+    "error": null
+  },
+  {
+    "id": "ds-035",
+    "category": "cross_document",
+    "query": "依赖任务如何把输出参数传给下游，以及参数冲突如何决定优先级？",
+    "answerable": true,
+    "relevant_count": 2,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/parameter/context:4",
+      "3.4.3:zh:guide/task/dependent:4",
+      "3.4.3:zh:guide/parameter/local:3",
+      "3.4.3:zh:guide/parameter/context:1",
+      "3.4.3:zh:guide/parameter/context:3"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.855,
+    "error": null
+  },
+  {
+    "id": "ds-036",
+    "category": "cross_document",
+    "query": "What is the worker group setting when running a workflow and where is the execution recorded?",
+    "answerable": true,
+    "relevant_count": 2,
+    "relevance": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/project/workflow-definition:20",
+      "3.4.3:en:guide/project/workflow-definition:14",
+      "3.4.3:en:guide/project/workflow-definition:8",
+      "3.4.3:en:architecture/configuration:40",
+      "3.4.3:en:guide/project/workflow-definition:10"
+    ],
+    "candidates": 5,
+    "latency_ms": 5.088,
+    "error": null
+  },
+  {
+    "id": "ds-037",
+    "category": "cross_document",
+    "query": "API server health check 与 Open API 调用入口分别是什么？",
+    "answerable": true,
+    "relevant_count": 2,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/api/healthcheck:1",
+      "3.4.3:en:guide/api/open-api:3",
+      "3.4.3:zh:contribute/api-test:1",
+      "3.4.3:zh:guide/api/open-api:1",
+      "3.4.3:en:architecture/configuration:44"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.984,
+    "error": null
+  },
+  {
+    "id": "ds-038",
+    "category": "cross_document",
+    "query": "3.4.3 misfire policy 的 release 项与数据库升级字段如何对应？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/upgrade/upgrade:5",
+      "3.4.3:zh:guide/upgrade/upgrade:2",
+      "3.4.3:zh:guide/upgrade/incompatible:5",
+      "3.4.3:en:release-notes:9",
+      "3.4.3:zh:guide/upgrade/incompatible:4"
+    ],
+    "candidates": 5,
+    "latency_ms": 2.249,
+    "error": null
+  },
+  {
+    "id": "ds-039",
+    "category": "hard",
+    "query": "全局参数和启动参数同名谁覆盖谁？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/parameter/startup-parameter:2",
+      "3.4.3:zh:guide/project/workflow-instance:4",
+      "3.4.3:zh:guide/parameter/priority:3",
+      "3.4.3:zh:guide/parameter/context:2",
+      "3.4.3:zh:guide/parameter/priority:1"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.556,
+    "error": null
+  },
+  {
+    "id": "ds-040",
+    "category": "hard",
+    "query": "task priority 和 process priority 分别影响哪些队列？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:architecture/design:22",
+      "3.4.3:en:architecture/design:23",
+      "3.4.3:en:guide/project/workflow-definition:14",
+      "3.4.3:en:guide/project/workflow-definition:8",
+      "3.4.3:en:architecture/design:20"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.508,
+    "error": null
+  },
+  {
+    "id": "ds-041",
+    "category": "hard",
+    "query": "workflow definition 和 workflow instance 有何区别？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/project/workflow-definition:8",
+      "3.4.3:en:guide/parameter/built-in:2",
+      "3.4.3:en:guide/project/workflow-instance:7",
+      "3.4.3:en:guide/project/workflow-definition:13",
+      "3.4.3:en:release-notes:6"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.295,
+    "error": null
+  },
+  {
+    "id": "ds-042",
+    "category": "hard",
+    "query": "Master-Server 与 Worker-Server 的健康检查端口分别是什么？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:architecture/configuration:57",
+      "3.4.3:en:architecture/configuration:17",
+      "3.4.3:zh:architecture/configuration:50",
+      "3.4.3:en:architecture/configuration:13",
+      "3.4.3:en:architecture/configuration:10"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.282,
+    "error": null
+  },
+  {
+    "id": "ds-043",
+    "category": "hard",
+    "query": "上游同名参数中谁最后生效？",
+    "answerable": true,
+    "relevant_count": 1,
+    "relevance": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:guide/parameter/priority:1",
+      "3.4.3:zh:guide/parameter/priority:3",
+      "3.4.3:zh:guide/parameter/context:3",
+      "3.4.3:zh:guide/parameter/priority:2",
+      "3.4.3:zh:guide/parameter/context:5"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.093,
+    "error": null
+  },
+  {
+    "id": "ds-044",
+    "category": "no_answer",
+    "query": "DolphinScheduler 3.4.3 的商业许可每年多少钱？",
+    "answerable": false,
+    "relevant_count": 0,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:en:guide/upgrade/incompatible:7",
+      "3.4.3:zh:guide/upgrade/incompatible:6",
+      "3.4.3:en:guide/upgrade/incompatible:9",
+      "3.4.3:en:release-notes:9",
+      "3.4.3:en:guide/upgrade/incompatible:6"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.469,
+    "error": null
+  },
+  {
+    "id": "ds-045",
+    "category": "no_answer",
+    "query": "DolphinScheduler 核心开发者的私人手机号是什么？",
+    "answerable": false,
+    "relevant_count": 0,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:contribute/backend/mechanism/global-parameter:1",
+      "3.4.3:zh:guide/parameter/context:11",
+      "3.4.3:zh:architecture/configuration:21",
+      "3.4.3:zh:architecture/task-structure:3",
+      "3.4.3:zh:architecture/design:6"
+    ],
+    "candidates": 5,
+    "latency_ms": 1.472,
+    "error": null
+  },
+  {
+    "id": "ds-046",
+    "category": "no_answer",
+    "query": "2029 年 DolphinScheduler 4.9.0 的发布日是哪一天？",
+    "answerable": false,
+    "relevant_count": 0,
+    "relevance": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ranked_chunk_ids": [
+      "3.4.3:zh:architecture/task-structure:2",
+      "3.4.3:zh:guide/parameter/built-in:4",
+      "3.4.3:en:architecture/task-structure:3",
+      "3.4.3:zh:guide/parameter/global:2",
+      "3.4.3:en:guide/upgrade/incompatible:6"
+    ],
+    "candidates": 5,
+    "latency_ms": 2.114,
+    "error": null
+  }
+]

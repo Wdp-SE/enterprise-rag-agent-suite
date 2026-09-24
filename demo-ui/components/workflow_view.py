@@ -56,7 +56,7 @@ def render_workflow_result(result: dict, document_names: dict[str, str]) -> None
     cols[0].markdown(f"**状态**<br>{badge(result['workflow_status'])}", unsafe_allow_html=True)
     cols[1].metric("章节", result["template"]["section_count"])
     cols[2].metric("RAG 调用", result["total_rag_calls"])
-    cols[3].metric("Evidence", result["unique_evidence_count"])
+    cols[3].metric("引用依据", result["unique_evidence_count"])
     cols[4].metric("待补字段", result["missing_field_count"])
     cols[5].markdown(f"**全部通过**<br>{badge('YES' if result['all_sections_approved'] else 'NO')}", unsafe_allow_html=True)
     render_refresh_summary(result)
@@ -69,7 +69,7 @@ def render_workflow_result(result: dict, document_names: dict[str, str]) -> None
         review_status = section.get("review", {}).get("status", "PENDING")
         label = f"{section['section_title']} · {section['status']} · 审核 {review_status}"
         with st.expander(label):
-            st.markdown("**检索 Query**")
+            st.markdown("**检索问题**")
             for query in section.get("queries", []):
                 st.write(f"- {query}")
             st.markdown("**字段草稿**")
@@ -79,7 +79,7 @@ def render_workflow_result(result: dict, document_names: dict[str, str]) -> None
                 if field.get("missing_reason"):
                     message = business_failure_message(field["missing_reason"]) or "该字段暂不能进入正式流程，技术原因可在执行 Trace 中查看。"
                     st.warning(message)
-            st.markdown("**Evidence**")
+            st.markdown("**引用依据**")
             render_agent_evidence(section.get("evidence", []), document_names)
             review = section.get("review") or {}
             if review.get("reviewer"):
@@ -91,8 +91,8 @@ def render_downloads(result: dict, artifact_reader) -> None:
     labels = {
         "draft": ("下载草稿 DOCX", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
         "approved": ("下载正式 DOCX", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
-        "evidence": ("下载 Evidence JSON", "application/json"),
-        "trace": ("下载执行 Trace", "application/json"),
+        "evidence": ("下载引用依据 JSON", "application/json"),
+        "trace": ("下载执行轨迹", "application/json"),
     }
     available = [(key, value) for key, value in result["artifacts"].items() if value]
     columns = st.columns(max(1, len(available)))

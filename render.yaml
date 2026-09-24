@@ -5,23 +5,13 @@ services:
     rootDir: RAG-Challenge-2-main
     plan: free
     buildCommand: pip install -r requirements-render.txt
-    startCommand: uvicorn src.rd_v2_api:app --host 0.0.0.0 --port $PORT
+    startCommand: uvicorn src.public_server:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.8
       - key: APP_ENV
         value: public_demo
-      - key: RD_V2_PROJECT_ROOT
-        value: .
-      - key: RD_V2_ARTIFACT_ROOT
-        value: public_demo_artifacts/rd-v2-public-demo-v1
-      - key: RD_V4_VERSION_STORE_ROOT
-        value: /tmp/public-demo-candidates
-      - key: RD_V2_DENSE_TOP_K
-        value: "20"
-      - key: RD_V2_FINAL_TOP_K
-        value: "5"
       - key: RD_V2_ALLOW_EXTERNAL_GENERATION
         value: "false"
       - key: MAX_LLM_CALLS_PER_SESSION

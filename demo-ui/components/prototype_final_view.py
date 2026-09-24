@@ -301,13 +301,18 @@ def render_versions(catalog: list[dict]) -> None:
         return
     for document in catalog:
         active = document.get("active_version") or {}
-        title = document.get("title") or document.get("document_id") or "研发文档"
+        title = str(document.get("title") or document.get("document_id") or "研发文档")
+        title = title.replace("Case A", "演示案例 A").replace("Case B", "演示案例 B")
+        document_type = {
+            "REQUIREMENT": "需求规格说明书", "DESIGN": "系统设计说明书",
+            "API": "接口规范", "TEST": "测试用例", "RUNBOOK": "运维手册",
+        }.get(str(document.get("document_type") or ""), document.get("document_type") or "—")
         with st.expander(
             f"《{title}》 · 当前有效版本 {active.get('version_label') or '—'}",
             expanded=False,
         ):
             st.write(
-                f"文档类型：{document.get('document_type') or '—'}　"
+                f"文档类型：{document_type}　"
                 f"项目：{document.get('project_name') or document.get('project_id') or '—'}"
             )
             for version in document.get("versions") or []:

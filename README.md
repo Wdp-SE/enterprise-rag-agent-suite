@@ -1,137 +1,53 @@
 # 版本可信研发知识与变更审查系统
 
-## 1. 项目定位
-
-这是面向软件研发需求变更的版本可信知识与人工审查原型。研发需求从 V1 变为 V2 后，系统在当前有效文档范围内查找依据，区分已确认与疑似影响，提出可追溯的局部修改建议，并经过人工审核和确定性校验再发布候选版本。
-
-公开演示只使用仓库内的合成文档与轻量索引。它不提供企业级权限隔离，也不承诺生成结果天然正确。
-
-## 2. 为什么存在这个项目
-
-研发需求、设计、接口和测试文档会持续迭代。普通 RAG 容易把新旧版本一起召回；普通生成式 Agent 又可能在缺少引用、未经审核或目标内容已经变化时直接写入。本项目把版本治理、Evidence、局部修改、人工审核、候选版本校验和安全发布放在一条可验证的业务链中。
-
-## 3. 核心业务场景
-
-- Case A（PAYMENT）：最大并发由 500 调整为 1000，涉及吞吐量和同步转异步的研发资料变更。
-- Case B（AUDIT）：审计日志在线保存周期由 7 天调整为 30 天，用另一套 Requirement、Evidence、Patch 和研发资产验证同一流程。
-- 系统区分 ACTIVE 与 SUPERSEDED 版本；默认检索当前有效资料，历史版本须显式指定。
-- 影响分析分开呈现已登记关系和语义检索建议，后者始终需要人工判断。
-- Agent 提议局部段落修改；审核、引用时效、冲突和候选版本校验通过后才安全发布。
-
-两套固定合成案例证明同一业务链可复用，不代表对所有企业文档自动适用。
-
-## 4. Public Demo
+基于 **Apache DolphinScheduler 官方公开资料**的双语研发知识 RAG 与会话内假设变更审查工作台。本项目是独立的工程演示，**不是 Apache 官方产品，也不代表上游项目的内部系统**。
 
 - [在线工作台](https://enterprise-rag-agent-suite-bfmkgsimdisxcewgco7ydk.streamlit.app/)
 - [RAG API 文档](https://version-aware-rag-public-demo.onrender.com/docs)
 - [RAG 健康状态](https://version-aware-rag-public-demo.onrender.com/health)
 
-所有演示资料均为合成数据。Session 中的审核和候选版本操作使用临时存储，不会覆盖公开基线；免费服务空闲后可能冷启动。在线地址可能晚于仓库最新提交部署，演示前请检查页面导航与服务状态。公网配置见 [部署指南](project_delivery/public_value_prototype/free_deployment_guide.md)。
+> 链接指向现有公网服务。**本轮本地修改尚未提交或部署**；公开页面在重新部署前仍可能显示旧版合成案例。请以平台部署提交和页面内容判断是否已更新。
 
-## 5. Why This Is More Than a Scripted Demo
+![真实官方资料工作台本地截图](project_delivery/real_public_release/home.png)
 
-- 两套独立合成变更案例使用不同变化类型、Requirement、Evidence、Patch 和资产组合。
-- 核心 Domain、Retriever 与 Agent 没有 Case-specific business branching。
-- 默认检索当前有效版本，历史版本必须显式查询，Evidence 保留版本和章节来源。
-- Patch 必须经过 Human Review、Conflict Detection、Idempotency 和 Candidate Validation。
-- 两套案例由相同 HTTP 工作流自动评测，并分别报告结果。
-- Public profile 提供远程 RAG URL、只读 Baseline、Session 隔离、冷启动处理和 LLM 调用预算。
+## 可以做什么
 
-证据见 [硬编码审计](project_delivery/public_value_prototype/hardcode_audit.md) 与 [跨案例评测](project_delivery/public_value_prototype/cross_case_evaluation_report.md)。
+| 研发知识 RAG | 变更审查 Agent |
+| --- | --- |
+| 查询固定版本的中英文官方资料，查看当前或历史版本、章节和官方原文链接。 | 选择真实官方文档或 DSIP 片段，输入假设性修改，查看影响建议、引用依据和会话草案，最后人工审核。 |
+| 生成式回答仅在模型密钥由部署平台安全配置后启用；引用必须来自本次真实检索。 | 假设性修改只保留在当前会话，不写入 Apache 上游或公共知识库，也不假装发布候选版本。 |
 
-## 6. 系统架构
+公开资料采用固定发布标签 **3.4.2**（基线）和 **3.4.3**（当前），包含 52 份官方文档、Release、DSIP Issue 与明确关联的 PR，切为 659 个片段。中文和英文属于**同一个知识空间**；默认中文优先，也可选全部、仅中文或 English。当前版本默认参与检索，历史版本需要显式选择。
+
+## 检索策略为何选 BM25
+
+在同一真实语料、46 条逐条核验的问题和 Top-5 条件下，已实际运行 Dense、BM25 与 Hybrid。当前轻量 Dense 是 512 维字符 n-gram 哈希向量，**并非神经语义模型**。BM25 的 Hit@1 **0.3953**、Hit@5 **0.7907**、MRR **0.5558**，优于 Dense（0.2093 / 0.4186 / 0.2934）和 Hybrid（0.3023 / 0.6047 / 0.4322），因此被选为**公开资料默认检索策略**。分组样本不足以支持稳定的条件路由；未取得可在免费部署约束下重复运行的双语 Reranker，故未评测也未启用。详见 [真实语料策略报告](evaluation/real_world_retrieval/retrieval_policy_report.md)及[逐条结果](evaluation/real_world_retrieval/results/benchmark_results.json)。这不是全量 DolphinScheduler 资料的准确率结论。
+
+无答案问题的检索仍会返回候选，所以**候选结果不等于答案**。未配置在线模型、回答弃答或引用校验失败时，界面只展示待核对的原文，不伪造回答。资料一致性提醒只报告可直接验证的版本文字差异或同名参数的不同明确值，不推断语义矛盾概率。
+
+## 架构与数据边界
 
 ```text
-Streamlit 工作台
-  工作台 → 变更分析 → 修改审核 → 版本发布
-  知识检索 / 执行轨迹 / 评测结果 / 扩展工具
-        │                          │
-        │ HTTP 查询与版本目录       │ 变更审查操作
-        ▼                          ▼
-Version-aware RAG FastAPI ←HTTP→ Change Review Agent
-DENSE_ONLY + SECTION_PATH          Impact / Evidence / Local Patch
-ACTIVE / SUPERSEDED                Human Review / Quality Gate / Resume
-Evidence / Citation / Diff         Candidate / Safe Activation
-        │
-        ▼
-公开合成文档与经过校验的轻量检索资产
+Apache DolphinScheduler 3.4.2 / 3.4.3 官方资料、Release、DSIP
+  └─ 固定快照 + 来源/版本/语言/许可证元数据 + 轻量索引
+      └─ FastAPI /public/*：BM25 检索 → 可选在线生成 → 引用校验
+          ├─ Streamlit：研发知识 RAG
+          └─ Streamlit：变更审查 Agent
+                 已验证的显式关系 / 检索建议分开显示
+                 Diff → 影响分析 → 官方依据 → 会话草案 → 人工审核
 ```
 
-RAG 负责文档、版本和证据边界；Agent 通过 HTTP 使用 RAG，并管理影响分析、修改审核与发布门禁；UI 只展示现有服务与任务状态。当前正式实现没有 LangGraph、Hybrid、GraphRAG、数据库、Redis、消息队列或多 Agent。
+原有版本治理 RAG、Document Workflow Agent、合成 Case A/B 与其回归测试仍保留。合成案例是**自动化夹具**，不再作为公开工作台默认数据；需要复现历史夹具界面时显式设置 `DEMO_LEGACY_FIXTURES=true`。其旧版候选版本、安全发布与跨案例评测只证明合成测试流程，**不宣称已对 Apache 上游项目发布**。
 
-## 7. RAG 与 Agent 职责边界
+## 三分钟体验
 
-| 模块 | 负责 | 不负责 |
-|---|---|---|
-| Version-aware RAG | 文档结构处理、版本治理、Scope 检索、Evidence、Citation、Version Diff、候选版本构建与激活 | 审核决策、自动修改代码、证明答案一定正确 |
-| Change Review Agent | 变化识别、已确认/疑似影响分层、Evidence Selection、局部修改、人工审核、Quality Gate、冲突与幂等、Checkpoint/Resume | 重新实现 Retriever、绕过版本边界、未经批准写入 |
-| Streamlit UI | 用业务语言展示现有服务状态、Trace 和固定评测 | 绕过服务端门禁或用静态结果伪装执行 |
+1. 打开“可信检索问答”，询问“DolphinScheduler 参数优先级从高到低是什么？”；查看回答及固定版本官方原文链接。也可选择 English 或 3.4.2 历史版本。
+2. 打开“新建变更审查”，选择一份 3.4.3 官方资料与其中一段，输入**假设性**修改。
+3. 检查“可能受影响”的资料、已确认/建议关系、原文和会话草案，再完成人工审核。公共知识库和上游仓库均不改变。
 
-## 8. 三分钟 Demo 流程
+## Quick Start（Windows PowerShell）
 
-1. 打开“工作台”，确认系统状态为 Ready，选择 Case A（并发 500 → 1000）或 Case B（日志 7 → 30 天）。
-2. 点击“开始分析”或“开始 Demo”，进入“变更分析”，再点击“运行变更分析”。
-3. 查看需求差异、已确认/疑似影响，以及文档、版本、章节和页码可追溯的引用依据。
-4. 到“修改审核”并排比较修改前、建议修改和关联依据；填写审核人及意见后批准、编辑或驳回。
-5. 到“版本发布”应用已批准修改，查看 Quality Gate、候选版本校验结果并安全发布。
-6. 可选：到“知识检索”演示当前/历史版本范围与原始证据；“执行轨迹”和“评测结果”用于解释过程。公开资料默认禁用需要在线模型的 /query，主流程不依赖个人 API Key。
-
-按钮触发真实的现有工作流，不会自动跳过人工审核，也不会用静态结果伪装发布。详细操作见 [首次使用流程](project_delivery/ui_product_experience/demo_user_flow.md)。
-
-## 9. 核心工程设计
-
-- 版本治理：同一文档只有一个当前有效版本，历史版本仅在显式 Scope 中可查询。
-- Evidence Context Budget：候选先经过 Scope、版本、Freshness 和去重，再按 max_evidence_count 入选；关键 Evidence 超出预算时失败关闭，不静默丢弃。
-- Deterministic Quality Gate：复用已有状态，统一输出 PASS 或 BLOCKED 及原因码，不增加 LLM Judge。
-- 局部 Patch：只替换已经绑定 Anchor 与原文哈希的目标段落，不重写全文。
-- Conflict Detection：基础版本、Anchor、原文或哈希变化都会阻止覆盖。
-- Idempotency：Patch、基础版本、Anchor 和原文哈希共同形成幂等键。
-- Candidate Version：写入候选文件并完成校验后才激活，原 DOCX 不被覆盖。
-- Checkpoint/Resume：恢复时复用成功状态和已应用幂等键，避免重复副作用。
-- HTTP 边界：Agent 通过现有 RAG API 工作，不导入 RAG 内部索引实现。
-
-## 10. Evaluation
-
-最新固定合成评测：
-
-| 指标 | 结果 |
-|---|---:|
-| Evaluation Case Count | 7 |
-| Hit@5 / Recall@5 / MRR | 1.0 / 1.0 / 1.0 |
-| 当前版本正确性 | PASS |
-| Citation membership | PASS |
-| No-answer / Scope 拦截 | PASS |
-| Retrieval P50 | 64.330 ms |
-| Retrieval P95 | 68.384 ms |
-| Impact Precision / Recall | 1.0 / 1.0 |
-| 未批准写入 | 0 |
-| 重复 Patch 应用 | 0 |
-| Candidate Status | ACTIVE |
-
-离线对照真实返回了 requirements-v1 与 requirements-v2；相同问题在正式 Version-aware Retrieval 中只返回 requirements-v2。该对照只存在于 Evaluation，不进入生产检索路径。结果文件位于 [evaluation_results.json](project_delivery/v4_change_impact_review/evaluation_results.json)。
-
-
-### Cross-case Evaluation
-
-| 检查 | Case A | Case B |
-| --- | --- | --- |
-| Change → Impact → Evidence → Patch → Review | PASS | PASS |
-| Conflict / Idempotency | PASS | PASS |
-| Candidate / Safe Activation / New Retrieval | PASS | PASS |
-| Baseline Immutable | PASS | PASS |
-
-Case A 与 Case B 结果分开记录在 [跨案例评测报告](project_delivery/public_value_prototype/cross_case_evaluation_report.md)。这不是“系统准确率 100%”。
-
-
-## 11. 当前界面截图
-
-![公开合成资料下的工作台首页](project_delivery/ui_product_experience/public_workbench.png)
-
-截图取自本分支的本地 `public_demo` 配置，显示业务说明、所选项目的当前需求版本、目录统计和“开始分析”入口；不包含个人密钥或真实企业资料。实际在线界面以部署到 Streamlit Cloud 的提交为准。
-
-## 12. Quick Start：新克隆仓库
-
-Windows PowerShell、Python 3.12 和联网安装依赖；以下命令只使用仓库内已跟踪的合成资产。先在仓库根目录执行一次：
+使用 Python 3.12；克隆后无需任何私有企业资料或本地历史 runtime：
 
 ```powershell
 py -3.12 -m venv RAG-Challenge-2-main\.venv
@@ -142,69 +58,12 @@ py -3.12 -m venv OpenManus-rag\.venv
 .\start_prototype.ps1
 ```
 
-打开 http://127.0.0.1:8502；本地 RAG API 文档在 http://127.0.0.1:8765/docs。端口被占用时先停止旧服务，或使用 `.\start_prototype.ps1 -RagPort 18765 -UiPort 18502`。脚本固定加载 `RAG-Challenge-2-main/public_demo_artifacts/rd-v2-public-demo-v1`，并把 Session 运行结果写到系统临时目录；无需本机私有语料、旧 runtime 或真实 Secret。手动启动见 [UI README](demo-ui/README.md)。
+打开 <http://127.0.0.1:8502/>；API 文档位于 <http://127.0.0.1:8765/docs>。无密钥也可做官方资料检索和沙箱变更审查。若需要生成式回答，在**本机环境或 Render 环境变量**设置 `DASHSCOPE_API_KEY`，并以 `-EnableGeneration` 启动本地脚本，或在 Render 设置 `RD_V2_ALLOW_EXTERNAL_GENERATION=true`。不要提交实际密钥。详细手动启动和云端字段见 [UI README](demo-ui/README.md) 与 [部署指南](project_delivery/public_value_prototype/free_deployment_guide.md)。
 
-## 13. Test / Validation
+## Data Source & Attribution
 
-运行测试前，为 RAG 的轻量运行环境单独安装 pytest（公开 Demo 启动本身不需要它）；然后在仓库根目录分别运行：
+语料仅来自 [apache/dolphinscheduler](https://github.com/apache/dolphinscheduler) 的官方固定标签文档、[3.4.2 / 3.4.3 Releases](https://github.com/apache/dolphinscheduler/releases)、[DSIP-107 提案](https://github.com/apache/dolphinscheduler/issues/18454)和[明确引用它的实现 PR](https://github.com/apache/dolphinscheduler/pull/18464)。每份资料的来源 URL、仓库、tag 对应 commit、路径、语言、类型、检索时间与 SHA-256 见 [corpus_manifest.json](RAG-Challenge-2-main/public_corpus/corpus_manifest.json)。源项目的 [Apache License](RAG-Challenge-2-main/public_corpus/LICENSE) 与 [NOTICE](RAG-Challenge-2-main/public_corpus/NOTICE) 随快照保留。英文原文不经自动翻译充作中文证据。
 
-```powershell
-& .\RAG-Challenge-2-main\.venv\Scripts\python.exe -m pip install "pytest>=8,<9"
-Push-Location RAG-Challenge-2-main
-& .\.venv\Scripts\python.exe -m pytest tests -q
-Pop-Location
-Push-Location OpenManus-rag
-& .\.venv\Scripts\python.exe -m pytest tests -q
-Pop-Location
-Push-Location demo-ui
-& ..\OpenManus-rag\.venv\Scripts\python.exe -m pytest -p no:cacheprovider tests -q
-Pop-Location
-```
+## 验证与限制
 
-公开 RAG 的只读 Smoke：
-
-```powershell
-Push-Location RAG-Challenge-2-main
-& .\.venv\Scripts\python.exe scripts\public_demo_smoke.py --base-url http://127.0.0.1:8765
-Pop-Location
-```
-
-离线固定评测、跨案例验证和历史性能数字属于版本化工程证据；请勿把本地检索时延解释为公网端到端时延。当前 UI 优化的验证见 [变更报告](project_delivery/ui_product_experience/ui_change_report.md)。
-
-## 14. Design Decisions
-
-- 保留 DENSE_ONLY + SECTION_PATH，因为现有评测已经满足业务目标，本轮没有证据支持引入 Hybrid、BM25、RRF 或 Reranker。
-- 不迁移 LangGraph，因为当前工作流状态机、Checkpoint 和副作用边界已清楚可测；迁移会增加风险而不增加本轮业务价值。
-- 不做全文生成。局部修改更容易审核、冲突检查、幂等重放和保留原格式。
-- Suggested Impact 始终是审核建议，不升级为确定事实。
-- Token/Cost 本轮不展示。当前主链 llm_calls 为 0，且没有可靠 Usage 与可维护价格配置。
-- UI 不伪造工作流结果或自行判定门禁；状态查询与用户操作走现有服务。
-
-## 15. Known Limitations
-
-1. Scope 是业务检索范围，不等于 ACL/RBAC。
-2. Evidence/Citation 提供可追溯性，不自动证明答案事实正确。
-3. Suggested Impact 不等于 Confirmed Trace。
-4. Human Review 当前是单审核人 MVP。
-5. Demo 主要使用合成研发资料。
-6. 主要 Engineering Asset 为 DOCX。
-7. Patch 只覆盖正式支持的有限段落替换操作。
-8. Vector Backend 继续使用 FAISS。
-9. 当前不实现多租户。
-10. 当前不实现自动代码修改。
-11. 当前不替代完整 ALM / SDLC 工具。
-
-## 16. Roadmap
-
-后续如果有真实需求，可以在保持 HTTP 边界、Evidence、Quality Gate 和候选版本机制的前提下扩展 Git Diff 作为新的 Engineering Asset Adapter。它不会改变当前版本可信 RAG 与人工审查主链。当前公开版本不实施该能力。
-
-## Repository Layout
-
-- [RAG-Challenge-2-main](RAG-Challenge-2-main/)：版本可信研发知识服务。
-- [OpenManus-rag](OpenManus-rag/)：Evidence-driven 变更审查 Agent。
-- [demo-ui](demo-ui/)：统一 Streamlit 产品入口。
-- [project_delivery/prototype_final](project_delivery/prototype_final/)：差距分析、架构、Demo、评测、回归和面试材料。
-- [project_delivery/public_value_prototype](project_delivery/public_value_prototype/)：跨案例价值验证、公开部署与安全资料。
-- [project_delivery/ui_product_experience](project_delivery/ui_product_experience/)：工作台信息架构、首次使用流程与界面截图。
-
-仓库不包含个人 API Key、真实企业研发资料或用户本地运行输出。两个子项目保留原始许可证与著作权声明。
+运行 RAG、Agent、UI 测试的方法见 [部署指南](project_delivery/public_value_prototype/free_deployment_guide.md)；真实检索问题与证据标注在 [evaluation/real_world_retrieval](evaluation/real_world_retrieval/)。该子集不能覆盖所有 DolphinScheduler 功能；检索分数不代表事实真实性，语义相关不等于真实追踪关系，人工审核也不等于修改上游项目。公开版本没有登录、RBAC、多租户、源码自动修改或 GitHub PR 写入。

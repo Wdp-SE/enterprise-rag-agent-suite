@@ -1,3 +1,11 @@
+# Apache DolphinScheduler 公开研发知识服务
+
+公网 Demo 使用本目录新增的 `src.public_server:app` 入口和固定的 Apache DolphinScheduler 3.4.2 / 3.4.3 官方资料快照，默认采用真实查询集评测选出的 BM25 检索策略。来源、许可证与评测见仓库根目录 [README](../README.md)、[语料清单](public_corpus/corpus_manifest.json)和 [检索报告](../evaluation/real_world_retrieval/retrieval_policy_report.md)。
+
+下文记录的是保留的原有企业合成资料 Runtime 和测试路径；其 `DENSE_ONLY + SECTION_PATH` 规则不等同于当前公网入口的检索策略。
+
+---
+
 # 企业研发文档知识服务
 
 本项目为企业研发文档提供可审计的知识检索与可信问答能力。业务边界固定为研发文档，不包含竞赛问答、候选知识包或其他旁路工作流。

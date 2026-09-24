@@ -59,7 +59,7 @@ class RAGClient:
                 if attempt < self.retry_limit:
                     continue
                 raise ServiceError(
-                    "RAG Service Unavailable。公共免费演示后端可能正在启动，请稍后重试。",
+                    "知识服务暂不可用。公共免费演示后端可能正在启动，请稍后重试。",
                     type(exc).__name__,
                     "RAG_UNAVAILABLE",
                 ) from exc
@@ -67,6 +67,11 @@ class RAGClient:
                 status = exc.response.status_code if exc.response is not None else "unknown"
                 if attempt < self.retry_limit and isinstance(status, int) and status >= 500:
                     continue
+                if status == 429 and endpoint == "/engineering/versions/query":
+                    raise ServiceError(
+                        "本次会话的生成次数已用完，仍可继续检索引用依据。",
+                        "HTTPStatus=429", "LLM_BUDGET_EXHAUSTED",
+                    ) from exc
                 raise ServiceError(
                     f"RAG 服务返回 HTTP {status}。", f"HTTPStatus={status}", "RAG_HTTP_ERROR"
                 ) from exc
@@ -122,6 +127,44 @@ class RAGClient:
             raise ServiceError("RAG 问答响应不符合契约。", "Invalid /query schema", "RAG_SCHEMA_INVALID")
         return payload
 
+    def search_candidate_versions(
+        self, question: str, top_k: int, scope: dict[str, Any]
+    ) -> dict[str, Any]:
+        question = question.strip()
+        if not question or not 3 <= top_k <= 10:
+            raise ValueError("问题不能为空，返回数量必须为 3 到 10")
+        payload = self._request(
+            "POST", "/engineering/versions/search",
+            json={"query": question, "top_k": top_k, "scope": scope},
+        )
+        results = payload.get("results")
+        required = {
+            "rank", "document_id", "version_id", "version_label", "version_status",
+            "project_id", "section_id", "section_path", "page_number", "text",
+            "similarity", "chunk_id",
+        }
+        if not isinstance(results, list) or len(results) > top_k or any(
+            not isinstance(row, dict) or not required.issubset(row) for row in results
+        ):
+            raise ServiceError("知识检索结果不完整。", "Invalid candidate search response", "RAG_SCHEMA_INVALID")
+        return payload
+
+    def query_candidate_versions(
+        self, question: str, scope: dict[str, Any]
+    ) -> dict[str, Any]:
+        question = question.strip()
+        if not question:
+            raise ValueError("问题不能为空")
+        payload = self._request(
+            "POST", "/engineering/versions/query",
+            json={"question": question, "scope": scope},
+        )
+        if not {"answer", "sources", "status"}.issubset(payload) or not isinstance(
+            payload["sources"], list
+        ):
+            raise ServiceError("知识问答结果不完整。", "Invalid candidate query response", "RAG_SCHEMA_INVALID")
+        return payload
+
     def retrieve(
         self,
         question: str,
@@ -137,8 +180,8 @@ class RAGClient:
         payload = self._request("POST", "/retrieve", json=request_payload)
         results = payload.get("results")
         if payload.get("query") != question or not isinstance(results, list) or len(results) > top_k:
-            raise ServiceError("Evidence Retrieval 响应不符合契约。", "Invalid /retrieve envelope", "RAG_SCHEMA_INVALID")
+            raise ServiceError("引用依据检索响应不符合契约。", "Invalid /retrieve envelope", "RAG_SCHEMA_INVALID")
         required = {"rank", "document_id", "page_number", "section_path", "similarity", "content", "chunk_id"}
         if any(not isinstance(item, dict) or not required.issubset(item) for item in results):
-            raise ServiceError("Evidence 结果字段不完整。", "Invalid retrieval hit", "RAG_SCHEMA_INVALID")
+            raise ServiceError("引用依据结果字段不完整。", "Invalid retrieval hit", "RAG_SCHEMA_INVALID")
         return payload

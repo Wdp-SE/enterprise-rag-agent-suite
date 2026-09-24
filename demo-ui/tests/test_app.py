@@ -10,16 +10,18 @@ def test_streamlit_module_imports_and_handles_unavailable_rag(monkeypatch):
     monkeypatch.setenv("DEMO_REQUEST_TIMEOUT_SECONDS", "0.2")
     app = AppTest.from_file(Path(__file__).parents[1] / "app.py", default_timeout=60).run()
     assert not app.exception
-    assert [item.value for item in app.title] == ["版本可信研发知识与变更审查系统"]
+    assert [item.value for item in app.title] == ["研发知识与变更审查工作台"]
     assert [item.label for item in app.tabs] == [
         "工作台",
         "变更分析",
         "修改审核",
         "版本发布",
-        "知识检索",
+        "知识服务",
         "执行轨迹",
         "评测结果",
         "扩展工具",
     ]
+    assert app.button(key="retrieve_button").disabled is True
+    app.radio(key="rag_mode").set_value("RAG 问答").run()
     assert app.button(key="query_button").disabled is True
-    assert any("Unavailable" in item.value for item in app.markdown)
+    assert any("暂不可用" in item.value for item in app.markdown)

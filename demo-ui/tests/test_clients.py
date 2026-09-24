@@ -54,6 +54,39 @@ def test_rag_health_and_retrieve_contract():
     assert session.calls[1][3]["json"] == {"query": "项目目标", "top_k": 3}
 
 
+def test_candidate_knowledge_calls_keep_selected_case_scope_and_session():
+    hit = {
+        "rank": 1, "document_id": "requirements", "version_id": "requirements-v2",
+        "version_label": "V2.0", "version_status": "ACTIVE", "project_id": "PAYMENT",
+        "document_type": "REQUIREMENT", "section_id": "REQ-023",
+        "section_path": ["容量"], "page_number": 1, "chunk_id": "req-23",
+        "text": "REQ-023 最大并发为 1000。", "similarity": 0.8,
+    }
+    session = Session([
+        Response({"results": [hit]}),
+        Response({"answer": "最大并发为 1000。", "status": "OK", "sources": [hit]}),
+    ])
+    client = RAGClient("http://localhost:8765", session=session, session_id="session_12345678")
+    scope = {"project_ids": ["PAYMENT"], "active_only": True}
+
+    assert client.search_candidate_versions("最大并发量是多少？", 5, scope)["results"][0]["document_id"] == "requirements"
+    assert client.query_candidate_versions("最大并发量是多少？", scope)["status"] == "OK"
+    assert [call[1] for call in session.calls] == [
+        "http://localhost:8765/engineering/versions/search",
+        "http://localhost:8765/engineering/versions/query",
+    ]
+    assert session.calls[0][3]["json"] == {"query": "最大并发量是多少？", "top_k": 5, "scope": scope}
+    assert session.calls[1][3]["json"] == {"question": "最大并发量是多少？", "scope": scope}
+    assert all(call[3]["headers"]["X-Demo-Session-ID"] == "session_12345678" for call in session.calls)
+
+
+def test_public_query_budget_error_is_actionable():
+    client = RAGClient("http://localhost:8765", session=Session([Response({}, status=429)]))
+    with pytest.raises(ServiceError, match="仍可继续检索引用依据") as failure:
+        client.query_candidate_versions("最大并发量是多少？", {"active_only": True})
+    assert failure.value.code == "LLM_BUDGET_EXHAUSTED"
+
+
 def test_rag_unavailable_and_malformed_handling():
     client = RAGClient("http://localhost:8765", session=Session([
         requests.ConnectionError("refused")

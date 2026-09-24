@@ -112,15 +112,31 @@ class ChangeImpactClient:
                     )
             known_versions.add(version_id)
 
+    def ensure_documents(self) -> None:
+        """Seed only this session's existing synthetic case documents."""
+        self._ensure_seeded(self._inventory())
+
     @staticmethod
     def _scope_fingerprint(scope: dict) -> str:
         canonical = json.dumps(scope, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
     def prepare_demo(self) -> dict[str, Any]:
+        return self._prepare()
+
+    def prepare_custom(self, requirement_id: str, proposed_content: str) -> dict[str, Any]:
+        """Review a session-only revision of the current case's traced requirement."""
+        if requirement_id != self.demo_case.changed_external_identifier:
+            raise ValueError("当前需求没有可安全复用的设计与测试追踪关系")
+        proposed_content = proposed_content.strip()
+        if not proposed_content or len(proposed_content) > 4000 or requirement_id not in proposed_content:
+            raise ValueError("请输入包含所选工程编号的需求内容（不超过 4000 字）")
+        return self._prepare(custom_content=proposed_content)
+
+    def _prepare(self, *, custom_content: str | None = None) -> dict[str, Any]:
         from app.change_impact_review import PatchCandidate, PatchOperation
         from app.document_workflow.configuration import DocumentWorkflowConfig
-        from app.document_workflow.evidence_models import Evidence
+        from app.document_workflow.evidence_models import Evidence, normalize_text, sha256_text
         from app.document_workflow.evidence_selection import EvidenceSelectionPolicy, EvidenceSelector
         from app.document_workflow.scope import WorkflowScope
 
@@ -128,17 +144,52 @@ class ChangeImpactClient:
         inventory = self._inventory()
         self._ensure_seeded(inventory)
         items = inventory["items"]
-        old_items = [item for item in items if item["version_id"] == case.requirement_old_version_id]
-        new_items = [item for item in items if item["version_id"] == case.requirement_new_version_id]
-        changes = self.rag.diff_engineering_items(old_items, new_items)["changes"]
-        changed = next(
-            item for item in new_items
+        current_items = [item for item in items if item["version_id"] == case.requirement_new_version_id]
+        baseline = next(
+            item for item in current_items
             if item["external_identifier"] == case.changed_external_identifier
         )
-        active_items = [
-            item for item in items
-            if item["version_id"] != case.requirement_old_version_id
-        ]
+        if custom_content is None:
+            old_items = [item for item in items if item["version_id"] == case.requirement_old_version_id]
+            new_items = current_items
+            changed = baseline
+            evidence_item = changed
+            active_items = [
+                item for item in items
+                if item["version_id"] != case.requirement_old_version_id
+            ]
+            trace_links = inventory["trace_links"]
+        else:
+            if normalize_text(custom_content) == normalize_text(baseline["content"]):
+                raise ValueError("修改后内容与当前需求相同")
+            identity = hashlib.sha256(
+                f"{self.config.session_id}|{baseline['item_id']}|{custom_content}".encode("utf-8")
+            ).hexdigest()[:20]
+            changed = {
+                **baseline,
+                "item_id": f"item_{identity}",
+                "version_id": f"session-{identity}",
+                "content": custom_content,
+                "content_hash": sha256_text(normalize_text(custom_content)),
+                "metadata": {**baseline["metadata"], "origin": "SESSION_INPUT"},
+            }
+            old_items = current_items
+            new_items = [
+                changed if item["item_id"] == baseline["item_id"] else item
+                for item in current_items
+            ]
+            evidence_item = baseline
+            active_items = [
+                item for item in items
+                if item["version_id"] != case.requirement_old_version_id
+                and item["item_id"] != baseline["item_id"]
+            ] + [changed]
+            trace_links = [
+                {**link, "source_item_id": changed["item_id"]}
+                if link["source_item_id"] == baseline["item_id"] else link
+                for link in inventory["trace_links"]
+            ]
+        changes = self.rag.diff_engineering_items(old_items, new_items)["changes"]
         scope = {"project_ids": [case.project_id], "active_only": True}
         dense = self.rag.search_candidate_versions(changed["content"], scope, top_k=20)["results"]
         by_location = {
@@ -178,7 +229,7 @@ class ChangeImpactClient:
         impacts = self.rag.discover_engineering_impacts(
             changed["item_id"],
             active_items,
-            inventory["trace_links"],
+            trace_links,
             dense_item_ids=dense_ids,
             evidence_by_item=evidence_by_item,
         )["impacts"]
@@ -188,19 +239,19 @@ class ChangeImpactClient:
         )
         requirement_evidence = Evidence(
             title=version_record["title"],
-            content=changed["content"],
+            content=evidence_item["content"],
             organization=case.organization_name,
             source_type="RAG",
-            document_id=changed["document_id"],
-            project_id=changed["project_id"],
-            document_type=changed["item_type"],
-            version_id=changed["version_id"],
+            document_id=evidence_item["document_id"],
+            project_id=evidence_item["project_id"],
+            document_type=evidence_item["item_type"],
+            version_id=evidence_item["version_id"],
             version_label=version_record["version_label"],
             version_status="ACTIVE",
-            chunk_id=f"{changed['version_id']}:{changed['section_id']}:{changed['item_id']}",
+            chunk_id=f"{evidence_item['version_id']}:{evidence_item['section_id']}:{evidence_item['item_id']}",
             query=changed["external_identifier"],
-            section=changed["section_id"],
-            section_path=changed["metadata"]["section_path"],
+            section=evidence_item["section_id"],
+            section_path=evidence_item["metadata"]["section_path"],
             page_number=1,
             retrieved_at=datetime.now(timezone.utc),
         )
@@ -232,8 +283,14 @@ class ChangeImpactClient:
             target_anchor=f"paragraph:{paragraph_index}",
             operation=PatchOperation.REPLACE_PARAGRAPH,
             original_content=original,
-            proposed_content=case.patch_proposed_content,
-            reason=case.patch_reason,
+            proposed_content=(
+                case.patch_proposed_content if custom_content is None
+                else original.rstrip() + "\n\n待审核的需求变更（用户输入）： " + custom_content
+            ),
+            reason=(
+                case.patch_reason if custom_content is None
+                else f"根据用户本次提出的 {case.changed_external_identifier} 变更形成的待审核建议；引用依据为当前有效资料"
+            ),
             evidence_ids=[requirement_evidence.evidence_id],
             evidence_content_hashes={
                 requirement_evidence.evidence_id: requirement_evidence.content_hash
@@ -252,7 +309,7 @@ class ChangeImpactClient:
             evidence=list(evidence_objects.values()),
             rag_calls=3,
         )
-        return {
+        result = {
             "case_id": case.case_id,
             "state": state.model_dump(mode="json"),
             "changes": changes,
@@ -267,6 +324,15 @@ class ChangeImpactClient:
                 "selected_evidence_ids": sorted(selected_evidence_ids),
             },
         }
+        if custom_content is not None:
+            result["custom_change"] = {
+                "source": "用户输入",
+                "requirement_id": case.changed_external_identifier,
+                "old_content": baseline["content"],
+                "new_content": custom_content,
+                "publication_available": False,
+            }
+        return result
 
     def review_patch(
         self,

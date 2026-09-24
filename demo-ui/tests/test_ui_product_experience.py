@@ -20,7 +20,7 @@ def test_workbench_starts_existing_analysis_flow_and_tracks_case(monkeypatch, tm
 
     assert not app.exception
     assert app.session_state["product_nav"] == "工作台"
-    assert app.button(key="start_demo").label == "开始 Demo"
+    assert app.button(key="start_demo").label == "开始预置案例"
     app.selectbox(key="demo_case_selector").set_value("case-b").run()
     assert not app.exception
     assert app.session_state["demo_case_selector"] == "case-b"
@@ -39,6 +39,10 @@ def test_status_cards_use_live_catalog_values_instead_of_case_hardcodes() -> Non
         "document_type": "REQUIREMENT",
         "active_version": {"version_id": "public-b-req-v2", "version_label": "V2.0"},
         "versions": [{"version_id": "public-b-req-v1"}, {"version_id": "public-b-req-v2"}],
+    }, {
+        "project_id": "PAYMENT", "document_type": "REQUIREMENT",
+        "active_version": {"version_id": "public-a-req-v2", "version_label": "V2.0"},
+        "versions": [{"version_id": "public-a-req-v2"}],
     }]
     cards = build_status_cards(
         case, catalog, {"service_status": "READY"},
@@ -51,7 +55,7 @@ def test_status_cards_use_live_catalog_values_instead_of_case_hardcodes() -> Non
         "current_version_id": "public-b-req-v2",
         "document_count": 1,
         "version_count": 2,
-        "system_status": "Ready",
+        "system_status": "就绪",
     }
     assert build_status_cards(case, [], None, None, {"ready": True})["current_version"] == "待连接"
     degraded = build_status_cards(

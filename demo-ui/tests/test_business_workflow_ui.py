@@ -33,7 +33,7 @@ def test_agent_page_exposes_scope_history_review_and_finalize(monkeypatch):
 
 def test_ui_copy_uses_final_product_name_and_no_legacy_research_entry():
     source = (UI_ROOT / "app.py").read_text(encoding="utf-8")
-    assert "文档工作流 Agent" in source
+    assert "变更审查 Agent" in source
     for forbidden in ("Knowledge Research", "Candidate Knowledge", "Source Discovery", "网页研究"):
         assert forbidden not in source
 

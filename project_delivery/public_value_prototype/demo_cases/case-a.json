@@ -1,6 +1,6 @@
 {
   "case_id": "case-a",
-  "title": "Case A：并发容量变更",
+  "title": "演示案例 A：并发容量变更",
   "description": "已有 REQ-023 的最大并发由 500 调整为 1000，影响设计、接口与测试；REQ-025 是新增的异步任务状态要求。",
   "organization_id": "demo_company_a",
   "organization_name": "星海软件科技有限公司（虚构）",

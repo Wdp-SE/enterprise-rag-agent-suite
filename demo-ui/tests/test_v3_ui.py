@@ -68,7 +68,7 @@ def test_streamlit_exposes_scope_and_version_diff_controls(monkeypatch):
     assert not app.exception
     labels = [item.label for item in app.radio]
     assert "检索范围" in labels
-    assert "功能" in labels
+    assert "知识服务功能" in labels
     assert any("版本对比" in item.label for item in app.expander)
 
 

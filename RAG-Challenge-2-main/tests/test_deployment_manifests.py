@@ -9,7 +9,7 @@ ROOT = Path(__file__).parents[2]
 def test_deployment_manifests_use_public_profile_and_lightweight_dependencies() -> None:
     render = (ROOT / "render.yaml").read_text(encoding="utf-8")
     assert "RAG-Challenge-2-main" in render
-    assert "uvicorn src.rd_v2_api:app --host 0.0.0.0 --port $PORT" in render
+    assert "uvicorn src.public_server:app --host 0.0.0.0 --port $PORT" in render
     assert "APP_ENV" in render and "public_demo" in render
     requirements = (
         ROOT / "RAG-Challenge-2-main/requirements-render.txt"

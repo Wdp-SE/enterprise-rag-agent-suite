@@ -1,0 +1,9 @@
+{
+  "default_policy": "bm25",
+  "benchmark_query_count": 46,
+  "benchmark_corpus_sha256": "44b2b53a5f769619af859f5b466a908a46e8bf6a3ce1ca6960f5ee594427ebd1",
+  "quality_rule": "highest Hit@1, then MRR, then Hit@5; lower P95 resolves a quality tie",
+  "conditional_router_enabled": false,
+  "reranker_enabled": false,
+  "reason": "Winner has the strongest measured overall top-result quality; group samples do not support a stable router."
+}

@@ -16,7 +16,7 @@ def test_v4_workbench_is_the_primary_change_review_flow_and_loads_without_rag(mo
         "变更分析",
         "修改审核",
         "版本发布",
-        "知识检索",
+        "知识服务",
         "执行轨迹",
         "评测结果",
         "扩展工具",

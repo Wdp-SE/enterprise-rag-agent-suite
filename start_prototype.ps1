@@ -1,6 +1,7 @@
 param(
     [int]$RagPort = 8765,
-    [int]$UiPort = 8502
+    [int]$UiPort = 8502,
+    [switch]$EnableGeneration
 )
 
 $ErrorActionPreference = 'Stop'
@@ -9,9 +10,9 @@ $ragRoot = Join-Path $workspace 'RAG-Challenge-2-main'
 $uiRoot = Join-Path $workspace 'demo-ui'
 $ragPython = Join-Path $ragRoot '.venv\Scripts\python.exe'
 $uiPython = Join-Path $workspace 'OpenManus-rag\.venv\Scripts\python.exe'
-$artifact = Join-Path $ragRoot 'public_demo_artifacts\rd-v2-public-demo-v1'
+$officialCorpus = Join-Path $ragRoot 'public_corpus\retrieval_policy.json'
 
-foreach ($required in @($ragPython, $uiPython, $artifact)) {
+foreach ($required in @($ragPython, $uiPython, $officialCorpus)) {
     if (-not (Test-Path -LiteralPath $required)) {
         throw "缺少启动依赖：$required；请先按 README 安装环境。"
     }
@@ -40,12 +41,12 @@ New-Item -ItemType Directory -Path $runRoot -Force | Out-Null
 
 $env:APP_ENV = 'public_demo'
 $env:RD_V2_PROJECT_ROOT = $ragRoot
-$env:RD_V2_ARTIFACT_ROOT = (Resolve-Path -LiteralPath $artifact).Path
-$env:RD_V2_ALLOW_EXTERNAL_GENERATION = 'false'
-$env:RD_V4_VERSION_STORE_ROOT = Join-Path $runRoot 'version-store'
-New-Item -ItemType Directory -Path $env:RD_V4_VERSION_STORE_ROOT -Force | Out-Null
+if ($EnableGeneration -and [string]::IsNullOrWhiteSpace($env:DASHSCOPE_API_KEY)) {
+    throw '启用生成式回答前，请先在本机环境变量设置 DASHSCOPE_API_KEY。'
+}
+$env:RD_V2_ALLOW_EXTERNAL_GENERATION = if ($EnableGeneration) { 'true' } else { 'false' }
 
-$ragProcess = Start-Process -FilePath $ragPython -ArgumentList @('-m', 'uvicorn', 'src.rd_v2_api:app', '--host', '127.0.0.1', '--port', "$RagPort") -WorkingDirectory $ragRoot -RedirectStandardOutput (Join-Path $runRoot 'rag.stdout.log') -RedirectStandardError (Join-Path $runRoot 'rag.stderr.log') -WindowStyle Hidden -PassThru
+$ragProcess = Start-Process -FilePath $ragPython -ArgumentList @('-m', 'uvicorn', 'src.public_server:app', '--host', '127.0.0.1', '--port', "$RagPort") -WorkingDirectory $ragRoot -RedirectStandardOutput (Join-Path $runRoot 'rag.stdout.log') -RedirectStandardError (Join-Path $runRoot 'rag.stderr.log') -WindowStyle Hidden -PassThru
 
 $ragReady = $false
 for ($attempt = 0; $attempt -lt 30; $attempt++) {
@@ -61,7 +62,8 @@ if (-not $ragReady) {
 
 $env:RAG_API_BASE_URL = $ragUrl
 $env:DEMO_RUNTIME_ROOT = Join-Path $runRoot 'ui-runtime'
-$env:DEMO_DATA_CLASSIFICATION = 'Synthetic / Public'
+$env:DEMO_DATA_CLASSIFICATION = 'Official Public'
+$env:DEMO_LEGACY_FIXTURES = 'false'
 $env:DEMO_ALLOW_RAG_QUERY = 'false'
 $env:STREAMLIT_BROWSER_GATHER_USAGE_STATS = 'false'
 $env:STREAMLIT_SERVER_HEADLESS = 'true'
@@ -79,7 +81,7 @@ if (-not $uiReady) {
     throw "UI 未能启动，请查看 $runRoot\ui.stderr.log"
 }
 
-Write-Host "公开合成 Demo 已启动：$uiUrl"
+Write-Host "官方公开研发资料工作台已启动：$uiUrl"
 Write-Host "RAG API：$ragUrl/docs"
 Write-Host "临时运行目录：$runRoot"
 Write-Host "进程 ID：RAG $($ragProcess.Id)，UI $($uiProcess.Id)"

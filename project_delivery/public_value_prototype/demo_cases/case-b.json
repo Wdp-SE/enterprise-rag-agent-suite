@@ -1,6 +1,6 @@
 {
   "case_id": "case-b",
-  "title": "Case B：审计日志留存周期变更",
+  "title": "演示案例 B：审计日志留存周期变更",
   "description": "已有 REQ-071 的日志在线留存期由 7 天调整为 30 天，影响设计与测试；REQ-072 是新增的归档要求。",
   "organization_id": "demo_company_b",
   "organization_name": "远岚研发中心（虚构）",

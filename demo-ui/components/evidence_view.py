@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 import streamlit as st
 
 
@@ -19,6 +21,13 @@ def _source_lines(*, document_name: str, version: object, section: object, page:
     st.markdown(f"页码：第 {page or '—'} 页")
 
 
+def _engineering_identifier(section_id: object, section_path: object, content: str) -> str | None:
+    path = section_path if isinstance(section_path, list) else [section_path]
+    searchable = " ".join([str(section_id or ""), *(str(part) for part in path), content[:160]])
+    match = re.search(r"\b[A-Z]{2,5}-\d{3}\b", searchable)
+    return match.group(0) if match else None
+
+
 def _matching_trace(source: dict, trace: list[dict] | None) -> dict:
     document_id = source.get("document_id") or source.get("document_number")
     page = source.get("page_number") or source.get("page")
@@ -34,14 +43,18 @@ def _matching_trace(source: dict, trace: list[dict] | None) -> dict:
 
 def render_retrieval_results(results: list[dict], document_names: dict[str, str]) -> None:
     if not results:
-        st.warning("当前选择的资料范围内未找到足够依据，暂不生成该内容。")
+        st.info("当前范围内未找到足够相关的资料，可以尝试调整问题或扩大检索范围。")
         return
-    for item in results:
+
+    def render_hit(item: dict) -> None:
         document_id = str(item.get("document_id") or "unknown")
-        document_name = _document_name(document_id, document_names)
+        document_name = str(document_names.get(document_id) or item.get("document_title") or document_id)
         version = item.get("version_label") or "版本信息不可用"
-        status = {"ACTIVE": "当前版本", "SUPERSEDED": "历史版本"}.get(item.get("version_status"), "版本状态未知")
-        content = str(item.get("content", ""))
+        status = {"ACTIVE": "当前版本", "SUPERSEDED": "历史版本"}.get(
+            item.get("version_status"), "版本状态未知"
+        )
+        content = str(item.get("content") or item.get("text") or "")
+        identifier = _engineering_identifier(item.get("section_id"), item.get("section_path"), content)
         st.markdown(f"##### 第 {item.get('rank')} 条来源 · {status}")
         _source_lines(
             document_name=document_name,
@@ -49,12 +62,14 @@ def render_retrieval_results(results: list[dict], document_names: dict[str, str]
             section=item.get("section_path"),
             page=item.get("page_number"),
         )
-        st.caption(f"检索相似度：{float(item.get('similarity', 0)):.4f}")
-        st.write(content[:180] + ("…" if len(content) > 180 else ""))
-        with st.expander(f"展开第 {item.get('rank')} 条证据内容"):
+        if identifier:
+            st.markdown(f"工程编号：{identifier}")
+        st.write(content[:220] + ("…" if len(content) > 220 else ""))
+        with st.expander("查看完整片段与技术详情"):
             st.write(content)
-            st.markdown("**技术详情**")
+            st.caption("检索得分仅用于结果排序，不代表内容真实性。")
             st.json({
+                "retrieval_score": item.get("similarity"),
                 "document_id": document_id,
                 "version_id": item.get("version_id"),
                 "section_id": item.get("section_id"),
@@ -63,17 +78,24 @@ def render_retrieval_results(results: list[dict], document_names: dict[str, str]
             })
         st.divider()
 
+    for item in results[:3]:
+        render_hit(item)
+    if len(results) > 3:
+        with st.expander(f"查看更多结果（{len(results) - 3}）", expanded=False):
+            for item in results[3:]:
+                render_hit(item)
+
 
 def render_query_sources(
     sources: list[dict], document_names: dict[str, str], *, trace: list[dict] | None = None
 ) -> None:
     if not sources:
-        st.warning("回答没有返回引用来源。")
+        st.info("本次回答没有可展示的引用依据。")
         return
     for index, source in enumerate(sources, start=1):
         trace_item = _matching_trace(source, trace)
         document_id = source.get("document_id") or source.get("document_number") or source.get("title")
-        document_name = _document_name(document_id, document_names)
+        document_name = str(document_names.get(str(document_id)) or source.get("document_title") or document_id)
         page = source.get("page_number") or source.get("page") or "—"
         version = source.get("version_label") or trace_item.get("version_label") or "版本信息不可用"
         section = (
@@ -82,8 +104,21 @@ def render_query_sources(
             or source.get("section")
             or trace_item.get("section_id")
         )
-        st.markdown(f"##### 引用来源 {index}")
+        st.markdown(f"##### 引用依据 {index}")
         _source_lines(document_name=document_name, version=version, section=section, page=page)
+        status = source.get("version_status") or trace_item.get("version_status")
+        if status == "ACTIVE":
+            st.caption("当前版本 · 仍然有效")
+        elif status == "SUPERSEDED":
+            st.caption("历史版本")
+        content = str(source.get("content") or source.get("text") or "").strip()
+        identifier = _engineering_identifier(
+            source.get("section_id") or trace_item.get("section_id"), section, content
+        )
+        if identifier:
+            st.markdown(f"工程编号：{identifier}")
+        if content:
+            st.write(content)
         with st.expander("技术详情", expanded=False):
             st.json({
                 "document_id": document_id,

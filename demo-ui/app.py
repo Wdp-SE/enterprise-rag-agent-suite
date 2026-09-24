@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import inspect
+import os
 from html import escape
 import uuid
 from pathlib import Path
@@ -16,7 +17,7 @@ from components.change_impact_view import (
     render_workbench_review,
     render_workbench_publication,
 )
-from components.product_experience import build_status_cards, build_workflow_progress
+from components.product_experience import build_status_cards, build_workflow_progress, case_knowledge_scope
 from components.evidence_view import render_query_sources, render_retrieval_results
 from components.prototype_final_view import (
     TASK_STATUS_LABELS,
@@ -39,7 +40,14 @@ from services.rag_client import RAGClient, ServiceError
 from services.session_guard import LLMSessionBudget
 
 
-st.set_page_config(page_title="版本可信研发知识与变更审查系统", page_icon="📄", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="版本可信研发知识与变更审查系统", page_icon="📄", layout="wide", initial_sidebar_state="expanded")
+
+if os.environ.get("DEMO_LEGACY_FIXTURES", "false").strip().casefold() not in {"1", "true", "yes"}:
+    from public_workbench import render
+
+    render()
+    st.stop()
+
 st.markdown("""
 <style>
   :root {
@@ -61,7 +69,7 @@ st.markdown("""
   [data-testid="stHeader"] {background: #ffffff;}
   [data-testid="stToolbar"], #MainMenu, footer {visibility: hidden;}
 
-  .block-container {max-width: 1260px; padding: 2.35rem 2.4rem 4.5rem;}
+  .block-container {max-width: 1220px; padding: 1.65rem 2rem 3.5rem;}
 
   h1 {
     color: var(--brand-950);
@@ -82,7 +90,7 @@ st.markdown("""
   }
 
   h2, h3, h4 {color: var(--brand-950); letter-spacing: -0.018em;}
-  h3 {margin-top: 1.5rem !important; padding-bottom: 0.55rem; border-bottom: 1px solid var(--line);}
+  h3 {margin-top: 1rem !important; padding-bottom: 0.55rem; border-bottom: 1px solid var(--line);}
   [data-testid="stCaptionContainer"], .stCaption {color: var(--ink-600);}
 
   [data-testid="stSidebar"] {
@@ -95,7 +103,7 @@ st.markdown("""
   [data-testid="stTabs"] [data-baseweb="tab-list"] {
     gap: 0.35rem;
     padding: 0.38rem;
-    margin: 1.3rem 0 1rem;
+    margin: 0.95rem 0 0.85rem;
     border-radius: 0.9rem;
     background: #eaf0f7;
     border: 1px solid #dce6f0;
@@ -229,6 +237,39 @@ st.markdown("""
     color: var(--brand-950);
     font-weight: 620;
   }
+  .st-key-rag_module [data-testid="stVerticalBlockBorderWrapper"],
+  .st-key-agent_module [data-testid="stVerticalBlockBorderWrapper"] {
+    min-height: 13.5rem;
+    border-radius: 1rem;
+    background: #ffffff;
+    border-color: var(--line);
+  }
+  .st-key-rag_module [data-testid="stVerticalBlockBorderWrapper"] {border-top: 0.24rem solid #2475c7;}
+  .st-key-agent_module [data-testid="stVerticalBlockBorderWrapper"] {border-top: 0.24rem solid #496d91;}
+  .st-key-rag_module h4, .st-key-agent_module h4 {margin-top: 0.15rem !important;}
+  .product-flow {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding: 0.8rem;
+    margin: 0.45rem 0 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: 0.85rem;
+    background: #eef4fa;
+  }
+  .product-flow span {
+    position: relative;
+    padding: 0.45rem 1.2rem 0.45rem 0.55rem;
+    color: #24415f;
+    font-size: 0.91rem;
+    font-weight: 600;
+  }
+  .product-flow span:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    right: 0.05rem;
+    color: #3c79b2;
+  }
   .stButton > button:focus-visible,
   .stDownloadButton > button:focus-visible {
     outline: 2px solid var(--brand-600);
@@ -242,6 +283,8 @@ st.markdown("""
     [data-testid="stTabs"] button[data-baseweb="tab"] {padding: 0 0.7rem;}
     h1 {font-size: 1.85rem !important;}
     .st-key-mobile_quick_start {display: block; margin: 0.6rem 0 1rem;}
+    .product-flow {grid-template-columns: repeat(2, minmax(0, 1fr));}
+    .product-flow span:nth-child(2)::after {display: none;}
     .status-grid {grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem;}
     .status-item:last-child {grid-column: 1 / -1;}
   }
@@ -278,7 +321,8 @@ if selected_case_id not in demo_cases:
 if st.session_state.get("_active_demo_case") != selected_case_id:
     for state_key in (
         "v4_change_result", "rag_result", "version_diff", "workflow_result",
-        "template_record", "uploaded_digest",
+        "template_record", "uploaded_digest", "rag_question", "rag_example", "scope_mode",
+        "custom_requirement_content", "custom_requirement_selector",
     ):
         st.session_state.pop(state_key, None)
     st.session_state["_active_demo_case"] = selected_case_id
@@ -324,16 +368,26 @@ def open_change_analysis() -> None:
     st.session_state["_intro_dismissed"] = True
 
 
-st.title("版本可信研发知识与变更审查系统")
+def open_knowledge_service() -> None:
+    if "on_change" in inspect.signature(st.tabs).parameters:
+        st.session_state["product_nav"] = "知识服务"
+    else:
+        st.session_state["_knowledge_navigation_hint"] = True
+
+
+st.title("研发知识与变更审查工作台")
 st.write(
-    "面向软件研发变更场景，基于版本管理、引用依据和人工审核流程，"
-    "帮助团队发现需求变化影响并安全更新研发文档。"
+    "在当前有效资料中查找有来源的答案，并把需求变化转化为可审核的局部修改。"
+    "每一步都能查看对应资料和处理状态。"
 )
 
 nav_labels = [
     "工作台", "变更分析", "修改审核", "版本发布",
-    "知识检索", "执行轨迹", "评测结果", "扩展工具",
+    "知识服务", "执行轨迹", "评测结果", "扩展工具",
 ]
+pending_navigation = st.session_state.pop("_pending_navigation", None)
+if pending_navigation in nav_labels and "on_change" in inspect.signature(st.tabs).parameters:
+    st.session_state["product_nav"] = pending_navigation
 if "on_change" in inspect.signature(st.tabs).parameters:
     nav_tabs = st.tabs(nav_labels, key="product_nav", on_change="rerun")
 else:
@@ -347,12 +401,34 @@ with overview_tab:
     if st.session_state.get("_analysis_navigation_hint"):
         st.info("请点击上方的“变更分析”标签，继续当前案例。")
     if config.is_public_demo:
-        st.info("Public Demo：所有研发资料均为合成数据，用于展示版本可信检索与变更审查流程。")
+        st.info("公开演示：所有研发资料均为合成数据，用于展示版本可信检索与变更审查流程。")
     with st.container(key="mobile_quick_start"):
         st.button(
             "开始一次变更审查", type="primary",
             key="mobile_start_analysis", on_click=open_change_analysis,
         )
+    st.markdown("### 两项核心能力")
+    rag_column, agent_column = st.columns(2, gap="medium")
+    with rag_column:
+        with st.container(border=True, key="rag_module"):
+            st.markdown("#### 版本可信 RAG")
+            st.write("围绕当前项目与有效版本查找研发知识，查看回答所依据的原文。")
+            st.caption("知识问答 · 证据检索 · 版本对比 · 引用溯源")
+            st.button("进入知识服务", type="primary", key="open_knowledge", on_click=open_knowledge_service)
+    with agent_column:
+        with st.container(border=True, key="agent_module"):
+            st.markdown("#### 变更审查 Agent")
+            st.write("从需求变化出发，识别受影响资料，提出局部修改并交由人工审核。")
+            st.caption("需求变更 · 影响识别 · 修改建议 · 人工审核 · 候选版本")
+            st.button("开始变更审查", key="open_change", on_click=open_change_analysis)
+    st.markdown(
+        '<div class="product-flow"><span>研发资料</span><span>RAG 提供版本与引用依据</span>'
+        '<span>Agent 分析变更影响</span><span>人工确认后形成候选版本</span></div>',
+        unsafe_allow_html=True,
+    )
+    if st.session_state.get("_knowledge_navigation_hint"):
+        st.info("请点击上方的“知识服务”标签继续。")
+
     cards = build_status_cards(
         selected_case, catalog_documents, rag_health, artifact_status, agent_status
     )
@@ -376,19 +452,58 @@ with overview_tab:
     with st.container(border=True):
         entry, quick_demo = st.columns([3, 2])
         with entry:
-            st.markdown("**需求发生变化？选择案例后开始分析。**")
+            st.markdown("**选择预置案例，或亲自修改一条当前需求。**")
             st.selectbox(
-                "选择案例",
+                "当前案例",
                 list(demo_cases),
                 format_func=lambda value: demo_cases[value].title,
                 key="demo_case_selector",
             )
-            st.caption(selected_case.description)
-            st.button("开始分析", type="primary", key="start_analysis", on_click=open_change_analysis)
+            change_mode = st.radio(
+                "变更方式", ["预置演示案例", "自定义变更"],
+                horizontal=True, key="change_mode",
+            )
+            if change_mode == "预置演示案例":
+                st.caption(selected_case.description)
+                st.button("开始分析", type="primary", key="start_analysis", on_click=open_change_analysis)
+            else:
+                inventory = change_impact._inventory()
+                current_requirement = next(
+                    item for item in inventory["items"]
+                    if item["version_id"] == selected_case.requirement_new_version_id
+                    and item["external_identifier"] == selected_case.changed_external_identifier
+                )
+                st.selectbox(
+                    "选择当前需求", [selected_case.changed_external_identifier],
+                    key="custom_requirement_selector",
+                )
+                with st.expander("查看当前需求内容", expanded=True):
+                    st.write(current_requirement["content"])
+                custom_content = st.text_area(
+                    "修改后的需求内容",
+                    value=current_requirement["content"],
+                    key="custom_requirement_content",
+                    height=180,
+                )
+                st.caption("本次输入只进入当前会话的影响分析与人工审核，不改变公共资料。")
+                if st.button(
+                    "开始变更审查", type="primary", key="custom_prepare",
+                    disabled=not bool(rag_health) or custom_content.strip() == current_requirement["content"].strip(),
+                ):
+                    try:
+                        with st.spinner("正在识别变更并准备引用依据与修改建议……"):
+                            st.session_state.v4_change_result = change_impact.prepare_custom(
+                                selected_case.changed_external_identifier, custom_content
+                            )
+                        st.session_state["_pending_navigation"] = "变更分析"
+                        st.session_state["_intro_dismissed"] = True
+                        st.rerun()
+                    except Exception as exc:
+                        technical_error(exc)
         with quick_demo:
-            st.markdown("**快速体验 Demo**")
+            st.markdown("**快速体验预置案例**")
             st.caption("预计 3 分钟 · 版本变化、影响分析、引用依据、修改审核、安全发布。")
-            st.button("开始 Demo", key="start_demo", on_click=open_change_analysis)
+            st.button("开始预置案例", key="start_demo", on_click=open_change_analysis)
 
     st.markdown("### 审查流程")
     st.markdown(
@@ -409,52 +524,74 @@ with overview_tab:
     render_versions(catalog_documents)
 with rag_tab:
     st.markdown('<div class="boundary"><b>可信问答</b>只使用允许的文档版本；<b>引用检索</b>保留文档、章节、页码和版本来源。</div>', unsafe_allow_html=True)
-    if catalog_documents:
-        with st.expander(f"当前文档目录（{len(catalog_documents)} 份）"):
-            for item in catalog_documents:
-                active = item.get("active_version") or {}
-                status = (
-                    version_status_label(active.get("status"))
-                    if active else "无有效版本"
-                )
-                version = active.get("version_label") or "—"
-                st.markdown(f"- **{item.get('title') or item['document_id']}** · {version} · {status}")
-                st.caption(
-                    f"项目：{item.get('project_name') or item.get('project_id', '—')}"
-                    f"　|　类型：{item.get('document_type', '—')}"
-                )
-    else:
-        active_prefix = "safe-" if config.online_generation_allowed else "rdv2-"
-        active_documents = [
-            (document_id, name)
-            for document_id, name in document_names.items()
-            if document_id.startswith(active_prefix)
-        ]
-        if active_documents:
-            with st.expander(f"当前知识库文档（{len(active_documents)} 份）"):
-                for _, name in active_documents:
-                    st.markdown(f"- **{name}**")
-
     scope_mode = st.radio(
         "检索范围",
-        ["全部当前有效文档", "指定项目", "指定文档类型", "指定文档", "指定版本 / 历史版本"],
+        ["当前案例", "全部资料", "指定项目", "指定文档类型", "指定文档", "指定版本 / 历史版本"],
         horizontal=True,
         key="scope_mode",
     )
-    scope: dict = {"active_only": True}
+
+    def ensure_knowledge_documents() -> None:
+        cases_to_seed = (
+            list(demo_cases.values())
+            if scope_mode != "当前案例"
+            else [selected_case]
+        )
+        for case in cases_to_seed:
+            client = (
+                change_impact if case.case_id == selected_case.case_id
+                else ChangeImpactClient(base_config.for_session(session_id, case.case_id), case)
+            )
+            client.ensure_documents()
+
+    knowledge_documents: list[dict] = []
+    if rag_health and st.session_state.get("product_nav") == "知识服务":
+        try:
+            with st.spinner("正在加载当前案例资料……"):
+                ensure_knowledge_documents()
+                knowledge_documents = change_impact._version_documents()
+        except Exception as exc:
+            st.warning("案例资料暂未加载成功，请检查知识服务连接后重试。")
+            if not config.is_public_demo:
+                st.caption(f"技术详情：{type(exc).__name__}")
+    for item in knowledge_documents:
+        active = item.get("active_version") or {}
+        source_name = active.get("source_name")
+        kind = item.get("document_type") or "研发文档"
+        item["title"] = f"{kind}（{source_name}）" if source_name else str(item.get("title") or kind)
+        document_names[str(item["document_id"])] = item["title"]
+    if knowledge_documents:
+        heading = "全部案例资料" if scope_mode == "全部资料" else "当前案例资料"
+        with st.expander(f"{heading}（{len(knowledge_documents)} 份）"):
+            visible = (
+                knowledge_documents if scope_mode != "当前案例" else
+                [item for item in knowledge_documents if item.get("project_id") == selected_case.project_id]
+            )
+            for item in visible:
+                active = item.get("active_version") or {}
+                st.markdown(
+                    f"- **{item['title']}** · {active.get('version_label') or '—'}"
+                    f" · {version_status_label(active.get('status')) if active else '无有效版本'}"
+                )
+    else:
+        with st.expander("当前案例资料（待加载）"):
+            for name in selected_case.baseline_documents:
+                st.markdown(f"- {name}")
+
+    scope: dict = case_knowledge_scope(scope_mode if scope_mode in {"当前案例", "全部资料"} else "当前案例", selected_case)
     scope_valid = True
     if scope_mode == "指定项目":
-        projects = sorted({str(item.get("project_id")) for item in catalog_documents if item.get("project_id")})
-        selected_projects = st.multiselect("选择项目", projects, default=projects[:1], key="scope_projects")
+        projects = sorted({case.project_id for case in demo_cases.values()} | {str(item.get("project_id")) for item in knowledge_documents if item.get("project_id")})
+        selected_projects = st.multiselect("选择项目", projects, default=[selected_case.project_id], key="scope_projects")
         scope["project_ids"] = selected_projects
         scope_valid = bool(selected_projects)
     elif scope_mode == "指定文档类型":
-        document_types = sorted({str(item.get("document_type")) for item in catalog_documents if item.get("document_type")})
+        document_types = sorted({str(item.get("document_type")) for item in knowledge_documents if item.get("document_type")})
         selected_types = st.multiselect("选择文档类型", document_types, default=document_types[:1], key="scope_types")
         scope["document_types"] = selected_types
         scope_valid = bool(selected_types)
     elif scope_mode == "指定文档":
-        labels = {str(item["document_id"]): str(item.get("title") or item["document_id"]) for item in catalog_documents}
+        labels = {str(item["document_id"]): str(item.get("title") or item["document_id"]) for item in knowledge_documents}
         selected_documents = st.multiselect(
             "选择一个或多个文档", list(labels), default=list(labels)[:1],
             format_func=lambda value: labels[value], key="scope_documents",
@@ -462,13 +599,13 @@ with rag_tab:
         scope["document_ids"] = selected_documents
         scope_valid = bool(selected_documents)
     elif scope_mode == "指定版本 / 历史版本":
-        labels = {str(item["document_id"]): str(item.get("title") or item["document_id"]) for item in catalog_documents}
+        labels = {str(item["document_id"]): str(item.get("title") or item["document_id"]) for item in knowledge_documents}
         historical_document = st.selectbox(
             "选择文档", list(labels), format_func=lambda value: labels[value], key="historical_document"
         ) if labels else None
         selected_versions: list[str] = []
         if historical_document:
-            document = next(item for item in catalog_documents if item["document_id"] == historical_document)
+            document = next(item for item in knowledge_documents if item["document_id"] == historical_document)
             versions = list(document.get("versions") or [])
             version_labels = {
                 str(item["version_id"]): f"{item['version_label']} · {version_status_label(item['status'])}"
@@ -486,90 +623,85 @@ with rag_tab:
         scope_valid = bool(selected_versions)
     if not scope_valid:
         st.warning("请先完成检索范围选择。")
-    render_scope(scope, catalog_documents)
+    render_scope(scope, knowledge_documents)
 
-    mode = st.radio("功能", ["RAG 问答", "证据检索"], horizontal=True, key="rag_mode")
-    selected = st.selectbox("示例问题", example_questions(), key="rag_example")
+    mode = st.radio("知识服务功能", ["证据检索", "RAG 问答"], horizontal=True, key="rag_mode")
+    suggested_questions = [f"{selected_case.changed_external_identifier} 的当前要求是什么？", *example_questions()]
+    selected = st.selectbox("示例问题", suggested_questions, key="rag_example")
     question = st.text_area("问题", value=selected, key="rag_question")
+    st.caption("默认只查当前案例的有效版本；选择“全部资料”才会跨案例检索。")
+
     if mode == "证据检索":
-        top_k = st.slider("返回证据数量", 3, 10, 5, key="rag_top_k")
-        if st.button("检索证据", type="primary", disabled=not bool(rag_health) or not scope_valid, key="retrieve_button"):
+        top_k = st.slider("返回结果数量", 3, 10, 5, key="rag_top_k")
+        if st.button("检索引用依据", type="primary", disabled=not bool(rag_health) or not scope_valid, key="retrieve_button"):
             try:
-                with st.spinner("正在检索证据……"):
+                with st.spinner("正在当前范围内检索资料……"):
+                    ensure_knowledge_documents()
+                    payload = rag.search_candidate_versions(question, top_k, scope)
                     st.session_state.rag_result = {
-                        "mode": mode, "scope": dict(scope),
-                        "payload": rag.retrieve(question, top_k, scope),
+                        "mode": mode, "question": question, "scope": dict(scope), "payload": payload,
                     }
             except Exception as exc:
                 technical_error(exc)
         current = st.session_state.get("rag_result")
-        if current and current.get("mode") == mode:
-            render_scope(
-                current.get("scope", scope), catalog_documents,
-                title="本次检索实际使用的资料范围",
-            )
+        if current and current.get("mode") == mode and current.get("question") == question and current.get("scope") == scope:
+            st.markdown("### 检索结果")
             render_retrieval_results(current["payload"]["results"], document_names)
+            with st.expander("本次使用的资料范围"):
+                render_scope(current["scope"], knowledge_documents)
     else:
         if not config.online_generation_allowed:
-            if config.is_public_demo:
-                st.info("当前公共演示只开放证据检索；在线回答尚未启用。")
-            else:
-                st.warning("当前 Data 未标记为安全数据，已禁用可能调用在线模型的 RAG 问答。")
-        budget_exhausted = config.is_public_demo and config.online_generation_allowed and budget.remaining == 0
+            st.info("当前环境暂未启用生成式回答，你仍可以使用证据检索查看引用依据。")
+        budget_exhausted = config.is_public_demo and budget.remaining == 0
         if config.is_public_demo and config.online_generation_allowed:
-            st.caption(f"本 Session 剩余在线模型调用额度：{budget.remaining}")
+            st.caption(f"本次会话剩余生成次数：{budget.remaining}")
             if budget_exhausted:
-                st.warning("公共 Demo 调用额度已用完，本次请求已停止，不会返回假结果。")
+                st.warning("本次会话的生成次数已用完，仍可继续检索引用依据。")
         if st.button(
-            "生成回答", type="primary",
-            disabled=(
-                not bool(rag_health)
-                or not config.online_generation_allowed
-                or not scope_valid
-                or budget_exhausted
-            ),
+            "生成有引用的回答", type="primary",
+            disabled=not bool(rag_health) or not config.online_generation_allowed or not scope_valid or budget_exhausted,
             key="query_button",
         ):
             try:
+                ensure_knowledge_documents()
                 if config.is_public_demo and not budget.reserve():
-                    raise ServiceError(
-                        "公共 Demo 调用额度已用完，本次请求已停止。",
-                        "MAX_LLM_CALLS_PER_SESSION",
-                        "LLM_BUDGET_EXHAUSTED",
-                    )
-                with st.spinner("正在生成 RAG 回答……"):
+                    raise ServiceError("本次会话的生成次数已用完，仍可继续检索引用依据。", code="LLM_BUDGET_EXHAUSTED")
+                with st.spinner("正在检索资料并生成有引用的回答……"):
+                    payload = rag.query_candidate_versions(question, scope)
+                    fallback = []
+                    if payload.get("status") != "OK":
+                        fallback = rag.search_candidate_versions(question, 5, scope)["results"]
                     st.session_state.rag_result = {
-                        "mode": mode, "scope": dict(scope),
-                        "payload": rag.query(question, scope),
+                        "mode": mode, "question": question, "scope": dict(scope),
+                        "payload": payload, "fallback": fallback,
                     }
+                    st.rerun()
             except Exception as exc:
                 technical_error(exc)
         current = st.session_state.get("rag_result")
-        if current and current.get("mode") == mode:
+        if current and current.get("mode") == mode and current.get("question") == question and current.get("scope") == scope:
             payload = current["payload"]
-            render_scope(
-                current.get("scope", scope), catalog_documents,
-                title="本次问答实际使用的资料范围",
-            )
-            st.markdown("### RAG 回答")
-            failure = business_failure_message(
-                (payload.get("trusted_qa") or {}).get("post_validation_status")
-            )
-            if failure:
-                st.warning(failure)
-            elif payload.get("status") in {"ABSTAINED", "FAIL_CLOSED"}:
-                st.warning("当前回答未通过资料与引用校验，本次结果已停止进入正式流程。")
-            if payload.get("answer") == "N/A":
-                st.caption("未生成回答")
-            else:
+            st.markdown(f"**问题：** {question}")
+            st.markdown("### 回答")
+            if payload.get("status") == "OK" and payload.get("answer") != "N/A" and payload.get("sources"):
                 st.write(payload["answer"])
-            st.markdown("### 引用来源")
-            render_query_sources(
-                payload["sources"], document_names, trace=payload.get("trace")
-            )
+                st.markdown("### 引用依据")
+                render_query_sources(payload["sources"], document_names, trace=payload.get("trace"))
+            else:
+                if payload.get("status") == "GENERATION_NOT_CONFIGURED":
+                    st.info("当前服务未配置在线回答，仍可查看下方检索到的引用依据。")
+                elif payload.get("status") == "NO_EVIDENCE":
+                    st.info("当前范围内未找到足够相关的资料，可以调整问题或扩大检索范围。")
+                else:
+                    st.info("本次生成未通过引用校验，仍可查看下方检索到的资料。")
+                if current.get("fallback"):
+                    st.markdown("### 检索到的引用依据")
+                    render_retrieval_results(current["fallback"], document_names)
+            with st.expander("本次使用的资料范围"):
+                render_scope(current["scope"], knowledge_documents)
 
     with st.expander("版本对比"):
-        versioned_documents = [item for item in catalog_documents if len(item.get("versions") or []) >= 2]
+        versioned_documents = [item for item in knowledge_documents if len(item.get("versions") or []) >= 2]
         if not versioned_documents:
             st.info("当前目录没有可对比的两个版本。导入新版本后可在此查看 Section 级差异。")
         else:
@@ -602,11 +734,13 @@ with rag_tab:
             version_diff = st.session_state.get("version_diff")
             if version_diff and version_diff.get("document_id") == diff_document_id:
                 metrics = st.columns(4)
-                for column, change in zip(metrics, ("ADDED", "REMOVED", "MODIFIED", "UNCHANGED")):
-                    column.metric(change, version_diff["summary"].get(change, 0))
+                change_labels = {"ADDED": "新增", "REMOVED": "已移除", "MODIFIED": "已修改", "UNCHANGED": "未变化"}
+                for column, change in zip(metrics, change_labels):
+                    column.metric(change_labels[change], version_diff["summary"].get(change, 0))
                 for row in version_diff["sections"]:
-                    with st.expander(f"{row['change_type']} · {' / '.join(row['section_path'])}"):
-                        st.json(row)
+                    with st.expander(f"{change_labels.get(row['change_type'], '变化')} · {' / '.join(row['section_path'])}"):
+                        with st.expander("技术详情"):
+                            st.json(row)
 
     if not rag_health:
         if config.is_public_demo:
@@ -618,8 +752,8 @@ with rag_tab:
 
 with agent_tab:
     st.markdown("### 扩展能力：按模板起草文档")
-    st.caption("原文档工作流 Agent 作为稳定的扩展能力保留；Prototype Final 的主流程是版本变化、影响分析、修改审核与安全发布。")
-    st.markdown("#### Step 1–2：选择项目与文档版本范围")
+    st.caption("模板文档起草作为扩展能力保留；核心流程是需求变更、影响分析、修改审核与安全发布。")
+    st.markdown("#### 第一步：选择项目与文档版本范围")
     projects = sorted({str(item.get("project_id")) for item in catalog_documents if item.get("project_id")})
     if not projects:
         projects = ["DEMO-RD"]
@@ -672,7 +806,7 @@ with agent_tab:
         except Exception as exc:
             technical_error(exc)
 
-    st.markdown("### Step 3–4：选择并解析 Word 模板")
+    st.markdown("### 第二步：选择并解析 Word 模板")
     st.caption("支持 Heading/标题 1–3、Outline Level、段落、表格和占位符，并尽量保持 Run 格式。")
     source_type = st.radio("模板来源", ["需求变更影响分析模板", "上传 .docx"], horizontal=True, key="template_source")
     if source_type == "需求变更影响分析模板":
@@ -700,7 +834,7 @@ with agent_tab:
         render_template_summary(record)
         rag_ready = bool(rag_health and artifact_status and artifact_status.get("artifact_status") == "COMPLETE")
         if st.button(
-            "Step 5：运行工作流", type="primary",
+            "第三步：运行工作流", type="primary",
             disabled=not rag_ready or record.get("scope") != agent_scope,
             key="run_workflow",
         ):
@@ -711,17 +845,17 @@ with agent_tab:
             except Exception as exc:
                 technical_error(exc)
         if not rag_ready:
-            st.info("RAG 服务或 Artifact 尚未就绪，工作流执行已禁用。")
+            st.info("RAG 服务或检索资料尚未就绪，请稍后重试。")
 
     result = st.session_state.get("workflow_result")
     if result:
-        st.markdown("### Step 6：Evidence 与字段草稿")
+        st.markdown("### 第六步：引用依据与字段草稿")
         render_scope(
             result["scope"], catalog_documents,
             title="本次工作流实际使用的资料范围",
         )
         render_workflow_result(result, document_names)
-        st.markdown("### Step 7：人工逐章节审核")
+        st.markdown("### 第五步：人工逐章节审核")
         reviewer = st.text_input("审核人", key=f"reviewer_{result['workflow_id']}")
         for section in result["sections"]:
             if not section["fields"]:
@@ -755,13 +889,13 @@ with agent_tab:
                         st.rerun()
                     except Exception as exc:
                         technical_error(exc)
-        st.markdown("### Step 8–9：生成正式文档")
+        st.markdown("### 第六步：生成正式文档")
         pending_review_count = sum(
             bool(section["fields"]) and section.get("review", {}).get("status") != "APPROVED"
             for section in result["sections"]
         )
         if st.button(
-            "生成 Approved DOCX", type="primary", disabled=not result["all_sections_approved"],
+            "生成已批准文档", type="primary", disabled=not result["all_sections_approved"],
             key=f"finalize_{result['workflow_id']}",
         ):
             try:
@@ -811,22 +945,27 @@ with analysis_tab:
     change_status = change_impact.status()
     if not rag_health:
         st.info("RAG 版本服务暂不可用；页面说明与案例信息仍可查看。")
-    if st.button(
-        "运行变更分析",
-        type="primary",
-        disabled=not bool(rag_health) or not change_status["ready"],
-        key="v4_prepare",
-    ):
-        try:
-            with st.spinner("正在解析版本、识别变化并发现影响……"):
-                st.session_state.v4_change_result = change_impact.prepare_demo()
-            st.rerun()
-        except Exception as exc:
-            technical_error(exc)
+    if change_mode == "预置演示案例":
+        if st.button(
+            "运行变更分析",
+            type="primary",
+            disabled=not bool(rag_health) or not change_status["ready"],
+            key="v4_prepare",
+        ):
+            try:
+                with st.spinner("正在解析版本、识别变化并发现影响……"):
+                    st.session_state.v4_change_result = change_impact.prepare_demo()
+                st.rerun()
+            except Exception as exc:
+                technical_error(exc)
+    elif not v4_result:
+        st.info("请先在工作台填写修改后的需求内容，再开始变更审查。")
     render_workbench_analysis(v4_result)
 
 with review_tab:
     st.markdown("### 修改审核")
+    if v4_result and v4_result.get("custom_change"):
+        st.info("本次修改建议来自你的需求输入；引用依据展示的是当前有效资料，批准前请核对两者差异。")
     render_review_progress(v4_result)
     render_workbench_review(v4_result)
     if not v4_result:
@@ -892,45 +1031,48 @@ with review_tab:
 with publish_tab:
     st.markdown("### 版本发布")
     render_review_progress(v4_result)
-    render_workbench_publication(v4_result)
-    if not v4_result:
-        st.info("请先完成变更分析和人工审核。")
-    if v4_result:
-        state = v4_result["state"]
-        apply_col, publish_col = st.columns(2)
-        if apply_col.button(
-            "应用已批准修改",
-            disabled=state["status"] != "APPLY_READY",
-            key=f"v4_apply_{state['task_id']}",
-        ):
-            try:
-                applied = change_impact.apply(state["task_id"])
-                v4_result["state"] = applied["state"]
-                v4_result["apply_results"] = applied["apply_results"]
-                st.session_state.v4_change_result = v4_result
-                st.rerun()
-            except Exception as exc:
-                technical_error(exc)
-        if publish_col.button(
-            "校验并安全发布新版本",
-            disabled=state["status"] != "CANDIDATE_READY",
-            key=f"v4_publish_{state['task_id']}",
-        ):
-            try:
-                v4_result["state"] = change_impact.publish(state["task_id"])
-                st.session_state.v4_change_result = v4_result
-                st.rerun()
-            except Exception as exc:
-                technical_error(exc)
-        candidate_path = state.get("candidate_path")
-        if candidate_path and Path(candidate_path).is_file():
-            st.download_button(
-                "下载候选版本文档",
-                data=Path(candidate_path).read_bytes(),
-                file_name=f"{selected_case.candidate_version_id}_candidate.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                key=f"v4_download_{state['task_id']}",
-            )
+    if v4_result and v4_result.get("custom_change"):
+        st.info("自定义变更只到人工审核；当前不会生成或发布候选版本，也不会修改公共基线。")
+    else:
+        render_workbench_publication(v4_result)
+        if not v4_result:
+            st.info("请先完成变更分析和人工审核。")
+        if v4_result:
+            state = v4_result["state"]
+            apply_col, publish_col = st.columns(2)
+            if apply_col.button(
+                "应用已批准修改",
+                disabled=state["status"] != "APPLY_READY",
+                key=f"v4_apply_{state['task_id']}",
+            ):
+                try:
+                    applied = change_impact.apply(state["task_id"])
+                    v4_result["state"] = applied["state"]
+                    v4_result["apply_results"] = applied["apply_results"]
+                    st.session_state.v4_change_result = v4_result
+                    st.rerun()
+                except Exception as exc:
+                    technical_error(exc)
+            if publish_col.button(
+                "校验并安全发布新版本",
+                disabled=state["status"] != "CANDIDATE_READY",
+                key=f"v4_publish_{state['task_id']}",
+            ):
+                try:
+                    v4_result["state"] = change_impact.publish(state["task_id"])
+                    st.session_state.v4_change_result = v4_result
+                    st.rerun()
+                except Exception as exc:
+                    technical_error(exc)
+            candidate_path = state.get("candidate_path")
+            if candidate_path and Path(candidate_path).is_file():
+                st.download_button(
+                    "下载候选版本文档",
+                    data=Path(candidate_path).read_bytes(),
+                    file_name=f"{selected_case.candidate_version_id}_candidate.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    key=f"v4_download_{state['task_id']}",
+                )
 
 with trace_tab:
     render_trace(st.session_state.get("v4_change_result"))

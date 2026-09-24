@@ -16,7 +16,10 @@ from typing import Any, Callable, Optional
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.rd_v2_runtime import QueryRuntimeError, RDV2QueryRuntime, create_runtime
+from src.rd_v2_runtime import (
+    QueryRuntimeError, RDV2QueryRuntime, _format_context, build_safe_trace,
+    create_runtime, validate_citation_membership,
+)
 from src.document_lifecycle import RetrievalScope
 from src.engineering_change import (
     CandidateVersionService,
@@ -96,6 +99,26 @@ class QueryResponse(BaseModel):
     status: str
     trace: list[dict] = Field(default_factory=list)
     trusted_qa: Optional[dict] = None
+
+
+def _candidate_query_context(hits: list[dict]) -> str:
+    """Expose version provenance and unresolved document conflicts to the generator."""
+    guidance = (
+        "以下是按检索得分排序的真实证据，不同文档的内容可能尚未同步。"
+        "若问题涉及当前需求目标，以当前有效的需求规格说明书为准；"
+        "如果设计或测试资料仍记录旧值，明确说明该差异，不能把旧值当成当前需求。"
+        "无法由证据确定时回答 N/A，不得补造结论或引用。"
+    )
+    parts = []
+    for hit in hits:
+        provenance = (
+            f"document_title: {hit.get('document_title', '')}\n"
+            f"document_type: {hit.get('document_type', '')}\n"
+            f"version_label: {hit.get('version_label', '')}\n"
+            f"version_status: {hit.get('version_status', '')}"
+        )
+        parts.append(provenance + "\n" + _format_context([hit]))
+    return guidance + "\n\n" + "\n\n---\n\n".join(parts)
 
 
 class RetrieveRequest(BaseModel):
@@ -440,6 +463,64 @@ def create_app(
         except ValueError as exc:
             raise HTTPException(status_code=422, detail="ENGINEERING_VERSION_SEARCH_INVALID") from exc
         return {"results": results}
+
+    @app.post("/engineering/versions/query", response_model=QueryResponse)
+    async def query_engineering_versions(payload: QueryRequest, request: Request) -> dict:
+        service = candidate_service_for(request)
+        if service is None:
+            raise HTTPException(status_code=503, detail="ENGINEERING_VERSION_SERVICE_UNAVAILABLE")
+        try:
+            hits = await asyncio.to_thread(
+                service.search_text, payload.question, payload.scope, top_k=5
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail="ENGINEERING_VERSION_SEARCH_INVALID") from exc
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail="ENGINEERING_VERSION_SEARCH_FAILED") from exc
+        trace = build_safe_trace(hits)
+        if not hits:
+            return {"answer": "N/A", "sources": [], "status": "NO_EVIDENCE", "trace": trace}
+        generator = request.app.state.rd_v2_runtime.generator
+        if generator is None:
+            return {"answer": "N/A", "sources": [], "status": "GENERATION_NOT_CONFIGURED", "trace": trace}
+        budget = request.app.state.public_query_budget
+        if budget is not None:
+            try:
+                allowed = budget.consume(request.headers.get("X-Demo-Session-ID", ""))
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail="PUBLIC_DEMO_SESSION_REQUIRED") from exc
+            if not allowed:
+                raise HTTPException(status_code=429, detail="LLM_SESSION_BUDGET_EXHAUSTED")
+        try:
+            generated = await asyncio.to_thread(
+                generator.generate, question=payload.question, context=_candidate_query_context(hits)
+            )
+            answer = generated["final_answer"]
+            validated = validate_citation_membership(generated["relevant_sources"], hits)
+            if not isinstance(answer, str) or not answer.strip() or answer == "N/A" or not validated:
+                raise ValueError("answer has no validated citation")
+        except Exception:
+            return {"answer": "N/A", "sources": [], "status": "FAIL_CLOSED", "trace": trace}
+        sources = []
+        for citation in validated:
+            hit = next(
+                row for row in hits
+                if row["document_id"] == citation["document_id"]
+                and row["page_number"] == citation["page_number"]
+            )
+            sources.append({
+                "document_id": hit["document_id"],
+                "page_number": hit["page_number"],
+                "document_title": hit.get("document_title"),
+                "version_id": hit["version_id"],
+                "version_label": hit["version_label"],
+                "version_status": hit["version_status"],
+                "section_id": hit["section_id"],
+                "section_path": hit["section_path"],
+                "chunk_id": hit["chunk_id"],
+                "content": hit["text"],
+            })
+        return {"answer": answer, "sources": sources, "status": "OK", "trace": trace}
 
     @app.post("/engineering/versions/retrieve")
     async def retrieve_engineering_version(payload: CandidateRetrieveRequest, request: Request) -> dict:

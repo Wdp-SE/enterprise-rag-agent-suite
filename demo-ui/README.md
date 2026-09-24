@@ -1,61 +1,37 @@
-# 研发变更审查工作台（Streamlit）
+# 公开研发知识工作台（Streamlit）
 
-本界面把版本可信研发知识服务与人工审查 Agent 组织成一条业务路径：选择需求变更案例 → 分析影响与引用依据 → 审核局部修改 → 校验候选版本并安全发布。业务判定、检索和发布仍由现有 RAG / Agent 服务执行；界面只读取和展示真实状态。公开演示只使用合成资料。
+默认入口 [app.py](app.py) 展示 **Apache DolphinScheduler 官方公开资料**：左侧导航按“知识服务”“变更审查”“系统说明”分组，提供总览、可信检索问答、版本与历史、资料与来源、会话审查各步骤、检索评测与已知限制。首页说明来源与非官方身份。知识服务支持 3.4.2 / 3.4.3 固定版本、中文优先/中英双语检索、真实官方原文引用和可核验的资料差异提醒。变更审查使用真实资料段落与已有 Diff/Impact 服务，草案和人工审核状态只留在当前 Streamlit 会话，不写公共基线。
 
-![公开合成资料下的工作台首页](../project_delivery/ui_product_experience/public_workbench.png)
+![真实资料工作台首页](../project_delivery/real_public_release/home.png)
 
-## 从新克隆仓库启动
+## 本地启动
 
-先按[根目录 Quick Start](../README.md)创建 Python 3.12 环境并安装依赖，然后在仓库根目录执行：
+先按[根目录 Quick Start](../README.md)安装 Python 3.12 环境，再在仓库根目录运行：
 
 ```powershell
 .\start_prototype.ps1
 ```
 
-打开 http://127.0.0.1:8502。脚本使用已跟踪的 `RAG-Challenge-2-main/public_demo_artifacts/rd-v2-public-demo-v1`，将候选版本、上传与输出写入系统临时目录；不需要私有原文、旧 `runtime/` 或个人 API Key。端口被占用时可传入 `-RagPort` 和 `-UiPort`。
+访问 <http://127.0.0.1:8502/>。脚本使用仓库内固定的官方资料和轻量索引，不需要历史 runtime 或私有文件；没有模型密钥仍可检索和审查。允许生成式回答时，先把 `DASHSCOPE_API_KEY` 放到本机**环境变量**，再运行 `./start_prototype.ps1 -EnableGeneration`。不要把实际值写进仓库或日志。
 
-## 手动启动
+手动启动时：在 `RAG-Challenge-2-main` 目录运行 `uvicorn src.public_server:app --host 127.0.0.1 --port 8765`，在 `demo-ui` 目录设置 `RAG_API_BASE_URL=http://127.0.0.1:8765` 后运行 `streamlit run app.py --server.port 8502`；使用仓库相应的虚拟环境解释器。
 
-以下命令假定已安装根目录 Quick Start 的依赖，分别在两个 PowerShell 窗口运行。
+## 操作路径
 
-RAG 窗口，从仓库根目录进入 `RAG-Challenge-2-main`：
+1. “可信检索问答”：选版本和语言，输入问题，先查看答案，再核对引用依据 Top 3；其余结果折叠。“技术详情”才显示检索得分，该分数不是事实可信度。
+2. “新建变更审查”：选择真实官方文档和段落，输入假设内容，查看 Diff、可能受影响的资料与官方链接、会话草案，最后人工审核。仅官方 PR 明确引用 DSIP 的关系会标记为已确认；语义检索只标记建议。
+3. “检索评测”直接展示真实语料的 Dense、BM25、Hybrid 指标和未评测的 Rerank；“已知限制”明确候选、引用与影响建议的边界。服务未配置在线模型或生成未通过引用校验时，问答页只展示待核对的检索候选。
 
-```powershell
-cd RAG-Challenge-2-main
-$env:APP_ENV = 'public_demo'
-$env:RD_V2_PROJECT_ROOT = (Get-Location).Path
-$env:RD_V2_ARTIFACT_ROOT = (Resolve-Path 'public_demo_artifacts\rd-v2-public-demo-v1').Path
-$env:RD_V2_ALLOW_EXTERNAL_GENERATION = 'false'
-$env:RD_V4_VERSION_STORE_ROOT = Join-Path $env:TEMP 'rag-agent-public-candidates'
-New-Item -ItemType Directory -Path $env:RD_V4_VERSION_STORE_ROOT -Force | Out-Null
-.\.venv\Scripts\python.exe -m uvicorn src.rd_v2_api:app --host 127.0.0.1 --port 8765
-```
+原合成 Case A/B 仍供测试使用。仅需复现这些历史测试夹具界面时，显式设置 `DEMO_LEGACY_FIXTURES=true`；公网默认不会展示或加载合成案例。
 
-UI 窗口，从仓库根目录进入 `demo-ui`：
+## 云端配置
+
+Streamlit Community Cloud 入口仍是 `demo-ui/app.py`，Python 3.12。至少设置 `APP_ENV="public_demo"`、`RAG_API_BASE_URL="<真实 Render URL>"` 与 `MAX_LLM_CALLS_PER_SESSION=3`；完整字段见 [部署指南](../project_delivery/public_value_prototype/free_deployment_guide.md)及[Secrets 示例](.streamlit/secrets.toml.example)。在线生成的 `DASHSCOPE_API_KEY` 只在 Render 环境变量中输入，不放在 Streamlit 前端 Secrets。不要提交 `secrets.toml`。
+
+## UI 回归
 
 ```powershell
-cd demo-ui
-$env:APP_ENV = 'public_demo'
-$env:RAG_API_BASE_URL = 'http://127.0.0.1:8765'
-$env:DEMO_RUNTIME_ROOT = Join-Path $env:TEMP 'rag-agent-public-ui'
-$env:DEMO_ALLOW_RAG_QUERY = 'false'
-..\OpenManus-rag\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1 --server.port 8502
+& ..\OpenManus-rag\.venv\Scripts\python.exe -m pytest -p no:cacheprovider tests -q
 ```
 
-## 界面与演示路径
-
-首页“工作台”展示系统定位、案例选择、实时文档与版本状态。选择 Case A（并发 500 → 1000）或 Case B（审计日志 7 → 30 天），点击“开始分析”，再在“变更分析”运行现有工作流。到“修改审核”并排检查修改前、建议修改和关联 Evidence，填写审核意见并批准、编辑或驳回。到“版本发布”应用已批准修改，检查候选版本和确定性门禁，再安全发布。
-
-“知识检索”可演示版本范围内的原始证据与差异；“执行轨迹”“评测结果”用于解释过程；“扩展工具”保留 Word 模板起草与审核流程。公开资料默认禁用需要在线模型的 `/query`，主审查流程不依赖 DashScope Key。完整首次使用步骤见[演示流程](../project_delivery/ui_product_experience/demo_user_flow.md)。
-
-## 公网配置
-
-Streamlit Community Cloud 的入口是 `demo-ui/app.py`，Python 3.12。把 [Secrets 示例](.streamlit/secrets.toml.example)中的配置项填入平台设置，将 `RAG_API_BASE_URL` 设为实际 Render URL；不要提交真实 `secrets.toml`。现有服务与部署核对步骤见[部署指南](../project_delivery/public_value_prototype/free_deployment_guide.md)。
-
-## 验证与边界
-
-```powershell
-..\OpenManus-rag\.venv\Scripts\python.exe -m pytest -p no:cacheprovider tests -q
-```
-
-Scope 是业务范围约束，不等同 ACL/RBAC；Evidence 提供可追溯来源，不自动证明结论正确；疑似影响始终是人工审核建议。当前是单审核人原型，原始 DOCX 不被局部修改流程覆盖。用户资料和运行输出不得提交到公开仓库。
+资料来源和许可证见 [Corpus Manifest](../RAG-Challenge-2-main/public_corpus/corpus_manifest.json)、[LICENSE](../RAG-Challenge-2-main/public_corpus/LICENSE) 与 [NOTICE](../RAG-Challenge-2-main/public_corpus/NOTICE)。
