@@ -1,16 +1,18 @@
 # 官方公开资料工作台：部署与验收
 
-本地 V1.0 候选包含尚未提交的工作区修改，尚未推送或重新部署。下面的公网链接是已有服务地址，可能仍运行此前版本；请在平台核对实际部署提交，不能只凭网址可访问判断本轮内容已经上线。当前候选界面截图见[本地首页截图](../final_engineering_review/home.png)。
+下面的公网链接指向已有服务；实际运行版本以托管平台显示的部署提交为准。界面截图见[首页截图](../final_engineering_review/home.png)。本地 clean-clone 已在 Python 3.11 验证通过；此记录不定义项目最低 Python 版本。
 
 - GitHub：[Wdp-SE/enterprise-rag-agent-suite](https://github.com/Wdp-SE/enterprise-rag-agent-suite)
-- 分支：feature/public-value-prototype（本地工作区含未提交修改；本轮尚未推送）
+- 分支：feature/public-value-prototype
 - [Streamlit 工作台](https://enterprise-rag-agent-suite-bfmkgsimdisxcewgco7ydk.streamlit.app/)
 - [Render API 文档](https://version-aware-rag-public-demo.onrender.com/docs)
 - [Render 健康状态](https://version-aware-rag-public-demo.onrender.com/health)
 
 ## V1.0 检索策略与限制
 
-正式策略为 Chunk A（1250 chars、无 overlap）+ BM25 + Top-5。BM25、multilingual E5 与 Hybrid 已在相同资料、版本过滤、语言范围和 Top-5 条件下比较。Hybrid 最佳配置只有轻微 MRR 改善，Hit@1、Hit@5 和跨文档双来源完整命中均未改善，P95 明显高于 BM25，因此 E5、Hybrid、Rerank 不进入正式链路。四条跨文档题的双来源完整命中为 0/4。HOLDOUT 是既有题集的回顾性确定划分，不是独立真实用户测试。完整数值见[最终选型报告](../../evaluation/real_world_retrieval/final_selection/final_selection.md)。
+正式策略为 Chunk A（1250 chars、无 overlap）+ BM25 + Top-5，不设置文档数上限。BM25、multilingual E5 与 Hybrid 已在相同资料、版本过滤、语言范围和 Top-5 条件下比较。Hybrid 最佳配置只有轻微 MRR 改善，Hit@1、Hit@5 和跨文档双来源完整命中均未改善，P95 明显高于 BM25，因此 E5、Hybrid、Rerank 不进入正式链路。四条跨文档题的双来源完整命中为 0/4。HOLDOUT 是既有题集的回顾性确定划分，不是独立真实用户测试。完整数值见[最终选型报告](../../evaluation/real_world_retrieval/final_selection/final_selection.md)。
+
+最终选型工具 `run_selection.py` 分为 `chunk` → `retriever` → `topk` → `diversity` → `holdout` 阶段，不提供单条完整重跑命令。Holdout 受 `selection_lock.json` 中锁定的 DEV 结果哈希约束，不能对当前冻结结果随意重复执行。README 中的示例只运行 DEV 分块策略阶段，并会更新 `final_selection/results.json`。
 
 公开展示限制：官方资料仅为 52 份有限子集；Agent 草案与审核状态只在当前 Session 沙箱内，不修改公共语料或 Apache 上游；当前 V1.0 不实现 locale sibling consistency。检索命中和来源引用不等于内容事实已被证明。
 
@@ -40,7 +42,7 @@ Invoke-RestMethod "$base/public/search" -Method Post -ContentType 'application/j
 | Repository | `Wdp-SE/enterprise-rag-agent-suite` |
 | Branch | `feature/public-value-prototype` |
 | Main file path | `demo-ui/app.py` |
-| Python | 3.12 |
+| Python | 本文不指定；以 Streamlit Community Cloud 当前应用配置和平台选项为准 |
 | Dependency file | `demo-ui/requirements.txt` |
 
 按 [Secrets 示例](../../demo-ui/.streamlit/secrets.toml.example)设置 `APP_ENV="public_demo"`、`DEMO_LEGACY_FIXTURES=false`、`RAG_API_BASE_URL="https://version-aware-rag-public-demo.onrender.com"`、超时/重试和 `MAX_LLM_CALLS_PER_SESSION=3`。**不要**把 `DASHSCOPE_API_KEY` 放进 Streamlit：模型调用只由 Render 后端执行。`DEMO_LEGACY_FIXTURES=true` 仅用于历史合成夹具，不应设置在公网 App。

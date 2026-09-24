@@ -6,7 +6,7 @@
 
 ## 本地启动
 
-先按[根目录 Quick Start](../README.md)安装 Python 3.12 环境，再在仓库根目录运行：
+先按[根目录 Quick Start](../README.md)准备环境。本地 clean-clone 已在 Python 3.11 验证通过；该验证记录不定义项目最低 Python 版本。Render 使用仓库配置的 Python 3.12.8；本文不推测 Streamlit Community Cloud 的 Python 版本。然后在仓库根目录运行：
 
 ```powershell
 .\start_prototype.ps1
@@ -26,13 +26,13 @@
 
 ## V1.0 检索结论与已知限制
 
-正式检索保持 BM25 + Top-5，Chunk A 为 1250 chars、无 overlap。multilingual E5 与 Hybrid 仅用于同条件选型比较，不进入正式链路；Hybrid 的 MRR 仅小幅增加，Hit@1、Hit@5、双来源完整命中没有改善，P95 明显高于 BM25。四条跨文档题双来源完整命中为 0/4。HOLDOUT 是既有 46 条题目的回顾性确定划分，不是独立真实用户测试。
+正式检索保持 BM25 + Top-5、Chunk A 为 1250 chars 且无 overlap，不设置文档数上限。multilingual E5 与 Hybrid 仅用于同条件选型比较，不进入正式链路；Hybrid 的 MRR 仅小幅增加，Hit@1、Hit@5、双来源完整命中没有改善，P95 明显高于 BM25。四条跨文档题双来源完整命中为 0/4。HOLDOUT 是既有 46 条题目的回顾性确定划分，不是独立真实用户测试。
 
 语料仅是 52 份官方资料的有限子集。Agent 工作状态保存在当前 Session 沙箱，不修改公共语料或 Apache 上游。系统不实现 locale sibling consistency；影响候选需要人工复核，审查结果不会写回公共资料。详细结果见[最终选型报告](../evaluation/real_world_retrieval/final_selection/final_selection.md)。
 
 ## 云端配置
 
-Streamlit Community Cloud 入口仍是 `demo-ui/app.py`，Python 3.12。至少设置 `APP_ENV="public_demo"`、`RAG_API_BASE_URL="<真实 Render URL>"` 与 `MAX_LLM_CALLS_PER_SESSION=3`；完整字段见 [部署指南](../project_delivery/public_value_prototype/free_deployment_guide.md)及[Secrets 示例](.streamlit/secrets.toml.example)。在线生成的 `DASHSCOPE_API_KEY` 只在 Render 环境变量中输入，不放在 Streamlit 前端 Secrets。不要提交 `secrets.toml`。
+Streamlit Community Cloud 入口仍是 `demo-ui/app.py`；本文不指定其 Python 版本，以当前应用配置和平台选项为准。至少设置 `APP_ENV="public_demo"`、`RAG_API_BASE_URL="<真实 Render URL>"` 与 `MAX_LLM_CALLS_PER_SESSION=3`；完整字段见 [部署指南](../project_delivery/public_value_prototype/free_deployment_guide.md)及[Secrets 示例](.streamlit/secrets.toml.example)。在线生成的 `DASHSCOPE_API_KEY` 只在 Render 环境变量中输入，不放在 Streamlit 前端 Secrets。不要提交 `secrets.toml`。
 
 ## UI 回归
 

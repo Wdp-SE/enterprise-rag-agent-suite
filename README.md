@@ -7,7 +7,7 @@
 - [RAG 健康状态](https://version-aware-rag-public-demo.onrender.com/health)
 - [最终检索选型报告](evaluation/real_world_retrieval/final_selection/final_selection.md)
 
-> 在线链接指向已有公网服务。本地 V1.0 候选仍有未提交的工作区修改，尚未推送或重新部署；链接可访问不代表本轮文档与选型结论已上线。
+> 在线链接指向已有公网服务，实际运行版本以托管平台显示的部署提交为准。
 
 ![本地 V1.0 候选工作台截图](project_delivery/final_engineering_review/home.png)
 
@@ -34,9 +34,17 @@
 | Hybrid，BM25 权重 0.75 | 0.3636 | 0.8182 | 0.5470 | 0/2 | 22.31 ms |
 | 锁定的 BM25 HOLDOUT | 0.4286 | 0.7619 | 0.5833 | 0/2 | 1.55 ms |
 
-Hybrid 的最佳配置只让 DEV MRR 小幅增加 0.0175；Hit@1、Hit@5 和跨文档双来源命中均未改善，P95 则显著高于 BM25。因此 V1.0 保留 Chunk A（1250 chars、无 overlap）+ BM25 + Top-5；Hybrid、神经 Dense 和 Rerank 不进入正式检索链路。跨文档题合计双来源完整命中为 0/4。HOLDOUT 是从此前已评测的 46 条题目中做的回顾性确定划分，不是独立真实用户测试，不能据此声称真实用户准确率。
+Hybrid 的最佳配置只让 DEV MRR 小幅增加 0.0175；Hit@1、Hit@5 和跨文档双来源命中均未改善，P95 则显著高于 BM25。因此 V1.0 保留 Chunk A（1250 chars、无 overlap）+ BM25 + Top-5，不设置文档数上限；Hybrid、神经 Dense 和 Rerank 不进入正式检索链路。跨文档题合计双来源完整命中为 0/4。HOLDOUT 是从此前已评测的 46 条题目中做的回顾性确定划分，不是独立真实用户测试，不能据此声称真实用户准确率。
 
 工作台内置的历史评测页仍展示早期字符哈希 Dense 对照，不代表本轮 multilingual E5 选型实验；当前结论以[最终选型报告](evaluation/real_world_retrieval/final_selection/final_selection.md)为准。完整方法、切分、指标定义和失败分析见该报告。
+
+### Final selection 的复现边界
+
+`run_selection.py` 提供 `chunk` → `retriever` → `topk` → `diversity` → `holdout` 阶段，没有单条命令完整重跑 final selection。Holdout 受 `selection_lock.json` 及其锁定的 DEV 结果哈希约束；当前冻结结果已包含 Holdout，不能对它随意重复执行。下面只示范 DEV 分块策略阶段，不代表完整选型重跑；该命令会更新 `evaluation/real_world_retrieval/final_selection/results.json`：
+
+```powershell
+python .\evaluation\real_world_retrieval\final_selection\run_selection.py chunk --chunk A
+```
 
 ## 三分钟体验
 
@@ -58,11 +66,11 @@ Hybrid 的最佳配置只让 DEV MRR 小幅增加 0.0175；Hit@1、Hit@5 和跨�
 
 ## 本地启动
 
-需要 Python 3.12。克隆后无需私有企业资料或本机历史 runtime：
+本地 clean-clone 已在 Python 3.11 验证通过；这记录的是已验证环境，不代表项目最低 Python 版本。Render 部署配置使用 Python 3.12.8；本文不推测 Streamlit Community Cloud 的 Python 版本。克隆后无需私有企业资料或本机历史 runtime：
 
-    py -3.12 -m venv RAG-Challenge-2-main\.venv
+    py -3.11 -m venv RAG-Challenge-2-main\.venv
     & .\RAG-Challenge-2-main\.venv\Scripts\python.exe -m pip install -r RAG-Challenge-2-main\requirements-render.txt
-    py -3.12 -m venv OpenManus-rag\.venv
+    py -3.11 -m venv OpenManus-rag\.venv
     & .\OpenManus-rag\.venv\Scripts\python.exe -m pip install -r OpenManus-rag\requirements.txt
     & .\OpenManus-rag\.venv\Scripts\python.exe -m pip install -r demo-ui\requirements.txt
     .\start_prototype.ps1
