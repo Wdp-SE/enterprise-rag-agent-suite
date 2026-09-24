@@ -91,10 +91,10 @@ def write_queries() -> None:
             }],
         })
     cross_evidence = {
-        "ds-034": ("guide/parameter/priority", "Parameter Context > Startup Parameter"),
-        "ds-035": ("guide/project/workflow-instance", "Project Management -> Workflow -> Workflow Instance"),
-        "ds-036": ("guide/api/open-api", "Create token"),
-        "ds-037": ("release-notes", "DSIP-107"),
+        "ds-035": ("guide/parameter/priority", "Parameter Context > Startup Parameter"),
+        "ds-036": ("guide/project/workflow-instance", "Project Management -> Workflow -> Workflow Instance"),
+        "ds-037": ("guide/api/open-api", "Create token"),
+        "ds-038": ("release-notes", "DSIP-107"),
     }
     for row in truth:
         if row["id"] not in cross_evidence:

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
@@ -15,7 +16,7 @@ from playwright.sync_api import sync_playwright
 
 REPO = Path(__file__).resolve().parents[2]
 ASSETS = REPO / "RAG-Challenge-2-main" / "public_corpus"
-OUT = REPO / "project_delivery" / "real_public_release"
+OUT = Path(os.environ.get("PUBLIC_SMOKE_OUT", REPO / "project_delivery" / "real_public_release"))
 URL = "http://127.0.0.1:8505/"
 
 
@@ -43,7 +44,9 @@ def main() -> None:
     before = baseline_hash()
     checks: dict[str, object] = {}
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(headless=True)
+        browser = playwright.chromium.launch(
+            headless=True, channel=os.environ.get("PUBLIC_SMOKE_BROWSER_CHANNEL") or None,
+        )
         context = browser.new_context(viewport={"width": 1440, "height": 900})
         page = context.new_page()
         page.goto(URL, wait_until="domcontentloaded", timeout=30000)
@@ -136,7 +139,9 @@ def main() -> None:
         page.get_by_role("button", name="开始变更审查").click()
         page.get_by_role("button", name="确认已审阅会话草案").wait_for(timeout=30000)
         review_text = page.locator("body").inner_text()
-        assert "已确认关系" in review_text
+        assert "已确认文档关联" in review_text
+        assert "不证明所选段落受影响" in review_text
+        assert "已确认关系" not in review_text
         assert "建议核对" in review_text
         checks["impact_candidates"] = "PASS"
         assert "当前官方原文" in review_text

@@ -1,69 +1,74 @@
-# 版本可信研发知识与变更审查系统
+# 版本可信研发知识与变更审查工作台
 
-基于 **Apache DolphinScheduler 官方公开资料**的双语研发知识 RAG 与会话内假设变更审查工作台。本项目是独立的工程演示，**不是 Apache 官方产品，也不代表上游项目的内部系统**。
+基于 Apache DolphinScheduler 官方公开资料构建的研发知识 RAG 与会话内假设变更审查原型。RAG 按版本范围检索资料并提供原文依据；Agent 使用这些依据整理影响候选和修改建议，最后由人审核。本项目是独立演示，不是 Apache 官方产品，也不代表上游内部系统。
 
 - [在线工作台](https://enterprise-rag-agent-suite-bfmkgsimdisxcewgco7ydk.streamlit.app/)
 - [RAG API 文档](https://version-aware-rag-public-demo.onrender.com/docs)
 - [RAG 健康状态](https://version-aware-rag-public-demo.onrender.com/health)
+- [最终检索选型报告](evaluation/real_world_retrieval/final_selection/final_selection.md)
 
-> 链接指向现有公网服务。**本轮本地修改尚未提交或部署**；公开页面在重新部署前仍可能显示旧版合成案例。请以平台部署提交和页面内容判断是否已更新。
+> 在线链接指向已有公网服务。本地 V1.0 候选仍有未提交的工作区修改，尚未推送或重新部署；链接可访问不代表本轮文档与选型结论已上线。
 
-![真实官方资料工作台本地截图](project_delivery/real_public_release/home.png)
+![本地 V1.0 候选工作台截图](project_delivery/final_engineering_review/home.png)
 
-## 可以做什么
+## 项目与架构
 
-| 研发知识 RAG | 变更审查 Agent |
-| --- | --- |
-| 查询固定版本的中英文官方资料，查看当前或历史版本、章节和官方原文链接。 | 选择真实官方文档或 DSIP 片段，输入假设性修改，查看影响建议、引用依据和会话草案，最后人工审核。 |
-| 生成式回答仅在模型密钥由部署平台安全配置后启用；引用必须来自本次真实检索。 | 假设性修改只保留在当前会话，不写入 Apache 上游或公共知识库，也不假装发布候选版本。 |
+研发人员可以在固定版本的 DolphinScheduler 资料中提问，查看命中的章节、原文和来源；也可以选取资料片段提出假设性变更。RAG 提供带来源的检索证据，Agent 根据证据组织影响候选、修改建议和会话草案，交由用户人工审核。Agent 的草案保存在当前 Session 沙箱中，不修改公共语料或 Apache 上游。
 
-公开资料采用固定发布标签 **3.4.2**（基线）和 **3.4.3**（当前），包含 52 份官方文档、Release、DSIP Issue 与明确关联的 PR，切为 659 个片段。中文和英文属于**同一个知识空间**；默认中文优先，也可选全部、仅中文或 English。当前版本默认参与检索，历史版本需要显式选择。
+    Apache DolphinScheduler 官方资料快照
+      → 固定版本、来源、语言和章节元数据
+      → FastAPI：BM25 检索、候选证据及可选的带引用生成
+      → Streamlit：研发知识服务与变更审查 Agent
+      → 人工核对与审核
 
-## 检索策略为何选 BM25
+在线工作台用于体验产品流程；API 文档用于查看公开 RAG 接口。公开语料是 Apache DolphinScheduler 3.4.2 与 3.4.3 的有限快照，共 52 份来源。启动时不抓取上游，不重建 OCR、Embedding 或 FAISS 索引。
 
-在同一真实语料、46 条逐条核验的问题和 Top-5 条件下，已实际运行 Dense、BM25 与 Hybrid。当前轻量 Dense 是 512 维字符 n-gram 哈希向量，**并非神经语义模型**。BM25 的 Hit@1 **0.3953**、Hit@5 **0.7907**、MRR **0.5558**，优于 Dense（0.2093 / 0.4186 / 0.2934）和 Hybrid（0.3023 / 0.6047 / 0.4322），因此被选为**公开资料默认检索策略**。分组样本不足以支持稳定的条件路由；未取得可在免费部署约束下重复运行的双语 Reranker，故未评测也未启用。详见 [真实语料策略报告](evaluation/real_world_retrieval/retrieval_policy_report.md)及[逐条结果](evaluation/real_world_retrieval/results/benchmark_results.json)。这不是全量 DolphinScheduler 资料的准确率结论。
+## Retrieval Selection：为什么保留 BM25
 
-无答案问题的检索仍会返回候选，所以**候选结果不等于答案**。未配置在线模型、回答弃答或引用校验失败时，界面只展示待核对的原文，不伪造回答。资料一致性提醒只报告可直接验证的版本文字差异或同名参数的不同明确值，不推断语义矛盾概率。
+在同一份 52 来源语料、同一版本过滤和语言范围、Chunk A、Top-5 条件下，比较了 BM25、真实多语言神经 Dense（multilingual E5）和 Hybrid。以下 Hit@K、MRR 均按 DEV 的 22 条可回答问题计算；耗时是本地进程内 warm retrieval，不含模型加载、HTTP、冷启动或生成。
 
-## 架构与数据边界
+| 方案 | DEV Hit@1 | DEV Hit@5 | DEV MRR | 双来源完整命中 | P95 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| BM25 | 0.3636 | 0.8182 | 0.5295 | 0/2 | 1.36 ms |
+| multilingual E5 | 0.2727 | 0.7273 | 0.4508 | 0/2 | 21.94 ms |
+| Hybrid，BM25 权重 0.75 | 0.3636 | 0.8182 | 0.5470 | 0/2 | 22.31 ms |
+| 锁定的 BM25 HOLDOUT | 0.4286 | 0.7619 | 0.5833 | 0/2 | 1.55 ms |
 
-```text
-Apache DolphinScheduler 3.4.2 / 3.4.3 官方资料、Release、DSIP
-  └─ 固定快照 + 来源/版本/语言/许可证元数据 + 轻量索引
-      └─ FastAPI /public/*：BM25 检索 → 可选在线生成 → 引用校验
-          ├─ Streamlit：研发知识 RAG
-          └─ Streamlit：变更审查 Agent
-                 已验证的显式关系 / 检索建议分开显示
-                 Diff → 影响分析 → 官方依据 → 会话草案 → 人工审核
-```
+Hybrid 的最佳配置只让 DEV MRR 小幅增加 0.0175；Hit@1、Hit@5 和跨文档双来源命中均未改善，P95 则显著高于 BM25。因此 V1.0 保留 Chunk A（1250 chars、无 overlap）+ BM25 + Top-5；Hybrid、神经 Dense 和 Rerank 不进入正式检索链路。跨文档题合计双来源完整命中为 0/4。HOLDOUT 是从此前已评测的 46 条题目中做的回顾性确定划分，不是独立真实用户测试，不能据此声称真实用户准确率。
 
-原有版本治理 RAG、Document Workflow Agent、合成 Case A/B 与其回归测试仍保留。合成案例是**自动化夹具**，不再作为公开工作台默认数据；需要复现历史夹具界面时显式设置 `DEMO_LEGACY_FIXTURES=true`。其旧版候选版本、安全发布与跨案例评测只证明合成测试流程，**不宣称已对 Apache 上游项目发布**。
+工作台内置的历史评测页仍展示早期字符哈希 Dense 对照，不代表本轮 multilingual E5 选型实验；当前结论以[最终选型报告](evaluation/real_world_retrieval/final_selection/final_selection.md)为准。完整方法、切分、指标定义和失败分析见该报告。
 
 ## 三分钟体验
 
-1. 打开“可信检索问答”，询问“DolphinScheduler 参数优先级从高到低是什么？”；查看回答及固定版本官方原文链接。也可选择 English 或 3.4.2 历史版本。
-2. 打开“新建变更审查”，选择一份 3.4.3 官方资料与其中一段，输入**假设性**修改。
-3. 检查“可能受影响”的资料、已确认/建议关系、原文和会话草案，再完成人工审核。公共知识库和上游仓库均不改变。
+1. 打开在线工作台的“可信检索问答”，询问 DolphinScheduler 的参数优先级；核对答案引用或检索候选及原文来源。
+2. 进入“新建变更审查”，选择一份固定版本的官方资料片段，输入假设性修改。
+3. 查看影响候选、已确认或建议关系、引用依据和修改建议，再由人审核。该流程不修改公共语料或上游仓库。
 
-## Quick Start（Windows PowerShell）
+## Known Limitations
 
-使用 Python 3.12；克隆后无需任何私有企业资料或本地历史 runtime：
+- 语料是官方资料的有限子集，不覆盖 DolphinScheduler 全部功能和历史。
+- 四条跨文档题的双来源完整 Top-5 命中为 0/4；多来源召回仍是明确限制。
+- HOLDOUT 来自此前使用过的题集，是回顾性确定划分，不是独立真实用户问题集。
+- Agent 的草案与审核状态只存在当前 Session 沙箱中；没有持久化身份、审批审计或跨会话工作区。
+- 系统不修改 Apache 上游，不创建 PR，也不自动发布修改。
+- multilingual E5 仅用于选型实验；Hybrid 和 Rerank 均不在正式运行链路中。
+- 资料命中和引用来源不等于回答事实已被证明；检索分数只用于排序，不代表真实性。
+- 当前版本不实现 locale sibling consistency；语言/版本相关提示不能替代人工核对。
+- 本地 P95 不代表公网延迟或服务等级承诺。
 
-```powershell
-py -3.12 -m venv RAG-Challenge-2-main\.venv
-& .\RAG-Challenge-2-main\.venv\Scripts\python.exe -m pip install -r RAG-Challenge-2-main\requirements-render.txt
-py -3.12 -m venv OpenManus-rag\.venv
-& .\OpenManus-rag\.venv\Scripts\python.exe -m pip install -r OpenManus-rag\requirements.txt
-& .\OpenManus-rag\.venv\Scripts\python.exe -m pip install -r demo-ui\requirements.txt
-.\start_prototype.ps1
-```
+## 本地启动
 
-打开 <http://127.0.0.1:8502/>；API 文档位于 <http://127.0.0.1:8765/docs>。无密钥也可做官方资料检索和沙箱变更审查。若需要生成式回答，在**本机环境或 Render 环境变量**设置 `DASHSCOPE_API_KEY`，并以 `-EnableGeneration` 启动本地脚本，或在 Render 设置 `RD_V2_ALLOW_EXTERNAL_GENERATION=true`。不要提交实际密钥。详细手动启动和云端字段见 [UI README](demo-ui/README.md) 与 [部署指南](project_delivery/public_value_prototype/free_deployment_guide.md)。
+需要 Python 3.12。克隆后无需私有企业资料或本机历史 runtime：
 
-## Data Source & Attribution
+    py -3.12 -m venv RAG-Challenge-2-main\.venv
+    & .\RAG-Challenge-2-main\.venv\Scripts\python.exe -m pip install -r RAG-Challenge-2-main\requirements-render.txt
+    py -3.12 -m venv OpenManus-rag\.venv
+    & .\OpenManus-rag\.venv\Scripts\python.exe -m pip install -r OpenManus-rag\requirements.txt
+    & .\OpenManus-rag\.venv\Scripts\python.exe -m pip install -r demo-ui\requirements.txt
+    .\start_prototype.ps1
 
-语料仅来自 [apache/dolphinscheduler](https://github.com/apache/dolphinscheduler) 的官方固定标签文档、[3.4.2 / 3.4.3 Releases](https://github.com/apache/dolphinscheduler/releases)、[DSIP-107 提案](https://github.com/apache/dolphinscheduler/issues/18454)和[明确引用它的实现 PR](https://github.com/apache/dolphinscheduler/pull/18464)。每份资料的来源 URL、仓库、tag 对应 commit、路径、语言、类型、检索时间与 SHA-256 见 [corpus_manifest.json](RAG-Challenge-2-main/public_corpus/corpus_manifest.json)。源项目的 [Apache License](RAG-Challenge-2-main/public_corpus/LICENSE) 与 [NOTICE](RAG-Challenge-2-main/public_corpus/NOTICE) 随快照保留。英文原文不经自动翻译充作中文证据。
+打开 http://127.0.0.1:8502/；本地 RAG API 文档为 http://127.0.0.1:8765/docs。无模型密钥时仍可检索和进行会话内变更审查。要启用生成式回答，由部署者在本机环境或 Render 安全配置 DASHSCOPE_API_KEY 与对应开关；不要把密钥写入仓库、日志或文档。详细字段见[部署指南](project_delivery/public_value_prototype/free_deployment_guide.md)和[工作台说明](demo-ui/README.md)。
 
-## 验证与限制
+## 资料来源
 
-运行 RAG、Agent、UI 测试的方法见 [部署指南](project_delivery/public_value_prototype/free_deployment_guide.md)；真实检索问题与证据标注在 [evaluation/real_world_retrieval](evaluation/real_world_retrieval/)。该子集不能覆盖所有 DolphinScheduler 功能；检索分数不代表事实真实性，语义相关不等于真实追踪关系，人工审核也不等于修改上游项目。公开版本没有登录、RBAC、多租户、源码自动修改或 GitHub PR 写入。
+语料来自 [Apache DolphinScheduler](https://github.com/apache/dolphinscheduler) 官方固定版本资料、Release、DSIP Issue 和明确关联的 PR。来源 URL、tag 对应 commit、路径、语言、许可证与 SHA-256 见 [corpus_manifest.json](RAG-Challenge-2-main/public_corpus/corpus_manifest.json)。Apache License 与 NOTICE 随快照保留；本项目与 Apache 基金会无隶属关系。

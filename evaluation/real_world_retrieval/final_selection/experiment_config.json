@@ -1,0 +1,29 @@
+{
+  "purpose": "One final retrieval-selection experiment; offline only until a HOLDOUT-backed policy change is justified",
+  "frozen_split": "frozen_split.json",
+  "frozen_split_sha256": "d1e465680116d1384a9cdcbc7d3b7dcf93f6f36ecd16eb23d166c4cfc2fb0b44",
+  "corpus": "52 hash-pinned Apache DolphinScheduler public source snapshots",
+  "chunk_candidates": {
+    "A": "existing heading/paragraph chunks, max 1250 chars, no overlap, document key and heading in BM25 text",
+    "B": "finer heading/paragraph chunks, max 650 chars, no overlap",
+    "C": "heading-aware chunks, max 900 chars including 100-char same-heading overlap, document title in search text"
+  },
+  "chunk_stage": "BM25, Top-5, DEV only",
+  "retrievers": [
+    "production-formula BM25",
+    "intfloat/multilingual-e5-small pinned at ada7b62be30f82b0bc5da131b0477721c8fc14e9",
+    "BM25 + E5 weighted reciprocal-rank fusion, branch pool 50 and rank constant 60"
+  ],
+  "hybrid_bm25_weights_dev_only": [0.25, 0.5, 0.75],
+  "top_k_candidates_dev_only": [3, 5, 8],
+  "document_diversity_trial_dev_only": "one max_chunks_per_document=2 cap compared with uncapped",
+  "quality_scoring": "A hit requires the frozen document key, version, locale, heading, and literal evidence marker in the retrieved heading plus content; duplicate source hits receive no extra nDCG gain",
+  "scope": "Each query's pinned version is filtered before ranking; all corpus languages remain eligible",
+  "latency": "Local warm in-process query retrieval, including neural query inference but excluding model loading and passage embedding build",
+  "holdout_rule": "Evaluate the locked final strategy once after all DEV decisions; do not retune from HOLDOUT",
+  "limitations": [
+    "The query-level HOLDOUT is retrospective: earlier reports evaluated this entire fixed set, and some DEV/HOLDOUT questions share source topics.",
+    "No-answer retrieval candidates are not generated answers; false-answer count cannot be inferred from ranking alone.",
+    "The model is experimental and its approximately 471 MB weights are kept in the OS temporary directory, not deployed."
+  ]
+}

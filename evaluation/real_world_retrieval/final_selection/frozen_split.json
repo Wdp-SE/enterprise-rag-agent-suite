@@ -1,0 +1,193 @@
+{
+  "schema_version": 1,
+  "split_id": "rag-selection-v1",
+  "frozen_inputs_sha256": {
+    "queries.jsonl": "a32fbae207371997cb751c1c1554c7eb04989fb6072050ba84284a56f4db0b21",
+    "ground_truth.jsonl": "9c5415fa7aaf8d247dc4bb679ca54c8df308f2f4e98b04eaa736a82e6645e323",
+    "corpus_manifest.json": "44b2b53a5f769619af859f5b466a908a46e8bf6a3ce1ca6960f5ee594427ebd1"
+  },
+  "algorithm": "Within each category, sort query IDs by the lowercase hexadecimal SHA-256 of the UTF-8 string 'rag-selection-v1:' + query_id, ascending; assign the first category_dev_counts IDs to DEV and the remainder to HOLDOUT.",
+  "category_dev_counts": {
+    "zh": 5,
+    "en": 4,
+    "mixed": 3,
+    "exact": 3,
+    "version": 2,
+    "cross_document": 2,
+    "hard": 3,
+    "no_answer": 1
+  },
+  "counts": {
+    "queries": 46,
+    "answerable": 43,
+    "no_answer": 3,
+    "dev_queries": 23,
+    "dev_answerable": 22,
+    "dev_no_answer": 1,
+    "holdout_queries": 23,
+    "holdout_answerable": 21,
+    "holdout_no_answer": 2
+  },
+  "categories": {
+    "cross_document": {
+      "dev_count": 2,
+      "holdout_count": 2,
+      "dev_query_ids": [
+        "ds-037",
+        "ds-038"
+      ],
+      "holdout_query_ids": [
+        "ds-036",
+        "ds-035"
+      ]
+    },
+    "en": {
+      "dev_count": 4,
+      "holdout_count": 3,
+      "dev_query_ids": [
+        "ds-013",
+        "ds-017",
+        "ds-014",
+        "ds-016"
+      ],
+      "holdout_query_ids": [
+        "ds-015",
+        "ds-011",
+        "ds-012"
+      ]
+    },
+    "exact": {
+      "dev_count": 3,
+      "holdout_count": 3,
+      "dev_query_ids": [
+        "ds-028",
+        "ds-027",
+        "ds-024"
+      ],
+      "holdout_query_ids": [
+        "ds-025",
+        "ds-026",
+        "ds-029"
+      ]
+    },
+    "hard": {
+      "dev_count": 3,
+      "holdout_count": 2,
+      "dev_query_ids": [
+        "ds-039",
+        "ds-043",
+        "ds-041"
+      ],
+      "holdout_query_ids": [
+        "ds-042",
+        "ds-040"
+      ]
+    },
+    "mixed": {
+      "dev_count": 3,
+      "holdout_count": 3,
+      "dev_query_ids": [
+        "ds-018",
+        "ds-023",
+        "ds-022"
+      ],
+      "holdout_query_ids": [
+        "ds-019",
+        "ds-020",
+        "ds-021"
+      ]
+    },
+    "no_answer": {
+      "dev_count": 1,
+      "holdout_count": 2,
+      "dev_query_ids": [
+        "ds-045"
+      ],
+      "holdout_query_ids": [
+        "ds-046",
+        "ds-044"
+      ]
+    },
+    "version": {
+      "dev_count": 2,
+      "holdout_count": 3,
+      "dev_query_ids": [
+        "ds-031",
+        "ds-032"
+      ],
+      "holdout_query_ids": [
+        "ds-034",
+        "ds-033",
+        "ds-030"
+      ]
+    },
+    "zh": {
+      "dev_count": 5,
+      "holdout_count": 5,
+      "dev_query_ids": [
+        "ds-003",
+        "ds-004",
+        "ds-001",
+        "ds-005",
+        "ds-007"
+      ],
+      "holdout_query_ids": [
+        "ds-002",
+        "ds-009",
+        "ds-010",
+        "ds-008",
+        "ds-006"
+      ]
+    }
+  },
+  "dev_query_ids": [
+    "ds-001",
+    "ds-003",
+    "ds-004",
+    "ds-005",
+    "ds-007",
+    "ds-013",
+    "ds-014",
+    "ds-016",
+    "ds-017",
+    "ds-018",
+    "ds-022",
+    "ds-023",
+    "ds-024",
+    "ds-027",
+    "ds-028",
+    "ds-031",
+    "ds-032",
+    "ds-037",
+    "ds-038",
+    "ds-039",
+    "ds-041",
+    "ds-043",
+    "ds-045"
+  ],
+  "holdout_query_ids": [
+    "ds-002",
+    "ds-006",
+    "ds-008",
+    "ds-009",
+    "ds-010",
+    "ds-011",
+    "ds-012",
+    "ds-015",
+    "ds-019",
+    "ds-020",
+    "ds-021",
+    "ds-025",
+    "ds-026",
+    "ds-029",
+    "ds-030",
+    "ds-033",
+    "ds-034",
+    "ds-035",
+    "ds-036",
+    "ds-040",
+    "ds-042",
+    "ds-044",
+    "ds-046"
+  ]
+}

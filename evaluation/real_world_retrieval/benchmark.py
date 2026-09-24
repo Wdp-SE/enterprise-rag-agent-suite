@@ -23,14 +23,14 @@ def read_jsonl(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
-def relevant(hit: dict, truth: dict) -> bool:
-    return any(
-        hit["document_key"] == item["document_key"]
+def relevant_source_index(hit: dict, truth: dict) -> int | None:
+    return next((
+        index for index, item in enumerate(truth["relevant"])
+        if hit["document_key"] == item["document_key"]
         and hit["version"] == item["version"]
         and hit["locale"] == item["locale"]
         and hit["heading"] == item["heading"]
-        for item in truth["relevant"]
-    )
+    ), None)
 
 
 def _measure(rows: list[dict]) -> dict:
@@ -54,6 +54,10 @@ def _measure(rows: list[dict]) -> dict:
         hi = min(lo + 1, len(latencies) - 1)
         return round(latencies[lo] + (latencies[hi] - latencies[lo]) * (pos - lo), 2)
     no_answer = [row for row in rows if not row["answerable"]]
+    cross_document = [
+        row for row in answerable
+        if row["category"] == "cross_document" and row["relevant_count"] == 2
+    ]
     return {
         "queries": len(rows), "answerable": n,
         "hit_at_1": hit(1), "hit_at_3": hit(3), "hit_at_5": hit(5),
@@ -63,6 +67,12 @@ def _measure(rows: list[dict]) -> dict:
         "failures": sum(bool(row["error"]) for row in rows),
         "no_answer_queries": len(no_answer),
         "no_answer_false_evidence_rate": round(sum(row["candidates"] > 0 for row in no_answer) / len(no_answer), 4) if no_answer else None,
+        "cross_document_both_source_at_5": round(
+            sum(
+                {0, 1}.issubset(set(row["relevant_source_indices"][:5]))
+                for row in cross_document
+            ) / len(cross_document), 4
+        ) if cross_document else None,
     }
 
 
@@ -88,11 +98,13 @@ def run() -> dict:
                 hits = []
                 error = f"{type(exc).__name__}: {exc}"
             elapsed = (time.perf_counter() - start) * 1000
+            relevant_indices = [relevant_source_index(hit, truth) for hit in hits]
             samples.append({
                 "id": query["id"], "category": query["category"],
                 "query": query["query"], "answerable": truth["answerable_in_corpus"],
                 "relevant_count": len(truth["relevant"]),
-                "relevance": [int(relevant(hit, truth)) for hit in hits],
+                "relevance": [int(index is not None) for index in relevant_indices],
+                "relevant_source_indices": relevant_indices,
                 "ranked_chunk_ids": [hit["chunk_id"] for hit in hits],
                 "candidates": len(hits), "latency_ms": round(elapsed, 3), "error": error,
             })
