@@ -13,7 +13,7 @@ services:
       - key: APP_ENV
         value: public_demo
       - key: RD_V2_ALLOW_EXTERNAL_GENERATION
-        value: "false"
+        value: "true"
       - key: MAX_LLM_CALLS_PER_SESSION
         value: "3"
       - key: MAX_LLM_CALLS_PER_PROCESS

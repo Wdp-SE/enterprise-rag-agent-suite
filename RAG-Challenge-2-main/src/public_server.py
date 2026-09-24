@@ -62,9 +62,11 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None) -> 
     async def lifespan(app: FastAPI):
         app.state.public_knowledge_index = index or PublicKnowledgeIndex()
         app.state.public_generator = generator
-        if app.state.public_generator is None and os.environ.get(
+        generation_allowed = os.environ.get(
             "RD_V2_ALLOW_EXTERNAL_GENERATION", "false"
-        ).strip().casefold() in ("1", "true", "yes", "on"):
+        ).strip().casefold() in ("1", "true", "yes", "on")
+        api_key_configured = bool(os.environ.get("DASHSCOPE_API_KEY", "").strip())
+        if app.state.public_generator is None and generation_allowed and api_key_configured:
             app.state.public_generator = StructuredAnswerGenerator(
                 provider=os.environ.get("RD_V2_GENERATION_PROVIDER", "dashscope"),
                 model=os.environ.get("RD_V2_GENERATION_MODEL", "qwen-turbo"),

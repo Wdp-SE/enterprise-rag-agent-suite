@@ -43,6 +43,57 @@ def test_public_query_without_generator_returns_evidence_not_fake_answer():
         assert payload["evidence"]
 
 
+def test_generation_enabled_without_api_key_stays_in_evidence_only_mode(monkeypatch):
+    monkeypatch.setenv("RD_V2_ALLOW_EXTERNAL_GENERATION", "true")
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+
+    with TestClient(create_app(index=PublicKnowledgeIndex())) as client:
+        response = client.post(
+            "/public/query", json={"query": QUESTION},
+            headers={"X-Demo-Session-ID": "publictestsession"},
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "GENERATION_NOT_CONFIGURED"
+    assert payload["answer"] == "N/A"
+    assert payload["sources"] == []
+    assert payload["evidence"]
+
+
+def test_generation_enabled_with_api_key_wires_qwen_provider(monkeypatch):
+    monkeypatch.setenv("RD_V2_ALLOW_EXTERNAL_GENERATION", "true")
+    monkeypatch.setenv("DASHSCOPE_API_KEY", "unit-test-placeholder")
+    index = PublicKnowledgeIndex()
+    cited_chunk = index.search(QUESTION)[0]["chunk_id"]
+    constructed = {}
+
+    class ConfiguredGenerator:
+        def __init__(self, *, provider: str, model: str):
+            constructed["provider"] = provider
+            constructed["model"] = model
+
+        def generate(self, *, question: str, context: str) -> dict:
+            return {
+                "final_answer": "由检索证据支持的测试回答。",
+                "relevant_sources": [{"document_id": cited_chunk, "page_number": 1}],
+            }
+
+    monkeypatch.setattr("src.public_server.StructuredAnswerGenerator", ConfiguredGenerator)
+    with TestClient(create_app(index=index)) as client:
+        response = client.post(
+            "/public/query", json={"query": QUESTION},
+            headers={"X-Demo-Session-ID": "publictestsession"},
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert constructed == {"provider": "dashscope", "model": "qwen-turbo"}
+    assert payload["status"] == "OK"
+    assert payload["answer"] == "由检索证据支持的测试回答。"
+    assert payload["sources"][0]["chunk_id"] == cited_chunk
+
+
 def test_public_query_checks_citation_membership_and_budget(monkeypatch):
     class Generator:
         def __init__(self, citation_id):

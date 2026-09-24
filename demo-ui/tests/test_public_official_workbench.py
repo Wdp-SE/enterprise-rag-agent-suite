@@ -68,17 +68,53 @@ def test_public_home_has_two_chinese_modules_and_no_case_labels(monkeypatch):
 def test_public_rag_keeps_answer_before_real_cited_source(monkeypatch):
     _mock_client(monkeypatch)
     app = AppTest.from_file(APP, default_timeout=40).run()
-    next(button for button in app.button if button.label == "可信检索问答").click().run()
+    next(button for button in app.button if button.label == "版本检索与问答").click().run()
     assert not app.exception
     assert app.selectbox(key="official_language").value == "zh_preferred"
     assert app.selectbox(key="official_version").value == "3.4.3"
-    next(button for button in app.button if button.label == "带引用回答").click().run()
+    next(button for button in app.button if button.label == "生成带引用回答").click().run()
     assert not app.exception
     text = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
     assert {item.value for item in app.subheader} >= {"回答", "引用依据"}
     assert "查看官方原文" in text
-    assert "来源文档：参数优先级" in text
+    assert "[1] 参数优先级" in text
+    assert "引用编号：[1]" in text
     assert "证据可信度" not in text
+
+
+def test_public_rag_without_generation_shows_compact_evidence_fallback(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: {
+        "answer": "N/A", "sources": [], "evidence": [dict(CHUNK)],
+        "status": "GENERATION_NOT_CONFIGURED", "consistency_notes": [],
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本检索与问答").click().run()
+    next(button for button in app.button if button.label == "生成带引用回答").click().run()
+
+    assert not app.exception
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
+    assert "当前仅展示检索证据" in visible
+    assert "[1] 参数优先级" in visible
+    assert "检索候选" not in visible
+    assert "仅查看检索证据" in {button.label for button in app.button}
+
+
+def test_rag_and_agent_pages_offer_return_home_navigation(monkeypatch):
+    _mock_client(monkeypatch)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+
+    next(button for button in app.button if button.label == "版本检索与问答").click().run()
+    assert "返回首页" in {button.label for button in app.button}
+    next(button for button in app.button if button.label == "返回首页").click().run()
+    assert app.session_state["official_nav"] == "总览"
+
+    next(button for button in app.button if button.label == "新建变更审查").click().run()
+    assert "返回首页" in {button.label for button in app.button}
+    next(button for button in app.button if button.label == "返回首页").click().run()
+    assert app.session_state["official_nav"] == "总览"
 
 
 def test_public_agent_change_and_review_are_session_local(monkeypatch):
@@ -136,7 +172,7 @@ def test_public_navigation_exposes_versions_sources_evaluation_and_limits(monkey
     _mock_client(monkeypatch)
     app = AppTest.from_file(APP, default_timeout=40).run()
     labels = {button.label for button in app.button}
-    assert {"总览", "可信检索问答", "版本与历史", "资料与来源", "新建变更审查", "检索评测", "已知限制"} <= labels
+    assert {"总览", "版本检索与问答", "版本与历史", "资料与来源", "新建变更审查", "可能相关资料", "修改前后对照", "检索评测", "已知限制"} <= labels
     next(button for button in app.button if button.label == "检索评测").click().run()
     assert not app.exception
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader))
@@ -165,11 +201,11 @@ def test_verified_consistency_notice_names_primary_basis_and_both_versions(monke
         "evidence": [dict(CHUNK), old], "status": "OK", "consistency_notes": [note],
     })
     app = AppTest.from_file(APP, default_timeout=40).run()
-    next(button for button in app.button if button.label == "可信检索问答").click().run()
-    next(button for button in app.button if button.label == "带引用回答").click().run()
+    next(button for button in app.button if button.label == "版本检索与问答").click().run()
+    next(button for button in app.button if button.label == "生成带引用回答").click().run()
     assert not app.exception
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.warning))
-    assert "版本与资料一致性提醒" in visible
+    assert "版本差异提醒" in visible
     assert "引用依据之一" in visible
     assert "3.4.2" in visible and "3.4.3" in visible
     assert "概率" not in visible
@@ -182,7 +218,7 @@ def test_agent_review_sections_remain_session_bound_after_navigation(monkeypatch
     app.text_area(key="official_proposed_text").set_value("假设将启动参数提高到第一优先级。").run()
     next(button for button in app.button if button.label == "开始变更审查").click().run()
     assert not app.exception
-    next(button for button in app.button if button.label == "影响候选").click().run()
+    next(button for button in app.button if button.label == "可能相关资料").click().run()
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
     assert "建议核对" in visible or "可能相关" in visible
     next(button for button in app.button if button.label == "人工审核").click().run()

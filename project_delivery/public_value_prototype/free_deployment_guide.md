@@ -20,7 +20,7 @@
 
 [render.yaml](../../render.yaml) 已指定 Free Web Service、`RAG-Challenge-2-main` 根目录、Python 3.12.8、`pip install -r requirements-render.txt`、`uvicorn src.public_server:app --host 0.0.0.0 --port $PORT` 和 `/health`。原有合成 Artifact 与旧 FastAPI 入口只保留在仓库内供回归夹具使用；公网服务仅从仓库内 `public_corpus/` 加载 **52 份官方资料、659 个片段、BM25 策略文件**供 `/public/*` 公开知识端点使用。启动时不抓取网络资料、不运行 OCR、不重建 Embedding/FAISS；不需要 PostgreSQL、Redis、持久磁盘或 Worker。
 
-新部署清单使用 `APP_ENV=public_demo`、`RD_V2_ALLOW_EXTERNAL_GENERATION=false` 与每会话预算；当前公开入口不依赖历史合成 Artifact。无模型密钥时可用 `/public/search`、真实文档目录与假设变更审查；`/public/query` 会明确返回 `GENERATION_NOT_CONFIGURED` 并给出检索候选，不伪造答案。**要启用有引用的生成式回答**，由部署者在 Render 平台输入 `DASHSCOPE_API_KEY`，并把 `RD_V2_ALLOW_EXTERNAL_GENERATION` 设为 `true`。不要将密钥写入代码、日志或文档。服务端会校验 LLM 引用确实来自本次检索，并限制每 Session 与每进程调用次数。当前默认每会话 3 次、每进程 30 次；进程重启后计数重置。匿名 Session ID 不是身份认证，也不能替代 Render/DashScope 平台的费用配额。生成请求超时后客户端不自动重试，以免重复调用模型。
+新部署清单使用 `APP_ENV=public_demo`、`RD_V2_ALLOW_EXTERNAL_GENERATION=true` 与每会话预算；当前公开入口不依赖历史合成 Artifact。服务端仅在生成开关开启且 Render 环境已配置 `DASHSCOPE_API_KEY` 时初始化 DashScope/Qwen。缺少密钥时仍可用 `/public/search`、真实文档目录与假设变更审查；`/public/query` 会返回检索证据和 `GENERATION_NOT_CONFIGURED`，不会伪造答案或因缺少密钥导致服务启动失败。密钥只在 Render 平台的环境变量设置，不得写入代码、日志或文档。服务端会校验 LLM 引用确实来自本次检索，并限制每 Session 与每进程调用次数。当前默认每会话 3 次、每进程 30 次；进程重启后计数重置。匿名 Session ID 不是身份认证，也不能替代 Render/DashScope 平台的费用配额。生成请求超时后客户端不自动重试，以免重复调用模型。
 
 部署新版后的只读核验：
 
