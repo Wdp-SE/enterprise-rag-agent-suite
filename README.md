@@ -10,7 +10,7 @@
 
 > 在线链接指向已有公网服务，实际运行版本以托管平台显示的部署提交为准。
 
-![本地 V1.0 候选工作台截图](project_delivery/final_engineering_review/home.png)
+![当前版本工作台首页：版本化知识检索与变更影响审查](project_delivery/final_engineering_review/home.png)
 
 ## 项目与架构
 
