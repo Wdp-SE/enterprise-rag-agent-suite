@@ -1,0 +1,30 @@
+{
+  "case_id": "case-a",
+  "title": "演示案例 A：并发容量变更",
+  "description": "已有 REQ-023 的最大并发由 500 调整为 1000，影响设计、接口与测试；REQ-025 是新增的异步任务状态要求。",
+  "organization_id": "demo_company_a",
+  "organization_name": "星海软件科技有限公司（虚构）",
+  "project_id": "PAYMENT",
+  "data_root": "project_delivery/v4_change_impact_review/demo_data",
+  "baseline_documents": [
+    "requirements_v1.docx",
+    "requirements_v2.docx",
+    "system_design_v1.docx",
+    "api_spec_v1.docx",
+    "test_cases_v1.docx",
+    "runbook_v1.docx"
+  ],
+  "changed_external_identifier": "REQ-023",
+  "requirement_old_version_id": "requirements-v1",
+  "requirement_new_version_id": "requirements-v2",
+  "patch_target_external_identifier": "DES-014",
+  "patch_document_filename": "system_design_v1.docx",
+  "patch_target_document_id": "system_design",
+  "patch_base_version_id": "design-v1",
+  "patch_target_section_id": "DESIGN",
+  "patch_proposed_content": "DES-014 面向 REQ-023：批处理服务按最大并发 1000 配置连接池，支持 200 MB/s 吞吐目标，并通过异步任务状态返回结果。",
+  "patch_reason": "REQ-023 的并发、吞吐量和接口模式发生变化",
+  "candidate_version_id": "design-v2",
+  "candidate_version_label": "V2.0",
+  "candidate_title": "系统设计说明书"
+}

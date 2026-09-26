@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "retrieval_policy_version": "rd-v2-retrieval-final-v1.0",
+  "retrieval_policy": "DENSE_ONLY",
+  "dense_representation": "SECTION_PATH",
+  "dense_top_k": 20,
+  "final_top_k": 5,
+  "bm25_enabled": false,
+  "hybrid_enabled": false,
+  "reranker_enabled": false
+}

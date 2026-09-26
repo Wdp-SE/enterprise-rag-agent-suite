@@ -1,0 +1,381 @@
+{
+  "schema_version": "rd-document-catalog-v3",
+  "documents": [
+    {
+      "document_id": "public-a-requirements",
+      "project_id": "PAYMENT",
+      "document_type": "REQUIREMENT",
+      "title": "Case A 需求规格说明书",
+      "created_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "document_id": "public-a-design",
+      "project_id": "PAYMENT",
+      "document_type": "DESIGN",
+      "title": "Case A 系统设计说明书",
+      "created_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "document_id": "public-a-api",
+      "project_id": "PAYMENT",
+      "document_type": "API",
+      "title": "Case A 接口规范",
+      "created_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "document_id": "public-a-test",
+      "project_id": "PAYMENT",
+      "document_type": "TEST_CASE",
+      "title": "Case A 测试用例",
+      "created_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "document_id": "public-a-runbook",
+      "project_id": "PAYMENT",
+      "document_type": "RUNBOOK",
+      "title": "Case A 运维手册",
+      "created_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "document_id": "public-b-requirements",
+      "project_id": "AUDIT",
+      "document_type": "REQUIREMENT",
+      "title": "Case B 需求规格说明书",
+      "created_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "document_id": "public-b-design",
+      "project_id": "AUDIT",
+      "document_type": "DESIGN",
+      "title": "Case B 系统设计说明书",
+      "created_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "document_id": "public-b-test",
+      "project_id": "AUDIT",
+      "document_type": "TEST_CASE",
+      "title": "Case B 测试用例",
+      "created_at": "2026-09-22T00:00:00Z"
+    },
+    {
+      "document_id": "public-b-runbook",
+      "project_id": "AUDIT",
+      "document_type": "RUNBOOK",
+      "title": "Case B 运维手册",
+      "created_at": "2026-09-22T00:00:00Z"
+    }
+  ],
+  "versions": [
+    {
+      "version_id": "public-a-req-v1",
+      "document_id": "public-a-requirements",
+      "version_label": "V1.0",
+      "status": "SUPERSEDED",
+      "source_hash": "255104b29d274a2d6ca8c5ef9dac608ec1b07be0e225f0e77bdc5e7d3ca0baad",
+      "created_at": "2026-09-22T00:00:00Z",
+      "activated_at": null,
+      "superseded_at": "2026-09-22T00:00:00Z",
+      "previous_version_id": null,
+      "source_path": null,
+      "source_name": "public-a-req-v1.docx",
+      "source_document_id": "public-a-req-v1",
+      "metadata": {}
+    },
+    {
+      "version_id": "public-a-req-v2",
+      "document_id": "public-a-requirements",
+      "version_label": "V2.0",
+      "status": "ACTIVE",
+      "source_hash": "c212e198c58b06c3b2bc2cdf1fc3a02c20f5efe8e2d0783c0b44a2aea0244850",
+      "created_at": "2026-09-22T00:00:00Z",
+      "activated_at": "2026-09-22T00:00:00Z",
+      "superseded_at": null,
+      "previous_version_id": "public-a-req-v1",
+      "source_path": null,
+      "source_name": "public-a-req-v2.docx",
+      "source_document_id": "public-a-req-v2",
+      "metadata": {}
+    },
+    {
+      "version_id": "public-a-design-v1",
+      "document_id": "public-a-design",
+      "version_label": "V1.0",
+      "status": "ACTIVE",
+      "source_hash": "e6970f5ffab93cca0505bcf4970095f615b28d52af0623e233f247237ea03067",
+      "created_at": "2026-09-22T00:00:00Z",
+      "activated_at": "2026-09-22T00:00:00Z",
+      "superseded_at": null,
+      "previous_version_id": null,
+      "source_path": null,
+      "source_name": "public-a-design-v1.docx",
+      "source_document_id": "public-a-design-v1",
+      "metadata": {}
+    },
+    {
+      "version_id": "public-a-api-v1",
+      "document_id": "public-a-api",
+      "version_label": "V1.0",
+      "status": "ACTIVE",
+      "source_hash": "4c8494a5cb604deb816417b43937761fa0d2936c8cd84c5d9c6ece871c7da230",
+      "created_at": "2026-09-22T00:00:00Z",
+      "activated_at": "2026-09-22T00:00:00Z",
+      "superseded_at": null,
+      "previous_version_id": null,
+      "source_path": null,
+      "source_name": "public-a-api-v1.docx",
+      "source_document_id": "public-a-api-v1",
+      "metadata": {}
+    },
+    {
+      "version_id": "public-a-test-v1",
+      "document_id": "public-a-test",
+      "version_label": "V1.0",
+      "status": "ACTIVE",
+      "source_hash": "4362a5f9843a0d4f981ec4775020ecce3ac8740782c69cf7a4a4cf7f24e68e70",
+      "created_at": "2026-09-22T00:00:00Z",
+      "activated_at": "2026-09-22T00:00:00Z",
+      "superseded_at": null,
+      "previous_version_id": null,
+      "source_path": null,
+      "source_name": "public-a-test-v1.docx",
+      "source_document_id": "public-a-test-v1",
+      "metadata": {}
+    },
+    {
+      "version_id": "public-a-runbook-v1",
+      "document_id": "public-a-runbook",
+      "version_label": "V1.0",
+      "status": "ACTIVE",
+      "source_hash": "b81c1be834ea6737fb998cfcf5e72b0e219f8351eecb7c7e3fb0305be0e17663",
+      "created_at": "2026-09-22T00:00:00Z",
+      "activated_at": "2026-09-22T00:00:00Z",
+      "superseded_at": null,
+      "previous_version_id": null,
+      "source_path": null,
+      "source_name": "public-a-runbook-v1.docx",
+      "source_document_id": "public-a-runbook-v1",
+      "metadata": {}
+    },
+    {
+      "version_id": "public-b-req-v1",
+      "document_id": "public-b-requirements",
+      "version_label": "V1.0",
+      "status": "SUPERSEDED",
+      "source_hash": "1c885b67acc29f09e0a0fd4b757bef5dbddc0ffde63701c3b3798feecdb51838",
+      "created_at": "2026-09-22T00:00:00Z",
+      "activated_at": null,
+      "superseded_at": "2026-09-22T00:00:00Z",
+      "previous_version_id": null,
+      "source_path": null,
+      "source_name": "public-b-req-v1.docx",
+      "source_document_id": "public-b-req-v1",
+      "metadata": {}
+    },
+    {
+      "version_id": "public-b-req-v2",
+      "document_id": "public-b-requirements",
+      "version_label": "V2.0",
+      "status": "ACTIVE",
+      "source_hash": "fafc24453f53713d3d3f7fdb65d691c4c3434a692fd0ebbd11133a80379c6649",
+      "created_at": "2026-09-22T00:00:00Z",
+      "activated_at": "2026-09-22T00:00:00Z",
+      "superseded_at": null,
+      "previous_version_id": "public-b-req-v1",
+      "source_path": null,
+      "source_name": "public-b-req-v2.docx",
+      "source_document_id": "public-b-req-v2",
+      "metadata": {}
+    },
+    {
+      "version_id": "public-b-design-v1",
+      "document_id": "public-b-design",
+      "version_label": "V1.0",
+      "status": "ACTIVE",
+      "source_hash": "26e38774df959336322372cb6c1d62fa035b68c0ac684e4517f8992b077eaf28",
+      "created_at": "2026-09-22T00:00:00Z",
+      "activated_at": "2026-09-22T00:00:00Z",
+      "superseded_at": null,
+      "previous_version_id": null,
+      "source_path": null,
+      "source_name": "public-b-design-v1.docx",
+      "source_document_id": "public-b-design-v1",
+      "metadata": {}
+    },
+    {
+      "version_id": "public-b-test-v1",
+      "document_id": "public-b-test",
+      "version_label": "V1.0",
+      "status": "ACTIVE",
+      "source_hash": "3c1ec5c08c995f45f8a3f8b00d55c16f0f32e55f2690ee5352fa87925a0fc09d",
+      "created_at": "2026-09-22T00:00:00Z",
+      "activated_at": "2026-09-22T00:00:00Z",
+      "superseded_at": null,
+      "previous_version_id": null,
+      "source_path": null,
+      "source_name": "public-b-test-v1.docx",
+      "source_document_id": "public-b-test-v1",
+      "metadata": {}
+    },
+    {
+      "version_id": "public-b-runbook-v1",
+      "document_id": "public-b-runbook",
+      "version_label": "V1.0",
+      "status": "ACTIVE",
+      "source_hash": "6f5ac54e639777a2802adca1fa66c5a12ceca00bc21468abb8a344e72643e331",
+      "created_at": "2026-09-22T00:00:00Z",
+      "activated_at": "2026-09-22T00:00:00Z",
+      "superseded_at": null,
+      "previous_version_id": null,
+      "source_path": null,
+      "source_name": "public-b-runbook-v1.docx",
+      "source_document_id": "public-b-runbook-v1",
+      "metadata": {}
+    }
+  ],
+  "sections_by_version": {
+    "public-a-api-v1": [
+      {
+        "section_id": "public-a-api-v1:section:001",
+        "section_path": [
+          "Case A 接口规范",
+          "批处理接口"
+        ],
+        "content": "API-008 面向 REQ-023，POST /batches 同步返回处理结果。",
+        "page_start": 1,
+        "page_end": 1,
+        "content_hash": "4b5cb55fb4202e18fdb0637b7d4c3cc5675cb7cec0ee78a4e49497a64415ea81"
+      }
+    ],
+    "public-a-design-v1": [
+      {
+        "section_id": "public-a-design-v1:section:001",
+        "section_path": [
+          "Case A 系统设计说明书",
+          "连接池设计"
+        ],
+        "content": "DES-014 面向 REQ-023，连接池按最大并发 500 配置，并在同步请求内返回结果。",
+        "page_start": 1,
+        "page_end": 1,
+        "content_hash": "824a68409164105285dba27488f3ec10f2fc52256d2e0ff69262fc0703f6ae8c"
+      }
+    ],
+    "public-a-req-v1": [
+      {
+        "section_id": "public-a-req-v1:section:001",
+        "section_path": [
+          "Case A 需求规格说明书",
+          "容量与接口"
+        ],
+        "content": "REQ-023 支付批处理最大并发为 500，客户端通过同步接口等待结果。",
+        "page_start": 1,
+        "page_end": 1,
+        "content_hash": "cdc90d6ed6dc75bc80b66157e9e0f1691e0973152f7045c1c2f1ee76a65de1f5"
+      }
+    ],
+    "public-a-req-v2": [
+      {
+        "section_id": "public-a-req-v2:section:001",
+        "section_path": [
+          "Case A 需求规格说明书",
+          "容量与接口"
+        ],
+        "content": "REQ-023 支付批处理最大并发调整为 1000，吞吐量目标为 200 MB/s，并改为异步任务接口。",
+        "page_start": 1,
+        "page_end": 1,
+        "content_hash": "7cfb1017cbdd34fabc54c0f19ac9f87acdc85f5330dca506172a3c32a2db8481"
+      }
+    ],
+    "public-a-runbook-v1": [
+      {
+        "section_id": "public-a-runbook-v1:section:001",
+        "section_path": [
+          "Case A 运维手册",
+          "容量监控"
+        ],
+        "content": "OPS-006 监控批处理并发与同步接口超时率。",
+        "page_start": 1,
+        "page_end": 1,
+        "content_hash": "b81c1be834ea6737fb998cfcf5e72b0e219f8351eecb7c7e3fb0305be0e17663"
+      }
+    ],
+    "public-a-test-v1": [
+      {
+        "section_id": "public-a-test-v1:section:001",
+        "section_path": [
+          "Case A 测试用例",
+          "容量验收"
+        ],
+        "content": "TC-102 验证 REQ-023，以 500 并发持续运行并检查错误率。",
+        "page_start": 1,
+        "page_end": 1,
+        "content_hash": "6fcb36aec7f781f9385d56eb5c0631f6c9fa02f93b29213a25c89c6110ae6113"
+      }
+    ],
+    "public-b-design-v1": [
+      {
+        "section_id": "public-b-design-v1:section:001",
+        "section_path": [
+          "Case B 系统设计说明书",
+          "存储与归档设计"
+        ],
+        "content": "DES-031 面向 REQ-071，审计日志按日期分区，在线存储保留 7 天。",
+        "page_start": 1,
+        "page_end": 1,
+        "content_hash": "8eedbcd9c346719d0357ed747b338d2d77fa59b3e6e2ae836ca29bba68abba8e"
+      }
+    ],
+    "public-b-req-v1": [
+      {
+        "section_id": "public-b-req-v1:section:001",
+        "section_path": [
+          "Case B 需求规格说明书",
+          "数据留存要求"
+        ],
+        "content": "REQ-071 审计日志在线可检索保存 7 天，超过周期后进入归档。",
+        "page_start": 1,
+        "page_end": 1,
+        "content_hash": "e3ac3957a2106be7b24acd65a203d0c32387e4f939f5a256acfd5593565e8b49"
+      }
+    ],
+    "public-b-req-v2": [
+      {
+        "section_id": "public-b-req-v2:section:001",
+        "section_path": [
+          "Case B 需求规格说明书",
+          "数据留存要求"
+        ],
+        "content": "REQ-071 审计日志在线可检索保存周期调整为 30 天，第 31 天起进入归档。",
+        "page_start": 1,
+        "page_end": 1,
+        "content_hash": "1449c6fbfa68c62177945196404c1a4fd80afa8e79f837ea6be95dbb7a8bda5e"
+      }
+    ],
+    "public-b-runbook-v1": [
+      {
+        "section_id": "public-b-runbook-v1:section:001",
+        "section_path": [
+          "Case B 运维手册",
+          "存储容量巡检"
+        ],
+        "content": "OPS-031 每日检查在线日志分区容量与保存周期告警。",
+        "page_start": 1,
+        "page_end": 1,
+        "content_hash": "6f5ac54e639777a2802adca1fa66c5a12ceca00bc21468abb8a344e72643e331"
+      }
+    ],
+    "public-b-test-v1": [
+      {
+        "section_id": "public-b-test-v1:section:001",
+        "section_path": [
+          "Case B 测试用例",
+          "合规验收"
+        ],
+        "content": "TC-207 验证 REQ-071，第 7 天日志可在线查询，第 8 天从归档读取。",
+        "page_start": 1,
+        "page_end": 1,
+        "content_hash": "faa007cfc2a17821e18450b52bc231401adeafe11435a348abac1f8bf07e828f"
+      }
+    ]
+  },
+  "catalog_sha256": "6d82542425dd0ace45113a7787de3517635f7ddbe71029ade06a84518cab36c8"
+}

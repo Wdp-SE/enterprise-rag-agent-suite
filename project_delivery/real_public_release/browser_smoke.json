@@ -1,0 +1,46 @@
+{
+  "home": "PASS",
+  "chinese_rag_answer": {
+    "status": "PASS",
+    "sources": [
+      "https://github.com/apache/dolphinscheduler/blob/a190201acffa03d199d4ca216288734a6513de3d/docs/docs/zh/guide/parameter/priority.md"
+    ]
+  },
+  "mixed_search": {
+    "status": "PASS",
+    "sources": [
+      "https://github.com/apache/dolphinscheduler/pull/18464",
+      "https://github.com/apache/dolphinscheduler/blob/a190201acffa03d199d4ca216288734a6513de3d/docs/docs/en/guide/upgrade/incompatible.md",
+      "https://github.com/apache/dolphinscheduler/issues/18454"
+    ]
+  },
+  "english_search": {
+    "status": "PASS",
+    "sources": [
+      "https://github.com/apache/dolphinscheduler/blob/a190201acffa03d199d4ca216288734a6513de3d/docs/docs/en/guide/task/dependent.md",
+      "https://github.com/apache/dolphinscheduler/blob/a190201acffa03d199d4ca216288734a6513de3d/docs/docs/en/guide/task/dependent.md",
+      "https://github.com/apache/dolphinscheduler/blob/a190201acffa03d199d4ca216288734a6513de3d/docs/docs/en/guide/project/workflow-definition.md"
+    ]
+  },
+  "historical_version": {
+    "status": "PASS",
+    "sources": [
+      "https://github.com/apache/dolphinscheduler/releases/tag/3.4.2",
+      "https://github.com/apache/dolphinscheduler/blob/71eb6412f940afa1f171f1097dc0e99ed61d16e2/docs/docs/en/guide/project/workflow-definition.md",
+      "https://github.com/apache/dolphinscheduler/blob/71eb6412f940afa1f171f1097dc0e99ed61d16e2/docs/docs/en/guide/project/workflow-definition.md"
+    ]
+  },
+  "consistency_warning": {
+    "status": "PASS",
+    "sources": [
+      "https://github.com/apache/dolphinscheduler/blob/71eb6412f940afa1f171f1097dc0e99ed61d16e2/docs/docs/en/guide/parameter/priority.md",
+      "https://github.com/apache/dolphinscheduler/blob/a190201acffa03d199d4ca216288734a6513de3d/docs/docs/en/guide/parameter/priority.md"
+    ]
+  },
+  "hypothetical_change_input": "PASS",
+  "impact_candidates": "PASS",
+  "patch_suggestions": "PASS",
+  "human_review": "PASS",
+  "session_isolation": "PASS",
+  "public_baseline_unchanged": "PASS"
+}

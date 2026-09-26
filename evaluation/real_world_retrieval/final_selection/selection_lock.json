@@ -1,0 +1,15 @@
+{
+  "frozen_split_sha256": "d1e465680116d1384a9cdcbc7d3b7dcf93f6f36ecd16eb23d166c4cfc2fb0b44",
+  "dev_results_before_holdout_sha256": "060e2a302571d31a5e110f91c3c4fcd0bfc41e2df64ebc244bb2ed4448bba5f9",
+  "chunk": "A",
+  "strategy": "bm25",
+  "top_k": 5,
+  "bm25_weight": 0.5,
+  "max_chunks_per_document": null,
+  "dev_decision": {
+    "chunk": "A has the strongest DEV Hit@5 and MRR, with the fewest chunks and smallest index.",
+    "retriever": "BM25 and Hybrid BM25-weight 0.75 tie on DEV Hit@1 and Hit@5. Hybrid's MRR gain is 0.0175, while its P95 rises from about 1.4 to 22 ms and requires a 471 MB model and 169 s passage indexing. Neural Dense alone is lower on the main quality metrics.",
+    "top_k": "Top-3 retrieves 15/22 DEV answerable questions; Top-5 and Top-8 both retrieve 18/22, and neither retrieves both required cross-document sources. Keep five candidates to avoid extra context and candidate noise.",
+    "document_diversity": "The single cap-2 DEV trial lowers Hit@5 from 0.8182 to 0.7273 without recovering both cross-document sources; keep uncapped."
+  }
+}

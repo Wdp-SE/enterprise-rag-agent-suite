@@ -1,8 +1,0 @@
-{
-  "observed_reject_count": 0,
-  "verified_unanswerable_reject_count": 0,
-  "observed_reject_precision": null,
-  "sample_status": "SAMPLE_SIZE_INSUFFICIENT",
-  "manual_review_required_before_enforcement": true,
-  "rejects": []
-}

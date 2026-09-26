@@ -1,0 +1,44 @@
+{
+  "chunks": [
+    {
+      "chunk_id": "DESIGN-001@1.0:chunk:e5c3e921bbe290e9",
+      "content_hash": "73a925b6aecf9d0394f99679abdfbddcacfd3a8019f51f21f8817933bfcf4b14",
+      "document_id": "DESIGN-001",
+      "document_type": "design",
+      "page_end": 8,
+      "page_number": 8,
+      "position": 0,
+      "project_id": "P-001",
+      "section_id": "design-v1-overview",
+      "section_path": [
+        "总体设计"
+      ],
+      "text": "详细设计采用分层架构与本地版本目录。",
+      "version_id": "DESIGN-001@1.0"
+    }
+  ],
+  "document_id": "DESIGN-001",
+  "embeddings": [
+    [
+      0.0,
+      0.0,
+      1.0,
+      0.0
+    ]
+  ],
+  "schema_version": "rd-version-store-v3",
+  "sections": [
+    {
+      "content": "详细设计采用分层架构与本地版本目录。",
+      "content_hash": "73a925b6aecf9d0394f99679abdfbddcacfd3a8019f51f21f8817933bfcf4b14",
+      "page_end": 8,
+      "page_start": 8,
+      "section_id": "design-v1-overview",
+      "section_path": [
+        "总体设计"
+      ]
+    }
+  ],
+  "source_hash": "83e4928d66ddc6ac2353a5aaffe12348f52db1df980ab7337cb8a6730621d289",
+  "version_id": "DESIGN-001@1.0"
+}

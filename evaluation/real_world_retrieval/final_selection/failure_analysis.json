@@ -1,0 +1,166 @@
+{
+  "cross_document": [
+    {
+      "id": "ds-035",
+      "cohort": "HOLDOUT",
+      "sources": [
+        {
+          "document_key": "guide/task/dependent",
+          "heading": "Task Examples",
+          "exists_in_index": true,
+          "eligible_after_scope": true,
+          "raw_rank": 344,
+          "final_rank": 344,
+          "outside_final_top_k": true
+        },
+        {
+          "document_key": "guide/parameter/priority",
+          "heading": "Parameter Priority",
+          "exists_in_index": true,
+          "eligible_after_scope": true,
+          "raw_rank": 298,
+          "final_rank": 298,
+          "outside_final_top_k": true
+        }
+      ],
+      "top_k_document_ids": [
+        "3.4.3:zh:guide/parameter/context",
+        "3.4.3:zh:guide/task/dependent",
+        "3.4.3:zh:guide/parameter/local",
+        "3.4.3:zh:guide/parameter/context",
+        "3.4.3:zh:guide/parameter/context"
+      ],
+      "same_document_crowding": true,
+      "both_sources_in_final_top_k": false
+    },
+    {
+      "id": "ds-036",
+      "cohort": "HOLDOUT",
+      "sources": [
+        {
+          "document_key": "guide/project/workflow-definition",
+          "heading": "Run the Workflow",
+          "exists_in_index": true,
+          "eligible_after_scope": true,
+          "raw_rank": 2,
+          "final_rank": 2,
+          "outside_final_top_k": false
+        },
+        {
+          "document_key": "guide/project/workflow-instance",
+          "heading": "View Workflow Instance",
+          "exists_in_index": true,
+          "eligible_after_scope": true,
+          "raw_rank": 47,
+          "final_rank": 47,
+          "outside_final_top_k": true
+        }
+      ],
+      "top_k_document_ids": [
+        "3.4.3:en:guide/project/workflow-definition",
+        "3.4.3:en:guide/project/workflow-definition",
+        "3.4.3:en:guide/project/workflow-definition",
+        "3.4.3:en:architecture/configuration",
+        "3.4.3:en:guide/project/workflow-definition"
+      ],
+      "same_document_crowding": true,
+      "both_sources_in_final_top_k": false
+    },
+    {
+      "id": "ds-037",
+      "cohort": "DEV",
+      "sources": [
+        {
+          "document_key": "guide/api/healthcheck",
+          "heading": "API-Server",
+          "exists_in_index": true,
+          "eligible_after_scope": true,
+          "raw_rank": 10,
+          "final_rank": 10,
+          "outside_final_top_k": true
+        },
+        {
+          "document_key": "guide/api/open-api",
+          "heading": "Create a Token",
+          "exists_in_index": true,
+          "eligible_after_scope": true,
+          "raw_rank": 82,
+          "final_rank": 82,
+          "outside_final_top_k": true
+        }
+      ],
+      "top_k_document_ids": [
+        "3.4.3:en:guide/api/healthcheck",
+        "3.4.3:en:guide/api/open-api",
+        "3.4.3:zh:contribute/api-test",
+        "3.4.3:zh:guide/api/open-api",
+        "3.4.3:en:architecture/configuration"
+      ],
+      "same_document_crowding": false,
+      "both_sources_in_final_top_k": false
+    },
+    {
+      "id": "ds-038",
+      "cohort": "DEV",
+      "sources": [
+        {
+          "document_key": "guide/upgrade/incompatible",
+          "heading": "3.4.3",
+          "exists_in_index": true,
+          "eligible_after_scope": true,
+          "raw_rank": 71,
+          "final_rank": 71,
+          "outside_final_top_k": true
+        },
+        {
+          "document_key": "release-notes",
+          "heading": "DSIP",
+          "exists_in_index": true,
+          "eligible_after_scope": true,
+          "raw_rank": 40,
+          "final_rank": 40,
+          "outside_final_top_k": true
+        }
+      ],
+      "top_k_document_ids": [
+        "3.4.3:zh:guide/upgrade/upgrade",
+        "3.4.3:zh:guide/upgrade/upgrade",
+        "3.4.3:zh:guide/upgrade/incompatible",
+        "3.4.3:en:release-notes",
+        "3.4.3:zh:guide/upgrade/incompatible"
+      ],
+      "same_document_crowding": true,
+      "both_sources_in_final_top_k": false
+    }
+  ],
+  "no_answer_generation_smoke": {
+    "scope": "the three existing frozen no-answer queries, one live call each",
+    "budget": "at most three external generation calls in one local process",
+    "statuses": [
+      {
+        "id": "ds-044",
+        "http": 200,
+        "status": "ABSTAINED",
+        "sources": 0,
+        "evidence_candidates": 5
+      },
+      {
+        "id": "ds-045",
+        "http": 200,
+        "status": "ABSTAINED",
+        "sources": 0,
+        "evidence_candidates": 5
+      },
+      {
+        "id": "ds-046",
+        "http": 200,
+        "status": "ABSTAINED",
+        "sources": 0,
+        "evidence_candidates": 5
+      }
+    ],
+    "observed_generation_abstention": "3/3",
+    "observed_false_generated_answers": "0/3",
+    "limitation": "One observed model run, not a calibrated reliability estimate; retrieval still returned five candidates for each query."
+  }
+}

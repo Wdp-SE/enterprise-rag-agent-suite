@@ -1,0 +1,46 @@
+{"id": "ds-001", "query": "DolphinScheduler 参数优先级从高到低是什么？", "category": "zh", "version_scope": "3.4.3"}
+{"id": "ds-002", "query": "全局参数在哪里配置？", "category": "zh", "version_scope": "3.4.3"}
+{"id": "ds-003", "query": "本地参数的作用范围是什么？", "category": "zh", "version_scope": "3.4.3"}
+{"id": "ds-004", "query": "内置参数 system.biz.date 表示什么？", "category": "zh", "version_scope": "3.4.3"}
+{"id": "ds-005", "query": "启动参数在哪里设置？", "category": "zh", "version_scope": "3.4.3"}
+{"id": "ds-006", "query": "依赖节点可以检查什么？", "category": "zh", "version_scope": "3.4.3"}
+{"id": "ds-007", "query": "Switch 任务如何设置分支条件？", "category": "zh", "version_scope": "3.4.3"}
+{"id": "ds-008", "query": "如何创建工作流定义？", "category": "zh", "version_scope": "3.4.3"}
+{"id": "ds-009", "query": "工作流实例的日志在哪里查看？", "category": "zh", "version_scope": "3.4.3"}
+{"id": "ds-010", "query": "升级 DolphinScheduler 前要备份什么？", "category": "zh", "version_scope": "3.4.3"}
+{"id": "ds-011", "query": "What is the API server health-check endpoint?", "category": "en", "version_scope": "3.4.3"}
+{"id": "ds-012", "query": "What is the default dependency check interval?", "category": "en", "version_scope": "3.4.3"}
+{"id": "ds-013", "query": "Which parameter source has the highest priority?", "category": "en", "version_scope": "3.4.3"}
+{"id": "ds-014", "query": "What is system.workflow.instance.id?", "category": "en", "version_scope": "3.4.3"}
+{"id": "ds-015", "query": "Where are global parameters configured?", "category": "en", "version_scope": "3.4.3"}
+{"id": "ds-016", "query": "How do I create an Open API token?", "category": "en", "version_scope": "3.4.3"}
+{"id": "ds-017", "query": "What does Serial Discard do?", "category": "en", "version_scope": "3.4.3"}
+{"id": "ds-018", "query": "worker group 默认是什么？", "category": "mixed", "version_scope": "3.4.3"}
+{"id": "ds-019", "query": "workflow timeout alarm 在哪里配置？", "category": "mixed", "version_scope": "3.4.3"}
+{"id": "ds-020", "query": "Parameter Context 和 Startup Parameter 哪个优先？", "category": "mixed", "version_scope": "3.4.3"}
+{"id": "ds-021", "query": "Dependent task 的 Check interval 默认多久？", "category": "mixed", "version_scope": "3.4.3"}
+{"id": "ds-022", "query": "Open API 的 token 要怎样创建？", "category": "mixed", "version_scope": "3.4.3"}
+{"id": "ds-023", "query": "3.4.3 的 missed_fire_policy 对旧 schedule 默认什么？", "category": "mixed", "version_scope": "3.4.3"}
+{"id": "ds-024", "query": "system.task.definition.code", "category": "exact", "version_scope": "3.4.3"}
+{"id": "ds-025", "query": "system.biz.curdate", "category": "exact", "version_scope": "3.4.3"}
+{"id": "ds-026", "query": "/dolphinscheduler/actuator/health", "category": "exact", "version_scope": "3.4.3"}
+{"id": "ds-027", "query": "missed_fire_policy", "category": "exact", "version_scope": "3.4.3"}
+{"id": "ds-028", "query": "DSIP-107", "category": "exact", "version_scope": "3.4.3"}
+{"id": "ds-029", "query": "DSIP-95", "category": "exact", "version_scope": "3.4.2"}
+{"id": "ds-030", "query": "3.4.3 新增的调度 misfire policy 对应哪个 DSIP？", "category": "version", "version_scope": "3.4.3"}
+{"id": "ds-031", "query": "3.4.3 的 schedules 表新增了什么字段？", "category": "version", "version_scope": "3.4.3"}
+{"id": "ds-032", "query": "3.4.2 的 HTTP TRACE 配置改动对应哪个 DSIP？", "category": "version", "version_scope": "3.4.2"}
+{"id": "ds-033", "query": "3.4.2 API complement data 的依赖能力是什么改动？", "category": "version", "version_scope": "3.4.2"}
+{"id": "ds-034", "query": "3.4.3 参数优先级文档有哪些更新？", "category": "version", "version_scope": "3.4.3"}
+{"id": "ds-035", "query": "依赖任务如何把输出参数传给下游，以及参数冲突如何决定优先级？", "category": "cross_document", "version_scope": "3.4.3"}
+{"id": "ds-036", "query": "What is the worker group setting when running a workflow and where is the execution recorded?", "category": "cross_document", "version_scope": "3.4.3"}
+{"id": "ds-037", "query": "API server health check 与 Open API 调用入口分别是什么？", "category": "cross_document", "version_scope": "3.4.3"}
+{"id": "ds-038", "query": "3.4.3 misfire policy 的 release 项与数据库升级字段如何对应？", "category": "cross_document", "version_scope": "3.4.3"}
+{"id": "ds-039", "query": "全局参数和启动参数同名谁覆盖谁？", "category": "hard", "version_scope": "3.4.3"}
+{"id": "ds-040", "query": "task priority 和 process priority 分别影响哪些队列？", "category": "hard", "version_scope": "3.4.3"}
+{"id": "ds-041", "query": "workflow definition 和 workflow instance 有何区别？", "category": "hard", "version_scope": "3.4.3"}
+{"id": "ds-042", "query": "Master-Server 与 Worker-Server 的健康检查端口分别是什么？", "category": "hard", "version_scope": "3.4.3"}
+{"id": "ds-043", "query": "上游同名参数中谁最后生效？", "category": "hard", "version_scope": "3.4.3"}
+{"id": "ds-044", "query": "DolphinScheduler 3.4.3 的商业许可每年多少钱？", "category": "no_answer", "version_scope": "3.4.3"}
+{"id": "ds-045", "query": "DolphinScheduler 核心开发者的私人手机号是什么？", "category": "no_answer", "version_scope": "3.4.3"}
+{"id": "ds-046", "query": "2029 年 DolphinScheduler 4.9.0 的发布日是哪一天？", "category": "no_answer", "version_scope": "3.4.3"}

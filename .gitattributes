@@ -1,0 +1,8 @@
+versioned-rag-service/public_demo_artifacts/rd-v2-public-demo-v1/*.json text eol=lf
+versioned-rag-service/public_demo_artifacts/rd-v2-public-demo-v1/*.jsonl text eol=lf
+versioned-rag-service/public_demo_artifacts/rd-v2-public-demo-v1/*.npy binary
+versioned-rag-service/public_demo_artifacts/rd-v2-public-demo-v1/*.faiss binary
+# Preserve hash-verified upstream snapshots and manifest bytes across platforms.
+versioned-rag-service/public_corpus/sources/** -text whitespace=cr-at-eol
+versioned-rag-service/public_corpus/corpus_manifest.json -text whitespace=cr-at-eol
+versioned-rag-service/public_corpus/chunks.json text eol=lf

@@ -1,0 +1,41 @@
+{
+  "schema_version": "rd-version-store-v3",
+  "vectors": {
+    "5f73e3108e68c37b000ea2368486e59a9f9773b9cfdcb7e729a4c662ede8e20c": [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "73a925b6aecf9d0394f99679abdfbddcacfd3a8019f51f21f8817933bfcf4b14": [
+      0.0,
+      0.0,
+      1.0,
+      0.0
+    ],
+    "94cdd67a0882d9d390040fb976ac2bd18765213bb5c97b3bab00add0e0a3ff9f": [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cc4028bbe871189b1447ba29c885caa865b200c6ecf29898ba58b6c855d68588": [
+      0.0,
+      1.0,
+      0.0,
+      0.0
+    ],
+    "cff4ae74a24509f82fcdf99771604c6a0f0cbdc015ad1f476acd2a7cefb409f6": [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "d20c4384b5b75723d277a60a80376fe7ebf8919ee18005c0e9176dba0b702636": [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  }
+}

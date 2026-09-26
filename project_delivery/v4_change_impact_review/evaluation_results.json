@@ -1,0 +1,167 @@
+{
+  "schema_version": "v4-evaluation-results-v1",
+  "classification": "FULLY_SYNTHETIC",
+  "rag": {
+    "case_count": 7,
+    "hit_at_5": 1.0,
+    "recall_at_5": 1.0,
+    "mrr": 1.0,
+    "exact_identifier_hit_at_5": true,
+    "current_version_correctness": true,
+    "citation_membership_correctness": true,
+    "no_answer_rejection": true,
+    "scope_violation_count": 0,
+    "p50_latency_ms": 64.33,
+    "p95_latency_ms": 68.384,
+    "cases": [
+      {
+        "case_id": "exact-id",
+        "category": "Exact ID Query",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "result_count": 1,
+        "latency_ms": 49.654
+      },
+      {
+        "case_id": "cross-document",
+        "category": "Cross-document Query",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "result_count": 1,
+        "latency_ms": 64.33
+      },
+      {
+        "case_id": "semantic",
+        "category": "Semantic Query",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "result_count": 1,
+        "latency_ms": 68.384
+      },
+      {
+        "case_id": "version-conflict",
+        "category": "Version Conflict",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "result_count": 1,
+        "latency_ms": 66.483
+      },
+      {
+        "case_id": "no-answer",
+        "category": "No Answer",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 0.0,
+        "result_count": 0,
+        "latency_ms": 47.069
+      },
+      {
+        "case_id": "scope-violation",
+        "category": "Scope Violation",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 0.0,
+        "result_count": 0,
+        "latency_ms": 34.975
+      },
+      {
+        "case_id": "terminology",
+        "category": "Terminology / Abbreviation",
+        "hit_at_5": true,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "result_count": 1,
+        "latency_ms": 66.989
+      }
+    ]
+  },
+  "agent": {
+    "impact_recall": 1.0,
+    "impact_precision": 1.0,
+    "confirmed_impacts": [
+      "API-008",
+      "DES-014",
+      "TC-102"
+    ],
+    "suggested_impacts": [
+      "OPS-006"
+    ],
+    "patch_target_correctness": true,
+    "evidence_coverage": 1.0,
+    "unauthorized_apply_count": 0,
+    "duplicate_patch_apply_count": 0,
+    "resume_correctness": true,
+    "rag_call_count": 9,
+    "workflow_latency_ms": 7942.516,
+    "candidate_status": "ACTIVE",
+    "original_document_unchanged": true,
+    "stale_evidence_block": "VERIFIED_BY_AGENT_TEST",
+    "conflict_detection": "VERIFIED_BY_AGENT_TEST",
+    "evidence_selection": {
+      "retrieved_evidence_count": 5,
+      "valid_evidence_count": 5,
+      "deduplicated_evidence_count": 5,
+      "selected_evidence_count": 5,
+      "max_evidence_count": 5,
+      "selected_evidence_ids": [
+        "ev_73bcfca5a93a33a659c3",
+        "ev_79aeb3b1960ec9acbc81",
+        "ev_81b2015ee91362b5bd78",
+        "ev_a763dc06afd5b1ce8a54",
+        "ev_bb5e74279e62104a0f35"
+      ]
+    },
+    "quality_gate": {
+      "status": "PASS",
+      "reasons": [],
+      "patch_apply_status": "APPLIED",
+      "failure_reason": null
+    }
+  },
+  "baseline_comparison": {
+    "evaluation_only": true,
+    "production_runtime_changed": false,
+    "cases": [
+      {
+        "question": "系统最大并发是多少？",
+        "meaningful": true,
+        "baseline_versions": [
+          "requirements-v1",
+          "requirements-v2"
+        ],
+        "version_aware_versions": [
+          "requirements-v2"
+        ],
+        "baseline_summary": "V1.0: REQ-023 支付批处理最大并发为 500,客户端通过同步接口等待处理结果。\nREQ-024 所有批次必须生成审计流水。\n字段 | 内容\n关联测试 | TC-102\n关联设计 | DES-014；V2.0: REQ-023 支付批处理最大并发由 500 提升到 1000,吞吐量目标为 200 MB/s,并改为异步任务接口。\nREQ-024 所有批次必须生成审计流水。\nREQ-025 异步任务完成后必须保留可查询状态。\n字段 | 内容\n关联测试 | TC-102\n关联设计 | DES-014\n关联接口 | API-008",
+        "version_aware_summary": "V2.0: REQ-023 支付批处理最大并发由 500 提升到 1000,吞吐量目标为 200 MB/s,并改为异步任务接口。\nREQ-024 所有批次必须生成审计流水。\nREQ-025 异步任务完成后必须保留可查询状态。\n字段 | 内容\n关联测试 | TC-102\n关联设计 | DES-014\n关联接口 | API-008",
+        "conclusion": "无版本约束可能同时返回新旧冲突内容；正式检索只返回当前有效版本。"
+      },
+      {
+        "question": "最大并发和吞吐量目标是什么？",
+        "meaningful": true,
+        "baseline_versions": [
+          "requirements-v2",
+          "requirements-v1"
+        ],
+        "version_aware_versions": [
+          "requirements-v2"
+        ],
+        "baseline_summary": "V2.0: REQ-023 支付批处理最大并发由 500 提升到 1000,吞吐量目标为 200 MB/s,并改为异步任务接口。\nREQ-024 所有批次必须生成审计流水。\nREQ-025 异步任务完成后必须保留可查询状态。\n字段 | 内容\n关联测试 | TC-102\n关联设计 | DES-014\n关联接口 | API-008；V1.0: REQ-023 支付批处理最大并发为 500,客户端通过同步接口等待处理结果。\nREQ-024 所有批次必须生成审计流水。\n字段 | 内容\n关联测试 | TC-102\n关联设计 | DES-014",
+        "version_aware_summary": "V2.0: REQ-023 支付批处理最大并发由 500 提升到 1000,吞吐量目标为 200 MB/s,并改为异步任务接口。\nREQ-024 所有批次必须生成审计流水。\nREQ-025 异步任务完成后必须保留可查询状态。\n字段 | 内容\n关联测试 | TC-102\n关联设计 | DES-014\n关联接口 | API-008",
+        "conclusion": "无版本约束可能同时返回新旧冲突内容；正式检索只返回当前有效版本。"
+      }
+    ],
+    "meaningful_case_count": 2
+  },
+  "safety": {
+    "unapproved_writes": 0,
+    "duplicate_patch_applications": 0,
+    "unblocked_stale_evidence": 0,
+    "scope_error_references": 0,
+    "lost_active_version_on_publish_failure": 0
+  }
+}

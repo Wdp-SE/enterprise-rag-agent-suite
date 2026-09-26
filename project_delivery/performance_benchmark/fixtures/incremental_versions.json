@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "data_policy": "synthetic",
+  "document": {
+    "document_id": "REQ-PERF-001",
+    "project_id": "PERF-BENCH",
+    "document_type": "requirements",
+    "title": "合成需求规格说明书"
+  },
+  "v1": [
+    {"section_id": "S01", "section_path": ["1 项目范围"], "content": "本项目建设受控研发文档知识服务，支持需求、设计和测试资料的统一检索。", "page_start": 1, "page_end": 1},
+    {"section_id": "S02", "section_path": ["2 用户角色"], "content": "系统面向研发工程师、测试工程师和项目审核人员，所有角色使用同一项目范围。", "page_start": 2, "page_end": 2},
+    {"section_id": "S03", "section_path": ["3 文档范围"], "content": "知识库收录需求规格、详细设计、测试记录三类研发文档，并保存稳定文档标识。", "page_start": 3, "page_end": 3},
+    {"section_id": "S04", "section_path": ["4 检索策略"], "content": "正式检索采用 Dense Only 策略，并使用章节路径与正文构成向量表示。", "page_start": 4, "page_end": 4},
+    {"section_id": "S05", "section_path": ["5 版本治理"], "content": "每份文档只允许一个 ACTIVE 版本，历史版本标记为 SUPERSEDED 并保留审计信息。", "page_start": 5, "page_end": 5},
+    {"section_id": "S06", "section_path": ["6 引用要求"], "content": "回答中的引用必须包含文档标识、版本标识、章节路径和页码，且必须来自检索证据。", "page_start": 6, "page_end": 6},
+    {"section_id": "S07", "section_path": ["7 更新流程"], "content": "文档更新时执行章节变化检测，对未变化章节复用已有向量，对变化章节重新计算。", "page_start": 7, "page_end": 7},
+    {"section_id": "S08", "section_path": ["8 质量门禁"], "content": "更新完成后必须校验目录、版本状态、向量数量、引用字段和检索范围一致性。", "page_start": 8, "page_end": 8},
+    {"section_id": "S09", "section_path": ["9 安全要求"], "content": "基准测试只使用合成或批准的本地数据，不向在线模型发送内部文档正文。", "page_start": 9, "page_end": 9},
+    {"section_id": "S10", "section_path": ["10 性能目标"], "content": "版本更新应减少重复向量计算，并记录文档处理、向量计算和索引刷新时间。", "page_start": 10, "page_end": 10},
+    {"section_id": "S11", "section_path": ["11 审计输出"], "content": "每次执行输出结构化 JSON 和人工可读摘要，记录配置、运行次数和全部有效样本。", "page_start": 11, "page_end": 11},
+    {"section_id": "S12", "section_path": ["12 旧接口说明"], "content": "旧版临时接口仅用于迁移验证，完成版本切换后从活动文档中移除。", "page_start": 12, "page_end": 12}
+  ],
+  "v2": [
+    {"section_id": "S01", "section_path": ["1 项目范围"], "content": "本项目建设受控研发文档知识服务，支持需求、设计和测试资料的统一检索。", "page_start": 1, "page_end": 1},
+    {"section_id": "S02", "section_path": ["2 用户角色"], "content": "系统面向研发工程师、测试工程师和项目审核人员，所有角色使用同一项目范围。", "page_start": 2, "page_end": 2},
+    {"section_id": "S03", "section_path": ["3 文档范围"], "content": "知识库收录需求规格、详细设计、测试记录三类研发文档，并保存稳定文档标识。", "page_start": 3, "page_end": 3},
+    {"section_id": "S04", "section_path": ["4 检索策略"], "content": "正式检索采用 Dense Only 策略，并使用章节路径与正文构成向量表示。", "page_start": 4, "page_end": 4},
+    {"section_id": "S05", "section_path": ["5 版本治理"], "content": "每份文档只允许一个 ACTIVE 版本，历史版本标记为 SUPERSEDED 并保留审计信息。", "page_start": 5, "page_end": 5},
+    {"section_id": "S06", "section_path": ["6 引用要求"], "content": "回答中的引用必须包含文档标识、版本标识、章节路径和页码，且必须来自检索证据。", "page_start": 6, "page_end": 6},
+    {"section_id": "S07", "section_path": ["7 更新流程"], "content": "文档更新时执行章节级变化检测，对未变化章节复用内容哈希向量，仅重新计算新增或修改章节。", "page_start": 7, "page_end": 7},
+    {"section_id": "S08", "section_path": ["8 质量门禁"], "content": "更新完成后必须校验目录、版本状态、向量数量、引用字段和检索范围一致性。", "page_start": 8, "page_end": 8},
+    {"section_id": "S09", "section_path": ["9 安全要求"], "content": "基准测试只使用合成或批准的本地数据，不向在线模型发送内部文档正文。", "page_start": 9, "page_end": 9},
+    {"section_id": "S10", "section_path": ["10 性能目标"], "content": "版本更新应减少重复向量计算，并分别记录文档处理、Embedding 计算和活动索引刷新时间。", "page_start": 10, "page_end": 10},
+    {"section_id": "S11", "section_path": ["11 审计输出"], "content": "每次执行输出结构化 JSON 和人工可读摘要，记录配置、运行次数和全部有效样本。", "page_start": 11, "page_end": 11},
+    {"section_id": "S13", "section_path": ["12 回滚要求"], "content": "若新版本构建或校验失败，活动目录必须继续指向上一稳定版本并保留失败记录。", "page_start": 12, "page_end": 12}
+  ]
+}

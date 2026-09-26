@@ -1,0 +1,75 @@
+{
+  "refresh_version": 1,
+  "rows": [
+    {
+      "chunk_id": "REQ-001@1.0:chunk:47f12fb306b2d71f",
+      "content_hash": "d20c4384b5b75723d277a60a80376fe7ebf8919ee18005c0e9176dba0b702636",
+      "document_id": "REQ-001",
+      "document_type": "requirements",
+      "page_end": 1,
+      "page_number": 1,
+      "position": 0,
+      "project_id": "P-001",
+      "section_id": "req-v1-overview",
+      "section_path": [
+        "系统概述"
+      ],
+      "text": "本系统用于合成版本治理演示。",
+      "version_id": "REQ-001@1.0"
+    },
+    {
+      "chunk_id": "REQ-001@1.0:chunk:2fb452f0eb5c7515",
+      "content_hash": "94cdd67a0882d9d390040fb976ac2bd18765213bb5c97b3bab00add0e0a3ff9f",
+      "document_id": "REQ-001",
+      "document_type": "requirements",
+      "page_end": 2,
+      "page_number": 2,
+      "position": 1,
+      "project_id": "P-001",
+      "section_id": "req-v1-capacity",
+      "section_path": [
+        "容量指标"
+      ],
+      "text": "最大并发为 500。",
+      "version_id": "REQ-001@1.0"
+    },
+    {
+      "chunk_id": "REQ-001@1.0:chunk:a3f3a120f81983f1",
+      "content_hash": "5f73e3108e68c37b000ea2368486e59a9f9773b9cfdcb7e729a4c662ede8e20c",
+      "document_id": "REQ-001",
+      "document_type": "requirements",
+      "page_end": 3,
+      "page_number": 3,
+      "position": 2,
+      "project_id": "P-001",
+      "section_id": "req-v1-legacy",
+      "section_path": [
+        "旧约束"
+      ],
+      "text": "系统必须保留旧版同步接口。",
+      "version_id": "REQ-001@1.0"
+    }
+  ],
+  "schema_version": "rd-version-store-v3",
+  "strategy": "CACHED_VECTOR_EXACT_MATRIX_REFRESH",
+  "vectors": [
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ]
+}

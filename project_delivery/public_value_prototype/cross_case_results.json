@@ -1,0 +1,145 @@
+{
+  "schema_version": "public-value-cross-case-v1",
+  "classification": "FULLY_SYNTHETIC",
+  "claim_boundary": "同一核心流程在两套结构不同的合成变更案例中通过；该结果不代表适用于所有企业研发场景。",
+  "passed": true,
+  "session_isolation": {
+    "fresh_session_catalog_empty": true,
+    "temporary_state": true
+  },
+  "cases": [
+    {
+      "case_id": "case-a",
+      "title": "Case A：并发容量变更",
+      "session_id": "eval_case_a_a3bb5f785eb4",
+      "passed": true,
+      "checks": {
+        "requirement_change_detection": true,
+        "current_version_selection": true,
+        "impact_candidate_generation": true,
+        "evidence_scope": true,
+        "evidence_version": true,
+        "patch_target": true,
+        "human_review_gate": true,
+        "conflict_detection": true,
+        "idempotency": true,
+        "candidate_version": true,
+        "safe_activation": true,
+        "new_version_retrieval": true,
+        "baseline_immutable": true,
+        "confirmed_trace_expected": true,
+        "suggested_impact_expected": true
+      },
+      "observed": {
+        "confirmed_impacts": [
+          "API-008",
+          "DES-014",
+          "TC-102"
+        ],
+        "suggested_impacts": [
+          "OPS-006"
+        ],
+        "candidate_version_id": "design-v2",
+        "first_apply_statuses": [
+          "APPLIED"
+        ]
+      },
+      "metrics": {
+        "change_cases_completed": 1,
+        "impact_candidates_found": 4,
+        "confirmed_trace_count": 3,
+        "suggested_impact_count": 1,
+        "patch_candidates_generated": 1,
+        "patches_approved": 1,
+        "patches_edited": 0,
+        "patches_rejected": 0,
+        "conflict_blocks": 1,
+        "duplicate_apply_blocks": 1,
+        "candidate_publish_success": 1,
+        "workflow_elapsed_ms": 2934.643,
+        "rag_calls": 9,
+        "llm_calls": 0,
+        "evidence_retrieved": 5,
+        "evidence_valid": 5,
+        "evidence_deduplicated": 5,
+        "evidence_selected": 5
+      }
+    },
+    {
+      "case_id": "case-b",
+      "title": "Case B：审计日志留存周期变更",
+      "session_id": "eval_case_b_a29b0855a0b8",
+      "passed": true,
+      "checks": {
+        "requirement_change_detection": true,
+        "current_version_selection": true,
+        "impact_candidate_generation": true,
+        "evidence_scope": true,
+        "evidence_version": true,
+        "patch_target": true,
+        "human_review_gate": true,
+        "conflict_detection": true,
+        "idempotency": true,
+        "candidate_version": true,
+        "safe_activation": true,
+        "new_version_retrieval": true,
+        "baseline_immutable": true,
+        "confirmed_trace_expected": true,
+        "suggested_impact_expected": true
+      },
+      "observed": {
+        "confirmed_impacts": [
+          "DES-031",
+          "TC-207"
+        ],
+        "suggested_impacts": [
+          "OPS-031"
+        ],
+        "candidate_version_id": "audit-design-v2",
+        "first_apply_statuses": [
+          "APPLIED"
+        ]
+      },
+      "metrics": {
+        "change_cases_completed": 1,
+        "impact_candidates_found": 3,
+        "confirmed_trace_count": 2,
+        "suggested_impact_count": 1,
+        "patch_candidates_generated": 1,
+        "patches_approved": 1,
+        "patches_edited": 0,
+        "patches_rejected": 0,
+        "conflict_blocks": 1,
+        "duplicate_apply_blocks": 1,
+        "candidate_publish_success": 1,
+        "workflow_elapsed_ms": 2539.264,
+        "rag_calls": 9,
+        "llm_calls": 0,
+        "evidence_retrieved": 4,
+        "evidence_valid": 4,
+        "evidence_deduplicated": 4,
+        "evidence_selected": 4
+      }
+    }
+  ],
+  "totals": {
+    "change_cases_completed": 2,
+    "impact_candidates_found": 7,
+    "confirmed_trace_count": 5,
+    "suggested_impact_count": 2,
+    "patch_candidates_generated": 2,
+    "patches_approved": 2,
+    "patches_edited": 0,
+    "patches_rejected": 0,
+    "conflict_blocks": 2,
+    "duplicate_apply_blocks": 2,
+    "candidate_publish_success": 2,
+    "workflow_elapsed_ms": 5473.907,
+    "rag_calls": 18,
+    "llm_calls": 0,
+    "evidence_retrieved": 9,
+    "evidence_valid": 9,
+    "evidence_deduplicated": 9,
+    "evidence_selected": 9
+  }
+}

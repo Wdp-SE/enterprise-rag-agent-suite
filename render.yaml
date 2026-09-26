@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: version-aware-rag-public-demo
+    runtime: python
+    rootDir: versioned-rag-service
+    plan: free
+    buildCommand: pip install -r requirements-render.txt
+    startCommand: uvicorn src.public_server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: APP_ENV
+        value: public_demo
+      - key: RD_V2_ALLOW_EXTERNAL_GENERATION
+        value: "true"
+      - key: DASHSCOPE_API_KEY
+        sync: false

@@ -1,0 +1,8 @@
+{
+  "manifest": "legacy_removal_manifest.json",
+  "deletion_plan_sha256": "7294dcbd12c8d802ec32cf570a4b38cc5b0d68b4c793b0357614f2500f508489",
+  "approved_count": 302,
+  "deleted_count": 302,
+  "skipped_referenced_files": [],
+  "completed_at": "2026-09-18T07:42:38.6183911Z"
+}

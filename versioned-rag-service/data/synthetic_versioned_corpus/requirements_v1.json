@@ -1,0 +1,5 @@
+[
+  {"section_id": "req-v1-overview", "section_path": ["系统概述"], "content": "本系统用于合成版本治理演示。", "page_start": 1, "page_end": 1},
+  {"section_id": "req-v1-capacity", "section_path": ["容量指标"], "content": "最大并发为 500。", "page_start": 2, "page_end": 2},
+  {"section_id": "req-v1-legacy", "section_path": ["旧约束"], "content": "系统必须保留旧版同步接口。", "page_start": 3, "page_end": 3}
+]

@@ -1,0 +1,344 @@
+{
+  "schema_version": "v4-engineering-inventory-v1",
+  "classification": "FULLY_SYNTHETIC",
+  "profile": {
+    "organization_id": "demo_company_a",
+    "identifier_patterns": {
+      "REQUIREMENT": [
+        "REQ-\\d{3}"
+      ],
+      "DESIGN": [
+        "DES-\\d{3}"
+      ],
+      "API": [
+        "API-\\d{3}"
+      ],
+      "TEST_CASE": [
+        "TC-\\d{3}"
+      ],
+      "RUNBOOK": [
+        "OPS-\\d{3}"
+      ]
+    },
+    "document_type_mapping": {
+      "需求规格说明书": "REQUIREMENT",
+      "系统设计说明书": "DESIGN",
+      "接口规范": "API",
+      "测试用例": "TEST_CASE",
+      "运维手册": "RUNBOOK"
+    },
+    "section_aliases": {
+      "功能需求": "REQUIREMENTS",
+      "系统设计": "DESIGN",
+      "接口定义": "API",
+      "验收测试": "ACCEPTANCE",
+      "运行手册": "OPERATIONS"
+    },
+    "version_status_mapping": {
+      "有效": "ACTIVE",
+      "历史": "SUPERSEDED"
+    }
+  },
+  "documents": [
+    {
+      "filename": "requirements_v1.docx",
+      "document_id": "requirements",
+      "version_id": "requirements-v1",
+      "version_label": "V1.0",
+      "document_type": "需求规格说明书",
+      "title": "requirements_v1"
+    },
+    {
+      "filename": "requirements_v2.docx",
+      "document_id": "requirements",
+      "version_id": "requirements-v2",
+      "version_label": "V2.0",
+      "document_type": "需求规格说明书",
+      "title": "requirements_v2"
+    },
+    {
+      "filename": "system_design_v1.docx",
+      "document_id": "system_design",
+      "version_id": "design-v1",
+      "version_label": "V1.0",
+      "document_type": "系统设计说明书",
+      "title": "system_design_v1"
+    },
+    {
+      "filename": "api_spec_v1.docx",
+      "document_id": "api_spec",
+      "version_id": "api-v1",
+      "version_label": "V1.0",
+      "document_type": "接口规范",
+      "title": "api_spec_v1"
+    },
+    {
+      "filename": "test_cases_v1.docx",
+      "document_id": "test_cases",
+      "version_id": "test-v1",
+      "version_label": "V1.0",
+      "document_type": "测试用例",
+      "title": "test_cases_v1"
+    },
+    {
+      "filename": "runbook_v1.docx",
+      "document_id": "runbook",
+      "version_id": "runbook-v1",
+      "version_label": "V1.0",
+      "document_type": "运维手册",
+      "title": "runbook_v1"
+    }
+  ],
+  "items": [
+    {
+      "item_id": "item_d1216799f46834197cf2",
+      "item_type": "REQUIREMENT",
+      "organization_id": "demo_company_a",
+      "project_id": "PAYMENT",
+      "document_id": "requirements",
+      "version_id": "requirements-v1",
+      "section_id": "sec_fc973442d80346c6",
+      "external_identifier": "REQ-023",
+      "title": "REQ-023 · REQUIREMENTS",
+      "content": "REQ-023 支付批处理最大并发为 500,客户端通过同步接口等待处理结果。\nREQ-024 所有批次必须生成审计流水。\n字段 | 内容\n关联测试 | TC-102\n关联设计 | DES-014",
+      "content_hash": "982eea8165b1d1c4b0a78e47f41eff8bdb292e510179c63a38a6db3cacfb1445",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "星海软件支付平台需求规格说明书 V1.0",
+          "REQUIREMENTS"
+        ],
+        "source_document_type": "需求规格说明书",
+        "default_document_item_type": "REQUIREMENT"
+      }
+    },
+    {
+      "item_id": "item_e0b8ca6d1a5cd5e3576f",
+      "item_type": "REQUIREMENT",
+      "organization_id": "demo_company_a",
+      "project_id": "PAYMENT",
+      "document_id": "requirements",
+      "version_id": "requirements-v1",
+      "section_id": "sec_fc973442d80346c6",
+      "external_identifier": "REQ-024",
+      "title": "REQ-024 · REQUIREMENTS",
+      "content": "REQ-023 支付批处理最大并发为 500,客户端通过同步接口等待处理结果。\nREQ-024 所有批次必须生成审计流水。\n字段 | 内容\n关联测试 | TC-102\n关联设计 | DES-014",
+      "content_hash": "982eea8165b1d1c4b0a78e47f41eff8bdb292e510179c63a38a6db3cacfb1445",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "星海软件支付平台需求规格说明书 V1.0",
+          "REQUIREMENTS"
+        ],
+        "source_document_type": "需求规格说明书",
+        "default_document_item_type": "REQUIREMENT"
+      }
+    },
+    {
+      "item_id": "item_03fefcb0285dd62af355",
+      "item_type": "REQUIREMENT",
+      "organization_id": "demo_company_a",
+      "project_id": "PAYMENT",
+      "document_id": "requirements",
+      "version_id": "requirements-v2",
+      "section_id": "sec_1297a927f3719b10",
+      "external_identifier": "REQ-023",
+      "title": "REQ-023 · REQUIREMENTS",
+      "content": "REQ-023 支付批处理最大并发由 500 提升到 1000,吞吐量目标为 200 MB/s,并改为异步任务接口。\nREQ-024 所有批次必须生成审计流水。\nREQ-025 异步任务完成后必须保留可查询状态。\n字段 | 内容\n关联测试 | TC-102\n关联设计 | DES-014\n关联接口 | API-008",
+      "content_hash": "093df046b068f422461c2cdcdda52dc8d32a06905507a82a16df2a94769b66e3",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "星海软件支付平台需求规格说明书 V2.0",
+          "REQUIREMENTS"
+        ],
+        "source_document_type": "需求规格说明书",
+        "default_document_item_type": "REQUIREMENT"
+      }
+    },
+    {
+      "item_id": "item_3871f4f70a4d4e46ae69",
+      "item_type": "REQUIREMENT",
+      "organization_id": "demo_company_a",
+      "project_id": "PAYMENT",
+      "document_id": "requirements",
+      "version_id": "requirements-v2",
+      "section_id": "sec_1297a927f3719b10",
+      "external_identifier": "REQ-024",
+      "title": "REQ-024 · REQUIREMENTS",
+      "content": "REQ-023 支付批处理最大并发由 500 提升到 1000,吞吐量目标为 200 MB/s,并改为异步任务接口。\nREQ-024 所有批次必须生成审计流水。\nREQ-025 异步任务完成后必须保留可查询状态。\n字段 | 内容\n关联测试 | TC-102\n关联设计 | DES-014\n关联接口 | API-008",
+      "content_hash": "093df046b068f422461c2cdcdda52dc8d32a06905507a82a16df2a94769b66e3",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "星海软件支付平台需求规格说明书 V2.0",
+          "REQUIREMENTS"
+        ],
+        "source_document_type": "需求规格说明书",
+        "default_document_item_type": "REQUIREMENT"
+      }
+    },
+    {
+      "item_id": "item_0cf06e0e41a2ccda055d",
+      "item_type": "REQUIREMENT",
+      "organization_id": "demo_company_a",
+      "project_id": "PAYMENT",
+      "document_id": "requirements",
+      "version_id": "requirements-v2",
+      "section_id": "sec_1297a927f3719b10",
+      "external_identifier": "REQ-025",
+      "title": "REQ-025 · REQUIREMENTS",
+      "content": "REQ-023 支付批处理最大并发由 500 提升到 1000,吞吐量目标为 200 MB/s,并改为异步任务接口。\nREQ-024 所有批次必须生成审计流水。\nREQ-025 异步任务完成后必须保留可查询状态。\n字段 | 内容\n关联测试 | TC-102\n关联设计 | DES-014\n关联接口 | API-008",
+      "content_hash": "093df046b068f422461c2cdcdda52dc8d32a06905507a82a16df2a94769b66e3",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "星海软件支付平台需求规格说明书 V2.0",
+          "REQUIREMENTS"
+        ],
+        "source_document_type": "需求规格说明书",
+        "default_document_item_type": "REQUIREMENT"
+      }
+    },
+    {
+      "item_id": "item_318de2567884ee3ddb85",
+      "item_type": "DESIGN",
+      "organization_id": "demo_company_a",
+      "project_id": "PAYMENT",
+      "document_id": "system_design",
+      "version_id": "design-v1",
+      "section_id": "sec_e3ff56ccf53169b3",
+      "external_identifier": "DES-014",
+      "title": "DES-014 · DESIGN",
+      "content": "DES-014 面向 REQ-023:批处理服务按最大并发 500 配置连接池,并在同步请求内返回最终结果。\n任务状态仅在请求上下文中保存。\n字段 | 内容\n关联需求 | REQ-023\n接口 | API-008",
+      "content_hash": "d5b03ede1ff6190a7741da865e836c62a6399093dd2df451f4b21211df2de433",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "星海软件支付平台系统设计说明书 V1.0",
+          "DESIGN"
+        ],
+        "source_document_type": "系统设计说明书",
+        "default_document_item_type": "DESIGN"
+      }
+    },
+    {
+      "item_id": "item_e3e472c34d86b012d5c7",
+      "item_type": "API",
+      "organization_id": "demo_company_a",
+      "project_id": "PAYMENT",
+      "document_id": "api_spec",
+      "version_id": "api-v1",
+      "section_id": "sec_0e79b686020e48c0",
+      "external_identifier": "API-008",
+      "title": "API-008 · API",
+      "content": "API-008 面向 REQ-023:POST /batches 同步返回处理结果,默认超时 30 秒。\n字段 | 内容\n方法 | POST\n路径 | /batches\n响应 | 最终处理结果",
+      "content_hash": "dedbff755faf01a79d9a8e2e9123d25aa333ef6945a964e64bdcecf385cf7e3e",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "星海软件支付平台接口规范 V1.0",
+          "API"
+        ],
+        "source_document_type": "接口规范",
+        "default_document_item_type": "API"
+      }
+    },
+    {
+      "item_id": "item_1f325a755c6e87fc68f7",
+      "item_type": "TEST_CASE",
+      "organization_id": "demo_company_a",
+      "project_id": "PAYMENT",
+      "document_id": "test_cases",
+      "version_id": "test-v1",
+      "section_id": "sec_aa6fc41f3c87456e",
+      "external_identifier": "TC-102",
+      "title": "TC-102 · ACCEPTANCE",
+      "content": "TC-102 验证 REQ-023:以 500 并发持续运行 30 分钟,错误率不高于 0.1%。\n字段 | 内容\n前置条件 | 测试环境可用\n期望 | 同步请求全部完成",
+      "content_hash": "9a0fd9e1165a661a65f60983a4051699273f263abaade724d7138b2ac5be6559",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "星海软件支付平台测试用例 V1.0",
+          "ACCEPTANCE"
+        ],
+        "source_document_type": "测试用例",
+        "default_document_item_type": "TEST_CASE"
+      }
+    },
+    {
+      "item_id": "item_e8e7dad4c7db930694c1",
+      "item_type": "RUNBOOK",
+      "organization_id": "demo_company_a",
+      "project_id": "PAYMENT",
+      "document_id": "runbook",
+      "version_id": "runbook-v1",
+      "section_id": "sec_108610acdce79666",
+      "external_identifier": "OPS-006",
+      "title": "OPS-006 · OPERATIONS",
+      "content": "OPS-006 批处理服务容量告警:并发超过 450 时告警,并检查同步接口超时率。\n字段 | 内容\n监控项 | 并发数\n阈值 | 450",
+      "content_hash": "b7519f0c516b447a06161b831974718b15a8e6b6f051116a1af172e3f7dd44fe",
+      "metadata": {
+        "position": 1,
+        "complex_content_present": false,
+        "requires_manual_complex_content_review": false,
+        "section_path": [
+          "星海软件支付平台运维手册 V1.0",
+          "OPERATIONS"
+        ],
+        "source_document_type": "运维手册",
+        "default_document_item_type": "RUNBOOK"
+      }
+    }
+  ],
+  "trace_links": [
+    {
+      "trace_link_id": "trace_85329476fbf56f065f6b",
+      "source_item_id": "item_03fefcb0285dd62af355",
+      "target_item_id": "item_318de2567884ee3ddb85",
+      "provenance": "EXPLICIT",
+      "status": "CONFIRMED",
+      "metadata": {
+        "source": "synthetic explicit identifier fixture"
+      }
+    },
+    {
+      "trace_link_id": "trace_3a670610d80fd8887fe4",
+      "source_item_id": "item_03fefcb0285dd62af355",
+      "target_item_id": "item_e3e472c34d86b012d5c7",
+      "provenance": "EXPLICIT",
+      "status": "CONFIRMED",
+      "metadata": {
+        "source": "synthetic explicit identifier fixture"
+      }
+    },
+    {
+      "trace_link_id": "trace_e9f2e75ff853386ce979",
+      "source_item_id": "item_03fefcb0285dd62af355",
+      "target_item_id": "item_1f325a755c6e87fc68f7",
+      "provenance": "EXPLICIT",
+      "status": "CONFIRMED",
+      "metadata": {
+        "source": "synthetic explicit identifier fixture"
+      }
+    }
+  ],
+  "changed_external_identifier": "REQ-023",
+  "patch_target_external_identifier": "DES-014"
+}

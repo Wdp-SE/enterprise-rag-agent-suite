@@ -1,0 +1,79 @@
+{
+  "workflow_id": "dw_b0f4e681d3e148dbbd570e2bc9206766",
+  "workflow_status": "REVIEW_REQUIRED",
+  "scope": {
+    "active_only": true,
+    "project_ids": [
+      "DEMO-RD"
+    ]
+  },
+  "scope_fingerprint": "96b4f8f2a0c8a5ff10ef7b3a674568474ab0b2b7b455bf4ca645d6f9b1b4af50",
+  "drafting_mode": "EXTRACTIVE",
+  "sections": [
+    {
+      "task_id": "task_s001",
+      "section_id": "s001",
+      "queries": [
+        "1 变更概述 变更内容"
+      ],
+      "rag_calls": 1,
+      "evidence_ids": [
+        "ev_95654b24f20bc407e5d5",
+        "ev_f234220457e607d7f05f"
+      ],
+      "status": "COMPLETE",
+      "stop_reason": null,
+      "missing_fields": []
+    },
+    {
+      "task_id": "task_s002",
+      "section_id": "s002",
+      "queries": [
+        "2 影响分析 影响范围"
+      ],
+      "rag_calls": 1,
+      "evidence_ids": [
+        "ev_9d877f70bf1a151bf9c6"
+      ],
+      "status": "COMPLETE",
+      "stop_reason": null,
+      "missing_fields": []
+    },
+    {
+      "task_id": "task_s003",
+      "section_id": "s003",
+      "queries": [
+        "3 验证结论 验证结果"
+      ],
+      "rag_calls": 1,
+      "evidence_ids": [
+        "ev_d6250dc9f076d036213d"
+      ],
+      "status": "COMPLETE",
+      "stop_reason": null,
+      "missing_fields": []
+    },
+    {
+      "task_id": "task_s004",
+      "section_id": "s004",
+      "queries": [
+        "4 回退方案 回退方案",
+        "DEMO-RD 回退方案 要求",
+        "4 回退方案 回退方案 相关说明"
+      ],
+      "rag_calls": 3,
+      "evidence_ids": [],
+      "status": "PARTIAL",
+      "stop_reason": "NO_EVIDENCE_GROWTH",
+      "missing_fields": [
+        "回退方案"
+      ]
+    }
+  ],
+  "freshness_events": [],
+  "total_rag_calls": 6,
+  "total_unique_evidence": 4,
+  "errors": [],
+  "duration_ms": 125.0,
+  "requires_human_review": true
+}
