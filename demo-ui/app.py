@@ -40,7 +40,7 @@ from services.rag_client import RAGClient, ServiceError
 from services.session_guard import LLMSessionBudget
 
 
-st.set_page_config(page_title="版本可信研发知识与变更审查系统", page_icon="📄", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="研发知识版本服务与变更影响审查", page_icon="📄", layout="wide", initial_sidebar_state="expanded")
 
 if os.environ.get("DEMO_LEGACY_FIXTURES", "false").strip().casefold() not in {"1", "true", "yes"}:
     from public_workbench import render
@@ -53,12 +53,12 @@ st.markdown("""
   :root {
     --brand-950: #102a43;
     --brand-800: #174a78;
-    --brand-600: #2475c7;
+    --brand-600: #303841;
     --ink-900: #172033;
     --ink-600: #5d6b7d;
-    --line: #dbe5f0;
+    --line: #d5d9de;
     --surface: rgba(255, 255, 255, 0.94);
-    --canvas: #f4f7fb;
+    --canvas: #f4f5f6;
   }
 
   .stApp {
@@ -94,7 +94,7 @@ st.markdown("""
   [data-testid="stCaptionContainer"], .stCaption {color: var(--ink-600);}
 
   [data-testid="stSidebar"] {
-    background: #f7f9fc;
+    background: #f4f5f6;
     border-right: 1px solid var(--line);
   }
   [data-testid="stSidebar"] > div:first-child {padding-top: 1.2rem;}
@@ -105,14 +105,14 @@ st.markdown("""
     padding: 0.38rem;
     margin: 0.95rem 0 0.85rem;
     border-radius: 0.9rem;
-    background: #eaf0f7;
-    border: 1px solid #dce6f0;
+    background: #f4f5f6;
+    border: 1px solid #d5d9de;
   }
   [data-testid="stTabs"] button[data-baseweb="tab"] {
     height: 2.85rem;
     padding: 0 1.25rem;
     border-radius: 0.68rem;
-    color: #53657a;
+    color: #52606d;
     font-weight: 650;
   }
   [data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {
@@ -126,10 +126,10 @@ st.markdown("""
   .boundary {
     margin: 0.35rem 0 1.15rem;
     padding: 1rem 1.15rem;
-    color: #24415f;
-    background: #f5f9ff;
-    border: 1px solid #cfe3f7;
-    border-left: 0.32rem solid var(--brand-600);
+    color: #303841;
+    background: #ffffff;
+    border: 1px solid #cbd2d8;
+    border-left: 0.32rem solid #303841;
     border-radius: 0.85rem;
     box-shadow: none;
   }
@@ -154,6 +154,18 @@ st.markdown("""
     box-shadow: none;
   }
   [data-testid="stExpander"] summary {min-height: 3rem; color: #2a415a; font-weight: 640;}
+  [data-testid="stAlert"],
+  [data-testid="stAlert"] [data-baseweb="notification"],
+  [data-testid^="stAlertContent"],
+  [role="alert"] {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+  }
+  [data-testid="stAlert"] *, [role="alert"] * {
+    background-color: transparent !important;
+    background-image: none !important;
+  }
   [data-testid="stAlert"] {border-radius: 0.6rem; border-width: 1px; box-shadow: none;}
 
   [data-testid="stTextArea"] textarea,
@@ -168,7 +180,7 @@ st.markdown("""
   [data-testid="stTextInput"] input:focus,
   [data-baseweb="select"] > div:focus-within {
     border-color: var(--brand-600) !important;
-    box-shadow: 0 0 0 0.18rem rgba(36, 117, 199, 0.12) !important;
+    box-shadow: 0 0 0 0.18rem rgba(23, 27, 32, 0.12) !important;
   }
 
   [data-testid="stRadio"] > div {gap: 0.5rem;}
@@ -177,13 +189,13 @@ st.markdown("""
   .stButton > button, .stDownloadButton > button {
     min-height: 2.65rem;
     border-radius: 0.7rem;
-    border-color: #c7d6e6;
+    border-color: #cbd2d8;
     font-weight: 680;
     box-shadow: none;
     transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
   }
   .stButton > button:hover, .stDownloadButton > button:hover {
-    border-color: var(--brand-600);
+    border-color: #687581;
     transform: none;
     box-shadow: none;
   }
@@ -197,7 +209,7 @@ st.markdown("""
   [data-testid="stMarkdownContainer"] p,
   [data-testid="stMarkdownContainer"] li {line-height: 1.72;}
   hr {margin: 1.45rem 0 !important; border-color: #e1e8f0 !important;}
-  code {color: #275a8d; background: #edf4fb; border-radius: 0.35rem;}
+  code {color: #303841; background: #f4f5f6; border-radius: 0.35rem;}
 
   .status-grid {
     display: grid;
@@ -233,7 +245,7 @@ st.markdown("""
   .review-path span {
     flex: 1 1 9rem;
     padding: 0.45rem 0.6rem;
-    border-left: 0.18rem solid var(--brand-600);
+    border-left: 0.18rem solid #687581;
     color: var(--brand-950);
     font-weight: 620;
   }
@@ -244,8 +256,8 @@ st.markdown("""
     background: #ffffff;
     border-color: var(--line);
   }
-  .st-key-rag_module [data-testid="stVerticalBlockBorderWrapper"] {border-top: 0.24rem solid #2475c7;}
-  .st-key-agent_module [data-testid="stVerticalBlockBorderWrapper"] {border-top: 0.24rem solid #496d91;}
+  .st-key-rag_module [data-testid="stVerticalBlockBorderWrapper"] {border-top: 0.24rem solid #687581;}
+  .st-key-agent_module [data-testid="stVerticalBlockBorderWrapper"] {border-top: 0.24rem solid #687581;}
   .st-key-rag_module h4, .st-key-agent_module h4 {margin-top: 0.15rem !important;}
   .product-flow {
     display: grid;
@@ -255,12 +267,12 @@ st.markdown("""
     margin: 0.45rem 0 1.2rem;
     border: 1px solid var(--line);
     border-radius: 0.85rem;
-    background: #eef4fa;
+    background: #f4f5f6;
   }
   .product-flow span {
     position: relative;
     padding: 0.45rem 1.2rem 0.45rem 0.55rem;
-    color: #24415f;
+    color: #303841;
     font-size: 0.91rem;
     font-weight: 600;
   }
@@ -268,11 +280,11 @@ st.markdown("""
     content: "→";
     position: absolute;
     right: 0.05rem;
-    color: #3c79b2;
+    color: #52606d;
   }
   .stButton > button:focus-visible,
   .stDownloadButton > button:focus-visible {
-    outline: 2px solid var(--brand-600);
+    outline: 2px solid #687581;
     outline-offset: 2px;
   }
   @media (prefers-reduced-motion: reduce) {
@@ -654,9 +666,12 @@ with rag_tab:
             st.info("当前环境暂未启用生成式回答，你仍可以使用证据检索查看引用依据。")
         budget_exhausted = config.is_public_demo and budget.remaining == 0
         if config.is_public_demo and config.online_generation_allowed:
-            st.caption(f"本次会话剩余生成次数：{budget.remaining}")
-            if budget_exhausted:
-                st.warning("本次会话的生成次数已用完，仍可继续检索引用依据。")
+            if budget.remaining is None:
+                st.caption("应用未设置固定生成次数上限；模型服务商的限流与计费规则仍适用。")
+            else:
+                st.caption(f"本次会话剩余生成次数：{budget.remaining}")
+                if budget_exhausted:
+                    st.warning("本次会话的生成次数已用完，仍可继续检索引用依据。")
         if st.button(
             "生成有引用的回答", type="primary",
             disabled=not bool(rag_health) or not config.online_generation_allowed or not scope_valid or budget_exhausted,

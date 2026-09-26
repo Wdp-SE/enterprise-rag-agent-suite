@@ -259,9 +259,9 @@ def create_app(
         app.state.engineering_candidate_service = configured_candidate_service
         app.state.public_query_budget = None
         if os.environ.get("APP_ENV", "local").strip().casefold() == "public_demo":
-            app.state.public_query_budget = PublicQueryBudget(
-                int(os.environ.get("MAX_LLM_CALLS_PER_SESSION", "3"))
-            )
+            call_limit = os.environ.get("MAX_LLM_CALLS_PER_SESSION", "").strip()
+            if call_limit and call_limit.casefold() not in {"none", "unlimited", "off"}:
+                app.state.public_query_budget = PublicQueryBudget(int(call_limit))
         try:
             yield
         finally:

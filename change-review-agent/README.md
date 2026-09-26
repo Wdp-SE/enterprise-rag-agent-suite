@@ -1,8 +1,12 @@
-# 基于 RAG 的企业研发文档起草与审核工作流 Agent
+# 研发资料变更审查 Agent 与证据约束工作流
 
-> Evidence-driven Document Workflow Agent
+> Evidence-grounded change review and document workflow
 
-本项目只解决一个业务问题：用户选择项目、文档和版本范围，上传结构化
+本目录包含公开工作台使用的 `PublicReviewAgent`，以及可复用的变更审查、文档工作流和人工审核组件。公开审查流程通过 `versioned-rag-service` 获取当前版本官方资料，整理影响候选与修改建议；结果只进入当前会话，由人确认，不写入公共基线或 Apache 上游。
+
+下方“业务流程”说明的是可复用的结构化 Word 文档工作流子系统；它与公开工作台的假设变更审查入口相邻，但不是对外宣称的自动文档发布流程。
+
+该可复用子系统面向一个业务问题：用户选择项目、文档和版本范围，上传结构化
 Word 模板，系统在限定 RAG Scope 内收集 Evidence，生成证据约束草稿，
 经单审核人逐章节审核后输出正式文档。它不是网页研究、知识采集、通用
 聊天或万能办公 Agent。

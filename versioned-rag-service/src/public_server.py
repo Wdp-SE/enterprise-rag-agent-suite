@@ -3,43 +3,21 @@
 from __future__ import annotations
 
 import os
-import re
-import threading
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.answer_generation import StructuredAnswerGenerator
+from src.answer_generation import (
+    StructuredAnswerGenerator,
+    default_generation_model,
+    generation_api_key_env,
+)
 from src.engineering_change import (
     EngineeringImpactService, EngineeringItem, TraceLink, compare_engineering_items,
 )
 from src.public_api import router as public_router
 from src.public_knowledge import PublicKnowledgeIndex
-
-
-class SessionBudget:
-    _VALID = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
-
-    def __init__(self, limit: int, total_limit: int):
-        if limit < 0 or total_limit < 0:
-            raise ValueError("generation limits must be nonnegative")
-        self.limit = limit
-        self.total_limit = total_limit
-        self.total_used = 0
-        self.counts: dict[str, int] = {}
-        self.lock = threading.Lock()
-
-    def consume(self, session_id: str) -> bool:
-        if not self._VALID.fullmatch(session_id or ""):
-            raise ValueError("invalid public session")
-        with self.lock:
-            used = self.counts.get(session_id, 0)
-            if used >= self.limit or self.total_used >= self.total_limit:
-                return False
-            self.counts[session_id] = used + 1
-            self.total_used += 1
-            return True
 
 
 class DiffRequest(BaseModel):
@@ -65,15 +43,18 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None) -> 
         generation_allowed = os.environ.get(
             "RD_V2_ALLOW_EXTERNAL_GENERATION", "false"
         ).strip().casefold() in ("1", "true", "yes", "on")
-        api_key_configured = bool(os.environ.get("DASHSCOPE_API_KEY", "").strip())
+        generation_provider = os.environ.get(
+            "RD_V2_GENERATION_PROVIDER", "dashscope"
+        ).strip().casefold()
+        api_key_env = generation_api_key_env(generation_provider)
+        api_key_configured = bool(os.environ.get(api_key_env, "").strip())
         if app.state.public_generator is None and generation_allowed and api_key_configured:
             app.state.public_generator = StructuredAnswerGenerator(
-                provider=os.environ.get("RD_V2_GENERATION_PROVIDER", "dashscope"),
-                model=os.environ.get("RD_V2_GENERATION_MODEL", "qwen-turbo"),
-            )
-        app.state.public_query_budget = SessionBudget(
-            int(os.environ.get("MAX_LLM_CALLS_PER_SESSION", "3")),
-            int(os.environ.get("MAX_LLM_CALLS_PER_PROCESS", "30")),
+                provider=generation_provider,
+                model=os.environ.get(
+                    "RD_V2_GENERATION_MODEL",
+                    default_generation_model(generation_provider),
+                ),
         )
         yield
 

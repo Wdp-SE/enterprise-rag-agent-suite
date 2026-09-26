@@ -18,9 +18,9 @@
 
 ## Render：FastAPI
 
-[render.yaml](../../render.yaml) 已指定 Free Web Service、`RAG-Challenge-2-main` 根目录、Python 3.12.8、`pip install -r requirements-render.txt`、`uvicorn src.public_server:app --host 0.0.0.0 --port $PORT` 和 `/health`。原有合成 Artifact 与旧 FastAPI 入口只保留在仓库内供回归夹具使用；公网服务仅从仓库内 `public_corpus/` 加载 **52 份官方资料、659 个片段、BM25 策略文件**供 `/public/*` 公开知识端点使用。启动时不抓取网络资料、不运行 OCR、不重建 Embedding/FAISS；不需要 PostgreSQL、Redis、持久磁盘或 Worker。
+[render.yaml](../../render.yaml) 已指定 Free Web Service、`versioned-rag-service` 根目录、Python 3.12.8、`pip install -r requirements-render.txt`、`uvicorn src.public_server:app --host 0.0.0.0 --port $PORT` 和 `/health`。原有合成 Artifact 与旧 FastAPI 入口只保留在仓库内供回归夹具使用；公网服务仅从仓库内 `public_corpus/` 加载 **52 份官方资料、659 个片段、BM25 策略文件**供 `/public/*` 公开知识端点使用。启动时不抓取网络资料、不运行 OCR、不重建 Embedding/FAISS；不需要 PostgreSQL、Redis、持久磁盘或 Worker。
 
-新部署清单使用 `APP_ENV=public_demo`、`RD_V2_ALLOW_EXTERNAL_GENERATION=true` 与每会话预算；当前公开入口不依赖历史合成 Artifact。服务端仅在生成开关开启且 Render 环境已配置 `DASHSCOPE_API_KEY` 时初始化 DashScope/Qwen。缺少密钥时仍可用 `/public/search`、真实文档目录与假设变更审查；`/public/query` 会返回检索证据和 `GENERATION_NOT_CONFIGURED`，不会伪造答案或因缺少密钥导致服务启动失败。密钥只在 Render 平台的环境变量设置，不得写入代码、日志或文档。服务端会校验 LLM 引用确实来自本次检索，并限制每 Session 与每进程调用次数。当前默认每会话 3 次、每进程 30 次；进程重启后计数重置。匿名 Session ID 不是身份认证，也不能替代 Render/DashScope 平台的费用配额。生成请求超时后客户端不自动重试，以免重复调用模型。
+新部署清单使用 `APP_ENV=public_demo` 与 `RD_V2_ALLOW_EXTERNAL_GENERATION=true`；当前公开入口不依赖历史合成 Artifact。默认服务为 DashScope/Qwen：生成开关开启且 Render 配置 `DASHSCOPE_API_KEY` 时才初始化。也可选择 DeepSeek：设置 `RD_V2_GENERATION_PROVIDER=deepseek`、`RD_V2_GENERATION_MODEL=deepseek-v4-flash`，并在 Render RAG 后端配置 `DEEPSEEK_API_KEY`。缺少所选服务的密钥时仍可用 `/public/search`、真实文档目录与假设变更审查；`/public/query` 会返回检索证据和 `GENERATION_NOT_CONFIGURED`，不会伪造答案或因缺少密钥导致服务启动失败。密钥只在 Render 平台的环境变量设置，不得写入代码、日志或 Streamlit。服务端会校验模型引用确实来自本次检索。应用未设置固定生成次数；模型服务商自身的限流和计费规则仍适用。匿名 Session ID 不是身份认证，也不能代替平台侧的安全措施。生成请求超时后客户端不自动重试，以免重复调用模型。
 
 部署新版后的只读核验：
 
@@ -45,7 +45,7 @@ Invoke-RestMethod "$base/public/search" -Method Post -ContentType 'application/j
 | Python | 本文不指定；以 Streamlit Community Cloud 当前应用配置和平台选项为准 |
 | Dependency file | `demo-ui/requirements.txt` |
 
-按 [Secrets 示例](../../demo-ui/.streamlit/secrets.toml.example)设置 `APP_ENV="public_demo"`、`DEMO_LEGACY_FIXTURES=false`、`RAG_API_BASE_URL="https://version-aware-rag-public-demo.onrender.com"`、超时/重试和 `MAX_LLM_CALLS_PER_SESSION=3`。**不要**把 `DASHSCOPE_API_KEY` 放进 Streamlit：模型调用只由 Render 后端执行。`DEMO_LEGACY_FIXTURES=true` 仅用于历史合成夹具，不应设置在公网 App。
+按 [Secrets 示例](../../demo-ui/.streamlit/secrets.toml.example)设置 `APP_ENV="public_demo"`、`DEMO_LEGACY_FIXTURES=false`、`RAG_API_BASE_URL="https://version-aware-rag-public-demo.onrender.com"` 与超时/重试参数。应用不设固定生成次数；**不要**把模型 API Key 放进 Streamlit：模型调用只由 Render 后端执行。Render 默认使用 DashScope；切换 DeepSeek 时，将 `RD_V2_GENERATION_PROVIDER=deepseek`、`RD_V2_GENERATION_MODEL=deepseek-v4-flash` 与 `DEEPSEEK_API_KEY` 配置在 Render RAG 服务环境中。`DEMO_LEGACY_FIXTURES=true` 仅用于历史合成夹具，不应设置在公网 App。
 
 部署后用真实浏览器验收：首页两个模块和 Apache 来源声明；中文、英文、中英混合检索；历史版本 Scope；配置了模型时的有引用回答；DSIP-107 假设变更的已确认 PR 关系与其他“建议”关系；人工审核；另开 Session 不看到前一会话草案。确认公共资料 Manifest 的哈希不变。
 
@@ -54,16 +54,16 @@ Invoke-RestMethod "$base/public/search" -Method Post -ContentType 'application/j
 按[根目录 Quick Start](../../README.md)装好依赖后执行 `./start_prototype.ps1`，打开 <http://127.0.0.1:8502/>。有密钥时可运行 `./start_prototype.ps1 -EnableGeneration`；无需提供密钥也可完成其余 Smoke。端口占用时指定 `-RagPort` 与 `-UiPort`。原有三个未跟踪 DOCX、用户 runtime 与私有文件不参与新 Clone 启动。
 
 ```powershell
-Push-Location RAG-Challenge-2-main
+Push-Location versioned-rag-service
 & .\.venv\Scripts\python.exe -m pip install 'pytest>=8.3,<9'
 & .\.venv\Scripts\python.exe -m pytest tests -q
 Pop-Location
-Push-Location OpenManus-rag
+Push-Location change-review-agent
 & .\.venv\Scripts\python.exe -m pytest tests -q
 Pop-Location
 Push-Location demo-ui
-& ..\OpenManus-rag\.venv\Scripts\python.exe -m pytest -p no:cacheprovider tests -q
+& ..\change-review-agent\.venv\Scripts\python.exe -m pytest -p no:cacheprovider tests -q
 Pop-Location
 ```
 
-真实检索对照、Ground Truth 和逐条结果在 [evaluation/real_world_retrieval](../../evaluation/real_world_retrieval/)；固定来源、SHA-256、Apache LICENSE/NOTICE 在 [public_corpus](../../RAG-Challenge-2-main/public_corpus/)。最终选型结果与已知限制见[最终检索选型报告](../../evaluation/real_world_retrieval/final_selection/final_selection.md)。本地检索 P50/P95 不包括公网冷启动、HTTP 与 LLM 时间，不代表公网 SLA。
+真实检索对照、Ground Truth 和逐条结果在 [evaluation/real_world_retrieval](../../evaluation/real_world_retrieval/)；固定来源、SHA-256、Apache LICENSE/NOTICE 在 [public_corpus](../../versioned-rag-service/public_corpus/)。最终选型结果与已知限制见[最终检索选型报告](../../evaluation/real_world_retrieval/final_selection/final_selection.md)。本地检索 P50/P95 不包括公网冷启动、HTTP 与 LLM 时间，不代表公网 SLA。

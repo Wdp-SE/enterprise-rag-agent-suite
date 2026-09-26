@@ -17,7 +17,7 @@ from offline import OfflineIndex
 HERE = Path(__file__).resolve().parent
 EVALUATION = HERE.parent
 REPOSITORY = HERE.parents[2]
-CORPUS = REPOSITORY / "RAG-Challenge-2-main" / "public_corpus"
+CORPUS = REPOSITORY / "versioned-rag-service" / "public_corpus"
 RESULTS = HERE / "results.json"
 SPLIT = HERE / "frozen_split.json"
 LOCK = HERE / "selection_lock.json"

@@ -14,7 +14,7 @@ from pathlib import Path
 import requests
 
 
-ROOT = Path(__file__).resolve().parents[2] / "RAG-Challenge-2-main" / "public_corpus"
+ROOT = Path(__file__).resolve().parents[2] / "versioned-rag-service" / "public_corpus"
 REPOSITORY = "apache/dolphinscheduler"
 COMMITS = {
     "3.4.2": "71eb6412f940afa1f171f1097dc0e99ed61d16e2",

@@ -19,7 +19,7 @@ from benchmark_utils import read_json, reduction_percent, stats, utc_now, write_
 SCRIPT_DIR = Path(__file__).resolve().parent
 BENCHMARK_ROOT = SCRIPT_DIR.parent
 WORKSPACE = BENCHMARK_ROOT.parents[1]
-RAG_ROOT = WORKSPACE / "RAG-Challenge-2-main"
+RAG_ROOT = WORKSPACE / "versioned-rag-service"
 RUNTIME_ROOT = BENCHMARK_ROOT / "runtime" / "rag_incremental"
 OUTPUT = BENCHMARK_ROOT / "rag_incremental_benchmark.json"
 MEASURED_RUNS = 5

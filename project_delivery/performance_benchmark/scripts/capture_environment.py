@@ -18,8 +18,8 @@ from benchmark_utils import read_json, utc_now, write_json
 SCRIPT_DIR = Path(__file__).resolve().parent
 BENCHMARK_ROOT = SCRIPT_DIR.parent
 WORKSPACE = BENCHMARK_ROOT.parents[1]
-RAG_ROOT = WORKSPACE / "RAG-Challenge-2-main"
-AGENT_ROOT = WORKSPACE / "OpenManus-rag"
+RAG_ROOT = WORKSPACE / "versioned-rag-service"
+AGENT_ROOT = WORKSPACE / "change-review-agent"
 
 
 def package_version(name: str) -> str | None:

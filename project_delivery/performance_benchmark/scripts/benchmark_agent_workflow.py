@@ -16,7 +16,7 @@ from benchmark_utils import read_json, reduction_percent, stats, utc_now, write_
 SCRIPT_DIR = Path(__file__).resolve().parent
 BENCHMARK_ROOT = SCRIPT_DIR.parent
 WORKSPACE = BENCHMARK_ROOT.parents[1]
-AGENT_ROOT = WORKSPACE / "OpenManus-rag"
+AGENT_ROOT = WORKSPACE / "change-review-agent"
 RUNTIME_ROOT = BENCHMARK_ROOT / "runtime" / "agent"
 FRESH_OUTPUT = BENCHMARK_ROOT / "agent_fresh_run_benchmark.json"
 RESUME_OUTPUT = BENCHMARK_ROOT / "agent_resume_benchmark.json"

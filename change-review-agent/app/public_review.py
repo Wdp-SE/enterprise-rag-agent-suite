@@ -16,6 +16,7 @@ class PublicKnowledgeGateway(Protocol):
     def workspace(self) -> dict: ...
     def document(self, document_id: str) -> list[dict]: ...
     def search(self, question: str, *, version: str, language: str, top_k: int = 5) -> dict: ...
+    def review_advice(self, change_summary: str, evidence_chunk_ids: list[str]) -> dict: ...
     def engineering_diff(self, old_items: list[dict], new_items: list[dict]) -> dict: ...
     def engineering_impacts(self, payload: dict) -> dict: ...
 
@@ -76,6 +77,70 @@ class PublicReviewAgent:
     def __init__(self, gateway: PublicKnowledgeGateway):
         self.gateway = gateway
 
+    def analyze_request(self, change_summary: str) -> dict:
+        """Find current-version candidates from a natural-language change request."""
+        summary = change_summary.strip()
+        if not summary or len(summary) > 4000:
+            raise ValueError("变更描述应为 1 到 4000 字")
+
+        current_version = self.gateway.workspace()["current_version"]
+        search_result = self.gateway.search(
+            summary, version=current_version, language="zh_preferred", top_k=5,
+        )
+        retrieved = search_result.get("results", [])
+        candidates = [
+            row for row in retrieved
+            if row.get("version") == current_version
+            and row.get("source_url", "").startswith("https://github.com/apache/dolphinscheduler/")
+            and row.get("chunk_id")
+        ]
+        base_advice = {"status": "NO_EVIDENCE", "answer": "N/A", "sources": []}
+        if not candidates:
+            return {
+                "request_mode": "natural_language",
+                "request_summary": summary,
+                "retrieval_policy": search_result.get("retrieval_policy", "bm25"),
+                "retrieved_results": [],
+                "impacts": [],
+                "review_advice": base_advice,
+                "sandbox_only": True,
+                "public_baseline_written": False,
+            }
+
+        try:
+            advice = self.gateway.review_advice(
+                summary, [row["chunk_id"] for row in candidates]
+            )
+        except Exception:
+            # Model assistance is optional; the underlying RAG candidates remain visible.
+            advice = {"status": "GENERATION_PROVIDER_UNAVAILABLE", "answer": "N/A", "sources": []}
+        allowed = {row["chunk_id"]: row for row in candidates}
+        cited = [
+            allowed[row["chunk_id"]]
+            for row in advice.get("sources", [])
+            if row.get("chunk_id") in allowed
+        ]
+        if advice.get("status") == "OK" and not cited:
+            advice = {**advice, "status": "ABSTAINED", "answer": "N/A", "sources": []}
+        else:
+            advice = {**advice, "sources": cited}
+
+        return {
+            "request_mode": "natural_language",
+            "request_summary": summary,
+            "retrieval_policy": search_result.get("retrieval_policy", "bm25"),
+            "retrieved_results": candidates,
+            "impacts": [{
+                "status": "SUGGESTED",
+                "relation": "suggested",
+                "reason": "模型依据此官方片段建议进一步核对；检索相关性不代表已确认实际影响。",
+                "evidence": row,
+            } for row in cited],
+            "review_advice": advice,
+            "sandbox_only": True,
+            "public_baseline_written": False,
+        }
+
     def analyze(self, selected: dict, proposed_text: str) -> dict:
         current_version = self.gateway.workspace()["current_version"]
         if selected.get("version") != current_version:
@@ -114,6 +179,29 @@ class PublicReviewAgent:
             "evidence_by_item": {row["chunk_id"]: [row["chunk_id"]] for row in related},
         })["impacts"]
         by_id = {row["chunk_id"]: row for row in related}
+        review_advice = {"status": "NO_EVIDENCE", "answer": "N/A", "sources": []}
+        if related:
+            change_summary = (
+                f"资料章节：{selected['heading']}\n变更类型：{change['change_type']}\n"
+                f"原文：{selected['content'][:1400]}\n"
+                f"拟议内容：{proposed[:1400]}"
+            )
+            try:
+                review_advice = self.gateway.review_advice(
+                    change_summary, [row["chunk_id"] for row in related]
+                )
+            except Exception:
+                # Optional model advice must never block the deterministic review flow.
+                review_advice = {"status": "GENERATION_PROVIDER_UNAVAILABLE", "answer": "N/A", "sources": []}
+            allowed_ids = {row["chunk_id"] for row in related}
+            cited_sources = [
+                row for row in review_advice.get("sources", [])
+                if row.get("chunk_id") in allowed_ids
+            ]
+            if review_advice.get("status") == "OK" and not cited_sources:
+                review_advice = {"status": "ABSTAINED", "answer": "N/A", "sources": []}
+            else:
+                review_advice = {**review_advice, "sources": cited_sources}
         return {
             "change": change,
             "selected_source": selected,
@@ -129,6 +217,7 @@ class PublicReviewAgent:
                 "before": selected["content"], "proposed_after": proposed,
                 "status": "REQUIRES_HUMAN_REVIEW",
             },
+            "review_advice": review_advice,
             "sandbox_only": True,
             "public_baseline_written": False,
         }

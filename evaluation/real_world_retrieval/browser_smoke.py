@@ -15,7 +15,7 @@ from playwright.sync_api import sync_playwright
 
 
 REPO = Path(__file__).resolve().parents[2]
-ASSETS = REPO / "RAG-Challenge-2-main" / "public_corpus"
+ASSETS = REPO / "versioned-rag-service" / "public_corpus"
 OUT = Path(os.environ.get("PUBLIC_SMOKE_OUT", REPO / "project_delivery" / "real_public_release"))
 URL = "http://127.0.0.1:8505/"
 

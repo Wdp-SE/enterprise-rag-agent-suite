@@ -1,16 +1,16 @@
-# Apache DolphinScheduler 公开研发知识服务
+# Apache DolphinScheduler 版本化研发知识 RAG 服务
 
 公网 Demo 使用本目录新增的 `src.public_server:app` 入口和固定的 Apache DolphinScheduler 3.4.2 / 3.4.3 官方资料快照，默认采用真实查询集评测选出的 BM25 检索策略。来源、许可证与评测见仓库根目录 [README](../README.md)、[语料清单](public_corpus/corpus_manifest.json)和 [检索报告](../evaluation/real_world_retrieval/retrieval_policy_report.md)。
 
-下文记录的是保留的原有企业合成资料 Runtime 和测试路径；其 `DENSE_ONLY + SECTION_PATH` 规则不等同于当前公网入口的检索策略。
+本服务由仓库根目录的 `render.yaml` 部署；对外职责是版本化资料检索、引用溯源和可选的引用约束生成。下文关于 `DENSE_ONLY + SECTION_PATH` 的说明属于保留的历史企业合成资料 Runtime 与测试路径，不等同于当前公开语料使用的 BM25 策略。
 
 ---
 
-# 企业研发文档知识服务
+## 历史合成资料 Runtime（回归测试用）
 
 本项目为企业研发文档提供可审计的知识检索与可信问答能力。业务边界固定为研发文档，不包含竞赛问答、候选知识包或其他旁路工作流。
 
-## 正式检索策略
+### 历史检索策略（不用于当前公开服务）
 
 唯一正式检索策略为 DENSE_ONLY + SECTION_PATH：
 
@@ -20,7 +20,7 @@
 - 检索范围可按 project_id、document_type、document_id、version_id 过滤。
 - 运行时拒绝启用了 BM25、混合融合或重排器的资产策略。
 
-## 正式能力
+### 历史 Runtime 保留能力
 
 - ingestion：接收规范化 SectionSnapshot 与经审计的预计算向量。
 - document lifecycle：维护文档、版本、章节和活动索引。
@@ -32,9 +32,9 @@
 - citation：引用仅允许使用本次证据中的 document_id 与 page_number。
 - artifact validation：启动前校验状态、哈希、数量、维度和归一化。
 
-## 公开合成 Demo 安装与启动
+### 历史合成 Runtime 本地验证
 
-新克隆仓库在本目录使用 Python 3.12；公开路径加载已跟踪的轻量资产，不需要 `data/rd_v2_corpus/` 内的本机资料或真实 API Key：
+以下命令仅用于历史合成 Runtime 的本地回归验证，不是当前公网服务的部署步骤。项目 Python 版本说明见根目录 [README](../README.md)：本地 clean-clone 已在 Python 3.11 验证，Render 配置为 Python 3.12.8。此历史路径加载已跟踪的轻量资产，不需要 `data/rd_v2_corpus/` 内的本机资料或真实 API Key：
 
 ```powershell
 py -3.12 -m venv .venv

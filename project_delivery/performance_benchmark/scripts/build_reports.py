@@ -56,7 +56,7 @@ def main() -> int:
         "notes": [
             "RAG latency used loopback HTTP and the frozen local embedding snapshot.",
             "Incremental and Agent comparisons used synthetic fixtures.",
-            "Agent pytest was scoped to OpenManus-rag/tests so protected workspace dependency caches were not collected as project tests.",
+            "Agent pytest was scoped to change-review-agent/tests so protected workspace dependency caches were not collected as project tests.",
         ],
     }
     subprocess.run(["git", "diff", "--check"], cwd=WORKSPACE, check=True)

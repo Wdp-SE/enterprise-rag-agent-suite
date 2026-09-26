@@ -73,7 +73,7 @@ Microsoft Word opened the UI-produced DOCX and exported it to a one-page PDF. Vi
 
 ## Core integrity and data boundary
 
-No file under `OpenManus-rag/app/document_workflow` or `RAG-Challenge-2-main/src` was changed on the UI sprint date. All source additions are under `demo-ui/`. Runtime execution writes only under `demo-ui/runtime/`, which `.gitignore` excludes. No Agent facade was added to the frozen project because its public Python runner was sufficient.
+No file under `change-review-agent/app/document_workflow` or `versioned-rag-service/src` was changed on the UI sprint date. All source additions are under `demo-ui/`. Runtime execution writes only under `demo-ui/runtime/`, which `.gitignore` excludes. No Agent facade was added to the frozen project because its public Python runner was sufficient.
 
 The smoke used the retained synthetic/public artifact and template. External RAG generation was disabled, so no internal or demo text was sent to an online LLM. The UI can disable `/query` for any classification other than Synthetic, Public, Synthetic / Public, or Approved Redacted.
 

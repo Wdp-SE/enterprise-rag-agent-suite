@@ -18,7 +18,7 @@ from typing import Mapping, Optional, Protocol, Sequence
 
 import numpy as np
 
-from src.answer_generation import StructuredAnswerGenerator
+from src.answer_generation import StructuredAnswerGenerator, default_generation_model
 from src.artifact_lifecycle import sha256_file
 from src.document_lifecycle import DocumentCatalog, RetrievalScope
 from src.native_runtime import NativeRuntimePolicy, validate_embedding_batch
@@ -113,6 +113,9 @@ class RDV2Settings:
         catalog_value = Path(raw_catalog) if raw_catalog else None
         if catalog_value is not None and not catalog_value.is_absolute():
             catalog_value = root / catalog_value
+        generation_provider = os.environ.get(
+            "RD_V2_GENERATION_PROVIDER", "dashscope"
+        ).strip().casefold()
         return cls(
             project_root=root,
             artifact_root=artifact_root,
@@ -124,8 +127,11 @@ class RDV2Settings:
             torch_threads=int(os.environ.get("RD_V2_TORCH_THREADS", "1")),
             mkldnn_enabled=_env_bool("RD_V2_MKLDNN_ENABLED", False),
             embedding_snapshot=(snapshot_value.resolve() if snapshot_value else None),
-            generation_provider=os.environ.get("RD_V2_GENERATION_PROVIDER", "dashscope"),
-            generation_model=os.environ.get("RD_V2_GENERATION_MODEL", "qwen-turbo"),
+            generation_provider=generation_provider,
+            generation_model=os.environ.get(
+                "RD_V2_GENERATION_MODEL",
+                default_generation_model(generation_provider),
+            ),
             allow_external_generation=_env_bool(
                 "RD_V2_ALLOW_EXTERNAL_GENERATION", False
             ),

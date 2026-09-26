@@ -10,7 +10,7 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-RAG = ROOT.parents[1] / "RAG-Challenge-2-main"
+RAG = ROOT.parents[1] / "versioned-rag-service"
 sys.path.insert(0, str(RAG))
 from src.public_knowledge import PublicKnowledgeIndex  # noqa: E402
 

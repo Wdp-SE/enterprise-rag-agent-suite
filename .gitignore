@@ -65,3 +65,36 @@ RAG-Challenge-2-main/data/test_set/pdf_reports/
 
 # Local publishing tools
 .tools/
+
+# Renamed public service directories. Keep the legacy patterns above so
+# machine-local data left under the previous folder names remains protected.
+change-review-agent/workspace/
+versioned-rag-service/开发过程资料/
+versioned-rag-service/data/rd_v2_corpus/
+versioned-rag-service/reports/rd_v2_real_corpus/
+versioned-rag-service/reports/rd_v2_structure_diagnostics/
+versioned-rag-service/reports/rd_v2_section_repair/
+versioned-rag-service/reports/rd_v2_real_retrieval_validation/
+versioned-rag-service/reports/rd_v2_dense_failure_analysis/
+versioned-rag-service/reports/rd_v2_embedding_enrichment/
+versioned-rag-service/reports/rd_v2_hybrid_ablation/
+versioned-rag-service/reports/rd_v2_bm25_failure_analysis/
+versioned-rag-service/reports/rd_v2_bm25_tokenizer_experiment/
+versioned-rag-service/reports/rd_v2_final_retrieval_validation/
+versioned-rag-service/reports/rd_v2_engineering_hardening/
+versioned-rag-service/artifacts/baseline_runtime/runtime_dataset/
+versioned-rag-service/data/domain_corpus/databases/
+versioned-rag-service/data/domain_corpus/embedding_batches/
+versioned-rag-service/data/domain_corpus_v0_2/databases/
+versioned-rag-service/data/domain_corpus_v0_2/embedding_batches/
+versioned-rag-service/data/domain_corpus_v0_2/ocr_cache/
+versioned-rag-service/data/domain_corpus_v0_2/offline_reassembly/
+versioned-rag-service/data/domain_corpus/debug_data/
+versioned-rag-service/data/domain_corpus/ingestion_inputs/
+versioned-rag-service/data/domain_corpus/source_pdfs/
+versioned-rag-service/data/domain_corpus_v0_2/debug_data/
+versioned-rag-service/data/domain_corpus_v0_2/historical_retrieval_assets/
+versioned-rag-service/data/domain_corpus_v0_2/source_pdfs/
+versioned-rag-service/data/test_set/databases.zip
+versioned-rag-service/data/test_set/debug_data.zip
+versioned-rag-service/data/test_set/pdf_reports/

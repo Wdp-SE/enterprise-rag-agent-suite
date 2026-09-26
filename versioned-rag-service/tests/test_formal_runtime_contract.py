@@ -3,7 +3,11 @@ from __future__ import annotations
 import pytest
 
 from main import build_parser
-from src.answer_generation import StructuredAnswerGenerator
+from src.answer_generation import (
+    StructuredAnswerGenerator,
+    default_generation_model,
+    generation_api_key_env,
+)
 from src.context_expansion import SectionContextExpander
 from src.rd_v2_runtime import (
     FINAL_DENSE_REPRESENTATION,
@@ -38,6 +42,87 @@ def test_structured_answer_schema_is_strict() -> None:
                 "confidence": 0.9,
             }
         )
+
+
+def test_deepseek_generator_uses_its_key_and_non_thinking_json_mode(monkeypatch) -> None:
+    import json
+    import urllib.request
+
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-secret-value")
+    captured = {}
+
+    class Response:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self):
+            return json.dumps({
+                "choices": [{
+                    "message": {
+                        "content": json.dumps({
+                            "final_answer": "由检索证据支持的回答。",
+                            "relevant_sources": [
+                                {"document_id": "chunk-1", "page_number": 2}
+                            ],
+                        }, ensure_ascii=False)
+                    }
+                }]
+            }).encode("utf-8")
+
+    def fake_urlopen(request, timeout):
+        captured["url"] = request.full_url
+        captured["authorization_present"] = bool(
+            request.get_header("Authorization")
+        )
+        captured["body"] = json.loads(request.data.decode("utf-8"))
+        captured["timeout"] = timeout
+        return Response()
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    generator = StructuredAnswerGenerator(
+        provider="deepseek", model="deepseek-v4-flash"
+    )
+    result = generator.generate(question="问题", context="chunk-1: 内容")
+
+    assert result["final_answer"] == "由检索证据支持的回答。"
+    assert captured["url"] == "https://api.deepseek.com/chat/completions"
+    assert captured["authorization_present"] is True
+    assert captured["body"]["thinking"] == {"type": "disabled"}
+    assert captured["body"]["response_format"] == {"type": "json_object"}
+    assert captured["body"]["max_tokens"] >= 256
+    assert "test-secret-value" not in json.dumps(captured["body"])
+    assert captured["timeout"] > 0
+
+
+def test_deepseek_network_failure_is_identified_without_exposing_request_details(monkeypatch) -> None:
+    import urllib.error
+    import urllib.request
+
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-secret-value")
+
+    def unreachable(_request, timeout):
+        raise urllib.error.URLError(ConnectionRefusedError("proxy unavailable"))
+
+    monkeypatch.setattr(urllib.request, "urlopen", unreachable)
+    generator = StructuredAnswerGenerator(
+        provider="deepseek", model="deepseek-v4-flash"
+    )
+
+    with pytest.raises(ConnectionError, match="generation provider is unreachable") as exc:
+        generator.generate(question="问题", context="chunk-1: 内容")
+    assert "test-secret-value" not in str(exc.value)
+
+
+def test_generation_provider_configuration_selects_matching_secret_and_model() -> None:
+    assert generation_api_key_env("deepseek") == "DEEPSEEK_API_KEY"
+    assert default_generation_model("deepseek") == "deepseek-v4-flash"
+    assert generation_api_key_env("dashscope") == "DASHSCOPE_API_KEY"
+    assert default_generation_model("dashscope") == "qwen-turbo"
 
 
 def test_context_expansion_stays_inside_document_version_section() -> None:

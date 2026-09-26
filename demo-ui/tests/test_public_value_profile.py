@@ -40,6 +40,21 @@ def test_llm_budget_fails_closed_without_fake_result() -> None:
     assert budget.remaining == 0
 
 
+def test_llm_session_guard_is_unbounded_when_no_limit_is_configured() -> None:
+    budget = LLMSessionBudget()
+    assert budget.remaining is None
+    assert all(budget.reserve() for _ in range(100))
+    assert budget.used == 100
+    assert budget.remaining is None
+
+
+def test_public_profile_defaults_to_no_fixed_generation_limit(monkeypatch) -> None:
+    monkeypatch.delenv("MAX_LLM_CALLS_PER_SESSION", raising=False)
+
+    from config import _optional_call_limit
+    assert _optional_call_limit() is None
+
+
 def test_public_query_requires_explicit_enablement_for_synthetic_data() -> None:
     disabled = DemoConfig(app_env="public_demo", allow_rag_query=False)
     enabled = DemoConfig(app_env="public_demo", allow_rag_query=True)

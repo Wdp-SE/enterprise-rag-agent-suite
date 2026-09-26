@@ -15,7 +15,7 @@ import numpy as np
 
 
 REPOSITORY = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(REPOSITORY / "RAG-Challenge-2-main"))
+sys.path.insert(0, str(REPOSITORY / "versioned-rag-service"))
 from src.public_knowledge import tokens  # noqa: E402
 
 

@@ -13,7 +13,7 @@ from evaluation.real_world_retrieval.final_selection.chunks import (
 )
 
 
-PUBLIC_CORPUS = Path(__file__).resolve().parents[3] / "RAG-Challenge-2-main" / "public_corpus"
+PUBLIC_CORPUS = Path(__file__).resolve().parents[3] / "versioned-rag-service" / "public_corpus"
 
 
 def _toy_corpus(root: Path, body: str) -> Path:

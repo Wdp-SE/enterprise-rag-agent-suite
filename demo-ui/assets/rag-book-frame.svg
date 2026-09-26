@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" preserveAspectRatio="none" fill="none" stroke="#171717" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="展开书页形状的知识检索模块边框">
+  <path d="M24 27C119 15 218 18 320 36c102-18 201-21 296-9v368c-101-9-200-4-296 19-96-23-195-28-296-19V27Z"/>
+  <path d="m24 27-11 13v361c103-10 205-5 307 12 102-17 204-22 307-12V40l-11-13" stroke-width="2"/>
+  <path d="M320 381v32" stroke-width="2.5"/>
+  <circle cx="554" cy="93" r="29" stroke-width="2.8"/>
+  <path d="m575 114 36 35" stroke-width="3.2"/>
+</svg>

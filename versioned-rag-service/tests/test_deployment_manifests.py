@@ -8,11 +8,11 @@ ROOT = Path(__file__).parents[2]
 
 def test_deployment_manifests_use_public_profile_and_lightweight_dependencies() -> None:
     render = (ROOT / "render.yaml").read_text(encoding="utf-8")
-    assert "RAG-Challenge-2-main" in render
+    assert "versioned-rag-service" in render
     assert "uvicorn src.public_server:app --host 0.0.0.0 --port $PORT" in render
     assert "APP_ENV" in render and "public_demo" in render
     requirements = (
-        ROOT / "RAG-Challenge-2-main/requirements-render.txt"
+        ROOT / "versioned-rag-service/requirements-render.txt"
     ).read_text(encoding="utf-8").casefold()
     for forbidden in ("torch", "transformers", "pytest", "notebook"):
         assert forbidden not in requirements
@@ -23,7 +23,7 @@ def test_deployment_manifests_use_public_profile_and_lightweight_dependencies() 
 
 def test_public_smoke_is_read_only_and_example_secrets_are_placeholders() -> None:
     smoke = (
-        ROOT / "RAG-Challenge-2-main/scripts/public_demo_smoke.py"
+        ROOT / "versioned-rag-service/scripts/public_demo_smoke.py"
     ).read_text(encoding="utf-8")
     assert "/health" in smoke
     assert "/retrieve" in smoke

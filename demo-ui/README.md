@@ -1,6 +1,9 @@
-# 公开研发知识工作台（Streamlit）
+# 研发知识版本服务与变更影响审查工作台（Streamlit）
 
-默认入口 [app.py](app.py) 展示 **Apache DolphinScheduler 官方公开资料**：左侧导航按“知识服务”“变更审查”“系统说明”分组，提供总览、可信检索问答、版本与历史、资料与来源、会话审查各步骤、检索评测与已知限制。首页说明来源与非官方身份。知识服务支持 3.4.2 / 3.4.3 固定版本、中文优先/中英双语检索、真实官方原文引用和可核验的资料差异提醒。变更审查使用真实资料段落与已有 Diff/Impact 服务，草案和人工审核状态只留在当前 Streamlit 会话，不写公共基线。
+- [GitHub 源码仓库](https://github.com/Wdp-SE/enterprise-rag-agent-suite)
+- [在线工作台](https://enterprise-rag-agent-suite-bfmkgsimdisxcewgco7ydk.streamlit.app/)
+
+默认入口 [app.py](app.py) 展示 **Apache DolphinScheduler 官方公开资料**：左侧导航按“知识服务”“变更审查”“系统说明”分组，提供总览、可信检索问答、版本与历史、资料与来源、会话审查各步骤、检索评测与已知限制。首页说明来源与非官方身份。知识服务支持 3.4.2 / 3.4.3 固定版本、中文优先/中英双语检索、真实官方原文引用和可核验的资料差异提醒。变更审查 Agent 调用当前版本 RAG 证据，整理待核查影响与修改建议，草案和人工审核状态只留在当前 Streamlit 会话，不写公共基线。
 
 ![本地 V1.0 候选工作台首页截图（非当前公网页面）](../project_delivery/final_engineering_review/home.png)
 
@@ -12,9 +15,9 @@
 .\start_prototype.ps1
 ```
 
-访问 <http://127.0.0.1:8502/>。脚本使用仓库内固定的官方资料和轻量索引，不需要历史 runtime 或私有文件；没有模型密钥仍可检索和审查。允许生成式回答时，先把 `DASHSCOPE_API_KEY` 放到本机**环境变量**，再运行 `./start_prototype.ps1 -EnableGeneration`。不要把实际值写进仓库或日志。
+访问 <http://127.0.0.1:8502/>。脚本使用仓库内固定的官方资料和轻量索引，不需要历史 runtime 或私有文件；没有模型密钥仍可检索和审查。默认生成服务为 DashScope/Qwen，需在本机**环境变量**配置 `DASHSCOPE_API_KEY`。也可使用 DeepSeek：配置 `DEEPSEEK_API_KEY`，并在启动前设置 `RD_V2_GENERATION_PROVIDER=deepseek`（可选设置 `RD_V2_GENERATION_MODEL=deepseek-v4-flash`）。然后运行 `./start_prototype.ps1 -EnableGeneration`。不要把实际值写进仓库或日志。
 
-手动启动时：在 `RAG-Challenge-2-main` 目录运行 `uvicorn src.public_server:app --host 127.0.0.1 --port 8765`，在 `demo-ui` 目录设置 `RAG_API_BASE_URL=http://127.0.0.1:8765` 后运行 `streamlit run app.py --server.port 8502`；使用仓库相应的虚拟环境解释器。
+手动启动时：在 `versioned-rag-service` 目录运行 `uvicorn src.public_server:app --host 127.0.0.1 --port 8765`，在 `demo-ui` 目录设置 `RAG_API_BASE_URL=http://127.0.0.1:8765` 后运行 `streamlit run app.py --server.port 8502`；使用仓库相应的虚拟环境解释器。
 
 ## 操作路径
 
@@ -32,12 +35,12 @@
 
 ## 云端配置
 
-Streamlit Community Cloud 入口仍是 `demo-ui/app.py`；本文不指定其 Python 版本，以当前应用配置和平台选项为准。至少设置 `APP_ENV="public_demo"`、`RAG_API_BASE_URL="<真实 Render URL>"` 与 `MAX_LLM_CALLS_PER_SESSION=3`；完整字段见 [部署指南](../project_delivery/public_value_prototype/free_deployment_guide.md)及[Secrets 示例](.streamlit/secrets.toml.example)。在线生成的 `DASHSCOPE_API_KEY` 只在 Render 环境变量中输入，不放在 Streamlit 前端 Secrets。不要提交 `secrets.toml`。
+Streamlit Community Cloud 入口仍是 `demo-ui/app.py`；本文不指定其 Python 版本，以当前应用配置和平台选项为准。至少设置 `APP_ENV="public_demo"` 与 `RAG_API_BASE_URL="<真实 Render URL>"`；完整字段见 [部署指南](../project_delivery/public_value_prototype/free_deployment_guide.md)及[Secrets 示例](.streamlit/secrets.toml.example)。应用本身不设置固定生成次数；模型服务商的限流和计费规则仍适用。在线生成密钥只配置在 Render RAG 后端：默认 DashScope 使用 `DASHSCOPE_API_KEY`；若改用 DeepSeek，设置 `RD_V2_GENERATION_PROVIDER=deepseek`、`RD_V2_GENERATION_MODEL=deepseek-v4-flash` 和 `DEEPSEEK_API_KEY`。不要把模型密钥放进 Streamlit 前端 Secrets，也不要提交 `secrets.toml`。
 
 ## UI 回归
 
 ```powershell
-& ..\OpenManus-rag\.venv\Scripts\python.exe -m pytest -p no:cacheprovider tests -q
+& ..\change-review-agent\.venv\Scripts\python.exe -m pytest -p no:cacheprovider tests -q
 ```
 
-资料来源和许可证见 [Corpus Manifest](../RAG-Challenge-2-main/public_corpus/corpus_manifest.json)、[LICENSE](../RAG-Challenge-2-main/public_corpus/LICENSE) 与 [NOTICE](../RAG-Challenge-2-main/public_corpus/NOTICE)。
+资料来源和许可证见 [Corpus Manifest](../versioned-rag-service/public_corpus/corpus_manifest.json)、[LICENSE](../versioned-rag-service/public_corpus/LICENSE) 与 [NOTICE](../versioned-rag-service/public_corpus/NOTICE)。

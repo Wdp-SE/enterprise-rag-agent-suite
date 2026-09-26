@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
-CORPUS = ROOT.parents[1] / "RAG-Challenge-2-main" / "public_corpus"
+CORPUS = ROOT.parents[1] / "versioned-rag-service" / "public_corpus"
 
 
 def select() -> dict:

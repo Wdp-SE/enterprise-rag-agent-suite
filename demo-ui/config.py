@@ -12,8 +12,8 @@ from urllib.parse import urlsplit
 
 UI_ROOT = Path(__file__).resolve().parent
 WORKSPACE_ROOT = UI_ROOT.parent
-AGENT_ROOT = WORKSPACE_ROOT / "OpenManus-rag"
-RAG_ROOT = WORKSPACE_ROOT / "RAG-Challenge-2-main"
+AGENT_ROOT = WORKSPACE_ROOT / "change-review-agent"
+RAG_ROOT = WORKSPACE_ROOT / "versioned-rag-service"
 SAFE_TEMPLATE = AGENT_ROOT / "project_delivery/document_workflow_business_refactor/demo/requirement_change_impact_template.docx"
 SAFE_ARTIFACT = RAG_ROOT / "data/rd_v2_corpus/retrieval_artifacts/rd-v2-retrieval-final-v1.0-safe-integration"
 NORMALIZATION_MANIFEST = RAG_ROOT / "data/rd_v2_corpus/manifest/normalization_manifest.json"
@@ -35,7 +35,7 @@ class DemoConfig:
     allow_rag_query: bool = False
     app_env: str = "local"
     rag_retry_limit: int = 0
-    max_llm_calls_per_session: int = 3
+    max_llm_calls_per_session: int | None = None
     session_id: str | None = None
     demo_case_id: str = "case-a"
 
@@ -53,7 +53,7 @@ class DemoConfig:
             in {"1", "true", "yes", "on"},
             app_env=os.environ.get("APP_ENV", "local").strip().casefold(),
             rag_retry_limit=int(os.environ.get("RAG_RETRY_LIMIT", "1")),
-            max_llm_calls_per_session=int(os.environ.get("MAX_LLM_CALLS_PER_SESSION", "3")),
+            max_llm_calls_per_session=_optional_call_limit(),
         ).validate()
 
     def validate(self) -> "DemoConfig":
@@ -66,7 +66,7 @@ class DemoConfig:
             raise ValueError("APP_ENV must be local or public_demo")
         if self.rag_retry_limit < 0 or self.rag_retry_limit > 3:
             raise ValueError("RAG_RETRY_LIMIT must be between 0 and 3")
-        if self.max_llm_calls_per_session < 0:
+        if self.max_llm_calls_per_session is not None and self.max_llm_calls_per_session < 0:
             raise ValueError("MAX_LLM_CALLS_PER_SESSION must not be negative")
         if self.session_id is not None and not _SAFE_ID.fullmatch(self.session_id):
             raise ValueError("session_id contains unsafe characters")
@@ -100,6 +100,13 @@ class DemoConfig:
         return self.allow_rag_query or self.demo_data_classification.casefold() in {
             "synthetic", "public", "synthetic / public", "approved redacted"
         }
+
+
+def _optional_call_limit() -> int | None:
+    value = os.environ.get("MAX_LLM_CALLS_PER_SESSION", "").strip()
+    if not value or value.casefold() in {"none", "unlimited", "off"}:
+        return None
+    return int(value)
 
 
 def example_questions(limit: int = 5) -> list[str]:

@@ -130,6 +130,26 @@ def test_public_generation_timeout_is_never_retried():
     assert len(session.calls) == 1
 
 
+def test_review_advice_posts_selected_evidence_once_without_retry():
+    session = Session([Response({"status": "OK", "answer": "advice", "sources": []})])
+    client = PublicKnowledgeClient(
+        "http://localhost:8769", session=session, retry_limit=3, session_id="session_12345678",
+    )
+
+    result = client.review_advice("change summary", ["chunk-a", "chunk-b"])
+
+    assert result["status"] == "OK"
+    assert len(session.calls) == 1
+    method, url, _, kwargs = session.calls[0]
+    assert method == "POST"
+    assert url == "http://localhost:8769/public/review-advice"
+    assert session.calls[0][2] == 60.0
+    assert kwargs["json"] == {
+        "change_summary": "change summary",
+        "evidence_chunk_ids": ["chunk-a", "chunk-b"],
+    }
+
+
 def test_public_generation_budget_error_keeps_retrieval_available():
     session = Session([Response({}, status=429)])
     client = PublicKnowledgeClient("http://localhost:8765", session=session)

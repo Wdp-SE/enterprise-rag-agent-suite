@@ -20,7 +20,7 @@ from benchmark_utils import read_json, stats, utc_now, write_json
 SCRIPT_DIR = Path(__file__).resolve().parent
 BENCHMARK_ROOT = SCRIPT_DIR.parent
 WORKSPACE = BENCHMARK_ROOT.parents[1]
-RAG_ROOT = WORKSPACE / "RAG-Challenge-2-main"
+RAG_ROOT = WORKSPACE / "versioned-rag-service"
 RUNTIME_ROOT = BENCHMARK_ROOT / "runtime" / "rag_retrieval"
 OUTPUT = BENCHMARK_ROOT / "rag_retrieval_benchmark.json"
 WARMUP_ROUNDS = 5

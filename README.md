@@ -1,7 +1,8 @@
-# 版本可信研发知识与变更审查工作台
+# 研发知识版本服务与变更影响审查系统
 
-基于 Apache DolphinScheduler 官方公开资料构建的研发知识 RAG 与会话内假设变更审查原型。RAG 按版本范围检索资料并提供原文依据；Agent 使用这些依据整理影响候选和修改建议，最后由人审核。本项目是独立演示，不是 Apache 官方产品，也不代表上游内部系统。
+基于 Apache DolphinScheduler 官方公开资料构建的版本化研发知识服务与变更影响审查系统。RAG 按版本检索资料并提供可追溯依据；Agent 调用检索结果整理影响候选和修改建议，由人审核。本项目是独立工程演示，不是 Apache 官方产品，也不代表上游内部系统。
 
+- [GitHub 源码仓库](https://github.com/Wdp-SE/enterprise-rag-agent-suite)
 - [在线工作台](https://enterprise-rag-agent-suite-bfmkgsimdisxcewgco7ydk.streamlit.app/)
 - [RAG API 文档](https://version-aware-rag-public-demo.onrender.com/docs)
 - [RAG 健康状态](https://version-aware-rag-public-demo.onrender.com/health)
@@ -22,6 +23,12 @@
       → 人工核对与审核
 
 在线工作台用于体验产品流程；API 文档用于查看公开 RAG 接口。公开语料是 Apache DolphinScheduler 3.4.2 与 3.4.3 的有限快照，共 52 份来源。启动时不抓取上游，不重建 OCR、Embedding 或 FAISS 索引。
+
+### 目录职责
+
+- `versioned-rag-service/`：FastAPI 知识服务，负责版本范围内的 BM25 检索、引用依据和可选的引用约束回答。
+- `change-review-agent/`：变更审查 Agent 与可复用的证据约束工作流，负责组织影响候选、修改建议和人工审核状态。
+- `demo-ui/`：Streamlit 工作台，连接 RAG 服务并呈现检索和审查流程。
 
 ## Retrieval Selection：为什么保留 BM25
 
@@ -68,15 +75,15 @@ python .\evaluation\real_world_retrieval\final_selection\run_selection.py chunk 
 
 本地 clean-clone 已在 Python 3.11 验证通过；这记录的是已验证环境，不代表项目最低 Python 版本。Render 部署配置使用 Python 3.12.8；本文不推测 Streamlit Community Cloud 的 Python 版本。克隆后无需私有企业资料或本机历史 runtime：
 
-    py -3.11 -m venv RAG-Challenge-2-main\.venv
-    & .\RAG-Challenge-2-main\.venv\Scripts\python.exe -m pip install -r RAG-Challenge-2-main\requirements-render.txt
-    py -3.11 -m venv OpenManus-rag\.venv
-    & .\OpenManus-rag\.venv\Scripts\python.exe -m pip install -r OpenManus-rag\requirements.txt
-    & .\OpenManus-rag\.venv\Scripts\python.exe -m pip install -r demo-ui\requirements.txt
+    py -3.11 -m venv versioned-rag-service\.venv
+    & .\versioned-rag-service\.venv\Scripts\python.exe -m pip install -r versioned-rag-service\requirements-render.txt
+    py -3.11 -m venv change-review-agent\.venv
+    & .\change-review-agent\.venv\Scripts\python.exe -m pip install -r change-review-agent\requirements.txt
+    & .\change-review-agent\.venv\Scripts\python.exe -m pip install -r demo-ui\requirements.txt
     .\start_prototype.ps1
 
-打开 http://127.0.0.1:8502/；本地 RAG API 文档为 http://127.0.0.1:8765/docs。无模型密钥时仍可检索和进行会话内变更审查。要启用生成式回答，由部署者在本机环境或 Render 安全配置 DASHSCOPE_API_KEY 与对应开关；不要把密钥写入仓库、日志或文档。详细字段见[部署指南](project_delivery/public_value_prototype/free_deployment_guide.md)和[工作台说明](demo-ui/README.md)。
+打开 http://127.0.0.1:8502/；本地 RAG API 文档为 http://127.0.0.1:8765/docs。无模型密钥时仍可检索和进行会话内变更审查。默认生成服务为 DashScope/Qwen（`DASHSCOPE_API_KEY`）；也支持 DeepSeek（`RD_V2_GENERATION_PROVIDER=deepseek`、`RD_V2_GENERATION_MODEL=deepseek-v4-flash`、`DEEPSEEK_API_KEY`）。仅在本机 RAG 后端或 Render RAG 后端配置密钥，不要写入仓库、日志或 Streamlit Secrets。详细字段见[部署指南](project_delivery/public_value_prototype/free_deployment_guide.md)和[工作台说明](demo-ui/README.md)。
 
 ## 资料来源
 
-语料来自 [Apache DolphinScheduler](https://github.com/apache/dolphinscheduler) 官方固定版本资料、Release、DSIP Issue 和明确关联的 PR。来源 URL、tag 对应 commit、路径、语言、许可证与 SHA-256 见 [corpus_manifest.json](RAG-Challenge-2-main/public_corpus/corpus_manifest.json)。Apache License 与 NOTICE 随快照保留；本项目与 Apache 基金会无隶属关系。
+语料来自 [Apache DolphinScheduler](https://github.com/apache/dolphinscheduler) 官方固定版本资料、Release、DSIP Issue 和明确关联的 PR。来源 URL、tag 对应 commit、路径、语言、许可证与 SHA-256 见 [corpus_manifest.json](versioned-rag-service/public_corpus/corpus_manifest.json)。Apache License 与 NOTICE 随快照保留；本项目与 Apache 基金会无隶属关系。

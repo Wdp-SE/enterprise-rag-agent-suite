@@ -35,7 +35,8 @@ class RAGClient:
         self.retry_limit = retry_limit
 
     def _request(
-        self, method: str, endpoint: str, *, retry_limit: int | None = None, **kwargs
+        self, method: str, endpoint: str, *, retry_limit: int | None = None,
+        request_timeout: float | None = None, **kwargs
     ) -> dict[str, Any]:
         retries = self.retry_limit if retry_limit is None else retry_limit
         if retries < 0:
@@ -48,7 +49,9 @@ class RAGClient:
         for attempt in range(retries + 1):
             try:
                 response = self.session.request(
-                    method, f"{self.base_url}{endpoint}", timeout=self.timeout, **kwargs
+                    method, f"{self.base_url}{endpoint}",
+                    timeout=self.timeout if request_timeout is None else request_timeout,
+                    **kwargs,
                 )
                 response.raise_for_status()
                 break
@@ -72,7 +75,9 @@ class RAGClient:
                 status = exc.response.status_code if exc.response is not None else "unknown"
                 if attempt < retries and isinstance(status, int) and status >= 500:
                     continue
-                if status == 429 and endpoint in ("/engineering/versions/query", "/public/query"):
+                if status == 429 and endpoint in (
+                    "/engineering/versions/query", "/public/query", "/public/review-advice"
+                ):
                     raise ServiceError(
                         "在线生成额度已用完，仍可继续检索引用依据。",
                         "HTTPStatus=429", "LLM_BUDGET_EXHAUSTED",

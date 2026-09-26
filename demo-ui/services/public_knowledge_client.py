@@ -23,8 +23,14 @@ class PublicKnowledgeClient(RAGClient):
 
     def query_official(self, question: str, *, version: str, language: str) -> dict:
         return self._request(
-            "POST", "/public/query", retry_limit=0,
+            "POST", "/public/query", retry_limit=0, request_timeout=max(60.0, self.timeout),
             json={"query": question, "version": version, "language": language},
+        )
+
+    def review_advice(self, change_summary: str, evidence_chunk_ids: list[str]) -> dict:
+        return self._request(
+            "POST", "/public/review-advice", retry_limit=0, request_timeout=max(60.0, self.timeout),
+            json={"change_summary": change_summary, "evidence_chunk_ids": evidence_chunk_ids},
         )
 
     def engineering_diff(self, old_items: list[dict], new_items: list[dict]) -> dict:

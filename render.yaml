@@ -2,7 +2,7 @@ services:
   - type: web
     name: version-aware-rag-public-demo
     runtime: python
-    rootDir: RAG-Challenge-2-main
+    rootDir: versioned-rag-service
     plan: free
     buildCommand: pip install -r requirements-render.txt
     startCommand: uvicorn src.public_server:app --host 0.0.0.0 --port $PORT
@@ -14,9 +14,5 @@ services:
         value: public_demo
       - key: RD_V2_ALLOW_EXTERNAL_GENERATION
         value: "true"
-      - key: MAX_LLM_CALLS_PER_SESSION
-        value: "3"
-      - key: MAX_LLM_CALLS_PER_PROCESS
-        value: "30"
       - key: DASHSCOPE_API_KEY
         sync: false

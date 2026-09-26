@@ -6,11 +6,84 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $workspace = $PSScriptRoot
-$ragRoot = Join-Path $workspace 'RAG-Challenge-2-main'
+$agentRoot = Join-Path $workspace 'change-review-agent'
+$legacyAgentRoot = Join-Path $workspace 'OpenManus-rag'
+$ragRoot = Join-Path $workspace 'versioned-rag-service'
+$legacyRagRoot = Join-Path $workspace 'RAG-Challenge-2-main'
 $uiRoot = Join-Path $workspace 'demo-ui'
 $ragPython = Join-Path $ragRoot '.venv\Scripts\python.exe'
-$uiPython = Join-Path $workspace 'OpenManus-rag\.venv\Scripts\python.exe'
+if (-not (Test-Path -LiteralPath $ragPython -PathType Leaf)) {
+    # Keep the existing local virtual environment usable after the folder rename.
+    $ragPython = Join-Path $legacyRagRoot '.venv\Scripts\python.exe'
+}
+$uiPython = Join-Path $agentRoot '.venv\Scripts\python.exe'
+if (-not (Test-Path -LiteralPath $uiPython -PathType Leaf)) {
+    # Keep the existing local virtual environment usable after the folder rename.
+    $uiPython = Join-Path $legacyAgentRoot '.venv\Scripts\python.exe'
+}
 $officialCorpus = Join-Path $ragRoot 'public_corpus\retrieval_policy.json'
+
+# Codex can inject a loopback HTTP proxy into its child processes. If that
+# proxy is unavailable while Windows has a configured system proxy, let the
+# Python services fall back to the Windows proxy registry for this launch.
+# This is process-scoped: the caller's environment is always restored.
+$useWindowsProxyFallback = $false
+$httpsProxy = @($env:HTTPS_PROXY, $env:https_proxy, $env:ALL_PROXY, $env:all_proxy) |
+    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+    Select-Object -First 1
+if (-not [string]::IsNullOrWhiteSpace($httpsProxy)) {
+    try {
+        $proxyUri = [Uri]$httpsProxy
+        $isLoopbackProxy = $proxyUri.IsLoopback -or $proxyUri.Host -eq 'localhost'
+        if ($isLoopbackProxy) {
+            $proxySocket = [Net.Sockets.TcpClient]::new()
+            try {
+                $connect = $proxySocket.ConnectAsync($proxyUri.Host, $proxyUri.Port)
+                try {
+                    $proxyReachable = $connect.Wait(750) -and $proxySocket.Connected
+                } catch {
+                    $proxyReachable = $false
+                }
+            } finally {
+                $proxySocket.Dispose()
+            }
+            $windowsProxy = Get-ItemProperty `
+                'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' `
+                -ErrorAction SilentlyContinue
+            $windowsProxyConfigured = $windowsProxy -and $windowsProxy.ProxyEnable -eq 1 `
+                -and -not [string]::IsNullOrWhiteSpace($windowsProxy.ProxyServer)
+            $useWindowsProxyFallback = -not $proxyReachable -and $windowsProxyConfigured
+        }
+    } catch {
+        # Keep explicit proxy settings when their status cannot be determined.
+        $useWindowsProxyFallback = $false
+    }
+}
+
+function Start-PrototypeProcess([hashtable]$StartParameters) {
+    if (-not $useWindowsProxyFallback) {
+        return Start-Process @StartParameters
+    }
+
+    $proxyNames = @('HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'http_proxy', 'https_proxy', 'all_proxy')
+    $savedProxyEnvironment = @{}
+    foreach ($name in $proxyNames) {
+        $savedProxyEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
+        Remove-Item "Env:$name" -ErrorAction SilentlyContinue
+    }
+    try {
+        return Start-Process @StartParameters
+    } finally {
+        foreach ($name in $proxyNames) {
+            $value = $savedProxyEnvironment[$name]
+            if ($null -eq $value) {
+                Remove-Item "Env:$name" -ErrorAction SilentlyContinue
+            } else {
+                [Environment]::SetEnvironmentVariable($name, $value, 'Process')
+            }
+        }
+    }
+}
 
 foreach ($required in @($ragPython, $uiPython, $officialCorpus)) {
     if (-not (Test-Path -LiteralPath $required)) {
@@ -41,12 +114,39 @@ New-Item -ItemType Directory -Path $runRoot -Force | Out-Null
 
 $env:APP_ENV = 'public_demo'
 $env:RD_V2_PROJECT_ROOT = $ragRoot
-if ($EnableGeneration -and [string]::IsNullOrWhiteSpace($env:DASHSCOPE_API_KEY)) {
-    throw '启用生成式回答前，请先在本机环境变量设置 DASHSCOPE_API_KEY。'
+if ($EnableGeneration) {
+    $provider = if ([string]::IsNullOrWhiteSpace($env:RD_V2_GENERATION_PROVIDER)) {
+        'dashscope'
+    } else {
+        $env:RD_V2_GENERATION_PROVIDER.Trim().ToLowerInvariant()
+    }
+    switch ($provider) {
+        'dashscope' {
+            $apiKeyName = 'DASHSCOPE_API_KEY'
+            $defaultModel = 'qwen-turbo'
+        }
+        'deepseek' {
+            $apiKeyName = 'DEEPSEEK_API_KEY'
+            $defaultModel = 'deepseek-v4-flash'
+        }
+        default {
+            throw 'RD_V2_GENERATION_PROVIDER 仅支持 dashscope 或 deepseek。'
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($apiKeyName, 'Process'))) {
+        throw "启用 $provider 生成前，请先在本机环境变量设置 $apiKeyName。"
+    }
+    $env:RD_V2_GENERATION_PROVIDER = $provider
+    if ([string]::IsNullOrWhiteSpace($env:RD_V2_GENERATION_MODEL)) {
+        $env:RD_V2_GENERATION_MODEL = $defaultModel
+    }
 }
 $env:RD_V2_ALLOW_EXTERNAL_GENERATION = if ($EnableGeneration) { 'true' } else { 'false' }
 
-$ragProcess = Start-Process -FilePath $ragPython -ArgumentList @('-m', 'uvicorn', 'src.public_server:app', '--host', '127.0.0.1', '--port', "$RagPort") -WorkingDirectory $ragRoot -RedirectStandardOutput (Join-Path $runRoot 'rag.stdout.log') -RedirectStandardError (Join-Path $runRoot 'rag.stderr.log') -WindowStyle Hidden -PassThru
+if ($useWindowsProxyFallback) {
+    Write-Host '检测到不可用的本机代理；RAG/UI 子进程本次回退到 Windows 系统代理，不修改永久环境变量。'
+}
+$ragProcess = Start-PrototypeProcess @{ FilePath = $ragPython; ArgumentList = @('-m', 'uvicorn', 'src.public_server:app', '--host', '127.0.0.1', '--port', "$RagPort"); WorkingDirectory = $ragRoot; RedirectStandardOutput = (Join-Path $runRoot 'rag.stdout.log'); RedirectStandardError = (Join-Path $runRoot 'rag.stderr.log'); WindowStyle = 'Hidden'; PassThru = $true }
 
 $ragReady = $false
 for ($attempt = 0; $attempt -lt 30; $attempt++) {
@@ -67,7 +167,7 @@ $env:DEMO_LEGACY_FIXTURES = 'false'
 $env:DEMO_ALLOW_RAG_QUERY = 'false'
 $env:STREAMLIT_BROWSER_GATHER_USAGE_STATS = 'false'
 $env:STREAMLIT_SERVER_HEADLESS = 'true'
-$uiProcess = Start-Process -FilePath $uiPython -ArgumentList @('-m', 'streamlit', 'run', 'app.py', '--server.address', '127.0.0.1', '--server.port', "$UiPort", '--server.headless', 'true', '--browser.gatherUsageStats', 'false') -WorkingDirectory $uiRoot -RedirectStandardOutput (Join-Path $runRoot 'ui.stdout.log') -RedirectStandardError (Join-Path $runRoot 'ui.stderr.log') -WindowStyle Hidden -PassThru
+$uiProcess = Start-PrototypeProcess @{ FilePath = $uiPython; ArgumentList = @('-m', 'streamlit', 'run', 'app.py', '--server.address', '127.0.0.1', '--server.port', "$UiPort", '--server.headless', 'true', '--browser.gatherUsageStats', 'false'); WorkingDirectory = $uiRoot; RedirectStandardOutput = (Join-Path $runRoot 'ui.stdout.log'); RedirectStandardError = (Join-Path $runRoot 'ui.stderr.log'); WindowStyle = 'Hidden'; PassThru = $true }
 
 $uiReady = $false
 for ($attempt = 0; $attempt -lt 30; $attempt++) {
