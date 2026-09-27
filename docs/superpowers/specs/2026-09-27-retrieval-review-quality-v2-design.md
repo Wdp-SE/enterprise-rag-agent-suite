@@ -36,14 +36,13 @@ Report at least Recall@5, MRR, complete multi-source evidence recall, no-answer 
 Keep the natural-language request flow and current human-review boundary. Ask the model for a compact, structured review result with these distinct fields:
 
 - change assumption and scope;
-- explicitly confirmed document relations, only when supported by an explicit registered source relation;
 - suggested paragraphs or documents to check, clearly marked as candidates;
 - evidence IDs and the reason each source is relevant;
 - evidence gaps, conflicting sources, or version ambiguity;
 - proposed reviewer actions;
 - an explicit pending-human-review status.
 
-The server must validate every returned evidence ID against the evidence supplied for that request. A model citation outside that set, an unsupported confirmed relation, malformed output, unavailable model, or insufficient evidence must not be presented as a valid recommendation. The system must abstain or fall back to visible retrieval evidence. No generated recommendation may modify official material, create an upstream change, or approve itself.
+Confirmed document relations remain deterministic and may be shown only when supported by an explicit registered source relation; the model cannot create or upgrade a relation to confirmed. The server must validate every returned evidence ID against the evidence supplied for that request. A model citation outside that set, malformed output, unavailable model, or insufficient evidence must not be presented as a valid recommendation. The system must abstain or fall back to visible retrieval evidence. No generated recommendation may modify official material, create an upstream change, or approve itself.
 
 ### Preserve the public workflow boundary
 
@@ -64,7 +63,7 @@ Review drafts and decisions remain session-only for this iteration. The UI may p
 - Implement this iteration on `codex/retrieval-review-quality` (or a dated equivalent) created from the latest verified `origin/main`; do not develop directly on `main`.
 - Keep the V1.0 baseline and the V2 evaluation additions in one reviewable change series. Stage explicit files only; never use `git add .`.
 - Before proposing a merge, verify a clean tracked working tree, inspect the staged file list and full diff, run `git diff --cached --check`, targeted tests, corpus/hash checks, and the new DEV/HOLDOUT evaluation gate. No secret or machine-private path may enter Git.
-- Push and merge are separate release actions. Do not push or merge until the owner approves the finished diff. After an approved merge, verify that GitHub `main` points to the intended commit. Configure the public Render and Streamlit deployments to follow `main`, then verify their deployed commit identifiers so a feature branch cannot be mistaken for the public latest version.
+- Push and merge are separate release actions. This task authorizes a final fast-forward update to `main` and a normal push only after the finished diff passes review and all checks; never force-push. If `origin/main` moves or diverges before promotion, stop and reconcile without overwriting remote work. After promotion, verify that GitHub `main` points to the intended commit. Configure the public Render and Streamlit deployments to follow `main`, then verify their deployed commit identifiers so a feature branch cannot be mistaken for the public latest version.
 
 ## Validation
 
