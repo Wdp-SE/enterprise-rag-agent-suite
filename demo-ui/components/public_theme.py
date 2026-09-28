@@ -135,6 +135,16 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible 
   color:var(--muted);font-size:1.1rem;font-weight:620;}
 .review-steps .done {color:var(--body);}
 .review-steps .current {color:var(--ink);border-bottom-color:var(--ink);font-weight:760;}
+.agent-review-summary {border-left:3px solid var(--ink);margin:.55rem 0 1.1rem;padding:.55rem .95rem;background:var(--quiet);}
+.agent-review-summary-heading {display:flex;align-items:baseline;justify-content:space-between;gap:1rem;color:var(--ink);font-size:1.08rem;}
+.agent-review-summary-heading span {font-size:1rem;font-weight:700;white-space:nowrap;}
+.agent-review-summary p {margin:.35rem 0 .1rem;line-height:1.65;color:var(--body);}
+[class*="st-key-review_candidate_"] {border-top:1px solid var(--line-strong);padding:.75rem 0 .95rem;}
+.agent-candidate-heading {display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap;color:var(--ink);font-size:1.25rem;line-height:1.4;}
+.agent-candidate-heading span {font-size:1rem;font-weight:760;white-space:nowrap;}
+.agent-candidate-heading strong {font-weight:750;}
+.agent-field-label,.agent-evidence-heading {margin:.55rem 0 .15rem;color:var(--ink);font-size:1rem;font-weight:750;}
+.agent-evidence-heading {border-left:2px solid var(--line-strong);padding-left:.6rem;margin-top:.9rem;}
 .section-rule {border-top:1px solid var(--line-strong);padding-top:.72rem;margin:1.7rem 0 .85rem;
   color:var(--ink);font-size:1.1rem;font-weight:740;}
 .context-strip {display:flex;gap:.5rem;flex-wrap:wrap;margin:.55rem 0 1.05rem;}

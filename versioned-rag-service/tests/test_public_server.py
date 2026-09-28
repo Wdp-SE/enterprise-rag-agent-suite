@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
 
@@ -54,6 +55,21 @@ def test_v3_release_is_bound_to_locked_artifacts_and_true_retrieval_counts():
         )
         assert metrics["evidence_marker_found"] == sum(case["evidence_marker_found"] for case in answerable)
         assert metrics["evidence_marker_count"] == sum(case["evidence_marker_count"] for case in answerable)
+
+
+def test_workspace_reports_latest_source_retrieval_timestamp():
+    index = PublicKnowledgeIndex()
+    timestamps = [
+        datetime.fromisoformat(row["retrieval_timestamp"].replace("Z", "+00:00")).astimezone(timezone.utc)
+        for row in index.manifest["sources"] if row.get("retrieval_timestamp")
+    ]
+    with TestClient(create_app(index=index)) as client:
+        workspace = client.get("/public/workspace").json()
+
+    reported_timestamp = datetime.fromisoformat(
+        workspace["latest_source_retrieval_timestamp"].replace("Z", "+00:00")
+    )
+    assert reported_timestamp == max(timestamps)
 
 
 def test_public_deployment_exposes_only_official_corpus_and_engineering_support():

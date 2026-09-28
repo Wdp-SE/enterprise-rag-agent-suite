@@ -150,7 +150,71 @@ def test_version_selector_uses_latest_published_workspace_version(monkeypatch):
     assert app.selectbox(key="official_version").value == "3.5.0"
     labels = app.selectbox(key="official_version").options
     assert labels[0].startswith("3.5.0") and labels[1].startswith("3.4.3")
-    assert labels[2] == "全部固定版本"
+    assert labels[2] == "全部已收录版本"
+
+
+def test_version_selector_tracks_new_latest_release_after_manual_old_selection(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    workspace = {
+        "workspace": "Apache DolphinScheduler", "baseline_version": "3.4.2",
+        "current_version": "3.4.3", "source_count": 52, "chunk_count": 659,
+        "latest_source_retrieval_timestamp": "2026-09-27T16:48:07.391969+00:00",
+    }
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: dict(workspace))
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+    assert app.selectbox(key="official_version").value == "3.4.3"
+
+    workspace.update(
+        baseline_version="3.4.3", current_version="3.5.0",
+        latest_source_retrieval_timestamp="2026-09-28T09:15:00+00:00",
+    )
+    app.run()
+
+    assert not app.exception
+    assert app.selectbox(key="official_version").value == "3.5.0"
+    app.selectbox(key="official_version").set_value("3.4.3").run()
+    assert app.selectbox(key="official_version").value == "3.4.3"
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
+    assert "最新已收录版本" in visible
+    assert "最近收录资料" in visible and "2026-09-28 09:15 UTC" in visible
+
+
+def test_offline_version_fallback_is_not_presented_as_latest(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: None)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+
+    assert not app.exception
+    assert app.selectbox(key="official_version").value == "3.4.3"
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
+    assert "无法确认最新已收录版本" in visible
+    assert "离线回退配置" in visible
+
+
+def test_agent_result_prioritizes_analysis_and_pairs_actions_with_evidence(monkeypatch):
+    _mock_client(monkeypatch)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    _start_agent_request(app)
+
+    assert not app.exception
+    visible = "\n".join(
+        item.value for collection in (app.markdown, app.caption, app.subheader, app.info)
+        for item in collection
+    )
+    assert "本次分析结论" in visible
+    assert "优先核对的影响候选" in visible
+    assert "建议核对动作" in visible
+    assert "引用证据" in visible
+    assert "等待人工审核" in visible
+    source_links = [item.value for item in app.markdown if "[打开官方原文]" in item.value]
+    assert len(source_links) == 1
+    assert "可能相关资料" not in {item.value for item in app.subheader}
 
 
 def test_review_decision_cannot_approve_a_different_analysis(monkeypatch):
@@ -329,7 +393,7 @@ def test_agent_starts_with_natural_language_and_uses_rag_to_find_candidates(monk
     assert app.session_state["official_request_review"]["request_summary"] == change_request
     assert app.session_state["official_request_review"]["impacts"][0]["evidence"]["chunk_id"] == CHUNK["chunk_id"]
     headings = [item.value for item in app.subheader]
-    assert headings.index("模型辅助核对建议") < headings.index("可能相关资料")
+    assert headings.index("模型辅助核对建议") < headings.index("优先核对的影响候选")
     assert "建议引用的官方片段（变更分析）" not in headings
     assert any("同一片段只展示一次" in item.value for item in app.caption)
 
@@ -757,7 +821,7 @@ def test_public_agent_change_and_review_are_session_local(monkeypatch):
     assert "尚未检查英文资料。" in visible
     assert "等待人工审核" in visible
     headings = [item.value for item in first.subheader]
-    assert headings.index("模型辅助核对建议") < headings.index("可能相关资料")
+    assert headings.index("模型辅助核对建议") < headings.index("优先核对的影响候选")
     next(button for button in first.button if button.label == "确认已审阅本次影响分析").click().run()
     assert first.session_state["official_review_decision"] == "reviewed"
 
@@ -938,10 +1002,10 @@ def test_agent_stepper_marks_human_review_after_analysis(monkeypatch):
     app = AppTest.from_file(APP, default_timeout=40).run()
     _start_agent_request(app)
     tracks = [item.value for item in app.markdown if 'review-steps' in item.value]
-    assert any('class="current">5. 人工审核' in track for track in tracks)
+    assert any('class="current">3. 等待人工审核' in track for track in tracks)
     next(button for button in app.button if button.label == "确认已审阅本次影响分析").click().run()
     tracks = [item.value for item in app.markdown if 'review-steps' in item.value]
-    assert any('class="done">5. 人工审核' in track for track in tracks)
+    assert any('class="done">3. 等待人工审核' in track for track in tracks)
 
 
 def test_switching_source_resets_previous_unsent_draft(monkeypatch):

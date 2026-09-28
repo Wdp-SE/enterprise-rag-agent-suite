@@ -9,6 +9,7 @@ import logging
 import math
 import time
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
 
@@ -161,6 +162,18 @@ def workspace(request: Request) -> dict:
     index = _index(request)
     manifest = index.manifest
     release = _validated_retrieval_release(index)
+    source_retrieval_times = []
+    for source in manifest.get("sources", []):
+        value = source.get("retrieval_timestamp")
+        if not isinstance(value, str):
+            continue
+        try:
+            timestamp = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            if timestamp.tzinfo is None:
+                timestamp = timestamp.replace(tzinfo=timezone.utc)
+            source_retrieval_times.append(timestamp.astimezone(timezone.utc))
+        except ValueError:
+            continue
     result = {
         "workspace": manifest["workspace"], "repository": manifest["repository"],
         "baseline_version": manifest["baseline_version"],
@@ -176,6 +189,8 @@ def workspace(request: Request) -> dict:
         "data_origin": "Apache DolphinScheduler official public materials",
         "upstream_writes_enabled": False,
     }
+    if source_retrieval_times:
+        result["latest_source_retrieval_timestamp"] = max(source_retrieval_times).isoformat()
     if release:
         result["retrieval_evaluation"] = {
             key: release[key] for key in ("name", "policy", "top_k", "manifest_sha256", "dev", "holdout", "interpretation")

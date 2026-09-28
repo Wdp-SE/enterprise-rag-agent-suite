@@ -48,6 +48,55 @@ def _published_versions(workspace: dict | None) -> list[str]:
     return versions or ["3.4.3", "3.4.2"]
 
 
+def _confirmed_current_version(workspace: dict | None) -> str | None:
+    if not workspace:
+        return None
+    version = workspace.get("current_version")
+    return str(version).strip() if version else None
+
+
+def _sync_workspace_version(workspace: dict | None) -> str | None:
+    """Follow a newly published workspace version while preserving user scope otherwise."""
+    current = _confirmed_current_version(workspace)
+    for widget_key in ("official_version", "source_version"):
+        default_key = f"{widget_key}_default"
+        confirmed_key = f"{default_key}_confirmed"
+        previous = st.session_state.get(default_key)
+        previous_confirmed = st.session_state.get(confirmed_key, False)
+        if current and (current != previous or not previous_confirmed):
+            st.session_state[widget_key] = current
+        if current:
+            st.session_state[default_key] = current
+        st.session_state[confirmed_key] = bool(current)
+    st.session_state["official_current_version"] = current
+    return current
+
+
+def _version_option_label(version: str, workspace: dict | None) -> str:
+    current = _confirmed_current_version(workspace)
+    if version == "all":
+        return "全部已收录版本"
+    if not current:
+        return f"{version} · 离线回退配置（未确认）"
+    if version == current:
+        return f"{version} · 最新已收录"
+    if version == workspace.get("baseline_version"):
+        return f"{version} · 历史基线"
+    return f"{version} · 历史版本"
+
+
+def _format_snapshot_timestamp(value: object) -> str | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+
 def _client() -> PublicKnowledgeClient:
     session_id = st.session_state.setdefault("official_session_id", uuid.uuid4().hex)
     return PublicKnowledgeClient(
@@ -122,7 +171,11 @@ def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None
     section = row.get("heading") or "正文"
     document_title = st.session_state.get("official_document_titles", {}).get(row.get("document_id")) or row.get("document_key") or "官方资料"
     version = row.get("version", "")
-    version_label = "当前版本" if version == st.session_state.get("official_current_version", "3.4.3") else "历史版本"
+    current_version = st.session_state.get("official_current_version")
+    version_label = (
+        "最新已收录版本" if current_version and version == current_version
+        else "历史版本" if current_version else "版本状态未确认"
+    )
     source_label = {
         "official_documentation": "官方文档",
         "github_release": "官方 Release",
@@ -282,8 +335,9 @@ def _page_header(section: str, title: str, *, page_key: str, parent: str | None 
 
 def _home(ready: bool, workspace: dict | None) -> None:
     baseline = workspace.get("baseline_version", "3.4.2") if workspace else "3.4.2"
-    current = _published_versions(workspace)[0]
-    st.markdown('<div class="masthead"><span class="kicker">公开研发资料 / 固定版本知识空间</span></div>', unsafe_allow_html=True)
+    current = _confirmed_current_version(workspace)
+    version_range = f"{baseline} → {current}" if current else "服务未连接，无法确认"
+    st.markdown('<div class="masthead"><span class="kicker">公开研发资料 / 版本化知识空间</span></div>', unsafe_allow_html=True)
     st.title("研发知识版本服务与变更影响审查")
     st.write("基于 Apache DolphinScheduler 官方公开资料，提供按版本检索与引用溯源，并协助审查资料变更的潜在影响。")
     st.markdown(
@@ -294,7 +348,7 @@ def _home(ready: bool, workspace: dict | None) -> None:
     status = [
         ("知识空间", "Apache DolphinScheduler"),
         ("资料性质", "官方公开资料"),
-        ("固定版本", f"{baseline} → {current}"),
+        ("历史基线 → 最新已收录", version_range),
         ("语言", "中文优先 / English"),
         ("服务状态", state),
     ]
@@ -344,21 +398,36 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
     _page_header("知识服务", "版本化知识检索与问答", page_key="knowledge")
     st.caption("先确定资料范围，再提出问题；回答下方始终保留可核对的官方来源。")
     versions = _published_versions(workspace)
-    current = versions[0]
+    current = _confirmed_current_version(workspace)
     default_policy = str(workspace.get("retrieval_policy", "由服务配置") if workspace else "由服务配置").upper()
+    default_version_label = f"{current} · 最新已收录版本" if current else "无法确认最新已收录版本"
     st.markdown(
         f'<div class="context-strip"><span><strong>知识空间</strong> Apache DolphinScheduler</span>'
         f'<span><strong>资料</strong> 官方公开资料</span>'
-        f'<span><strong>默认版本</strong> {escape(current)}</span>'
+        f'<span><strong>默认版本</strong> {escape(default_version_label)}</span>'
         f'<span><strong>默认检索</strong> {escape(default_policy)}</span></div>',
         unsafe_allow_html=True,
     )
+    if current:
+        latest_source_time = _format_snapshot_timestamp(
+            workspace.get("latest_source_retrieval_timestamp") if workspace else None
+        )
+        st.caption(
+            f"默认跟随知识服务声明的最新已收录版本 {current}；只覆盖已纳入知识库的资料，"
+            "上游新版本需同步入库后才可检索。"
+        )
+        if latest_source_time:
+            st.caption(f"最近收录资料：{latest_source_time}。")
+    else:
+        st.caption(
+            "无法确认最新已收录版本；下拉框中的版本只是离线回退配置，并不代表当前知识库的最新版本。"
+        )
     with st.container(border=True, key="knowledge_scope"):
         a, b, c = st.columns([1, 1, .9], gap="medium")
         with a:
             version = st.selectbox(
                 "版本范围", [*versions, "all"],
-                format_func=lambda x: "全部固定版本" if x == "all" else f"{x} · {'当前版本' if x == current else '历史版本'}",
+                format_func=lambda x: _version_option_label(x, workspace),
                 key="official_version",
             )
         with b:
@@ -370,10 +439,11 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
         with c:
             st.markdown("**资料类型**")
             st.caption("官方文档 / Release / DSIP / PR")
-            st.caption("范围由固定版本与语言共同限定")
+            st.caption("范围受已收录版本与语言限定")
+    example_version = current or versions[0]
     examples = [
         "DolphinScheduler 参数优先级从高到低是什么？",
-        f"{current} 的 missed_fire_policy 对旧 schedule 默认什么？",
+        f"{example_version} 的 missed_fire_policy 对旧 schedule 默认什么？",
         "What is the API server health-check endpoint?",
     ]
     with st.expander("从官方资料选择示例问题"):
@@ -481,7 +551,7 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
             _consistency(payload.get("consistency_notes", []))
             _evidence(payload.get("results", []), heading="检索到的官方资料")
         with st.expander("本次检索技术详情"):
-            st.write(f"固定版本范围：{version} · 语言：{language} · 默认策略：{payload.get('retrieval_policy', '由服务配置')}")
+            st.write(f"检索范围：{version} · 语言：{language} · 默认策略：{payload.get('retrieval_policy', '由服务配置')}")
             st.caption("候选排序分数只用于同一检索策略内的排序，不代表事实正确性。")
             generation = payload.get("generation") if mode == "query" else None
             if isinstance(generation, dict):
@@ -517,7 +587,7 @@ def _analyze_change_request(client: PublicKnowledgeClient, change_summary: str) 
 
 
 def _review_steps(stage: int) -> None:
-    labels = ("输入变更", "影响候选", "引用依据", "修改建议", "人工审核")
+    labels = ("变更已提交", "证据已检索", "等待人工审核")
     cells = "".join(
         f'<span class="{"done" if i < stage else "current" if i == stage else ""}">'
         f'{i + 1}. {escape(label)}</span>'
@@ -573,54 +643,118 @@ def _review_evidence_panel(result: dict) -> None:
 
 def _review_advice_panel(result: dict, *, context: str = "review") -> None:
     advice = result.get("review_advice", {})
-    st.subheader("模型辅助核对建议")
-    st.caption("建议仅依据下列本次检索片段生成，并由人工判断；不会自动修改资料。")
     if advice.get("status") == "OK" and advice.get("sources"):
         review = advice.get("review") or {}
-        st.markdown("**变更理解**")
-        st.write(review.get("change_interpretation") or advice.get("answer", "N/A"))
+        interpretation = review.get("change_interpretation") or advice.get("answer", "N/A")
         candidates = review.get("impact_candidates", [])
         source_numbers = {
             row.get("chunk_id"): number
             for number, row in enumerate(advice["sources"], start=1)
         }
-        if candidates:
-            st.markdown("**建议优先核对**")
-            for number, candidate in enumerate(candidates, start=1):
-                st.markdown(f"{number}. {candidate['reason']}")
-                st.caption(
-                    f"建议动作：{candidate['suggested_action']} · "
-                    f"引用依据：[{source_numbers.get(candidate['evidence_chunk_id'], '?')}]"
-                )
-        if review.get("evidence_gaps"):
-            st.caption("证据缺口：" + "；".join(review["evidence_gaps"]))
-        if review.get("version_ambiguities"):
-            st.caption("版本或语言歧义：" + "；".join(review["version_ambiguities"]))
-        if review.get("reviewer_actions"):
-            st.caption("人工审核动作：" + "；".join(review["reviewer_actions"]))
-        st.caption("流程状态：等待人工审核。")
         if context == "变更分析":
-            st.caption("引用编号对应下方“可能相关资料”中的官方原文；同一片段只展示一次。")
+            st.subheader("模型辅助核对建议")
+            st.markdown(
+                '<div class="agent-review-summary">'
+                '<div class="agent-review-summary-heading"><strong>本次分析结论</strong>'
+                '<span>等待人工审核</span></div>'
+                f'<p>{escape(str(interpretation))}</p></div>',
+                unsafe_allow_html=True,
+            )
+            st.caption(
+                f"模型依据 {len(advice['sources'])} 条当前检索证据整理；"
+                f"以下 {len(candidates)} 条是待核对候选，不代表已确认影响。"
+            )
+            st.caption("同一片段只展示一次；候选与引用依据逐条对应，完整原文按需展开。")
+            st.subheader("优先核对的影响候选")
+            if candidates:
+                sources_by_id = {
+                    row.get("chunk_id"): row for row in advice["sources"] if row.get("chunk_id")
+                }
+                for number, candidate in enumerate(candidates, start=1):
+                    evidence_id = candidate.get("evidence_chunk_id")
+                    source = sources_by_id.get(evidence_id)
+                    heading = (source or {}).get("heading") or (source or {}).get("document_key") or "待核对资料"
+                    with st.container(key=f"review_candidate_{number}"):
+                        st.markdown(
+                            '<div class="agent-candidate-heading">'
+                            f'<span>优先级 {number}</span><strong>{escape(str(heading))}</strong>'
+                            '</div>',
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown('<div class="agent-field-label">影响判断</div>', unsafe_allow_html=True)
+                        st.markdown(escape(str(candidate.get("reason") or "需要人工核对该资料。")))
+                        st.markdown('<div class="agent-field-label">建议核对动作</div>', unsafe_allow_html=True)
+                        st.markdown(escape(str(candidate.get("suggested_action") or "对照官方原文确认是否需要同步。")))
+                        if source:
+                            evidence_number = source_numbers.get(evidence_id)
+                            st.markdown(
+                                '<div class="agent-evidence-heading">'
+                                f'引用证据 [{evidence_number}] · {escape(str(heading))}'
+                                '</div>',
+                                unsafe_allow_html=True,
+                            )
+                            st.caption(
+                                f"{source.get('version', '版本未标注')}　｜　"
+                                f"{source.get('locale', '语言未标注')}　｜　官方资料"
+                            )
+                            content = _rewrite_relative_source_links(
+                                _replace_markdown_images(source.get("content", "")),
+                                source.get("source_url", ""),
+                            )
+                            if content:
+                                excerpt = content.strip()
+                                st.markdown(escape(excerpt[:360] + ("…" if len(excerpt) > 360 else "")))
+                            source_url = source.get("source_url")
+                            if source_url:
+                                st.markdown(f"[打开官方原文]({escape(str(source_url), quote=True)})")
+                            if content:
+                                with st.expander(f"展开完整引用原文 [{evidence_number}]"):
+                                    st.write(content)
+                        else:
+                            st.caption("此候选未匹配到有效引用，须先人工查证，不能视为证据支持的影响结论。")
+            else:
+                st.info("模型没有形成可引用的影响候选；下方检索命中仅供人工筛查。")
         else:
-            _evidence(advice["sources"], heading=f"建议引用的官方片段（{context}）")
-        st.caption("本环节使用一次模型调用，仍受模型服务商的计费与限流规则约束。")
+            st.subheader("模型辅助核对建议")
+            st.markdown("**变更理解**")
+            st.write(interpretation)
+            st.caption("具体候选、原文和修改前后对照见下方；所有建议仍需人工确认。")
+        follow_up = []
+        follow_up.extend(("证据缺口", value) for value in (review.get("evidence_gaps") or []))
+        follow_up.extend(("版本或语言歧义", value) for value in (review.get("version_ambiguities") or []))
+        follow_up.extend(("人工检查", value) for value in (review.get("reviewer_actions") or []))
+        if follow_up:
+            with st.expander(f"未解决事项与人工检查（{len(follow_up)}）"):
+                for label, item in follow_up:
+                    st.markdown(f"**{label}**")
+                    st.write(item)
+        st.caption("模型建议仅使用本次检索证据；人工确认前不会修改公共资料。")
     elif advice.get("status") == "GENERATION_NOT_CONFIGURED":
+        st.subheader("模型辅助核对建议")
         st.caption("当前环境未启用模型建议；影响候选与原文仍可继续人工核对。")
     elif advice.get("status") == "GENERATION_PROVIDER_UNAVAILABLE":
+        st.subheader("模型辅助核对建议")
         st.caption("模型服务暂不可用；本次检索候选与原文仍保留，建议人工核对。")
     elif advice.get("status") == "GENERATION_PROVIDER_TIMEOUT":
+        st.subheader("模型辅助核对建议")
         st.caption("模型建议请求超时；检索候选与原文已保留，可稍后重试或人工核对。")
     elif advice.get("status") == "GENERATION_RATE_LIMITED":
+        st.subheader("模型辅助核对建议")
         st.caption("模型服务当前限流；检索候选与原文已保留，可稍后重试。")
     elif advice.get("status") == "GENERATION_BILLING_REQUIRED":
+        st.subheader("模型辅助核对建议")
         st.caption("模型服务返回计费或余额限制；请检查模型账户，当前候选仍可人工核对。")
     elif advice.get("status") == "GENERATION_AUTH_FAILED":
-        st.caption("模型服务鉴权失败；请检查后端密钥与权限，当前候选仍可人工核对。")
+        st.subheader("模型辅助核对建议")
+        st.caption("模型服务鉴权失败；请检查后端密钥与权限，当前候选和原文仍可人工核对。")
     elif advice.get("status") == "GENERATION_RESPONSE_TRUNCATED":
+        st.subheader("模型辅助核对建议")
         st.caption("模型建议回复被截断，未作为有效建议展示；请依据已保留的候选原文人工核对。")
     elif advice.get("status") == "GENERATION_PROVIDER_REJECTED":
+        st.subheader("模型辅助核对建议")
         st.caption("模型服务未接受本次建议请求；请检查后端模型配置，当前候选和原文仍可人工核对。")
     elif advice.get("status") == "ABSTAINED":
+        st.subheader("模型辅助核对建议")
         st.info("模型提示待核对：当前证据不足以形成带有效引用的影响候选；以下缺口和动作尚未确认。")
         review = advice.get("review") if isinstance(advice.get("review"), dict) else {}
         if review.get("evidence_gaps"):
@@ -630,10 +764,11 @@ def _review_advice_panel(result: dict, *, context: str = "review") -> None:
         if review.get("reviewer_actions"):
             st.caption("建议人工核对：" + "；".join(review["reviewer_actions"]))
     elif advice.get("status") == "NO_EVIDENCE":
+        st.subheader("模型辅助核对建议")
         st.caption("没有找到可供模型引用的其他资料；请人工检查原文和变更草案。")
     else:
+        st.subheader("模型辅助核对建议")
         st.caption("当前证据不足以形成带有效引用的模型建议；请按原文和候选资料人工核对。")
-
 
 def _patch_panel(result: dict) -> None:
     st.subheader("修改建议对照")
@@ -753,30 +888,48 @@ def _review_panel(result: dict) -> None:
         st.caption("审查记录只在当前会话保留；下载文件可用于人工留档，不代表已写入审批系统。")
 
 
-def _request_candidates_panel(result: dict) -> None:
-    st.subheader("可能相关资料")
-    st.caption("先由 BM25 在当前版本中检索，再由模型引用其认为值得核对的片段。检索相关不等于已确认实际影响。")
+def _request_candidates_panel(result: dict, *, standalone: bool = False) -> None:
     advice_sources = result.get("review_advice", {}).get("sources", [])
-    if advice_sources:
-        cited_ids = {row.get("chunk_id") for row in advice_sources}
-        reasons = {
-            item["evidence"].get("chunk_id"): item.get("reason", "建议人工核对该官方片段。")
-            for item in result.get("impacts", [])
-        }
-        for index, row in enumerate(advice_sources, 1):
-            st.caption(reasons.get(row.get("chunk_id"), "模型建议优先核对该官方片段。"))
-            _source_card(row, index=index, key_prefix="request_candidate")
-        remaining = [
-            row for row in result.get("retrieved_results", [])
-            if row.get("chunk_id") not in cited_ids
-        ]
+    retrieved = result.get("retrieved_results", [])
+    advice_source_ids = {row.get("chunk_id") for row in advice_sources if row.get("chunk_id")}
+    if standalone:
+        st.subheader("可能相关资料")
+        st.caption("检索和模型引用均表示待核对线索，不代表已经确认实际影响。")
+        if advice_sources:
+            _evidence(advice_sources, heading="模型引用的官方片段")
+        elif retrieved:
+            _evidence(retrieved, heading="RAG 检索命中（供人工筛查）")
+        else:
+            st.info("当前没有可供人工筛查的检索资料。")
+        remaining = [row for row in retrieved if row.get("chunk_id") not in advice_source_ids]
         if remaining:
-            with st.expander(f"查看其他检索命中（{len(remaining)}，尚未被模型引用）"):
-                _evidence(remaining, heading="其他当前版本检索结果")
-    else:
-        st.info("当前没有带有效引用的模型影响判断；下面仅展示 RAG 检索命中，供人工筛查。")
-        _evidence(result.get("retrieved_results", []), heading="当前版本 RAG 检索命中")
+            with st.expander(f"其他 RAG 检索命中（{len(remaining)}）"):
+                _evidence(remaining, heading="尚未被模型引用的检索资料")
+        return
 
+    if not advice_sources:
+        if retrieved:
+            st.subheader("RAG 检索命中（供人工筛查）")
+            st.caption("模型没有给出带有效引用的影响判断；以下结果只是检索线索。")
+            _evidence(retrieved, heading="知识库检索结果")
+        else:
+            st.info("没有检索到可供核对的官方资料。")
+        return
+
+    review = result.get("review_advice", {}).get("review") or {}
+    paired_ids = {
+        candidate.get("evidence_chunk_id")
+        for candidate in review.get("impact_candidates", [])
+        if candidate.get("evidence_chunk_id")
+    }
+    unpaired_sources = [row for row in advice_sources if row.get("chunk_id") not in paired_ids]
+    remaining_retrieval = [row for row in retrieved if row.get("chunk_id") not in advice_source_ids]
+    if unpaired_sources:
+        with st.expander(f"其他模型引用证据（{len(unpaired_sources)}）"):
+            _evidence(unpaired_sources, heading="尚未配对到优先候选的引用")
+    if remaining_retrieval:
+        with st.expander(f"其他未被模型引用的检索命中（{len(remaining_retrieval)}）"):
+            _evidence(remaining_retrieval, heading="RAG 检索补充结果")
 
 def _retrieval_trace_panel(result: dict) -> None:
     trace = result.get("retrieval_trace")
@@ -816,7 +969,9 @@ def _save_change_request() -> None:
 
 def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None:
     _page_header("变更审查", "研发资料变更影响审查", page_key="agent")
-    st.caption("用自然语言描述研发变更；Agent 调用 RAG 检索当前版本官方资料，再整理值得核对的影响候选和修改建议。")
+    current_version = st.session_state.get("official_current_version")
+    version_scope = f"知识库最新已收录版本 {current_version}" if current_version else "当前已收录资料"
+    st.caption(f"用自然语言描述研发变更；Agent 调用 RAG 检索{version_scope}，再整理待核对的影响候选和建议。")
     st.info("本次分析仅保留在当前会话，不自动修改 Apache DolphinScheduler 上游项目或公共资料。")
     _remember_document_titles(docs)
     if "official_change_request" not in st.session_state:
@@ -828,7 +983,7 @@ def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None
         placeholder="例如：计划将全局参数优先级调整为最高，请找出需要核对的官方资料。",
         key="official_change_request", on_change=_save_change_request,
     )
-    st.caption("先描述变更意图，不需要预先指定文档或段落。Agent 会检索完整描述和最多 3 个子问题，选取最多 5 条当前版本证据供模型分析。")
+    st.caption("先描述变更意图，不需要预先指定文档或段落。Agent 会检索完整描述和最多 3 个子问题，选取最多 5 条最新已收录资料供模型分析。")
     if st.button("检索资料并分析影响", type="primary", disabled=not ready or not summary.strip()):
         with st.spinner("正在检索当前版本官方资料并整理影响建议……"):
             result = _request(
@@ -844,7 +999,7 @@ def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None
     request_result = st.session_state.get("official_request_review")
     active_request = request_result if request_result and request_result.get("request_summary") == summary.strip() else None
     if active_request:
-        stage = 5 if _review_decision_for(active_request) else 4
+        stage = 3 if _review_decision_for(active_request) else 2
         _review_steps(stage)
         st.markdown('<div class="section-rule">本次变更分析</div>', unsafe_allow_html=True)
         _review_advice_panel(active_request, context="变更分析")
@@ -938,7 +1093,7 @@ def _review_subpage(choice: str) -> None:
     st.caption("以下内容仅属于当前会话；已确认引用关系与检索建议会明确区分。")
     if choice == "可能相关资料":
         if result.get("request_mode") == "natural_language":
-            _request_candidates_panel(result)
+            _request_candidates_panel(result, standalone=True)
         else:
             _impact_panel(result)
     elif choice == "修改前后对照":
@@ -953,20 +1108,27 @@ def _review_subpage(choice: str) -> None:
 
 def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None) -> None:
     _page_header("知识服务", "版本与历史", page_key="versions")
-    st.write("公开知识空间固定在相邻的官方发布版本。历史资料不会被当成当前版本静默引用。")
+    st.write("默认检索使用知识服务声明的最新已收录版本；页面仅展示已经同步到知识库的官方资料。")
     if not ready:
         st.info("知识服务暂不可用，连接恢复后可查看各版本的真实资料。")
         return
     docs = _request(client.documents, fallback="版本资料目录暂不可用。") or []
     baseline = workspace.get("baseline_version", "3.4.2") if workspace else "3.4.2"
-    current = workspace.get("current_version", "3.4.3") if workspace else "3.4.3"
+    current = _confirmed_current_version(workspace)
+    latest_source_time = _format_snapshot_timestamp(
+        workspace.get("latest_source_retrieval_timestamp") if workspace else None
+    )
+    if latest_source_time:
+        st.caption(f"最近收录资料：{latest_source_time}。官方上游的新版本需要同步入库后才会成为默认版本。")
     first, second = st.columns(2, gap="medium")
-    for column, version, label in ((first, baseline, "历史基线"), (second, current, "当前版本")):
+    for column, version, label in ((first, baseline, "历史基线"), (second, current, "最新已收录")):
+        if not version:
+            continue
         with column:
             with st.container(border=True):
                 st.markdown(f"### {version}　{label}")
                 matching = [row for row in docs if row.get("version") == version]
-                st.write(f"本工作台固定收录 {len(matching)} 份该版本资料。")
+                st.write(f"知识库收录 {len(matching)} 份该版本资料。")
                 for row in matching[:5]:
                     st.markdown(
                         f"- {row.get('title') or row['document_key']} · "
@@ -979,19 +1141,19 @@ def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None
                                 f"- {row.get('title') or row['document_key']} · "
                                 f"[固定版本来源（GitHub）]({row['source_url']})"
                             )
-    st.info("需要对照两个版本的内容时，在版本化知识检索中选择“全部固定版本”；版本差异提醒只报告可核验的文字差异。")
+    st.info("需要对照版本内容时，在版本化知识检索中选择“全部已收录版本”；版本差异提醒只报告可核验的文字差异。")
     st.button("进入知识检索", on_click=_navigate, args=("版本检索与问答",))
 
 
 def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None) -> None:
     _page_header("知识服务", "资料来源", page_key="sources")
-    st.write("本工作台使用 Apache DolphinScheduler 官方公开资料；每条结果均保留固定版本与原文链接。")
+    st.write("本工作台使用 Apache DolphinScheduler 官方公开资料；每条结果均保留版本信息与原文链接。")
     st.caption("独立工程演示，并非 Apache 官方产品；英文官方资料不会被自动翻译成中文原文。")
     if not ready:
         st.info("知识服务暂不可用，资料目录将在连接恢复后显示。")
         return
     docs = _request(client.documents, fallback="官方资料目录暂不可用。") or []
-    version = st.selectbox("资料版本", [*_published_versions(workspace), "all"], format_func=lambda x: "全部固定版本" if x == "all" else x, key="source_version")
+    version = st.selectbox("资料版本", [*_published_versions(workspace), "all"], format_func=lambda x: _version_option_label(x, workspace), key="source_version")
     term = st.text_input("按资料名称或工程标识筛选", key="source_filter")
     filtered = [
         row for row in docs
@@ -1109,7 +1271,7 @@ def _about(workspace: dict | None) -> None:
     st.markdown('<div class="flow-track"><span>研发资料</span><span>版本检索</span><span>引用溯源</span><span>资料变更</span><span>影响候选</span><span>人工审核</span></div>', unsafe_allow_html=True)
     st.info("本工作台是独立工程演示，不代表 Apache DolphinScheduler 官方或内部系统。")
     if workspace:
-        st.caption(f"固定版本：{workspace['baseline_version']} → {workspace['current_version']}；资料 {workspace['source_count']} 份；当前默认策略 {workspace.get('retrieval_policy', '由服务配置')}。")
+        st.caption(f"历史基线 {workspace['baseline_version']} → 最新已收录 {workspace['current_version']}；资料 {workspace['source_count']} 份；当前默认策略 {workspace.get('retrieval_policy', '由服务配置')}。")
     st.markdown("[Apache DolphinScheduler 官方仓库](https://github.com/apache/dolphinscheduler)　·　[官方 Releases](https://github.com/apache/dolphinscheduler/releases)")
 
 
@@ -1126,7 +1288,7 @@ def render() -> None:
     client = _client()
     workspace = _request(client.workspace, fallback="知识服务暂未连接，页面仍可浏览。")
     ready = bool(workspace)
-    st.session_state["official_current_version"] = _published_versions(workspace)[0]
+    _sync_workspace_version(workspace)
     with st.sidebar:
         st.markdown('<div class="sidebar-mark">工作台导航</div>', unsafe_allow_html=True)
         st.caption("选择要查看的功能页面")
