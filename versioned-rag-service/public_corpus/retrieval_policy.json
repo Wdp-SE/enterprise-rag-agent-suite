@@ -1,13 +1,19 @@
 {
   "default_policy": "bm25",
-  "benchmark_query_count": 46,
-  "benchmark_corpus_sha256": "44b2b53a5f769619af859f5b466a908a46e8bf6a3ce1ca6960f5ee594427ebd1",
+  "benchmark_query_count": 0,
+  "benchmark_corpus_sha256": "453d9de964b1c116cfa1ab9e4ed4446135da2567dac12ef8778a8b1d0350e996",
   "index_artifacts_sha256": {
-    "chunks.json": "e41c16f7feabc7c6ecddca95ebb77e698be4a3dc997b87925acb50311b2b60ed",
-    "dense_vectors.npy": "52eded25c5a89a292a917eb1ff6f6b9b5dcc5228e59202278a1cd74b95dccade"
+    "chunks.json": "1258efb90ff3aa54e33248b65cead4a86f7342497d3ae584b3376f0851118f37",
+    "dense_vectors.npy": "4fd43b38c55084ef33550a4d0e1e07306b47007906f3522c420ff99243ddc0e6"
   },
-  "quality_rule": "highest Hit@1, then MRR, then Hit@5; lower P95 resolves a quality tie",
+  "selection_status": "expanded_corpus_pending_rebenchmark",
+  "frozen_selection_evidence": {
+    "corpus_sha256": "44b2b53a5f769619af859f5b466a908a46e8bf6a3ce1ca6960f5ee594427ebd1",
+    "query_count": 46,
+    "selected_policy": "bm25",
+    "quality_rule": "highest Hit@1, then MRR, then Hit@5; lower P95 resolves a quality tie"
+  },
   "conditional_router_enabled": false,
   "reranker_enabled": false,
-  "reason": "Winner has the strongest measured overall top-result quality; group samples do not support a stable router."
+  "reason": "BM25 is retained from the frozen 52-source selection. The expanded 132-source corpus has not been rebenchmarked."
 }

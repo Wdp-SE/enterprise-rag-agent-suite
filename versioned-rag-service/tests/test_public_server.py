@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+import hashlib
+import json
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
+from src.answer_generation import GenerationProviderError, GenerationResponseError
 from src.public_knowledge import PublicKnowledgeIndex
 from src.public_server import create_app
 
@@ -9,8 +14,51 @@ from src.public_server import create_app
 QUESTION = "DolphinScheduler 参数优先级从高到低是什么？"
 
 
+def test_v3_release_is_bound_to_locked_artifacts_and_true_retrieval_counts():
+    project = Path(__file__).resolve().parents[2]
+    v3 = project / "evaluation" / "real_world_retrieval" / "quality_v3"
+    corpus = project / "versioned-rag-service" / "public_corpus"
+    release = json.loads((corpus / "retrieval_release.json").read_text(encoding="utf-8"))
+    files = {
+        "manifest_sha256": corpus / "corpus_manifest.json",
+        "policy_sha256": corpus / "retrieval_policy.json",
+        "chunks_sha256": corpus / "chunks.json",
+        "public_knowledge_sha256": project / "versioned-rag-service" / "src" / "public_knowledge.py",
+        "selection_sha256": v3 / "candidate_selection.json",
+        "holdout_execution_sha256": v3 / "holdout_execution.json",
+    }
+    for field, path in files.items():
+        assert release[field] == hashlib.sha256(path.read_bytes()).hexdigest()
+    selection = json.loads((v3 / "candidate_selection.json").read_text(encoding="utf-8"))
+    execution = json.loads((v3 / "holdout_execution.json").read_text(encoding="utf-8"))
+    assert selection["policy"] == execution["policy"] == release["policy"] == "bm25"
+    assert selection["candidate_fingerprint"] == execution["candidate_fingerprint"]
+    assert selection["candidate_fingerprint"]["public_knowledge.py"] == release["public_knowledge_sha256"]
+    assert selection["input_sha256"]["corpus_manifest.json"] == release["manifest_sha256"]
+    assert selection["input_sha256"]["retrieval_policy.json"] == release["policy_sha256"]
+    assert selection["input_sha256"]["chunks.json"] == release["chunks_sha256"]
+    assert release["result_sha256"]["dev"] == selection["dev_result_sha256"]
+    for split in ("dev", "holdout"):
+        path = v3 / "results" / f"{split}__bm25.json"
+        assert release["result_sha256"][split] == hashlib.sha256(path.read_bytes()).hexdigest()
+        actual = json.loads(path.read_text(encoding="utf-8"))
+        overall = actual["overall"]
+        metrics = release[split]
+        assert actual["input_sha256"] == selection["input_sha256"]
+        for key in ("question_count", "answerable_count", "no_answer_count", "multi_source_question_count", "mrr", "source_hit_at_5", "source_recall_at_5_macro", "source_recall_at_5_micro", "warm_search_p50_ms", "warm_search_p95_ms"):
+            assert metrics[key] == overall[key]
+        answerable = [case for case in actual["cases"] if case["answerable"]]
+        assert metrics["complete_source_count"] == sum(case["complete_source_at_5"] for case in answerable)
+        assert metrics["complete_multi_source_count"] == sum(
+            case["complete_source_at_5"] for case in answerable if len(case["required_source_ids"]) > 1
+        )
+        assert metrics["evidence_marker_found"] == sum(case["evidence_marker_found"] for case in answerable)
+        assert metrics["evidence_marker_count"] == sum(case["evidence_marker_count"] for case in answerable)
+
+
 def test_public_deployment_exposes_only_official_corpus_and_engineering_support():
-    with TestClient(create_app(index=PublicKnowledgeIndex())) as client:
+    index = PublicKnowledgeIndex()
+    with TestClient(create_app(index=index)) as client:
         health = client.get("/health").json()
         assert health["alive"] and health["rag_ready"]
         assert health["retrieval_policy"] == "bm25"
@@ -26,13 +74,69 @@ def test_public_deployment_exposes_only_official_corpus_and_engineering_support(
         )
         assert "DSIP-107" in proposal["title"]
         workspace = client.get("/public/workspace").json()
-        assert workspace["source_count"] == 52
+        assert workspace["source_count"] == len(index.manifest["sources"])
+        assert workspace["source_count"] > 0
+        assert workspace["chunk_count"] == len(index.chunks)
         assert workspace["upstream_writes_enabled"] is False
+        assert workspace["retrieval_evaluation_status"] == "v3_validated"
+        assert workspace["retrieval_evaluation"]["policy"] == "bm25"
+        assert workspace["retrieval_evaluation"]["holdout"]["complete_source_count"] == 27
+        assert workspace["retrieval_evaluation"]["holdout"]["answerable_count"] == 32
+        assert workspace["retrieval_evaluation"]["holdout"]["complete_multi_source_count"] == 4
+        assert workspace["retrieval_evaluation"]["holdout"]["multi_source_question_count"] == 8
+        assert workspace["retrieval_evaluation"]["holdout"]["evidence_marker_found"] == 37
+        assert workspace["retrieval_evaluation"]["holdout"]["evidence_marker_count"] == 49
         response = client.post("/public/search", json={"query": QUESTION})
         assert response.status_code == 200
         assert response.json()["results"][0]["source_url"].startswith(
             "https://github.com/apache/dolphinscheduler/blob/"
         )
+
+
+def test_workspace_does_not_claim_v3_release_for_mismatched_runtime_policy_or_manifest(monkeypatch):
+    index = PublicKnowledgeIndex()
+    with TestClient(create_app(index=index)) as client:
+        index.policy["default_policy"] = "dense"
+        changed_policy = client.get("/public/workspace").json()
+        assert changed_policy["retrieval_evaluation_status"] != "v3_validated"
+        assert "retrieval_evaluation" not in changed_policy
+
+        index.policy["default_policy"] = "bm25"
+        index.manifest["current_version"] = "3.5.0"
+        changed_manifest = client.get("/public/workspace").json()
+        assert changed_manifest["retrieval_evaluation_status"] != "v3_validated"
+        assert "retrieval_evaluation" not in changed_manifest
+
+        index.manifest["current_version"] = "3.4.3"
+        original_read_bytes = Path.read_bytes
+
+        def code_changed(path):
+            return b"changed retrieval implementation" if path.name == "public_knowledge.py" else original_read_bytes(path)
+
+        with monkeypatch.context() as patch:
+            patch.setattr(Path, "read_bytes", code_changed)
+            changed_code = client.get("/public/workspace").json()
+        assert changed_code["retrieval_evaluation_status"] != "v3_validated"
+        assert "retrieval_evaluation" not in changed_code
+
+
+def test_workspace_degrades_if_release_summary_is_incomplete(monkeypatch):
+    index = PublicKnowledgeIndex()
+    release_path = index.root / "retrieval_release.json"
+    release = json.loads(release_path.read_text(encoding="utf-8"))
+    del release["dev"]["question_count"]
+    original_read_text = Path.read_text
+
+    def incomplete_release(path, *args, **kwargs):
+        return json.dumps(release) if path == release_path else original_read_text(path, *args, **kwargs)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, "read_text", incomplete_release)
+        with TestClient(create_app(index=index)) as client:
+            workspace = client.get("/public/workspace").json()
+
+    assert workspace["retrieval_evaluation_status"] != "v3_validated"
+    assert "retrieval_evaluation" not in workspace
 
 
 def test_public_query_without_generator_returns_evidence_not_fake_answer():
@@ -42,6 +146,34 @@ def test_public_query_without_generator_returns_evidence_not_fake_answer():
         assert payload["answer"] == "N/A"
         assert payload["sources"] == []
         assert payload["evidence"]
+
+
+def test_oov_bm25_does_not_send_zero_score_candidates_to_paid_generator():
+    class Generator:
+        def generate(self, *, question, context):
+            raise AssertionError("No positive retrieval evidence: paid generator must not be called")
+
+    index = PublicKnowledgeIndex()
+    with TestClient(create_app(index=index, generator=Generator())) as client:
+        question = "qzxwneverpresenttokenforbm25"
+        search = client.post("/public/search", json={"query": question}).json()
+        answer = client.post("/public/query", json={"query": question}).json()
+
+    assert search["results"] == []
+    assert answer["status"] == "NO_EVIDENCE"
+    assert answer["evidence"] == []
+    assert answer["sources"] == []
+
+
+def test_search_version_validation_uses_published_manifest_instead_of_fixed_literal():
+    index = PublicKnowledgeIndex()
+    future = dict(index.manifest["sources"][0], version="3.5.0")
+    index.manifest["sources"].append(future)
+    index.manifest["current_version"] = "3.5.0"
+    with TestClient(create_app(index=index)) as client:
+        assert client.post("/public/search", json={"query": QUESTION, "version": "3.5.0"}).status_code == 200
+        assert client.post("/public/search", json={"query": QUESTION, "version": "current"}).status_code == 200
+        assert client.post("/public/query", json={"query": QUESTION, "version": "3.4.1"}).status_code == 422
 
 
 def test_generation_enabled_without_api_key_stays_in_evidence_only_mode(monkeypatch):
@@ -61,6 +193,100 @@ def test_generation_enabled_without_api_key_stays_in_evidence_only_mode(monkeypa
     assert payload["answer"] == "N/A"
     assert payload["sources"] == []
     assert payload["evidence"]
+
+
+def test_health_reports_generation_configuration_without_exposing_a_secret(monkeypatch):
+    monkeypatch.setenv("RD_V2_ALLOW_EXTERNAL_GENERATION", "true")
+    monkeypatch.setenv("RD_V2_GENERATION_PROVIDER", "deepseek")
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.setenv("DASHSCOPE_API_KEY", "wrong-provider-secret")
+
+    with TestClient(create_app(index=PublicKnowledgeIndex())) as client:
+        health = client.get("/health").json()
+
+    assert health["rag_ready"] is True
+    assert health["generation"]["status"] == "API_KEY_MISSING"
+    assert health["generation"]["provider"] == "deepseek"
+    assert health["generation"]["model"] == "deepseek-v4-flash"
+    assert "wrong-provider-secret" not in str(health)
+
+
+def test_health_reports_injected_generator_as_configured_but_unverified(monkeypatch):
+    monkeypatch.setenv("RD_V2_ALLOW_EXTERNAL_GENERATION", "false")
+
+    class Generator:
+        provider = "deepseek"
+        model = "deepseek-v4-flash"
+
+    with TestClient(create_app(index=PublicKnowledgeIndex(), generator=Generator())) as client:
+        health = client.get("/health").json()
+
+    assert health["generation"] == {
+        "status": "CONFIGURED_UNVERIFIED",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+    }
+
+
+def test_public_query_returns_provider_diagnostics_without_changing_answer_contract():
+    index = PublicKnowledgeIndex()
+    cited_chunk = index.search(QUESTION)[0]["chunk_id"]
+
+    class Generator:
+        provider = "deepseek"
+        model = "deepseek-v4-flash"
+
+        def generate_with_diagnostics(self, *, question, context):
+            return ({
+                "final_answer": "证据支持的回答。",
+                "relevant_sources": [{"document_id": cited_chunk, "page_number": 1}],
+            }, {
+                "provider": "deepseek", "requested_model": "deepseek-v4-flash",
+                "returned_model": "deepseek-v4-flash", "finish_reason": "stop",
+                "usage": {"input_tokens": 80, "output_tokens": 20, "total_tokens": 100},
+            })
+
+    with TestClient(create_app(index=index, generator=Generator())) as client:
+        payload = client.post("/public/query", json={"query": QUESTION}).json()
+
+    assert payload["status"] == "OK"
+    assert payload["sources"][0]["chunk_id"] == cited_chunk
+    assert payload["generation"]["returned_model"] == "deepseek-v4-flash"
+    assert payload["generation"]["usage"]["total_tokens"] == 100
+    assert len(payload["generation"]["request_id"]) == 32
+
+
+def test_public_query_keeps_evidence_for_safe_provider_error_categories():
+    class Generator:
+        def generate(self, *, question, context):
+            raise GenerationProviderError("GENERATION_RATE_LIMITED")
+
+    with TestClient(create_app(index=PublicKnowledgeIndex(), generator=Generator())) as client:
+        payload = client.post("/public/query", json={"query": QUESTION}).json()
+
+    assert payload["status"] == "GENERATION_RATE_LIMITED"
+    assert payload["answer"] == "N/A"
+    assert payload["sources"] == []
+    assert payload["evidence"]
+    assert payload["generation"]["request_id"]
+
+
+def test_public_query_reports_truncation_with_safe_metadata_and_evidence():
+    class Generator:
+        def generate_with_diagnostics(self, *, question, context):
+            raise GenerationResponseError("GENERATION_RESPONSE_TRUNCATED", {
+                "provider": "deepseek", "requested_model": "deepseek-v4-flash",
+                "returned_model": "deepseek-v4-flash", "finish_reason": "length",
+                "usage": {"total_tokens": 1094},
+            })
+
+    with TestClient(create_app(index=PublicKnowledgeIndex(), generator=Generator())) as client:
+        payload = client.post("/public/query", json={"query": QUESTION}).json()
+
+    assert payload["status"] == "GENERATION_RESPONSE_TRUNCATED"
+    assert payload["evidence"]
+    assert payload["generation"]["finish_reason"] == "length"
+    assert payload["generation"]["usage"]["total_tokens"] == 1094
 
 
 def test_deepseek_provider_without_deepseek_key_stays_in_evidence_only_mode(monkeypatch):
@@ -294,12 +520,20 @@ def test_public_review_advice_is_limited_to_submitted_current_evidence():
     constructed = {}
 
     class Generator:
-        def generate(self, *, question, context):
-            constructed["question"] = question
+        def generate_review(self, *, change_summary, context):
+            constructed["change_summary"] = change_summary
             constructed["context"] = context
             return {
-                "final_answer": "建议核对启动参数的优先级及其对下游说明的影响。",
-                "relevant_sources": [{"document_id": allowed[0]["chunk_id"], "page_number": 1}],
+                "change_interpretation": "假设将启动参数优先级提升。",
+                "impact_candidates": [{
+                    "evidence_chunk_id": allowed[0]["chunk_id"],
+                    "reason": "该片段说明参数优先级。",
+                    "suggested_action": "检查下游配置说明是否同步。",
+                }],
+                "evidence_gaps": ["尚未检查英文说明。"],
+                "version_ambiguities": [],
+                "reviewer_actions": ["逐版本核对相关说明。"],
+                "review_status": "REQUIRES_HUMAN_REVIEW",
             }
 
     with TestClient(create_app(index=index, generator=Generator())) as client:
@@ -311,11 +545,144 @@ def test_public_review_advice_is_limited_to_submitted_current_evidence():
     assert response.status_code == 200
     payload = response.json()
     assert payload["status"] == "OK"
-    assert payload["answer"].startswith("建议核对")
+    assert payload["review"]["change_interpretation"].startswith("假设将启动参数")
+    assert payload["review"]["impact_candidates"][0]["reason"] == "该片段说明参数优先级。"
+    assert payload["review"]["review_status"] == "REQUIRES_HUMAN_REVIEW"
     assert [row["chunk_id"] for row in payload["sources"]] == [allowed[0]["chunk_id"]]
     assert {row["chunk_id"] for row in payload["evidence"]} == {row["chunk_id"] for row in allowed}
-    assert "将启动参数调整为最高优先级" in constructed["question"]
+    assert "将启动参数调整为最高优先级" in constructed["change_summary"]
     assert all(row["chunk_id"] in constructed["context"] for row in allowed)
+
+
+def test_public_review_advice_rejects_model_citations_outside_submitted_evidence():
+    index = PublicKnowledgeIndex()
+    allowed = index.search(QUESTION, top_k=1, version="3.4.3", language="all")[0]
+
+    class Generator:
+        def generate_review(self, *, change_summary, context):
+            return {
+                "change_interpretation": "需核对相关资料。",
+                "impact_candidates": [{
+                    "evidence_chunk_id": "invented-chunk",
+                    "reason": "模型编造的证据。", "suggested_action": "不要采纳。",
+                }],
+                "evidence_gaps": [], "version_ambiguities": [],
+                "reviewer_actions": ["人工复核。"],
+                "review_status": "REQUIRES_HUMAN_REVIEW",
+            }
+
+    with TestClient(create_app(index=index, generator=Generator())) as client:
+        payload = client.post("/public/review-advice", json={
+            "change_summary": "假设变更", "evidence_chunk_ids": [allowed["chunk_id"]],
+        }).json()
+
+    assert payload["status"] == "GENERATION_RESPONSE_INVALID"
+    assert payload["review"] is None
+    assert payload["sources"] == []
+    assert payload["evidence"][0]["chunk_id"] == allowed["chunk_id"]
+
+
+def test_public_review_abstention_keeps_validated_evidence_gaps_without_impact():
+    index = PublicKnowledgeIndex()
+    hit = index.search(QUESTION, top_k=1, version="3.4.3", language="all")[0]
+
+    class Generator:
+        def generate_review(self, *, change_summary, context):
+            return {
+                "change_interpretation": "该变更需要更多资料才能判断影响。",
+                "impact_candidates": [],
+                "evidence_gaps": ["缺少下游节点恢复行为说明。"],
+                "version_ambiguities": ["尚未核对历史版本。"],
+                "reviewer_actions": ["补充恢复策略来源后重新审查。"],
+                "review_status": "REQUIRES_HUMAN_REVIEW",
+            }
+
+    with TestClient(create_app(index=index, generator=Generator())) as client:
+        payload = client.post("/public/review-advice", json={
+            "change_summary": "调整故障恢复策略", "evidence_chunk_ids": [hit["chunk_id"]],
+        }).json()
+
+    assert payload["status"] == "ABSTAINED"
+    assert payload["answer"] == "N/A"
+    assert payload["sources"] == []
+    assert payload["evidence"][0]["chunk_id"] == hit["chunk_id"]
+    assert payload["review"]["impact_candidates"] == []
+    assert payload["review"]["evidence_gaps"] == ["缺少下游节点恢复行为说明。"]
+    assert payload["review"]["version_ambiguities"] == ["尚未核对历史版本。"]
+    assert payload["review"]["reviewer_actions"] == ["补充恢复策略来源后重新审查。"]
+
+
+def test_public_review_advice_provider_failure_keeps_retrieved_evidence():
+    index = PublicKnowledgeIndex()
+    hit = index.search(QUESTION, top_k=1, version="3.4.3", language="all")[0]
+
+    class Generator:
+        def generate_review(self, *, change_summary, context):
+            raise ConnectionError("provider is unreachable")
+
+    with TestClient(create_app(index=index, generator=Generator())) as client:
+        payload = client.post("/public/review-advice", json={
+            "change_summary": "假设变更", "evidence_chunk_ids": [hit["chunk_id"]],
+        }).json()
+
+    assert payload["status"] == "GENERATION_PROVIDER_UNAVAILABLE"
+    assert payload["review"] is None
+    assert payload["sources"] == []
+    assert payload["evidence"][0]["chunk_id"] == hit["chunk_id"]
+
+
+def test_public_review_diagnostics_preserve_selected_evidence_and_review_contract():
+    index = PublicKnowledgeIndex()
+    hit = index.search(QUESTION, top_k=1, version="3.4.3", language="all")[0]
+
+    class Generator:
+        provider = "deepseek"
+        model = "deepseek-v4-flash"
+
+        def generate_review_with_diagnostics(self, *, change_summary, context):
+            return ({
+                "change_interpretation": "需要人工核对参数顺序。",
+                "impact_candidates": [{
+                    "evidence_chunk_id": hit["chunk_id"],
+                    "reason": "该段定义当前行为。", "suggested_action": "核对变更前后说明。",
+                }],
+                "evidence_gaps": [], "version_ambiguities": [],
+                "reviewer_actions": ["人工确认。"],
+                "review_status": "REQUIRES_HUMAN_REVIEW",
+            }, {
+                "provider": "deepseek", "requested_model": "deepseek-v4-flash",
+                "returned_model": "deepseek-v4-flash", "finish_reason": "stop",
+                "usage": {"input_tokens": 40, "output_tokens": 30, "total_tokens": 70},
+            })
+
+    with TestClient(create_app(index=index, generator=Generator())) as client:
+        payload = client.post("/public/review-advice", json={
+            "change_summary": "调整参数顺序", "evidence_chunk_ids": [hit["chunk_id"]],
+        }).json()
+
+    assert payload["status"] == "OK"
+    assert payload["review"]["review_status"] == "REQUIRES_HUMAN_REVIEW"
+    assert payload["sources"][0]["chunk_id"] == hit["chunk_id"]
+    assert payload["generation"]["usage"]["total_tokens"] == 70
+
+
+def test_public_review_billing_failure_is_distinct_and_keeps_evidence():
+    index = PublicKnowledgeIndex()
+    hit = index.search(QUESTION, top_k=1, version="3.4.3", language="all")[0]
+
+    class Generator:
+        def generate_review(self, *, change_summary, context):
+            raise GenerationProviderError("GENERATION_BILLING_REQUIRED")
+
+    with TestClient(create_app(index=index, generator=Generator())) as client:
+        payload = client.post("/public/review-advice", json={
+            "change_summary": "调整参数顺序", "evidence_chunk_ids": [hit["chunk_id"]],
+        }).json()
+
+    assert payload["status"] == "GENERATION_BILLING_REQUIRED"
+    assert payload["review"] is None
+    assert payload["evidence"][0]["chunk_id"] == hit["chunk_id"]
+    assert payload["generation"]["request_id"]
 
 
 def test_public_review_advice_rejects_unknown_or_historical_evidence():

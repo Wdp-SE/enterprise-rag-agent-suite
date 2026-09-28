@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 import sys
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from html import escape
+from urllib.parse import urljoin, urlsplit
 
 import streamlit as st
 
@@ -18,6 +21,7 @@ from services.rag_client import ServiceError
 
 
 CSS = PUBLIC_CSS
+
 
 def _module_heading(label: str) -> None:
     st.markdown(f'<span class="module-label">{escape(label)}</span>', unsafe_allow_html=True)
@@ -31,6 +35,17 @@ def _setting(name: str, fallback: str) -> str:
         return str(st.secrets.get(name, fallback))
     except Exception:
         return fallback
+
+
+def _published_versions(workspace: dict | None) -> list[str]:
+    """Offer only versions the connected, published corpus declares."""
+    if not workspace:
+        return ["3.4.3", "3.4.2"]
+    versions = list(dict.fromkeys(
+        str(version) for version in (workspace.get("current_version"), workspace.get("baseline_version"))
+        if version
+    ))
+    return versions or ["3.4.3", "3.4.2"]
 
 
 def _client() -> PublicKnowledgeClient:
@@ -60,25 +75,54 @@ def _remember_document_titles(docs: list[dict]) -> None:
 
 
 def _replace_markdown_images(content: str) -> str:
-    """Keep source image descriptions without requesting assets absent from the public corpus."""
+    """State the image evidence boundary without pretending alt text is OCR."""
+    def figure_notice(label: str) -> str:
+        return f"（原文配图「{label}」，图中文字未纳入检索；可在固定来源查看）"
+
     content = re.sub(
         r"!\[([^\]]*)\]\([^)]*\)",
-        lambda match: f"[图片：{match.group(1).strip() or '未命名图片'}]",
+        lambda match: figure_notice(match.group(1).strip() or "未命名配图"),
         content,
     )
     def describe_html_image(match: re.Match[str]) -> str:
         alt = re.search(r"\balt\s*=\s*(['\"])(.*?)\1", match.group(0), flags=re.I | re.S)
-        return f"[图片：{alt.group(2).strip() if alt and alt.group(2).strip() else '原文配图'}]"
+        return figure_notice(alt.group(2).strip() if alt and alt.group(2).strip() else "未命名配图")
 
     content = re.sub(r"<img\b[^>]*>", describe_html_image, content, flags=re.I)
-    return re.sub(r"<p\b[^>]*>\s*(\[图片：[^\]]+\])\s*</p>", r"\1", content, flags=re.I)
+    return re.sub(r"<p\b[^>]*>\s*(（原文配图「[^<]+?）)\s*</p>", r"\1", content, flags=re.I)
+
+
+def _rewrite_relative_source_links(content: str, source_url: str) -> str:
+    """Keep Markdown navigation on the same pinned official GitHub commit."""
+    source = urlsplit(source_url)
+    pinned_prefix = re.match(
+        r"^/apache/dolphinscheduler/blob/[0-9a-f]{40}/", source.path
+    )
+    if source.scheme != "https" or source.netloc != "github.com" or not pinned_prefix:
+        return content
+    pinned_root = f"https://github.com{pinned_prefix.group(0)}"
+
+    def replace(match: re.Match[str]) -> str:
+        destination = match.group(2).strip()
+        parsed = urlsplit(destination)
+        if (
+            not destination or any(char.isspace() for char in destination)
+            or parsed.scheme or parsed.netloc or parsed.path.startswith("/")
+        ):
+            return match.group(0)
+        resolved = urljoin(source_url, destination)
+        if not resolved.startswith(pinned_root):
+            return match.group(1)
+        return f"[{match.group(1)}]({resolved})"
+
+    return re.sub(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)", replace, content)
 
 
 def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None:
     section = row.get("heading") or "正文"
     document_title = st.session_state.get("official_document_titles", {}).get(row.get("document_id")) or row.get("document_key") or "官方资料"
     version = row.get("version", "")
-    version_label = "当前版本" if version == "3.4.3" else "历史版本"
+    version_label = "当前版本" if version == st.session_state.get("official_current_version", "3.4.3") else "历史版本"
     source_label = {
         "official_documentation": "官方文档",
         "github_release": "官方 Release",
@@ -89,12 +133,10 @@ def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None
         st.markdown(f"**[{index}] {document_title}**")
         st.caption(f"章节：{section}　｜　{version_label} {version}　｜　{row.get('locale', '')}　｜　{source_label}")
         content = _replace_markdown_images(row.get("content", ""))
-        st.write(content[:340] + ("…" if len(content) > 340 else ""))
+        content = _rewrite_relative_source_links(content, row.get("source_url", ""))
+        st.write(content)
         if row.get("source_url"):
-            st.markdown(f"[查看官方原文]({row['source_url']})")
-        if len(content) > 340:
-            with st.expander("展开完整命中片段"):
-                st.write(content)
+            st.markdown(f"[在 GitHub 查看固定版本来源]({row['source_url']})")
         with st.expander("技术详情"):
             st.code(f"document_key={row.get('document_key', '')}\nchunk_id={row.get('chunk_id', '')}\npolicy={row.get('retrieval_policy', '')}")
             if "retrieval_score" in row:
@@ -136,7 +178,7 @@ def _consistency(notes: list[dict], *, primary: dict | None = None) -> None:
                 st.markdown(f"明确字面值：`{note.get('parameter', '参数')}` → **{values}**")
             for source in note.get("sources", []):
                 st.markdown(
-                    f"- [{source.get('version', '版本未标注')} · {source.get('locale', '语言未标注')} · 查看官方来源]"
+                    f"- [{source.get('version', '版本未标注')} · {source.get('locale', '语言未标注')} · 固定来源（GitHub）]"
                     f"({source.get('source_url', '')})"
                 )
 
@@ -240,7 +282,7 @@ def _page_header(section: str, title: str, *, page_key: str, parent: str | None 
 
 def _home(ready: bool, workspace: dict | None) -> None:
     baseline = workspace.get("baseline_version", "3.4.2") if workspace else "3.4.2"
-    current = workspace.get("current_version", "3.4.3") if workspace else "3.4.3"
+    current = _published_versions(workspace)[0]
     st.markdown('<div class="masthead"><span class="kicker">公开研发资料 / 固定版本知识空间</span></div>', unsafe_allow_html=True)
     st.title("研发知识版本服务与变更影响审查")
     st.write("基于 Apache DolphinScheduler 官方公开资料，提供按版本检索与引用溯源，并协助审查资料变更的潜在影响。")
@@ -301,7 +343,8 @@ def _use_example() -> None:
 def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | None) -> None:
     _page_header("知识服务", "版本化知识检索与问答", page_key="knowledge")
     st.caption("先确定资料范围，再提出问题；回答下方始终保留可核对的官方来源。")
-    current = workspace.get("current_version", "3.4.3") if workspace else "3.4.3"
+    versions = _published_versions(workspace)
+    current = versions[0]
     default_policy = str(workspace.get("retrieval_policy", "由服务配置") if workspace else "由服务配置").upper()
     st.markdown(
         f'<div class="context-strip"><span><strong>知识空间</strong> Apache DolphinScheduler</span>'
@@ -314,8 +357,8 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
         a, b, c = st.columns([1, 1, .9], gap="medium")
         with a:
             version = st.selectbox(
-                "版本范围", ["3.4.3", "3.4.2", "all"],
-                format_func=lambda x: "全部固定版本" if x == "all" else f"{x} · {'当前版本' if x == '3.4.3' else '历史版本'}",
+                "版本范围", [*versions, "all"],
+                format_func=lambda x: "全部固定版本" if x == "all" else f"{x} · {'当前版本' if x == current else '历史版本'}",
                 key="official_version",
             )
         with b:
@@ -330,7 +373,7 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
             st.caption("范围由固定版本与语言共同限定")
     examples = [
         "DolphinScheduler 参数优先级从高到低是什么？",
-        "3.4.3 的 missed_fire_policy 对旧 schedule 默认什么？",
+        f"{current} 的 missed_fire_policy 对旧 schedule 默认什么？",
         "What is the API server health-check endpoint?",
     ]
     with st.expander("从官方资料选择示例问题"):
@@ -394,6 +437,14 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                         "RAG 后端无法连接模型服务；请检查运行后端的网络或 HTTPS 代理配置。"
                         "检索证据仍可用，修复连接后可重新生成。"
                     )
+                elif payload.get("status") == "GENERATION_PROVIDER_TIMEOUT":
+                    st.caption("模型服务响应超时；本次检索证据已保留。请稍后重试，并用下方请求编号排查后端日志。")
+                elif payload.get("status") == "GENERATION_RATE_LIMITED":
+                    st.caption("模型服务当前限流；检索证据已保留，请稍后重试。此状态不表示应用内生成次数用完。")
+                elif payload.get("status") == "GENERATION_BILLING_REQUIRED":
+                    st.caption("模型服务返回计费或余额限制；检索证据已保留。请检查模型服务账户状态。")
+                elif payload.get("status") == "GENERATION_AUTH_FAILED":
+                    st.caption("模型服务鉴权失败；检索证据已保留。请检查 RAG 后端的模型密钥与访问权限。")
                 elif payload.get("status") == "GENERATION_PROVIDER_REJECTED":
                     st.caption(
                         "模型服务拒绝了请求；请检查模型名称、API Key 状态和账户调用权限。"
@@ -403,6 +454,8 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                     st.caption(
                         "模型返回内容未满足引用回答要求，本次答案已隐藏；检索证据仍保留。"
                     )
+                elif payload.get("status") == "GENERATION_RESPONSE_TRUNCATED":
+                    st.caption("模型回复因输出长度截断，未形成可核验的完整回答；检索证据仍保留。")
                 else:
                     st.caption(
                         "在线生成未完成或未通过引用核验；下方只展示检索证据。"
@@ -430,6 +483,19 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
         with st.expander("本次检索技术详情"):
             st.write(f"固定版本范围：{version} · 语言：{language} · 默认策略：{payload.get('retrieval_policy', '由服务配置')}")
             st.caption("候选排序分数只用于同一检索策略内的排序，不代表事实正确性。")
+            generation = payload.get("generation") if mode == "query" else None
+            if isinstance(generation, dict):
+                st.caption(
+                    f"生成请求：{generation.get('request_id') or '未返回'} · "
+                    f"服务商：{generation.get('provider') or '未确认'} · "
+                    f"请求模型：{generation.get('requested_model') or '未确认'} · "
+                    f"实际模型：{generation.get('returned_model') or '未返回'}"
+                )
+                st.caption(
+                    f"结束原因：{generation.get('finish_reason') or '未返回'} · "
+                    f"生成耗时：{generation.get('latency_ms') if generation.get('latency_ms') is not None else '未记录'} ms · "
+                    f"Token 用量：{generation.get('usage') or '未返回'}"
+                )
     if not ready:
         st.info("知识服务可能正在冷启动；资料范围会在连接恢复后显示，请稍后刷新。")
 
@@ -471,9 +537,11 @@ def _impact_panel(result: dict) -> None:
             with st.container(border=True):
                 st.markdown("**官方实现 PR #18464 → DSIP #18454**")
                 st.caption(f"明确引用所在章节：{reference['source_heading']}")
-                excerpt = _replace_markdown_images(reference["source_excerpt"])
+                excerpt = _rewrite_relative_source_links(
+                    _replace_markdown_images(reference["source_excerpt"]), reference.get("source_url", "")
+                )
                 st.write(excerpt[:300] + ("…" if len(excerpt) > 300 else ""))
-                st.markdown(f"[查看明确引用的官方原文]({reference['source_url']})")
+                st.markdown(f"[在 GitHub 查看固定版本来源]({reference['source_url']})")
                 if len(excerpt) > 300:
                     with st.expander("查看完整引用原文"):
                         st.write(excerpt)
@@ -487,9 +555,11 @@ def _impact_panel(result: dict) -> None:
             st.markdown(f"**待核对资料 · {evidence.get('heading') or evidence.get('document_key')}**")
             st.caption(f"{evidence.get('version', '')}　｜　{evidence.get('locale', '')}　｜　可能受影响")
             st.write(item.get("reason", "请核对官方原文与显式引用。"))
-            content = _replace_markdown_images(evidence.get("content", ""))
+            content = _rewrite_relative_source_links(
+                _replace_markdown_images(evidence.get("content", "")), evidence.get("source_url", "")
+            )
             st.write(content[:300] + ("…" if len(content) > 300 else ""))
-            st.markdown(f"[查看官方原文]({evidence['source_url']})")
+            st.markdown(f"[在 GitHub 查看固定版本来源]({evidence['source_url']})")
             if len(content) > 300:
                 with st.expander("查看完整相关片段"):
                     st.write(content)
@@ -506,16 +576,59 @@ def _review_advice_panel(result: dict, *, context: str = "review") -> None:
     st.subheader("模型辅助核对建议")
     st.caption("建议仅依据下列本次检索片段生成，并由人工判断；不会自动修改资料。")
     if advice.get("status") == "OK" and advice.get("sources"):
-        with st.container(border=True, key=f"grounded_review_advice_{context}"):
-            st.write(advice["answer"])
-        _evidence(advice["sources"], heading=f"建议引用的官方片段（{context}）")
+        review = advice.get("review") or {}
+        st.markdown("**变更理解**")
+        st.write(review.get("change_interpretation") or advice.get("answer", "N/A"))
+        candidates = review.get("impact_candidates", [])
+        source_numbers = {
+            row.get("chunk_id"): number
+            for number, row in enumerate(advice["sources"], start=1)
+        }
+        if candidates:
+            st.markdown("**建议优先核对**")
+            for number, candidate in enumerate(candidates, start=1):
+                st.markdown(f"{number}. {candidate['reason']}")
+                st.caption(
+                    f"建议动作：{candidate['suggested_action']} · "
+                    f"引用依据：[{source_numbers.get(candidate['evidence_chunk_id'], '?')}]"
+                )
+        if review.get("evidence_gaps"):
+            st.caption("证据缺口：" + "；".join(review["evidence_gaps"]))
+        if review.get("version_ambiguities"):
+            st.caption("版本或语言歧义：" + "；".join(review["version_ambiguities"]))
+        if review.get("reviewer_actions"):
+            st.caption("人工审核动作：" + "；".join(review["reviewer_actions"]))
+        st.caption("流程状态：等待人工审核。")
+        if context == "变更分析":
+            st.caption("引用编号对应下方“可能相关资料”中的官方原文；同一片段只展示一次。")
+        else:
+            _evidence(advice["sources"], heading=f"建议引用的官方片段（{context}）")
         st.caption("本环节使用一次模型调用，仍受模型服务商的计费与限流规则约束。")
     elif advice.get("status") == "GENERATION_NOT_CONFIGURED":
         st.caption("当前环境未启用模型建议；影响候选与原文仍可继续人工核对。")
     elif advice.get("status") == "GENERATION_PROVIDER_UNAVAILABLE":
         st.caption("模型服务暂不可用；本次检索候选与原文仍保留，建议人工核对。")
+    elif advice.get("status") == "GENERATION_PROVIDER_TIMEOUT":
+        st.caption("模型建议请求超时；检索候选与原文已保留，可稍后重试或人工核对。")
+    elif advice.get("status") == "GENERATION_RATE_LIMITED":
+        st.caption("模型服务当前限流；检索候选与原文已保留，可稍后重试。")
+    elif advice.get("status") == "GENERATION_BILLING_REQUIRED":
+        st.caption("模型服务返回计费或余额限制；请检查模型账户，当前候选仍可人工核对。")
+    elif advice.get("status") == "GENERATION_AUTH_FAILED":
+        st.caption("模型服务鉴权失败；请检查后端密钥与权限，当前候选仍可人工核对。")
+    elif advice.get("status") == "GENERATION_RESPONSE_TRUNCATED":
+        st.caption("模型建议回复被截断，未作为有效建议展示；请依据已保留的候选原文人工核对。")
     elif advice.get("status") == "GENERATION_PROVIDER_REJECTED":
         st.caption("模型服务未接受本次建议请求；请检查后端模型配置，当前候选和原文仍可人工核对。")
+    elif advice.get("status") == "ABSTAINED":
+        st.info("模型提示待核对：当前证据不足以形成带有效引用的影响候选；以下缺口和动作尚未确认。")
+        review = advice.get("review") if isinstance(advice.get("review"), dict) else {}
+        if review.get("evidence_gaps"):
+            st.caption("待补证据：" + "；".join(review["evidence_gaps"]))
+        if review.get("version_ambiguities"):
+            st.caption("版本或语言歧义：" + "；".join(review["version_ambiguities"]))
+        if review.get("reviewer_actions"):
+            st.caption("建议人工核对：" + "；".join(review["reviewer_actions"]))
     elif advice.get("status") == "NO_EVIDENCE":
         st.caption("没有找到可供模型引用的其他资料；请人工检查原文和变更草案。")
     else:
@@ -543,13 +656,66 @@ def _patch_panel(result: dict) -> None:
             st.write(after)
 
 
-def _set_review_decision(decision: str) -> None:
+def _review_target_id(result: dict) -> str:
+    task_id = result.get("task_id")
+    if isinstance(task_id, str) and task_id:
+        return task_id
+    payload = json.dumps(result, ensure_ascii=False, sort_keys=True, default=str)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:24]
+
+
+def _review_decision_for(result: dict) -> str | None:
+    if st.session_state.get("official_review_decision_target") != _review_target_id(result):
+        return None
+    return st.session_state.get("official_review_decision")
+
+
+def _set_review_decision(decision: str, target_id: str) -> None:
     st.session_state["official_review_decision"] = decision
+    st.session_state["official_review_decision_target"] = target_id
+    st.session_state["official_review_decision_at"] = datetime.now(timezone.utc).isoformat()
+
+
+def _review_report(result: dict, decision: str, decided_at: str) -> dict:
+    """Export a session decision with evidence IDs and draft hashes for review."""
+    source_rows = [result.get("selected_source") or {}]
+    source_rows.extend(result.get("retrieved_results") or [])
+    source_rows.extend(result.get("review_advice", {}).get("sources") or [])
+    sources = list({
+        row["chunk_id"]: {"chunk_id": row["chunk_id"], "source_url": row.get("source_url")}
+        for row in source_rows if row.get("chunk_id")
+    }.values())
+    patch = result.get("patch_candidate") or {}
+    def content_hash(value: str | None) -> str | None:
+        return hashlib.sha256(value.encode("utf-8")).hexdigest() if isinstance(value, str) else None
+
+    return {
+        "schema_version": 1,
+        "record_scope": "session_export_only",
+        "task_id": _review_target_id(result),
+        "request_fingerprint": result.get("request_fingerprint"),
+        "request_mode": result.get("request_mode"),
+        "request_summary": result.get("request_summary"),
+        "selected_source_id": (result.get("selected_source") or {}).get("chunk_id"),
+        "before_sha256": content_hash(patch.get("before")),
+        "proposed_after_sha256": content_hash(patch.get("proposed_after")),
+        "retrieval_policy": result.get("retrieval_policy"),
+        "retrieval_trace": result.get("retrieval_trace"),
+        "evidence_gaps": result.get("evidence_gaps", []),
+        "evidence_sources": sources,
+        "model_status": result.get("review_advice", {}).get("status"),
+        "model_review": result.get("review_advice", {}).get("review"),
+        "human_decision": decision,
+        "decided_at_utc": decided_at,
+        "public_baseline_written": result.get("public_baseline_written"),
+    }
 
 
 def _clear_stale_review() -> None:
     st.session_state.pop("official_review", None)
     st.session_state.pop("official_review_decision", None)
+    st.session_state.pop("official_review_decision_target", None)
+    st.session_state.pop("official_review_decision_at", None)
 
 
 def _save_review_draft() -> None:
@@ -564,16 +730,27 @@ def _review_panel(result: dict) -> None:
     st.caption("审核只记录本次会话的决定，不创建公开候选版本，也不修改公共资料。")
     request_only = result.get("request_mode") == "natural_language"
     review_target = "本次影响分析" if request_only else "会话草案"
+    target_id = _review_target_id(result)
     approve, reject = st.columns(2)
     approve.button(f"确认已审阅{review_target}", use_container_width=True,
-                   on_click=_set_review_decision, args=("reviewed",))
+                   on_click=_set_review_decision, args=("reviewed", target_id))
     reject.button(f"退回{review_target}", use_container_width=True,
-                  on_click=_set_review_decision, args=("rejected",))
-    decision = st.session_state.get("official_review_decision")
+                  on_click=_set_review_decision, args=("rejected", target_id))
+    decision = _review_decision_for(result)
     if decision == "reviewed":
         st.success(f"已记录本次会话对{review_target}的审核结果。未创建候选版本，公共基线未修改。")
     elif decision == "rejected":
         st.info(f"{review_target}已退回。公共基线未修改。")
+    if decision:
+        report = _review_report(result, decision, st.session_state.get("official_review_decision_at", ""))
+        safe_id = re.sub(r"[^a-zA-Z0-9_-]", "", target_id)[:24] or "session"
+        st.download_button(
+            "下载本次审查记录（JSON）",
+            data=json.dumps(report, ensure_ascii=False, indent=2),
+            file_name=f"review-{safe_id}.json", mime="application/json",
+            key=f"review_export_{safe_id}",
+        )
+        st.caption("审查记录只在当前会话保留；下载文件可用于人工留档，不代表已写入审批系统。")
 
 
 def _request_candidates_panel(result: dict) -> None:
@@ -601,10 +778,33 @@ def _request_candidates_panel(result: dict) -> None:
         _evidence(result.get("retrieved_results", []), heading="当前版本 RAG 检索命中")
 
 
+def _retrieval_trace_panel(result: dict) -> None:
+    trace = result.get("retrieval_trace")
+    if not isinstance(trace, dict):
+        return
+    model_gaps = set((result.get("review_advice", {}).get("review") or {}).get("evidence_gaps") or [])
+    retrieval_gaps = [gap for gap in result.get("evidence_gaps", []) if gap not in model_gaps]
+    if retrieval_gaps:
+        st.caption("尚需补充检索证据：" + "；".join(retrieval_gaps))
+    with st.expander("检索过程与覆盖范围"):
+        st.caption(f"任务编号：{result.get('task_id', '当前会话')} · 模型建议状态：{trace.get('model_status', '未调用')}")
+        labels = {
+            "candidate_found": "已纳入证据",
+            "no_retrieval_match": "未检索到匹配",
+            "candidate_outside_evidence_budget": "候选超出证据上限",
+            "search_unavailable": "检索服务未完成",
+        }
+        for index, row in enumerate(trace.get("queries", []), 1):
+            st.markdown(f"{index}. **{labels.get(row.get('status'), '待核对')}** · {row.get('query', '')}")
+            st.caption(f"命中 {len(row.get('top_chunk_ids', []))} 条；纳入模型证据 {len(row.get('selected_chunk_ids', []))} 条。")
+
+
 def _clear_change_request_results() -> None:
     st.session_state.pop("official_request_review", None)
     st.session_state.pop("official_review", None)
     st.session_state.pop("official_review_decision", None)
+    st.session_state.pop("official_review_decision_target", None)
+    st.session_state.pop("official_review_decision_at", None)
 
 
 def _save_change_request() -> None:
@@ -628,7 +828,7 @@ def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None
         placeholder="例如：计划将全局参数优先级调整为最高，请找出需要核对的官方资料。",
         key="official_change_request", on_change=_save_change_request,
     )
-    st.caption("先描述变更意图，不需要预先指定文档或段落。RAG 默认检索当前版本，最多返回 5 条资料。")
+    st.caption("先描述变更意图，不需要预先指定文档或段落。Agent 会检索完整描述和最多 3 个子问题，选取最多 5 条当前版本证据供模型分析。")
     if st.button("检索资料并分析影响", type="primary", disabled=not ready or not summary.strip()):
         with st.spinner("正在检索当前版本官方资料并整理影响建议……"):
             result = _request(
@@ -644,11 +844,12 @@ def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None
     request_result = st.session_state.get("official_request_review")
     active_request = request_result if request_result and request_result.get("request_summary") == summary.strip() else None
     if active_request:
-        stage = 5 if st.session_state.get("official_review_decision") else 4
+        stage = 5 if _review_decision_for(active_request) else 4
         _review_steps(stage)
         st.markdown('<div class="section-rule">本次变更分析</div>', unsafe_allow_html=True)
         _review_advice_panel(active_request, context="变更分析")
         _request_candidates_panel(active_request)
+        _retrieval_trace_panel(active_request)
         _review_panel(active_request)
 
         candidates = active_request.get("retrieved_results", [])
@@ -690,8 +891,10 @@ def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None
                             "official_review_draft", selected["content"]
                         )
                     with st.expander("查看所选官方原文"):
-                        st.write(_replace_markdown_images(selected["content"]))
-                        st.markdown(f"[查看官方来源]({selected['source_url']})")
+                        st.write(_rewrite_relative_source_links(
+                            _replace_markdown_images(selected["content"]), selected.get("source_url", "")
+                        ))
+                        st.markdown(f"[在 GitHub 查看固定版本来源]({selected['source_url']})")
                     proposed = st.text_area(
                         "目标段落草案", height=170, key="official_proposed_text",
                         on_change=_save_review_draft,
@@ -718,6 +921,7 @@ def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None
             _impact_panel(active_exact)
             _review_evidence_panel(active_exact)
             _patch_panel(active_exact)
+            _retrieval_trace_panel(active_exact)
             _review_panel(active_exact)
     else:
         _review_steps(0)
@@ -764,16 +968,22 @@ def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None
                 matching = [row for row in docs if row.get("version") == version]
                 st.write(f"本工作台固定收录 {len(matching)} 份该版本资料。")
                 for row in matching[:5]:
-                    st.markdown(f"- [{row.get('title') or row['document_key']}]({row['source_url']})")
+                    st.markdown(
+                        f"- {row.get('title') or row['document_key']} · "
+                        f"[固定版本来源（GitHub）]({row['source_url']})"
+                    )
                 if len(matching) > 5:
                     with st.expander(f"查看其余 {len(matching)-5} 份资料"):
                         for row in matching[5:]:
-                            st.markdown(f"- [{row.get('title') or row['document_key']}]({row['source_url']})")
+                            st.markdown(
+                                f"- {row.get('title') or row['document_key']} · "
+                                f"[固定版本来源（GitHub）]({row['source_url']})"
+                            )
     st.info("需要对照两个版本的内容时，在版本化知识检索中选择“全部固定版本”；版本差异提醒只报告可核验的文字差异。")
     st.button("进入知识检索", on_click=_navigate, args=("版本检索与问答",))
 
 
-def _sources(client: PublicKnowledgeClient, ready: bool) -> None:
+def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None) -> None:
     _page_header("知识服务", "资料来源", page_key="sources")
     st.write("本工作台使用 Apache DolphinScheduler 官方公开资料；每条结果均保留固定版本与原文链接。")
     st.caption("独立工程演示，并非 Apache 官方产品；英文官方资料不会被自动翻译成中文原文。")
@@ -781,7 +991,7 @@ def _sources(client: PublicKnowledgeClient, ready: bool) -> None:
         st.info("知识服务暂不可用，资料目录将在连接恢复后显示。")
         return
     docs = _request(client.documents, fallback="官方资料目录暂不可用。") or []
-    version = st.selectbox("资料版本", ["all", "3.4.3", "3.4.2"], format_func=lambda x: "全部固定版本" if x == "all" else x, key="source_version")
+    version = st.selectbox("资料版本", [*_published_versions(workspace), "all"], format_func=lambda x: "全部固定版本" if x == "all" else x, key="source_version")
     term = st.text_input("按资料名称或工程标识筛选", key="source_filter")
     filtered = [
         row for row in docs
@@ -799,20 +1009,51 @@ def _sources(client: PublicKnowledgeClient, ready: bool) -> None:
         with st.container(border=True, key=f"source_row_{index}"):
             st.markdown(f"**{row.get('title') or row['document_key']}**")
             st.caption(f"{row.get('version', '')}　｜　{row.get('locale', '')}　｜　{kind.get(row.get('source_type'), '官方资料')}")
-            st.markdown(f"[查看固定版本官方原文]({row['source_url']})")
+            st.markdown(f"[在 GitHub 查看固定版本来源]({row['source_url']})")
     if len(filtered) > 12:
         with st.expander(f"查看其余 {len(filtered)-12} 份资料"):
             for row in filtered[12:]:
-                st.markdown(f"- [{row.get('title') or row['document_key']}]({row['source_url']})")
+                st.markdown(
+                    f"- {row.get('title') or row['document_key']} · "
+                    f"[固定版本来源（GitHub）]({row['source_url']})"
+                )
 
 
 def _benchmark(workspace: dict | None) -> None:
     _page_header("系统说明", "检索评测", page_key="benchmark")
     st.subheader("技术选型依据")
-    st.write("检索策略由真实 Benchmark 指标决定，而不是按照技术复杂度选择。")
+    st.write("检索策略依据有版本记录的 Benchmark 选择；语料变更后必须重新评测。")
     policy = str(workspace.get("retrieval_policy", "由服务配置") if workspace else "由服务配置").upper()
-    st.markdown(f"**当前默认：{policy}**。Dense 是字符哈希向量基线，不是神经语义 Embedding；Hybrid 已评测但总体未超过 BM25。")
+    st.markdown(f"**当前默认：{policy}**。Dense 是字符哈希向量基线，不是神经语义 Embedding；Hybrid 在旧语料选型中未超过 BM25。")
+    release = workspace.get("retrieval_evaluation") if workspace and workspace.get("retrieval_evaluation_status") == "v3_validated" else None
+    if isinstance(release, dict) and release.get("name") == "quality_v3" and release.get("policy", "").upper() == policy:
+        st.markdown("**V3 当前扩充语料（后端语料、策略与索引指纹已匹配）**")
+        st.caption("132 份官方固定来源、1322 个片段；DEV 选型后仅对 BM25 打开一次 HOLDOUT。Top-5 来源与原文锚点指标，分母只含可回答题；无答案题另作检索诊断。")
+        st.caption("当前服务核对语料、默认检索策略与片段索引指纹；选型和 DEV/HOLDOUT 结果哈希由仓库测试核验。以下是离线检索评测，不是线上实时质量监控。")
+        fields = (
+            ("source_hit_at_5", "来源 Hit@5"),
+            ("source_recall_at_5_macro", "来源 Recall@5（宏）"),
+            ("mrr", "来源 MRR"),
+        )
+        rows = ["| 切分 | 题数（可答/无答案） | " + " | ".join(label for _, label in fields) + " | 完整来源 | 多来源完整 | 原文锚点 | warm P95 |",
+                "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
+        for split, label in (("dev", "DEV"), ("holdout", "HOLDOUT")):
+            values = release.get(split, {})
+            rows.append(
+                f"| {label} | {values['question_count']}（{values['answerable_count']}/{values['no_answer_count']}） | "
+                + " | ".join(f"{values[key]:.4f}" for key, _ in fields)
+                + f" | {values['complete_source_count']}/{values['answerable_count']}"
+                + f" | {values['complete_multi_source_count']}/{values['multi_source_question_count']}"
+                + f" | {values['evidence_marker_found']}/{values['evidence_marker_count']}"
+                + f" | {values['warm_search_p95_ms']:.2f} ms |"
+            )
+        st.markdown("\n".join(rows))
+        st.caption("HOLDOUT 多来源完整命中仅 4/8，跨资料与跨版本核对仍是短板。本机 warm 检索时间不含公网、冷启动和模型生成；这些指标也不能代表答案正确率或幻觉率。")
+    else:
+        st.caption("当前后端尚未匹配 V3 扩充语料评测的发布指纹；可能仍运行旧服务或语料、策略已变化。不能把仓库内 V3 指标当作当前后端成绩。")
     st.caption("Rerank：NOT EVALUATED。尚未完成符合轻量部署条件的可重复双语评测，当前不进入默认链路。")
+    st.markdown("**历史选型（旧语料）**")
+    st.caption("以下冻结实验只用于说明最初选择 BM25 的依据；语料范围较小，不能作为当前 132 份资料的检索质量。")
     path = Path(__file__).resolve().parents[1] / "evaluation" / "real_world_retrieval" / "results" / "benchmark_results.json"
     try:
         report = json.loads(path.read_text(encoding="utf-8"))
@@ -885,6 +1126,7 @@ def render() -> None:
     client = _client()
     workspace = _request(client.workspace, fallback="知识服务暂未连接，页面仍可浏览。")
     ready = bool(workspace)
+    st.session_state["official_current_version"] = _published_versions(workspace)[0]
     with st.sidebar:
         st.markdown('<div class="sidebar-mark">工作台导航</div>', unsafe_allow_html=True)
         st.caption("选择要查看的功能页面")
@@ -904,7 +1146,7 @@ def render() -> None:
     elif choice == "版本与历史":
         _versions(client, ready, workspace)
     elif choice == "资料与来源":
-        _sources(client, ready)
+        _sources(client, ready, workspace)
     elif choice == "新建变更审查":
         docs = _request(client.documents, fallback="官方资料目录暂不可用。") if ready else []
         _agent(client, ready, docs or [])

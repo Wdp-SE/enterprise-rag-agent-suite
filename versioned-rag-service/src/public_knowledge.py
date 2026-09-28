@@ -17,7 +17,13 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1] / "public_corpus"
 TOKEN_RE = re.compile(r"[a-z][a-z0-9_.-]*|[0-9]+|[\u3400-\u9fff]+", re.I)
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
-SUPPORTED_POLICIES = ("dense", "bm25", "hybrid")
+BM25_DIVERSITY_PREFIX = {
+    "bm25_source_diverse": 0,
+    "bm25_top2_diverse": 2,
+    "bm25_top3_diverse": 3,
+}
+SUPPORTED_POLICIES = ("dense", "bm25", "bm25_fields", *BM25_DIVERSITY_PREFIX, "hybrid")
+BM25_FIELD_WEIGHTS = {"title": 3.0, "heading_path": 4.0, "body": 1.0}
 
 
 def tokens(text: str) -> list[str]:
@@ -46,10 +52,10 @@ def dense_vector(text: str, dimension: int = 512) -> np.ndarray:
     return vector
 
 
-def _parts(text: str, max_chars: int = 1250) -> list[tuple[str, str]]:
-    heading = ""
+def _parts(text: str, max_chars: int = 1250) -> list[tuple[str, list[str], str]]:
+    heading_path: list[str] = []
     body: list[str] = []
-    sections: list[tuple[str, str]] = []
+    sections: list[tuple[str, list[str], str]] = []
     def flush() -> None:
         nonlocal body
         raw = "\n".join(body).strip()
@@ -58,28 +64,38 @@ def _parts(text: str, max_chars: int = 1250) -> list[tuple[str, str]]:
             piece = ""
             for paragraph in paragraphs:
                 if len(piece) + len(paragraph) > max_chars and piece:
-                    sections.append((heading, piece.strip()))
+                    sections.append((heading_path[-1] if heading_path else "", list(heading_path), piece.strip()))
                     piece = ""
                 if len(paragraph) > max_chars:
                     for offset in range(0, len(paragraph), max_chars):
                         segment = paragraph[offset:offset + max_chars]
                         if piece:
-                            sections.append((heading, piece.strip()))
+                            sections.append((heading_path[-1] if heading_path else "", list(heading_path), piece.strip()))
                         piece = segment
                 else:
                     piece += ("\n\n" if piece else "") + paragraph
             if piece:
-                sections.append((heading, piece.strip()))
+                sections.append((heading_path[-1] if heading_path else "", list(heading_path), piece.strip()))
         body = []
     for line in text.splitlines():
         found = HEADING_RE.match(line)
         if found:
             flush()
-            heading = found.group(2).strip()
+            level = len(found.group(1))
+            heading_path = heading_path[:level - 1]
+            heading_path.append(found.group(2).strip())
         else:
             body.append(line)
     flush()
     return sections
+
+
+def _document_title(text: str, fallback: str) -> str:
+    for line in text.splitlines():
+        found = HEADING_RE.match(line)
+        if found and len(found.group(1)) == 1:
+            return found.group(2).strip()
+    return fallback
 
 
 def build_index(root: Path = ROOT) -> dict:
@@ -90,14 +106,16 @@ def build_index(root: Path = ROOT) -> dict:
         if hashlib.sha256(raw).hexdigest() != source["sha256"]:
             raise ValueError(f"source changed: {source['local_path']}")
         body = raw.decode("utf-8")
-        for number, (heading, content) in enumerate(_parts(body), start=1):
+        document_title = _document_title(body, source["document_key"])
+        for number, (heading, heading_path, content) in enumerate(_parts(body), start=1):
             key = f"{source['version']}:{source['language']}:{source['document_key']}"
             chunks.append({
                 "chunk_id": f"{key}:{number}", "document_id": key,
                 "document_key": source["document_key"], "version": source["version"],
                 "locale": source["locale"], "language": source["language"],
                 "source_type": source["source_type"], "source_url": source["source_url"],
-                "heading": heading, "content": content,
+                "document_title": document_title, "heading": heading,
+                "heading_path": heading_path, "content": content,
                 "repository": source["repository"], "document_path": source["document_path"],
             })
     vectors = np.stack([
@@ -110,6 +128,19 @@ def build_index(root: Path = ROOT) -> dict:
         newline="\n",
     )
     np.save(root / "dense_vectors.npy", vectors)
+    policy_path = root / "retrieval_policy.json"
+    if policy_path.exists():
+        policy = json.loads(policy_path.read_text(encoding="utf-8"))
+        policy["benchmark_corpus_sha256"] = hashlib.sha256(
+            (root / "corpus_manifest.json").read_bytes()
+        ).hexdigest()
+        policy["index_artifacts_sha256"] = {
+            name: hashlib.sha256((root / name).read_bytes()).hexdigest()
+            for name in ("chunks.json", "dense_vectors.npy")
+        }
+        policy_path.write_text(
+            json.dumps(policy, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n",
+        )
     return {"files": len(manifest["sources"]), "chunks": len(chunks), "dimension": vectors.shape[1]}
 
 
@@ -127,6 +158,22 @@ class PublicKnowledgeIndex:
         self.doc_freq = Counter()
         for row in self.term_freqs:
             self.doc_freq.update(row.keys())
+        self.field_term_freqs = {
+            "title": [Counter(tokens(c.get("document_title", c["document_key"]) + " " + c["document_key"])) for c in self.chunks],
+            "heading_path": [Counter(tokens(" ".join(c.get("heading_path", [c["heading"]])))) for c in self.chunks],
+            "body": [Counter(tokens(c["content"])) for c in self.chunks],
+        }
+        self.field_lengths = {
+            field: np.array([sum(row.values()) for row in rows])
+            for field, rows in self.field_term_freqs.items()
+        }
+        self.field_avg_lengths = {
+            field: max(float(np.mean(lengths)), 1.0)
+            for field, lengths in self.field_lengths.items()
+        }
+        self.field_doc_freq = Counter()
+        for chunk_fields in zip(*self.field_term_freqs.values()):
+            self.field_doc_freq.update(set().union(*(row.keys() for row in chunk_fields)))
         policy_path = root / "retrieval_policy.json"
         self.policy = json.loads(policy_path.read_text(encoding="utf-8")) if policy_path.exists() else {}
         if self.policy and self.policy.get("default_policy") not in SUPPORTED_POLICIES:
@@ -160,19 +207,43 @@ class PublicKnowledgeIndex:
                     scores[i] += idf * tf * 2.2 / (tf + 1.2 * (0.25 + 0.75 * self.lengths[i] / self.avg_length))
         return scores
 
+    def _bm25_fields(self, query: str) -> np.ndarray:
+        scores = np.zeros(len(self.chunks), dtype=np.float32)
+        n = len(self.chunks)
+        for term in set(tokens(query)):
+            df = self.field_doc_freq.get(term, 0)
+            if not df:
+                continue
+            idf = math.log(1 + (n - df + 0.5) / (df + 0.5))
+            for field, rows in self.field_term_freqs.items():
+                weight = BM25_FIELD_WEIGHTS[field]
+                lengths = self.field_lengths[field]
+                avg_length = self.field_avg_lengths[field]
+                for i, row in enumerate(rows):
+                    tf = row.get(term, 0)
+                    if tf:
+                        scores[i] += weight * idf * tf * 2.2 / (
+                            tf + 1.2 * (0.25 + 0.75 * lengths[i] / avg_length)
+                        )
+        return scores
+
     def search(
-        self, query: str, *, top_k: int = 5, version: str = "3.4.3",
+        self, query: str, *, top_k: int = 5, version: str = "current",
         language: str = "zh_preferred", policy: str | None = None,
     ) -> list[dict]:
         if not query.strip() or len(query) > 4000 or not 1 <= top_k <= 20:
             raise ValueError("invalid search request")
-        if version not in ("3.4.2", "3.4.3", "all") or language not in ("zh_preferred", "all", "zh", "en"):
+        if version == "current":
+            version = self.manifest["current_version"]
+        available_versions = {source["version"] for source in self.manifest["sources"]}
+        if (version != "all" and version not in available_versions) or language not in ("zh_preferred", "all", "zh", "en"):
             raise ValueError("unsupported public corpus scope")
         policy = policy or self.policy.get("default_policy")
         if policy not in SUPPORTED_POLICIES:
             raise ValueError("unsupported retrieval policy")
-        dense = self.matrix @ dense_vector(query)
-        sparse = self._bm25(query)
+        dense = self.matrix @ dense_vector(query) if policy in ("dense", "hybrid") else None
+        sparse = self._bm25(query) if policy in ("bm25", "hybrid") or policy in BM25_DIVERSITY_PREFIX else None
+        fielded_sparse = self._bm25_fields(query) if policy == "bm25_fields" else None
         eligible = [
             i for i, chunk in enumerate(self.chunks)
             if (version == "all" or chunk["version"] == version)
@@ -187,6 +258,29 @@ class PublicKnowledgeIndex:
         elif policy == "bm25":
             order = ranked(sparse)
             score = sparse
+        elif policy in BM25_DIVERSITY_PREFIX:
+            # Experimental discovery: retain the fixed BM25 prefix, then cover
+            # distinct positive-score sources before filling in BM25 order.
+            # The production default and original BM25 scores stay unchanged.
+            bm25_order = ranked(sparse)
+            prefix_count = min(BM25_DIVERSITY_PREFIX[policy], top_k)
+            distinct = bm25_order[:prefix_count]
+            seen_sources = {self.chunks[i]["document_id"] for i in distinct}
+            for i in bm25_order[prefix_count:]:
+                if sparse[i] <= 0:
+                    continue
+                document_id = self.chunks[i]["document_id"]
+                if document_id not in seen_sources:
+                    distinct.append(i)
+                    seen_sources.add(document_id)
+                    if len(distinct) == top_k:
+                        break
+            selected = set(distinct)
+            order = distinct + [i for i in bm25_order if i not in selected]
+            score = sparse
+        elif policy == "bm25_fields":
+            order = ranked(fielded_sparse)
+            score = fielded_sparse
         else:
             a = ranked(dense)
             b = ranked(sparse)

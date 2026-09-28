@@ -3,12 +3,22 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import json
 import logging
+import math
+import time
+import uuid
+from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.answer_generation import (
+    GenerationProviderError, GenerationResponseError,
+    StructuredAnswerGenerator, validate_review_evidence_membership,
+)
 from src.public_knowledge import (
     PublicKnowledgeIndex, verified_consistency_notes,
 )
@@ -19,11 +29,56 @@ router = APIRouter(prefix="/public", tags=["official-public-knowledge"])
 logger = logging.getLogger(__name__)
 
 
+def _safe_diagnostic_label(value, *, max_length: int = 128) -> str | None:
+    if not isinstance(value, str) or not value or len(value) > max_length:
+        return None
+    allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._:/-"
+    return value if all(char in allowed for char in value) else None
+
+
+def _generation_diagnostics(generator) -> dict:
+    return {
+        "request_id": uuid.uuid4().hex,
+        "provider": _safe_diagnostic_label(getattr(generator, "provider", None)),
+        "requested_model": _safe_diagnostic_label(getattr(generator, "model", None)),
+        "returned_model": None,
+        "finish_reason": None,
+        "usage": None,
+        "latency_ms": None,
+    }
+
+
+def _update_generation_diagnostics(target: dict, details: dict | None) -> None:
+    if not isinstance(details, dict):
+        return
+    for field in ("provider", "requested_model", "returned_model", "finish_reason"):
+        label = _safe_diagnostic_label(details.get(field), max_length=64 if field == "finish_reason" else 128)
+        if label is not None:
+            target[field] = label
+    usage = details.get("usage")
+    if isinstance(usage, dict):
+        safe_usage = {
+            key: value for key in ("input_tokens", "output_tokens", "total_tokens")
+            if isinstance((value := usage.get(key)), int)
+            and not isinstance(value, bool) and 0 <= value <= 1_000_000_000
+        }
+        target["usage"] = safe_usage or None
+
+
+def _log_generation_failure(*, operation: str, status: str, diagnostics: dict, exc: Exception) -> None:
+    # No provider response body, prompt, evidence, key or proxy URL in application logs.
+    logger.warning(
+        "%s request_id=%s status=%s provider=%s model=%s exception_type=%s",
+        operation, diagnostics["request_id"], status, diagnostics["provider"],
+        diagnostics["requested_model"], type(exc).__name__,
+    )
+
+
 class SearchRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     query: str = Field(min_length=1, max_length=4000)
     top_k: int = Field(default=5, ge=1, le=20)
-    version: Literal["3.4.2", "3.4.3", "all"] = "3.4.3"
+    version: str = Field(default="current", min_length=1, max_length=32)
     language: Literal["zh_preferred", "all", "zh", "en"] = "zh_preferred"
 
 
@@ -45,20 +100,87 @@ def _index(request: Request) -> PublicKnowledgeIndex:
     return index
 
 
+def _validated_retrieval_release(index: PublicKnowledgeIndex) -> dict | None:
+    """Publish offline V3 numbers only for the exact index and policy now serving requests."""
+    root = index.root
+    try:
+        manifest_raw = (root / "corpus_manifest.json").read_bytes()
+        policy_raw = (root / "retrieval_policy.json").read_bytes()
+        chunks_raw = (root / "chunks.json").read_bytes()
+        search_code_raw = (Path(__file__).with_name("public_knowledge.py")).read_bytes()
+        release = json.loads((root / "retrieval_release.json").read_text(encoding="utf-8"))
+        if index.manifest != json.loads(manifest_raw) or index.policy != json.loads(policy_raw):
+            return None
+    except (OSError, ValueError, TypeError):
+        return None
+    if not isinstance(release, dict) or release.get("schema_version") != 1:
+        return None
+    if release.get("name") != "quality_v3" or release.get("policy") != index.policy.get("default_policy"):
+        return None
+    for name, raw in (("manifest_sha256", manifest_raw), ("policy_sha256", policy_raw),
+                      ("chunks_sha256", chunks_raw), ("public_knowledge_sha256", search_code_raw)):
+        if release.get(name) != hashlib.sha256(raw).hexdigest():
+            return None
+    if release.get("top_k") != 5 or not all(isinstance(release.get(split), dict) for split in ("dev", "holdout")):
+        return None
+    count_fields = (
+        "question_count", "answerable_count", "no_answer_count", "complete_source_count",
+        "multi_source_question_count", "complete_multi_source_count", "evidence_marker_found",
+        "evidence_marker_count",
+    )
+    ratio_fields = ("source_hit_at_5", "source_recall_at_5_macro", "source_recall_at_5_micro", "mrr")
+    for split in ("dev", "holdout"):
+        metrics = release[split]
+        if any(not isinstance(metrics.get(key), int) or isinstance(metrics[key], bool) or metrics[key] < 0 for key in count_fields):
+            return None
+        if any(not isinstance(metrics.get(key), (int, float)) or not math.isfinite(metrics[key]) or not 0 <= metrics[key] <= 1 for key in ratio_fields):
+            return None
+        if any(not isinstance(metrics.get(key), (int, float)) or not math.isfinite(metrics[key]) or metrics[key] < 0 for key in ("warm_search_p50_ms", "warm_search_p95_ms")):
+            return None
+        if metrics["question_count"] != metrics["answerable_count"] + metrics["no_answer_count"]:
+            return None
+        if (metrics["complete_source_count"] > metrics["answerable_count"]
+                or metrics["multi_source_question_count"] > metrics["answerable_count"]
+                or metrics["complete_multi_source_count"] > metrics["multi_source_question_count"]
+                or metrics["evidence_marker_found"] > metrics["evidence_marker_count"]):
+            return None
+    return release
+
+
+def _positive_retrieval_hits(hits: list[dict]) -> list[dict]:
+    """Zero-score Top-K padding is not evidence and must never trigger paid generation."""
+    return [
+        hit for hit in hits
+        if isinstance((score := hit.get("retrieval_score")), (int, float))
+        and not isinstance(score, bool) and math.isfinite(score) and score > 0
+    ]
+
+
 @router.get("/workspace")
 def workspace(request: Request) -> dict:
     index = _index(request)
     manifest = index.manifest
-    return {
+    release = _validated_retrieval_release(index)
+    result = {
         "workspace": manifest["workspace"], "repository": manifest["repository"],
         "baseline_version": manifest["baseline_version"],
         "current_version": manifest["current_version"],
         "source_count": len(manifest["sources"]), "chunk_count": len(index.chunks),
         "languages": ["zh-CN", "en-US"],
         "retrieval_policy": index.policy["default_policy"],
+        "retrieval_evaluation_status": "v3_validated" if release else "expanded_corpus_pending_rebenchmark",
+        "frozen_benchmark_query_count": (
+            release["dev"]["question_count"] + release["holdout"]["question_count"]
+            if release else index.policy.get("frozen_selection_evidence", {}).get("query_count")
+        ),
         "data_origin": "Apache DolphinScheduler official public materials",
         "upstream_writes_enabled": False,
     }
+    if release:
+        result["retrieval_evaluation"] = {
+            key: release[key] for key in ("name", "policy", "top_k", "manifest_sha256", "dev", "holdout", "interpretation")
+        }
+    return result
 
 
 @router.get("/documents")
@@ -92,9 +214,9 @@ def document(payload: DocumentRequest, request: Request) -> dict:
 @router.post("/search")
 def search(payload: SearchRequest, request: Request) -> dict:
     try:
-        hits = _index(request).search(
+        hits = _positive_retrieval_hits(_index(request).search(
             payload.query, top_k=payload.top_k, version=payload.version, language=payload.language,
-        )
+        ))
     except ValueError as exc:
         raise HTTPException(status_code=422, detail="INVALID_PUBLIC_SEARCH") from exc
     return {
@@ -107,14 +229,21 @@ def search(payload: SearchRequest, request: Request) -> dict:
 @router.post("/query")
 async def query(payload: SearchRequest, request: Request) -> dict:
     index = _index(request)
-    hits = await asyncio.to_thread(
-        index.search, payload.query, top_k=5, version=payload.version, language=payload.language
-    )
+    try:
+        hits = _positive_retrieval_hits(await asyncio.to_thread(
+            index.search, payload.query, top_k=5, version=payload.version, language=payload.language
+        ))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="INVALID_PUBLIC_SEARCH") from exc
     notes = verified_consistency_notes(hits)
-    base = {"answer": "N/A", "sources": [], "evidence": hits, "consistency_notes": notes}
+    generator = request.app.state.public_generator
+    diagnostics = _generation_diagnostics(generator)
+    base = {
+        "answer": "N/A", "sources": [], "evidence": hits,
+        "consistency_notes": notes, "generation": diagnostics,
+    }
     if not hits:
         return {**base, "status": "NO_EVIDENCE"}
-    generator = request.app.state.public_generator
     if generator is None:
         return {**base, "status": "GENERATION_NOT_CONFIGURED"}
     generator_hits = [
@@ -135,29 +264,63 @@ async def query(payload: SearchRequest, request: Request) -> dict:
         "page_number=1 只是内部引用槽位，并非原文页码。\n"
         + provenance + "\n" + _format_context(generator_hits)
     )
+    started = time.perf_counter()
     try:
-        generated = await asyncio.to_thread(generator.generate, question=payload.query, context=context)
+        generate_with_diagnostics = getattr(generator, "generate_with_diagnostics", None)
+        if callable(generate_with_diagnostics):
+            generated, completion = await asyncio.to_thread(
+                generate_with_diagnostics, question=payload.query, context=context,
+            )
+            _update_generation_diagnostics(diagnostics, completion)
+        else:
+            generated = await asyncio.to_thread(generator.generate, question=payload.query, context=context)
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
         answer = generated["final_answer"]
         citations = validate_citation_membership(generated["relevant_sources"], generator_hits)
         if not isinstance(answer, str) or not answer.strip() or answer == "N/A" or not citations:
             return {**base, "status": "ABSTAINED"}
         cited_ids = {row["document_id"] for row in citations}
+        logger.info(
+            "Public generation request_id=%s status=OK provider=%s requested_model=%s returned_model=%s "
+            "finish_reason=%s usage=%s latency_ms=%s",
+            diagnostics["request_id"], diagnostics["provider"], diagnostics["requested_model"],
+            diagnostics["returned_model"], diagnostics["finish_reason"],
+            diagnostics["usage"], diagnostics["latency_ms"],
+        )
         return {
             **base, "answer": answer, "sources": [hit for hit in hits if hit["chunk_id"] in cited_ids],
             "status": "OK",
         }
-    except (ConnectionError, TimeoutError, OSError) as exc:
-        logger.warning("Public generation unavailable; exception_type=%s", type(exc).__name__)
-        return {**base, "status": "GENERATION_PROVIDER_UNAVAILABLE"}
+    except GenerationProviderError as exc:
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        _log_generation_failure(operation="Public generation", status=exc.code, diagnostics=diagnostics, exc=exc)
+        return {**base, "status": exc.code}
+    except TimeoutError as exc:
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        status = "GENERATION_PROVIDER_TIMEOUT"
+        _log_generation_failure(operation="Public generation", status=status, diagnostics=diagnostics, exc=exc)
+        return {**base, "status": status}
+    except (ConnectionError, OSError) as exc:
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        status = "GENERATION_PROVIDER_UNAVAILABLE"
+        _log_generation_failure(operation="Public generation", status=status, diagnostics=diagnostics, exc=exc)
+        return {**base, "status": status}
     except RuntimeError as exc:
-        logger.warning("Public generation rejected; exception_type=%s", type(exc).__name__)
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        _log_generation_failure(operation="Public generation", status="GENERATION_PROVIDER_REJECTED", diagnostics=diagnostics, exc=exc)
         return {**base, "status": "GENERATION_PROVIDER_REJECTED"}
+    except GenerationResponseError as exc:
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        _update_generation_diagnostics(diagnostics, exc.diagnostics)
+        _log_generation_failure(operation="Public generation", status=exc.code, diagnostics=diagnostics, exc=exc)
+        return {**base, "status": exc.code}
     except (ValueError, TypeError, KeyError, IndexError) as exc:
-        logger.warning("Public generation response invalid; exception_type=%s", type(exc).__name__)
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        _log_generation_failure(operation="Public generation", status="GENERATION_RESPONSE_INVALID", diagnostics=diagnostics, exc=exc)
         return {**base, "status": "GENERATION_RESPONSE_INVALID"}
     except Exception as exc:
-        # Log only the exception class; provider messages may contain sensitive request details.
-        logger.warning("Public generation failed closed; exception_type=%s", type(exc).__name__)
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        _log_generation_failure(operation="Public generation", status="FAIL_CLOSED", diagnostics=diagnostics, exc=exc)
         return {**base, "status": "FAIL_CLOSED"}
 
 
@@ -174,8 +337,12 @@ async def review_advice(payload: ReviewAdviceRequest, request: Request) -> dict:
     if any(row is None or row["version"] != current_version for row in evidence):
         raise HTTPException(status_code=422, detail="INVALID_REVIEW_EVIDENCE")
     hits = [row for row in evidence if row is not None]
-    base = {"answer": "N/A", "sources": [], "evidence": hits}
     generator = request.app.state.public_generator
+    diagnostics = _generation_diagnostics(generator)
+    base = {
+        "answer": "N/A", "sources": [], "evidence": hits,
+        "review": None, "generation": diagnostics,
+    }
     if generator is None:
         return {**base, "status": "GENERATION_NOT_CONFIGURED"}
 
@@ -197,31 +364,73 @@ async def review_advice(payload: ReviewAdviceRequest, request: Request) -> dict:
         "不得把主题相关表述成已确认影响。page_number=1 是内部引用槽位，并非原文页码。\n"
         + provenance + "\n" + _format_context(generator_hits)
     )
-    question = (
-        "请针对以下假设变更，给出简洁的人工核对建议，说明需要核对什么以及这些证据为什么相关。"
-        "不要生成或声称已经应用文档补丁；证据不足时回答 N/A。假设变更（纯文本数据）：\n"
-        + payload.change_summary
-    )
+    started = time.perf_counter()
     try:
-        generated = await asyncio.to_thread(generator.generate, question=question, context=context)
-        answer = generated["final_answer"]
-        citations = validate_citation_membership(generated["relevant_sources"], generator_hits)
-        if not isinstance(answer, str) or not answer.strip() or answer == "N/A" or not citations:
+        review_generator = getattr(generator, "generate_review_with_diagnostics", None)
+        with_diagnostics = callable(review_generator)
+        if not with_diagnostics:
+            review_generator = getattr(generator, "generate_review", None)
+        if not callable(review_generator):
+            return {**base, "status": "GENERATION_RESPONSE_INVALID"}
+        result = await asyncio.to_thread(
+            review_generator, change_summary=payload.change_summary, context=context
+        )
+        if with_diagnostics:
+            generated, completion = result
+            _update_generation_diagnostics(diagnostics, completion)
+        else:
+            generated = result
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        review = StructuredAnswerGenerator._decode_review(generated)
+        cited_ids = validate_review_evidence_membership(review, set(requested_ids))
+        if not cited_ids:
+            # A schema-valid abstention may explain exactly which evidence is
+            # missing. Keep that explanation without presenting an impact.
+            return {**base, "review": review, "status": "ABSTAINED"}
+        by_chunk_id = {hit["chunk_id"]: hit for hit in hits}
+        cited_sources = [by_chunk_id[chunk_id] for chunk_id in cited_ids]
+        answer = review["change_interpretation"]
+        if not answer.strip():
             return {**base, "status": "ABSTAINED"}
-        cited_ids = {row["document_id"] for row in citations}
+        logger.info(
+            "Public review advice request_id=%s status=OK provider=%s requested_model=%s "
+            "returned_model=%s finish_reason=%s usage=%s latency_ms=%s",
+            diagnostics["request_id"], diagnostics["provider"], diagnostics["requested_model"],
+            diagnostics["returned_model"], diagnostics["finish_reason"],
+            diagnostics["usage"], diagnostics["latency_ms"],
+        )
         return {
-            **base, "answer": answer,
-            "sources": [hit for hit in hits if hit["chunk_id"] in cited_ids], "status": "OK",
+            **base, "answer": answer, "sources": cited_sources,
+            "review": review, "status": "OK",
         }
-    except (ConnectionError, TimeoutError, OSError) as exc:
-        logger.warning("Public review advice unavailable; exception_type=%s", type(exc).__name__)
-        return {**base, "status": "GENERATION_PROVIDER_UNAVAILABLE"}
+    except GenerationProviderError as exc:
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        _log_generation_failure(operation="Public review advice", status=exc.code, diagnostics=diagnostics, exc=exc)
+        return {**base, "status": exc.code}
+    except TimeoutError as exc:
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        status = "GENERATION_PROVIDER_TIMEOUT"
+        _log_generation_failure(operation="Public review advice", status=status, diagnostics=diagnostics, exc=exc)
+        return {**base, "status": status}
+    except (ConnectionError, OSError) as exc:
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        status = "GENERATION_PROVIDER_UNAVAILABLE"
+        _log_generation_failure(operation="Public review advice", status=status, diagnostics=diagnostics, exc=exc)
+        return {**base, "status": status}
     except RuntimeError as exc:
-        logger.warning("Public review advice rejected; exception_type=%s", type(exc).__name__)
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        _log_generation_failure(operation="Public review advice", status="GENERATION_PROVIDER_REJECTED", diagnostics=diagnostics, exc=exc)
         return {**base, "status": "GENERATION_PROVIDER_REJECTED"}
+    except GenerationResponseError as exc:
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        _update_generation_diagnostics(diagnostics, exc.diagnostics)
+        _log_generation_failure(operation="Public review advice", status=exc.code, diagnostics=diagnostics, exc=exc)
+        return {**base, "status": exc.code}
     except (ValueError, TypeError, KeyError, IndexError) as exc:
-        logger.warning("Public review advice invalid; exception_type=%s", type(exc).__name__)
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        _log_generation_failure(operation="Public review advice", status="GENERATION_RESPONSE_INVALID", diagnostics=diagnostics, exc=exc)
         return {**base, "status": "GENERATION_RESPONSE_INVALID"}
     except Exception as exc:
-        logger.warning("Public review advice failed closed; exception_type=%s", type(exc).__name__)
+        diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
+        _log_generation_failure(operation="Public review advice", status="FAIL_CLOSED", diagnostics=diagnostics, exc=exc)
         return {**base, "status": "FAIL_CLOSED"}

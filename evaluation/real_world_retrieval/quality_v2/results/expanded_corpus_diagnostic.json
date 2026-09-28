@@ -1,0 +1,652 @@
+{
+  "purpose": "regression_diagnostic_only_not_new_holdout_or_policy_selection",
+  "policy": "bm25",
+  "frozen_questions_sha256": "ad0eab8c56c65d6d5566ec6ec8673c1d95e84d280ec879ab512225c28bab3420",
+  "frozen_ground_truth_sha256": "f30b98ea8eaea03fd4b2f84870f9c7912f27ebf450ada42055ea80ab9dbbe86c",
+  "old_corpus_manifest_sha256": "44b2b53a5f769619af859f5b466a908a46e8bf6a3ce1ca6960f5ee594427ebd1",
+  "expanded_corpus_manifest_sha256": "453d9de964b1c116cfa1ab9e4ed4446135da2567dac12ef8778a8b1d0350e996",
+  "source_count": 132,
+  "chunk_count": 1322,
+  "splits": {
+    "dev": {
+      "summary": {
+        "answerable_count": 18,
+        "source_hit_at_5": 1.0,
+        "macro_source_recall_at_5": 0.7592592592592592,
+        "micro_source_recall_at_5": 0.7096774193548387,
+        "complete_source_recall_at_5": 0.5,
+        "macro_evidence_marker_recall_at_5": 0.5925925925925926,
+        "micro_evidence_marker_recall_at_5": 0.5483870967741935
+      },
+      "cases": [
+        {
+          "category": "cross_document",
+          "query_id": "cd-03",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.5,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.0,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|architecture/task-structure",
+            "3.4.3|en|guide/task/switch"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 1,
+          "required_marker_count": 2,
+          "found_marker_count": 0
+        },
+        {
+          "category": "cross_document",
+          "query_id": "cd-04",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.5,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.5,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|guide/parameter/global"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 1,
+          "required_marker_count": 2,
+          "found_marker_count": 1
+        },
+        {
+          "category": "cross_document",
+          "query_id": "cd-05",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.5,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.5,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|guide/api/healthcheck"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 1,
+          "required_marker_count": 2,
+          "found_marker_count": 1
+        },
+        {
+          "category": "cross_document",
+          "query_id": "cd-06",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.5,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.5,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|guide/upgrade/incompatible"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 1,
+          "required_marker_count": 2,
+          "found_marker_count": 1
+        },
+        {
+          "category": "version_scope",
+          "query_id": "vs-02",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 1.0,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 2,
+          "found_source_count": 2,
+          "required_marker_count": 2,
+          "found_marker_count": 2
+        },
+        {
+          "category": "version_scope",
+          "query_id": "vs-03",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 0.0,
+          "unsupported_marker_source_ids": [
+            "3.4.2|en|guide/project/workflow-definition",
+            "3.4.3|en|guide/project/workflow-definition"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 2,
+          "required_marker_count": 2,
+          "found_marker_count": 0
+        },
+        {
+          "category": "version_scope",
+          "query_id": "vs-05",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.5,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.5,
+          "unsupported_marker_source_ids": [
+            "3.4.2|en|guide/upgrade/incompatible"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 1,
+          "required_marker_count": 2,
+          "found_marker_count": 1
+        },
+        {
+          "category": "version_scope",
+          "query_id": "vs-06",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 1.0,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 2,
+          "found_source_count": 2,
+          "required_marker_count": 2,
+          "found_marker_count": 2
+        },
+        {
+          "category": "zh",
+          "query_id": "zh-03",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 1.0,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 1,
+          "found_source_count": 1,
+          "required_marker_count": 1,
+          "found_marker_count": 1
+        },
+        {
+          "category": "zh",
+          "query_id": "zh-05",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 1.0,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 1,
+          "found_source_count": 1,
+          "required_marker_count": 1,
+          "found_marker_count": 1
+        },
+        {
+          "category": "zh",
+          "query_id": "zh-06",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 1.0,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 1,
+          "found_source_count": 1,
+          "required_marker_count": 1,
+          "found_marker_count": 1
+        },
+        {
+          "category": "en",
+          "query_id": "en-03",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 1.0,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 1,
+          "found_source_count": 1,
+          "required_marker_count": 1,
+          "found_marker_count": 1
+        },
+        {
+          "category": "en",
+          "query_id": "en-04",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 1.0,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 1,
+          "found_source_count": 1,
+          "required_marker_count": 1,
+          "found_marker_count": 1
+        },
+        {
+          "category": "en",
+          "query_id": "en-06",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 0.0,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|guide/task/dependent"
+          ],
+          "required_source_count": 1,
+          "found_source_count": 1,
+          "required_marker_count": 1,
+          "found_marker_count": 0
+        },
+        {
+          "category": "mixed",
+          "query_id": "mix-03",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.6666666666666666,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.6666666666666666,
+          "unsupported_marker_source_ids": [
+            "3.4.3|zh|guide/parameter/global"
+          ],
+          "required_source_count": 3,
+          "found_source_count": 2,
+          "required_marker_count": 3,
+          "found_marker_count": 2
+        },
+        {
+          "category": "mixed",
+          "query_id": "mix-04",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.5,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.5,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|guide/api/open-api"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 1,
+          "required_marker_count": 2,
+          "found_marker_count": 1
+        },
+        {
+          "category": "hard_ambiguous",
+          "query_id": "ha-01",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.5,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.0,
+          "unsupported_marker_source_ids": [
+            "3.4.2|zh|architecture/configuration",
+            "3.4.3|zh|architecture/configuration"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 1,
+          "required_marker_count": 2,
+          "found_marker_count": 0
+        },
+        {
+          "category": "hard_ambiguous",
+          "query_id": "ha-02",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.5,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.5,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|proposals/dsip-107-proposal"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 1,
+          "required_marker_count": 2,
+          "found_marker_count": 1
+        },
+        {
+          "category": "no_answer",
+          "query_id": "na-02",
+          "answerable": false,
+          "source_hit_at_5": null,
+          "source_recall_at_5": null,
+          "complete_source_recall_at_5": null,
+          "evidence_marker_recall_at_5": null,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 0,
+          "found_source_count": 0,
+          "required_marker_count": 0,
+          "found_marker_count": 0
+        },
+        {
+          "category": "no_answer",
+          "query_id": "na-03",
+          "answerable": false,
+          "source_hit_at_5": null,
+          "source_recall_at_5": null,
+          "complete_source_recall_at_5": null,
+          "evidence_marker_recall_at_5": null,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 0,
+          "found_source_count": 0,
+          "required_marker_count": 0,
+          "found_marker_count": 0
+        }
+      ]
+    },
+    "holdout": {
+      "summary": {
+        "answerable_count": 18,
+        "source_hit_at_5": 0.7777777777777778,
+        "macro_source_recall_at_5": 0.6388888888888888,
+        "micro_source_recall_at_5": 0.6,
+        "complete_source_recall_at_5": 0.5,
+        "macro_evidence_marker_recall_at_5": 0.4444444444444444,
+        "micro_evidence_marker_recall_at_5": 0.43333333333333335
+      },
+      "cases": [
+        {
+          "category": "cross_document",
+          "query_id": "cd-01",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.5,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.0,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|guide/project/workflow-definition",
+            "3.4.3|en|guide/project/workflow-instance"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 1,
+          "required_marker_count": 2,
+          "found_marker_count": 0
+        },
+        {
+          "category": "cross_document",
+          "query_id": "cd-02",
+          "answerable": true,
+          "source_hit_at_5": false,
+          "source_recall_at_5": 0.0,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.0,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|guide/project/workflow-instance",
+            "3.4.3|en|guide/task/dependent"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 0,
+          "required_marker_count": 2,
+          "found_marker_count": 0
+        },
+        {
+          "category": "cross_document",
+          "query_id": "cd-07",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.5,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.5,
+          "unsupported_marker_source_ids": [
+            "3.4.3|zh|guide/api/healthcheck"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 1,
+          "required_marker_count": 2,
+          "found_marker_count": 1
+        },
+        {
+          "category": "cross_document",
+          "query_id": "cd-08",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 1.0,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 2,
+          "found_source_count": 2,
+          "required_marker_count": 2,
+          "found_marker_count": 2
+        },
+        {
+          "category": "version_scope",
+          "query_id": "vs-01",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.5,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.5,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|guide/parameter/priority"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 1,
+          "required_marker_count": 2,
+          "found_marker_count": 1
+        },
+        {
+          "category": "version_scope",
+          "query_id": "vs-04",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 1.0,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 2,
+          "found_source_count": 2,
+          "required_marker_count": 2,
+          "found_marker_count": 2
+        },
+        {
+          "category": "version_scope",
+          "query_id": "vs-07",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 0.0,
+          "unsupported_marker_source_ids": [
+            "3.4.2|en|architecture/configuration",
+            "3.4.3|en|architecture/configuration"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 2,
+          "required_marker_count": 2,
+          "found_marker_count": 0
+        },
+        {
+          "category": "version_scope",
+          "query_id": "vs-08",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 1.0,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 2,
+          "found_source_count": 2,
+          "required_marker_count": 2,
+          "found_marker_count": 2
+        },
+        {
+          "category": "zh",
+          "query_id": "zh-01",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 1.0,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 1,
+          "found_source_count": 1,
+          "required_marker_count": 1,
+          "found_marker_count": 1
+        },
+        {
+          "category": "zh",
+          "query_id": "zh-02",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 0.0,
+          "unsupported_marker_source_ids": [
+            "3.4.3|zh|guide/parameter/context"
+          ],
+          "required_source_count": 1,
+          "found_source_count": 1,
+          "required_marker_count": 1,
+          "found_marker_count": 0
+        },
+        {
+          "category": "zh",
+          "query_id": "zh-04",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 1.0,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 1,
+          "found_source_count": 1,
+          "required_marker_count": 1,
+          "found_marker_count": 1
+        },
+        {
+          "category": "en",
+          "query_id": "en-01",
+          "answerable": true,
+          "source_hit_at_5": false,
+          "source_recall_at_5": 0.0,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.0,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|guide/api/healthcheck"
+          ],
+          "required_source_count": 1,
+          "found_source_count": 0,
+          "required_marker_count": 1,
+          "found_marker_count": 0
+        },
+        {
+          "category": "en",
+          "query_id": "en-02",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 0.0,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|guide/parameter/global"
+          ],
+          "required_source_count": 1,
+          "found_source_count": 1,
+          "required_marker_count": 1,
+          "found_marker_count": 0
+        },
+        {
+          "category": "en",
+          "query_id": "en-05",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 1.0,
+          "complete_source_recall_at_5": true,
+          "evidence_marker_recall_at_5": 1.0,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 1,
+          "found_source_count": 1,
+          "required_marker_count": 1,
+          "found_marker_count": 1
+        },
+        {
+          "category": "mixed",
+          "query_id": "mix-01",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.5,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.5,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|architecture/task-structure"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 1,
+          "required_marker_count": 2,
+          "found_marker_count": 1
+        },
+        {
+          "category": "mixed",
+          "query_id": "mix-02",
+          "answerable": true,
+          "source_hit_at_5": true,
+          "source_recall_at_5": 0.5,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.5,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|guide/project/workflow-instance"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 1,
+          "required_marker_count": 2,
+          "found_marker_count": 1
+        },
+        {
+          "category": "hard_ambiguous",
+          "query_id": "ha-03",
+          "answerable": true,
+          "source_hit_at_5": false,
+          "source_recall_at_5": 0.0,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.0,
+          "unsupported_marker_source_ids": [
+            "3.4.2|en|guide/parameter/priority",
+            "3.4.3|en|guide/parameter/priority"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 0,
+          "required_marker_count": 2,
+          "found_marker_count": 0
+        },
+        {
+          "category": "hard_ambiguous",
+          "query_id": "ha-04",
+          "answerable": true,
+          "source_hit_at_5": false,
+          "source_recall_at_5": 0.0,
+          "complete_source_recall_at_5": false,
+          "evidence_marker_recall_at_5": 0.0,
+          "unsupported_marker_source_ids": [
+            "3.4.3|en|proposals/dsip-107-implementation",
+            "3.4.3|en|proposals/dsip-107-proposal"
+          ],
+          "required_source_count": 2,
+          "found_source_count": 0,
+          "required_marker_count": 2,
+          "found_marker_count": 0
+        },
+        {
+          "category": "no_answer",
+          "query_id": "na-01",
+          "answerable": false,
+          "source_hit_at_5": null,
+          "source_recall_at_5": null,
+          "complete_source_recall_at_5": null,
+          "evidence_marker_recall_at_5": null,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 0,
+          "found_source_count": 0,
+          "required_marker_count": 0,
+          "found_marker_count": 0
+        },
+        {
+          "category": "no_answer",
+          "query_id": "na-04",
+          "answerable": false,
+          "source_hit_at_5": null,
+          "source_recall_at_5": null,
+          "complete_source_recall_at_5": null,
+          "evidence_marker_recall_at_5": null,
+          "unsupported_marker_source_ids": [],
+          "required_source_count": 0,
+          "found_source_count": 0,
+          "required_marker_count": 0,
+          "found_marker_count": 0
+        }
+      ]
+    }
+  }
+}

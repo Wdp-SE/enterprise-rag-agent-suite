@@ -46,16 +46,36 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None) -> 
         generation_provider = os.environ.get(
             "RD_V2_GENERATION_PROVIDER", "dashscope"
         ).strip().casefold()
-        api_key_env = generation_api_key_env(generation_provider)
-        api_key_configured = bool(os.environ.get(api_key_env, "").strip())
+        try:
+            api_key_env = generation_api_key_env(generation_provider)
+            generation_model = (
+                os.environ.get("RD_V2_GENERATION_MODEL", "").strip()
+                or default_generation_model(generation_provider)
+            )
+        except ValueError:
+            api_key_env = None
+            generation_model = None
+        api_key_configured = bool(api_key_env and os.environ.get(api_key_env, "").strip())
         if app.state.public_generator is None and generation_allowed and api_key_configured:
             app.state.public_generator = StructuredAnswerGenerator(
                 provider=generation_provider,
-                model=os.environ.get(
-                    "RD_V2_GENERATION_MODEL",
-                    default_generation_model(generation_provider),
-                ),
+                model=generation_model,
         )
+        if app.state.public_generator is not None:
+            status = "CONFIGURED_UNVERIFIED"
+            generation_provider = getattr(app.state.public_generator, "provider", None)
+            generation_model = getattr(app.state.public_generator, "model", None)
+        elif not generation_allowed:
+            status = "DISABLED"
+        elif api_key_env is None:
+            status = "INVALID_PROVIDER"
+        else:
+            status = "API_KEY_MISSING"
+        app.state.public_generation_config = {
+            "status": status,
+            "provider": generation_provider if status == "CONFIGURED_UNVERIFIED" or api_key_env else None,
+            "model": generation_model if status == "CONFIGURED_UNVERIFIED" or api_key_env else None,
+        }
         yield
 
     app = FastAPI(
@@ -71,6 +91,7 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None) -> 
             "alive": True, "rag_ready": bool(app.state.public_knowledge_index),
             "workspace": "Apache DolphinScheduler",
             "retrieval_policy": app.state.public_knowledge_index.policy["default_policy"],
+            "generation": app.state.public_generation_config,
         }
 
     @app.post("/engineering/items/diff")

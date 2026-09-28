@@ -4,9 +4,12 @@ import pytest
 
 from main import build_parser
 from src.answer_generation import (
+    GenerationProviderError,
+    GenerationResponseError,
     StructuredAnswerGenerator,
     default_generation_model,
     generation_api_key_env,
+    validate_review_evidence_membership,
 )
 from src.context_expansion import SectionContextExpander
 from src.rd_v2_runtime import (
@@ -42,6 +45,47 @@ def test_structured_answer_schema_is_strict() -> None:
                 "confidence": 0.9,
             }
         )
+
+
+def test_structured_review_schema_requires_human_review_and_grounded_checks() -> None:
+    value = StructuredAnswerGenerator._decode_review({
+        "change_interpretation": "将启动参数的优先级提升。",
+        "impact_candidates": [{
+            "evidence_chunk_id": "chunk-1",
+            "reason": "该章节定义参数优先级。",
+            "suggested_action": "核对示例和运维说明是否同步。",
+        }],
+        "evidence_gaps": ["尚未检查对应英文说明。"],
+        "version_ambiguities": [],
+        "reviewer_actions": ["逐版本核对受影响说明。"],
+        "review_status": "REQUIRES_HUMAN_REVIEW",
+    })
+
+    assert value["impact_candidates"][0]["evidence_chunk_id"] == "chunk-1"
+    assert value["review_status"] == "REQUIRES_HUMAN_REVIEW"
+    with pytest.raises(ValueError):
+        StructuredAnswerGenerator._decode_review({
+            **value,
+            "review_status": "APPROVED",
+        })
+    with pytest.raises(ValueError):
+        StructuredAnswerGenerator._decode_review({**value, "unexpected": True})
+    with pytest.raises(ValueError):
+        StructuredAnswerGenerator._decode_review({key: item for key, item in value.items() if key != "reviewer_actions"})
+    with pytest.raises(ValueError):
+        StructuredAnswerGenerator._decode_review('{"impact_candidates":')
+
+
+def test_review_evidence_membership_rejects_model_invented_chunk_ids() -> None:
+    review = {
+        "impact_candidates": [{
+            "evidence_chunk_id": "chunk-outside-request",
+            "reason": "理由", "suggested_action": "核对",
+        }]
+    }
+
+    with pytest.raises(ValueError, match="evidence"):
+        validate_review_evidence_membership(review, {"chunk-1", "chunk-2"})
 
 
 def test_deepseek_generator_uses_its_key_and_non_thinking_json_mode(monkeypatch) -> None:
@@ -99,6 +143,52 @@ def test_deepseek_generator_uses_its_key_and_non_thinking_json_mode(monkeypatch)
     assert captured["timeout"] > 0
 
 
+def test_deepseek_review_uses_structured_review_prompt_and_never_approves(monkeypatch) -> None:
+    import json
+    import urllib.request
+
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-secret-value")
+    captured = {}
+
+    class Response:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self):
+            review = {
+                "change_interpretation": "提高参数优先级。",
+                "impact_candidates": [{
+                    "evidence_chunk_id": "chunk-1", "reason": "该段定义参数顺序。",
+                    "suggested_action": "检查相关示例。",
+                }],
+                "evidence_gaps": [], "version_ambiguities": [],
+                "reviewer_actions": ["人工确认。"],
+                "review_status": "REQUIRES_HUMAN_REVIEW",
+            }
+            return json.dumps({"choices": [{"message": {"content": json.dumps(review, ensure_ascii=False)}}]}).encode()
+
+    def fake_urlopen(request, timeout):
+        captured["body"] = json.loads(request.data.decode("utf-8"))
+        captured["authorization_present"] = bool(request.get_header("Authorization"))
+        return Response()
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    generator = StructuredAnswerGenerator(provider="deepseek", model="deepseek-v4-flash")
+    result = generator.generate_review(change_summary="假设调整参数", context="chunk-1 | 官方片段")
+
+    assert result["impact_candidates"][0]["evidence_chunk_id"] == "chunk-1"
+    assert result["review_status"] == "REQUIRES_HUMAN_REVIEW"
+    assert "研发资料变更审查助手" in captured["body"]["messages"][0]["content"]
+    assert "假设调整参数" in captured["body"]["messages"][1]["content"]
+    assert captured["authorization_present"] is True
+    assert "test-secret-value" not in json.dumps(captured["body"])
+
+
 def test_deepseek_network_failure_is_identified_without_exposing_request_details(monkeypatch) -> None:
     import urllib.error
     import urllib.request
@@ -116,6 +206,156 @@ def test_deepseek_network_failure_is_identified_without_exposing_request_details
     with pytest.raises(ConnectionError, match="generation provider is unreachable") as exc:
         generator.generate(question="问题", context="chunk-1: 内容")
     assert "test-secret-value" not in str(exc.value)
+
+
+def test_deepseek_diagnostics_report_returned_model_usage_and_finish_reason(monkeypatch) -> None:
+    import json
+    import urllib.request
+
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-secret-value")
+
+    class Response:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self):
+            answer = {
+                "final_answer": "证据支持的回答。",
+                "relevant_sources": [{"document_id": "chunk-1", "page_number": 1}],
+            }
+            return json.dumps({
+                "model": "deepseek-v4-flash",
+                "usage": {"prompt_tokens": 80, "completion_tokens": 20, "total_tokens": 100},
+                "choices": [{"finish_reason": "stop", "message": {"content": json.dumps(answer)}}],
+            }).encode("utf-8")
+
+    monkeypatch.setattr(urllib.request, "urlopen", lambda *_args, **_kwargs: Response())
+    generator = StructuredAnswerGenerator(provider="deepseek", model="deepseek-v4-flash")
+
+    answer, diagnostics = generator.generate_with_diagnostics(question="问题", context="证据")
+
+    assert answer["final_answer"] == "证据支持的回答。"
+    assert diagnostics == {
+        "provider": "deepseek", "requested_model": "deepseek-v4-flash",
+        "returned_model": "deepseek-v4-flash", "finish_reason": "stop",
+        "usage": {"input_tokens": 80, "output_tokens": 20, "total_tokens": 100},
+    }
+    assert "test-secret-value" not in str(diagnostics)
+
+
+@pytest.mark.parametrize("http_status, expected_code", [
+    (401, "GENERATION_AUTH_FAILED"),
+    (402, "GENERATION_BILLING_REQUIRED"),
+    (429, "GENERATION_RATE_LIMITED"),
+    (503, "GENERATION_PROVIDER_UNAVAILABLE"),
+])
+def test_deepseek_http_failures_have_safe_distinct_codes(monkeypatch, http_status, expected_code) -> None:
+    import urllib.error
+    import urllib.request
+
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-secret-value")
+    calls = []
+
+    def rejected(request, timeout):
+        calls.append(request.full_url)
+        raise urllib.error.HTTPError(request.full_url, http_status, "secret provider body", None, None)
+
+    monkeypatch.setattr(urllib.request, "urlopen", rejected)
+    generator = StructuredAnswerGenerator(provider="deepseek", model="deepseek-v4-flash")
+
+    with pytest.raises(GenerationProviderError) as exc:
+        generator.generate(question="问题", context="证据")
+
+    assert exc.value.code == expected_code
+    assert "secret" not in str(exc.value)
+    assert len(calls) == 1  # Never silently retry a potentially billable POST.
+
+
+def test_deepseek_url_timeout_is_not_labeled_as_generic_network_failure(monkeypatch) -> None:
+    import urllib.error
+    import urllib.request
+
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-secret-value")
+
+    def timed_out(_request, timeout):
+        raise urllib.error.URLError(TimeoutError("private proxy host"))
+
+    monkeypatch.setattr(urllib.request, "urlopen", timed_out)
+    generator = StructuredAnswerGenerator(provider="deepseek", model="deepseek-v4-flash")
+
+    with pytest.raises(TimeoutError, match="timed out") as exc:
+        generator.generate(question="问题", context="证据")
+    assert "private proxy host" not in str(exc.value)
+
+
+def test_dashscope_diagnostics_and_rate_limit_use_safe_response_fields(monkeypatch) -> None:
+    import sys
+    from types import SimpleNamespace
+
+    monkeypatch.setenv("DASHSCOPE_API_KEY", "test-secret-value")
+    answer = '{"final_answer":"supported","relevant_sources":[]}'
+    response = SimpleNamespace(
+        status_code=200,
+        model="qwen-turbo",
+        usage={"input_tokens": 41, "output_tokens": 8, "total_tokens": 49},
+        output={"choices": [{"finish_reason": "stop", "message": {"content": answer}}]},
+    )
+    monkeypatch.setitem(sys.modules, "dashscope", SimpleNamespace(
+        Generation=SimpleNamespace(call=lambda **_kwargs: response)
+    ))
+    generator = StructuredAnswerGenerator(provider="dashscope", model="qwen-turbo")
+
+    generated, diagnostics = generator.generate_with_diagnostics(question="question", context="evidence")
+    assert generated["final_answer"] == "supported"
+    assert diagnostics["usage"] == {"input_tokens": 41, "output_tokens": 8, "total_tokens": 49}
+    assert diagnostics["returned_model"] == "qwen-turbo"
+    assert diagnostics["finish_reason"] == "stop"
+
+    response.status_code = 429
+    response.message = "secret provider body"
+    with pytest.raises(GenerationProviderError) as exc:
+        generator.generate(question="question", context="evidence")
+    assert exc.value.code == "GENERATION_RATE_LIMITED"
+    assert "secret" not in str(exc.value)
+
+
+def test_truncated_json_reports_finish_reason_without_response_body(monkeypatch) -> None:
+    import json
+    import urllib.request
+
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-secret-value")
+
+    class Response:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self):
+            return json.dumps({
+                "model": "deepseek-v4-flash",
+                "usage": {"prompt_tokens": 70, "completion_tokens": 1024, "total_tokens": 1094},
+                "choices": [{"finish_reason": "length", "message": {"content": "{private incomplete"}}],
+            }).encode()
+
+    monkeypatch.setattr(urllib.request, "urlopen", lambda *_args, **_kwargs: Response())
+    generator = StructuredAnswerGenerator(provider="deepseek", model="deepseek-v4-flash")
+
+    with pytest.raises(GenerationResponseError) as exc:
+        generator.generate_with_diagnostics(question="question", context="evidence")
+
+    assert exc.value.code == "GENERATION_RESPONSE_TRUNCATED"
+    assert exc.value.diagnostics["finish_reason"] == "length"
+    assert exc.value.diagnostics["usage"]["total_tokens"] == 1094
+    assert "private incomplete" not in str(exc.value)
 
 
 def test_generation_provider_configuration_selects_matching_secret_and_model() -> None:

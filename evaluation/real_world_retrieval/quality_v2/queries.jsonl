@@ -1,0 +1,40 @@
+{"query_id":"cd-01","category":"cross_document","query":"For a 3.4.3 workflow, how do the definition page and instance page divide setup from runtime parameter inspection?","version_scope":"3.4.3","language":"en"}
+{"query_id":"cd-02","category":"cross_document","query":"How does a dependent task use upstream output, and where can an operator inspect the resulting workflow run?","version_scope":"3.4.3","language":"en"}
+{"query_id":"cd-03","category":"cross_document","query":"Which Switch condition settings correspond to the conditional branch node in the task model?","version_scope":"3.4.3","language":"en"}
+{"query_id":"cd-04","category":"cross_document","query":"How are global parameters defined and then made available through a task's parameter context?","version_scope":"3.4.3","language":"en"}
+{"query_id":"cd-05","category":"cross_document","query":"Which document describes service health endpoints, and which one explains creating a project through the Open API?","version_scope":"3.4.3","language":"en"}
+{"query_id":"cd-06","category":"cross_document","query":"What should an operator back up during upgrade, and where are incompatible changes listed?","version_scope":"3.4.3","language":"en"}
+{"query_id":"cd-07","category":"cross_document","query":"中文资料里，服务健康检查和通过 Open API 创建项目分别在哪些文档说明？","version_scope":"3.4.3","language":"zh"}
+{"query_id":"cd-08","category":"cross_document","query":"What does the 3.4.3 release note say about DSIP-107, and where is its implementation PR described?","version_scope":"3.4.3","language":"en"}
+{"query_id":"vs-01","category":"version_scope","query":"Across 3.4.2 and 3.4.3, how does the English parameter priority ordering read?","version_scope":"all","language":"en"}
+{"query_id":"vs-02","category":"version_scope","query":"对照 3.4.2 与 3.4.3 的中文参数优先级资料，哪些参数来源的顺序发生了文字变化？","version_scope":"all","language":"zh"}
+{"query_id":"vs-03","category":"version_scope","query":"Compare the workflow schedule sections in the English 3.4.2 and 3.4.3 definitions; what is documented in each?","version_scope":"all","language":"en"}
+{"query_id":"vs-04","category":"version_scope","query":"比较 3.4.2 和 3.4.3 中文工作流定义文档中的操作范围说明。","version_scope":"all","language":"zh"}
+{"query_id":"vs-05","category":"version_scope","query":"Which incompatible-change sections are present in the English upgrade notes for 3.4.2 and 3.4.3?","version_scope":"all","language":"en"}
+{"query_id":"vs-06","category":"version_scope","query":"3.4.2 与 3.4.3 的中文不兼容变更说明分别列到了哪些版本？","version_scope":"all","language":"zh"}
+{"query_id":"vs-07","category":"version_scope","query":"Compare the English configuration pages for 3.4.2 and 3.4.3, focusing on Master Server settings.","version_scope":"all","language":"en"}
+{"query_id":"vs-08","category":"version_scope","query":"对比两个固定版本的中文配置资料，JAVA_HOME 与服务目录结构分别如何说明？","version_scope":"all","language":"zh"}
+{"query_id":"zh-01","category":"zh","query":"参数来源不止一种时，3.4.3 文档给出的完整优先级链条是什么？","version_scope":"3.4.3","language":"zh"}
+{"query_id":"zh-02","category":"zh","query":"在参数上下文资料中，工作流任务怎样引用已有参数？","version_scope":"3.4.3","language":"zh"}
+{"query_id":"zh-03","category":"zh","query":"运行中的工作流实例可以从哪里检查运行参数和任务日志？","version_scope":"3.4.3","language":"zh"}
+{"query_id":"zh-04","category":"zh","query":"依赖任务的定义需要配置哪些上游依赖信息？","version_scope":"3.4.3","language":"zh"}
+{"query_id":"zh-05","category":"zh","query":"内置参数文档把参数分成哪些基础和扩展类别？","version_scope":"3.4.3","language":"zh"}
+{"query_id":"zh-06","category":"zh","query":"升级前后，数据库升级和服务升级需要遵循哪些步骤顺序？","version_scope":"3.4.3","language":"zh"}
+{"query_id":"en-01","category":"en","query":"Which DolphinScheduler services expose health-check endpoints in the public API guide?","version_scope":"3.4.3","language":"en"}
+{"query_id":"en-02","category":"en","query":"Where are global parameters defined in the workflow editor and how are they used by a Shell task?","version_scope":"3.4.3","language":"en"}
+{"query_id":"en-03","category":"en","query":"What is the difference between basic and extended built-in parameters?","version_scope":"3.4.3","language":"en"}
+{"query_id":"en-04","category":"en","query":"How can an operator set startup parameters and view the execution result for that run?","version_scope":"3.4.3","language":"en"}
+{"query_id":"en-05","category":"en","query":"What single-workflow operations are documented for workflow definitions?","version_scope":"3.4.3","language":"en"}
+{"query_id":"en-06","category":"en","query":"What task parameters are available when defining a dependent task?","version_scope":"3.4.3","language":"en"}
+{"query_id":"mix-01","category":"mixed","query":"Switch 任务的 conditions 在哪配置，conditional branch node 的文档怎么称呼这个节点？","version_scope":"3.4.3","language":"all"}
+{"query_id":"mix-02","category":"mixed","query":"工作流实例页面可以检查哪些 runtime parameters and task logs？","version_scope":"3.4.3","language":"all"}
+{"query_id":"mix-03","category":"mixed","query":"参数优先级里 global、local、startup 的中文参数来源分别是什么？","version_scope":"3.4.3","language":"all"}
+{"query_id":"mix-04","category":"mixed","query":"Open API 创建项目的 Create a Project 资料与中文项目列表查询说明在哪里？","version_scope":"3.4.3","language":"all"}
+{"query_id":"ha-01","category":"hard_ambiguous","query":"同一官方配置章节在两个版本措辞不同，现有资料能否单独证明运行行为改变？","version_scope":"all","language":"zh"}
+{"query_id":"ha-02","category":"hard_ambiguous","query":"For DSIP-107, which claims are in the proposal and which evidence is in the implementation pull request?","version_scope":"3.4.3","language":"en"}
+{"query_id":"ha-03","category":"hard_ambiguous","query":"Does a wording difference between the two pinned priority pages establish a runtime precedence change, or only a documentation difference?","version_scope":"all","language":"en"}
+{"query_id":"ha-04","category":"hard_ambiguous","query":"3.4.3 的 missed fire policy 资料能否证明所有工作流场景都会使用相同默认值？","version_scope":"3.4.3","language":"zh"}
+{"query_id":"na-01","category":"no_answer","query":"What is the exact monthly price per million tokens for DolphinScheduler's hosted AI assistant?","version_scope":"3.4.3","language":"en"}
+{"query_id":"na-02","category":"no_answer","query":"3.4.3 云托管套餐承诺的年度 SLA 可用性百分比是多少？","version_scope":"3.4.3","language":"zh"}
+{"query_id":"na-03","category":"no_answer","query":"Which button automatically edits the Apache public documentation and deploys it after an Agent review?","version_scope":"3.4.3","language":"en"}
+{"query_id":"na-04","category":"no_answer","query":"DolphinScheduler 3.4.3 默认允许每个租户创建多少个独立 workspace？","version_scope":"3.4.3","language":"zh"}

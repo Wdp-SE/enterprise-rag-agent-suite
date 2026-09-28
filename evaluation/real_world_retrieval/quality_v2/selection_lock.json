@@ -1,0 +1,10 @@
+{
+  "format_version": 1,
+  "source_id_format": "version|language|document_key",
+  "sha256": {
+    "queries.jsonl": "ad0eab8c56c65d6d5566ec6ec8673c1d95e84d280ec879ab512225c28bab3420",
+    "ground_truth.jsonl": "f30b98ea8eaea03fd4b2f84870f9c7912f27ebf450ada42055ea80ab9dbbe86c",
+    "frozen_split.json": "27a536e91150df72a09558ff0f9beefdec39d7e674a7afca2d67ac8bbe9b1621",
+    "corpus_manifest.json": "44b2b53a5f769619af859f5b466a908a46e8bf6a3ce1ca6960f5ee594427ebd1"
+  }
+}

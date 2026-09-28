@@ -17,7 +17,7 @@ Improve retrieval evidence coverage and make hypothetical change reviews easier 
 
 Treat the existing 52-source corpus, benchmark queries, ground truth, selection lock, and final-selection results as the V1.0 baseline. Do not rewrite their history or reuse their HOLDOUT queries to tune new behavior.
 
-Create a separately versioned quality-iteration dataset and split. It will contain queries derived from official source material and real, documented version changes, plus clearly labeled hypothetical cases. Each query will identify its version scope, expected evidence source IDs, answerability, and whether complete support requires multiple independent sources. The new HOLDOUT remains locked and is used only after DEV tuning is complete.
+Create a separately versioned quality-iteration dataset and split. It will contain queries derived from official source material and real, documented version changes, plus clearly labeled hypothetical cases. Each query will identify its version scope, expected evidence source IDs, answerability, and whether complete support requires multiple independent sources. Source IDs use a stable version, language, and document key instead of manifest row numbers. The new HOLDOUT remains locked and is used only after DEV tuning is complete.
 
 ### Expand relevant official source coverage
 
@@ -29,7 +29,7 @@ Every added source must have a pinned upstream commit or release, canonical URL,
 
 Keep the current BM25 ranking as the comparison baseline. Add an offline comparison for narrowly scoped improvements that use existing source metadata, such as document title and inherited heading path. Any chunking or ranking change must be evaluated against the new DEV set and compared with the baseline on the locked new HOLDOUT only after candidate selection.
 
-Report at least Recall@5, MRR, complete multi-source evidence recall, no-answer false-positive behavior, citation-source validity, and local warm P95 latency. Keep retrieval results separate from answer-generation quality. Promote a new default only if the measured evidence-recall gain is repeatable and the HOLDOUT and latency results do not reveal a material regression. Otherwise retain BM25 and document the failure analysis.
+Report at least source-deduplicated Recall@5, MRR, nDCG, complete multi-source evidence recall, no-answer false-positive behavior, citation-source validity, and local warm P95 latency. Keep retrieval results separate from answer-generation quality. Promote a new default only if the measured evidence-recall gain is repeatable and the HOLDOUT and latency results do not reveal a material regression. Otherwise retain BM25 and document the failure analysis.
 
 ### Structure the review advice contract
 

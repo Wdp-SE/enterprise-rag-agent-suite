@@ -5,10 +5,11 @@ import json
 import shutil
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from src.public_knowledge import (
-    ROOT, PublicKnowledgeIndex, verified_consistency_notes,
+    ROOT, PublicKnowledgeIndex, _parts, build_index, verified_consistency_notes,
 )
 
 
@@ -22,7 +23,7 @@ def test_pinned_bilingual_corpus_metadata_and_source_hashes(index):
     assert manifest["workspace"] == "Apache DolphinScheduler"
     assert manifest["baseline_version"] == "3.4.2"
     assert manifest["current_version"] == "3.4.3"
-    assert len(manifest["sources"]) == 52
+    assert len(manifest["sources"]) >= 52
     assert {row["locale"] for row in manifest["sources"]} == {"zh-CN", "en-US"}
     assert {row["source_type"] for row in manifest["sources"]} >= {
         "official_documentation", "github_release", "github_issue", "github_pull_request"
@@ -45,17 +46,22 @@ def test_language_and_version_filters_keep_one_workspace(index):
     assert zh[0]["document_key"] == "guide/parameter/priority"
 
 
-def test_benchmark_rankings_and_policy_are_reproducible(index):
+def test_frozen_benchmark_is_preserved_but_expanded_corpus_is_pending_rebenchmark(index):
     base = Path(__file__).resolve().parents[2] / "evaluation" / "real_world_retrieval"
     results = json.loads((base / "results" / "benchmark_results.json").read_text(encoding="utf-8"))
     queries = [json.loads(line) for line in (base / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
     assert len(queries) >= 40
-    assert results["corpus_sha256"] == hashlib.sha256((ROOT / "corpus_manifest.json").read_bytes()).hexdigest()
+    frozen = index.policy["frozen_selection_evidence"]
+    assert results["corpus_sha256"] == frozen["corpus_sha256"]
+    assert results["query_count"] == frozen["query_count"]
+    assert index.policy["benchmark_corpus_sha256"] == hashlib.sha256((ROOT / "corpus_manifest.json").read_bytes()).hexdigest()
+    assert index.policy["selection_status"] == "expanded_corpus_pending_rebenchmark"
+    assert index.policy["benchmark_query_count"] == 0
+    corpus_ids = {chunk["chunk_id"] for chunk in index.chunks}
     for policy in ("dense", "bm25", "hybrid"):
         stored = json.loads((base / "results" / f"{policy}.json").read_text(encoding="utf-8"))
-        for query, expected in zip(queries, stored):
-            hits = index.search(query["query"], top_k=5, version=query["version_scope"], language="all", policy=policy)
-            assert [row["chunk_id"] for row in hits] == expected["ranked_chunk_ids"]
+        assert len(stored) == len(queries)
+        assert all(chunk_id in corpus_ids for row in stored for chunk_id in row["ranked_chunk_ids"])
     winner = max(
         ("dense", "bm25", "hybrid"),
         key=lambda name: (
@@ -65,6 +71,7 @@ def test_benchmark_rankings_and_policy_are_reproducible(index):
             -results["results"][name]["overall"]["p95_ms"],
         ),
     )
+    assert frozen["selected_policy"] == winner
     assert index.policy["default_policy"] == winner
     assert index.policy["reranker_enabled"] is False
 
@@ -84,6 +91,134 @@ def test_consistency_warning_only_reports_verifiable_version_text_difference():
         {**base, "version": "3.4.3", "content": "same"},
         {**base, "version": "3.4.3", "content": "different"},
     ]) == []
+
+
+def test_parts_keep_inherited_heading_path():
+    parts = _parts("# API\n## Workflow\n### Recovery\nDefault: retry")
+    assert parts[0] == ("Recovery", ["API", "Workflow", "Recovery"], "Default: retry")
+
+
+def test_heading_match_ranks_above_body_repetition_with_bm25_fields(tmp_path):
+    source_root = tmp_path / "sources" / "3.4.3" / "en"
+    source_root.mkdir(parents=True)
+    documents = [
+        ("guide/missed-fire", "# Scheduling Guide\n## Missed Fire Policy\nDefault: CONTINUE"),
+        ("guide/operations", "# Operations Guide\n## General Notes\n" + "missed fire policy " * 20),
+    ]
+    sources = []
+    for key, content in documents:
+        local_path = f"sources/3.4.3/en/{key.rsplit('/', 1)[-1]}.md"
+        path = tmp_path / local_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content.encode("utf-8"))
+        sources.append({
+            "version": "3.4.3", "language": "en", "locale": "en-US",
+            "document_key": key, "document_path": f"docs/docs/en/{key.rsplit('/', 1)[-1]}.md",
+            "local_path": local_path, "source_type": "official_documentation",
+            "source_url": "https://github.com/apache/dolphinscheduler/blob/pinned/docs.md",
+            "repository": "apache/dolphinscheduler", "commit": "pinned",
+            "sha256": hashlib.sha256(content.encode("utf-8")).hexdigest(),
+        })
+    manifest = {
+        "workspace": "Apache DolphinScheduler", "repository": "apache/dolphinscheduler",
+        "baseline_version": "3.4.2", "current_version": "3.4.3",
+        "commits": {"3.4.3": "pinned"}, "sources": sources,
+    }
+    manifest_path = tmp_path / "corpus_manifest.json"
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False), encoding="utf-8")
+    (tmp_path / "retrieval_policy.json").write_text(json.dumps({
+        "default_policy": "bm25", "benchmark_query_count": 0,
+        "benchmark_corpus_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+        "index_artifacts_sha256": {},
+    }), encoding="utf-8")
+
+    build_index(tmp_path)
+    policy_path = tmp_path / "retrieval_policy.json"
+    policy = json.loads(policy_path.read_text(encoding="utf-8"))
+    assert policy["default_policy"] == "bm25"
+    assert policy["benchmark_corpus_sha256"] == hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    assert policy["index_artifacts_sha256"] == {
+        name: hashlib.sha256((tmp_path / name).read_bytes()).hexdigest()
+        for name in ("chunks.json", "dense_vectors.npy")
+    }
+
+    index = PublicKnowledgeIndex(tmp_path)
+    baseline = index.search("missed fire policy", version="3.4.3", language="en", policy="bm25")
+    candidate = index.search("missed fire policy", version="3.4.3", language="en", policy="bm25_fields")
+    assert baseline[0]["document_key"] == "guide/operations"
+    assert candidate[0]["document_key"] == "guide/missed-fire"
+    assert candidate[0]["heading_path"] == ["Scheduling Guide", "Missed Fire Policy"]
+
+
+def test_fielded_bm25_does_not_compute_dense_or_baseline_scores(index, monkeypatch):
+    def unexpected(*_args, **_kwargs):
+        pytest.fail("bm25_fields must calculate only its selected score")
+
+    monkeypatch.setattr(index, "_bm25", unexpected)
+    monkeypatch.setattr("src.public_knowledge.dense_vector", unexpected)
+
+    hits = index.search(
+        "DolphinScheduler parameter priority", version="3.4.3", language="en", policy="bm25_fields"
+    )
+
+    assert hits
+    assert all(hit["retrieval_policy"] == "bm25_fields" for hit in hits)
+
+
+def test_source_diverse_bm25_exposes_more_relevant_documents_without_changing_default(monkeypatch):
+    candidate_index = object.__new__(PublicKnowledgeIndex)
+    candidate_index.manifest = {
+        "current_version": "3.4.3",
+        "sources": [{"version": "3.4.3"}, {"version": "3.4.2"}],
+    }
+    candidate_index.policy = {"default_policy": "bm25"}
+    candidate_index.chunks = [
+        {"chunk_id": "a:1", "document_id": "3.4.3:en:a", "version": "3.4.3", "language": "en"},
+        {"chunk_id": "a:2", "document_id": "3.4.3:en:a", "version": "3.4.3", "language": "en"},
+        {"chunk_id": "a:3", "document_id": "3.4.3:en:a", "version": "3.4.3", "language": "en"},
+        {"chunk_id": "b:1", "document_id": "3.4.3:en:b", "version": "3.4.3", "language": "en"},
+        {"chunk_id": "c:1", "document_id": "3.4.3:en:c", "version": "3.4.3", "language": "en"},
+        {"chunk_id": "old-a:1", "document_id": "3.4.2:en:a", "version": "3.4.2", "language": "en"},
+    ]
+    monkeypatch.setattr(candidate_index, "_bm25", lambda _query: np.array([10, 9, 8, 7, 6, 5], dtype=np.float32))
+
+    default = candidate_index.search("recovery", top_k=3, version="current", language="en")
+    diverse = candidate_index.search(
+        "recovery", top_k=3, version="current", language="en", policy="bm25_source_diverse"
+    )
+    top2 = candidate_index.search(
+        "recovery", top_k=4, version="current", language="en", policy="bm25_top2_diverse"
+    )
+    top3 = candidate_index.search(
+        "recovery", top_k=5, version="current", language="en", policy="bm25_top3_diverse"
+    )
+    across_versions = candidate_index.search(
+        "recovery", top_k=6, version="all", language="en", policy="bm25_source_diverse"
+    )
+
+    assert [row["chunk_id"] for row in default] == ["a:1", "a:2", "a:3"]
+    assert [row["chunk_id"] for row in diverse] == ["a:1", "b:1", "c:1"]
+    assert [row["retrieval_score"] for row in diverse] == [10, 7, 6]
+    assert all(row["retrieval_policy"] == "bm25_source_diverse" for row in diverse)
+    assert [row["chunk_id"] for row in top2] == ["a:1", "a:2", "b:1", "c:1"]
+    assert [row["chunk_id"] for row in top3] == ["a:1", "a:2", "a:3", "b:1", "c:1"]
+    assert [row["chunk_id"] for row in across_versions[:4]] == ["a:1", "b:1", "c:1", "old-a:1"]
+
+
+def test_source_diverse_bm25_keeps_matching_siblings_before_zero_score_documents(monkeypatch):
+    candidate_index = object.__new__(PublicKnowledgeIndex)
+    candidate_index.manifest = {"current_version": "3.4.3", "sources": [{"version": "3.4.3"}]}
+    candidate_index.policy = {"default_policy": "bm25"}
+    candidate_index.chunks = [
+        {"chunk_id": "a:1", "document_id": "a", "version": "3.4.3", "language": "en"},
+        {"chunk_id": "a:2", "document_id": "a", "version": "3.4.3", "language": "en"},
+        {"chunk_id": "b:1", "document_id": "b", "version": "3.4.3", "language": "en"},
+    ]
+    monkeypatch.setattr(candidate_index, "_bm25", lambda _query: np.array([10, 9, 0], dtype=np.float32))
+
+    hits = candidate_index.search("recovery", top_k=2, policy="bm25_source_diverse")
+
+    assert [row["chunk_id"] for row in hits] == ["a:1", "a:2"]
 
 
 

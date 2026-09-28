@@ -1,8 +1,26 @@
 # Apache DolphinScheduler 版本化研发知识 RAG 服务
 
-公网 Demo 使用本目录新增的 `src.public_server:app` 入口和固定的 Apache DolphinScheduler 3.4.2 / 3.4.3 官方资料快照，默认采用真实查询集评测选出的 BM25 检索策略。来源、许可证与评测见仓库根目录 [README](../README.md)、[语料清单](public_corpus/corpus_manifest.json)和 [检索报告](../evaluation/real_world_retrieval/retrieval_policy_report.md)。
+公网 Demo 使用 `src.public_server:app` 入口和固定提交的 Apache DolphinScheduler 3.4.2 / 3.4.3 官方资料快照。当前语料为 132 份来源、1322 个检索片段，语料清单声明 3.4.3 为当前默认版本；服务不会自动追踪上游发布。V3 在 DEV 上锁定 BM25 并只运行一次 HOLDOUT，运行默认策略仍为 BM25；52 来源、659 片段上的 V1/V2 选型结果是历史基线，不代表扩充语料的效果。来源、许可证与评测见仓库根目录 [README](../README.md)、[语料清单](public_corpus/corpus_manifest.json)、[V2 历史报告](../evaluation/real_world_retrieval/quality_v2/report.md)和 [V3 扩充语料评测](../evaluation/real_world_retrieval/quality_v3/README.md)。
 
 本服务由仓库根目录的 `render.yaml` 部署；对外职责是版本化资料检索、引用溯源和可选的引用约束生成。下文关于 `DENSE_ONLY + SECTION_PATH` 的说明属于保留的历史企业合成资料 Runtime 与测试路径，不等同于当前公开语料使用的 BM25 策略。
+
+## 当前公开服务
+
+- `GET /public/workspace` 返回固定语料清单的版本、来源和片段数，以及运行默认策略和扩充语料的评测状态。
+- `POST /public/search` 按版本、语言和问题检索官方片段。省略版本时取清单中的 `current_version`；未知版本不会悄悄退回到 3.4.3。
+- `POST /public/query` 返回检索证据，并在后端显式开启且模型服务可用时尝试带引用回答；模型不可用或引用校验失败时保留证据并关闭不可靠的回答。
+- `POST /public/review-advice` 基于本次指定的证据片段提供受引用约束的变更审查建议，不能直接修改语料或上游项目。
+- `GET /health` 区分生成已关闭、缺少密钥、无效供应商和“已配置但未经实时验证”；它不是对供应商计费余额或下一次请求成功率的保证。
+
+应用不设固定会话生成次数上限，也不自动无限重试。供应商余额、限流、服务故障、网络超时或无效/截断响应仍会导致单次调用失败。生成接口返回不含密钥的请求编号、供应商/模型、结束原因、用量和耗时等安全诊断，便于定位失败；不要把密钥放在 Streamlit Secrets 或日志中。服务目前检索的是固定官方文档**文字**，原文配图中的文字尚未纳入正式索引或检索。
+
+扩充语料的 V3 评测冻结了 72 道新业务题，按场景家族分成 DEV/HOLDOUT 各 36 道。DEV 比较后锁定 BM25；一次性 HOLDOUT 的 32 道可回答题中，27 道找齐全部必需来源，8 道多来源题仅 4 道找齐，返回片段找到 37/49 个证据锚点。检索指标区分“至少命中一份来源”“所需来源完整覆盖”及“返回片段含有证据锚点”，不把来源命中率当作答案准确率或幻觉率。评测 runner、锁文件和结果见 [V3 目录](../evaluation/real_world_retrieval/quality_v3/README.md)；可从仓库根目录用只读测试核对冻结输入与已保存结果的哈希：
+
+```powershell
+python -m unittest discover -s evaluation/real_world_retrieval/quality_v3 -p test_quality_v3.py
+```
+
+不要在当前冻结目录重跑 `run_quality_v3.py --split dev`：它会覆盖已锁定的 DEV 结果文件并改变其哈希。重新实验请使用独立工作树或新评测版本、独立输出路径。V3 的 HOLDOUT 已开封并留有一次性执行锁，不能反复运行并据结果调参。当前运行默认策略仍为 BM25，具体冻结结论与失败题见 [V3 报告](../evaluation/real_world_retrieval/quality_v3/report.md)。
 
 ---
 
@@ -12,7 +30,7 @@
 
 ### 历史检索策略（不用于当前公开服务）
 
-唯一正式检索策略为 DENSE_ONLY + SECTION_PATH：
+该历史 Runtime 的正式检索策略为 DENSE_ONLY + SECTION_PATH：
 
 - 使用冻结且经过哈希校验的分块、向量和 FAISS 索引。
 - 查询向量与文档向量均进行归一化，按余弦相似度排序。
@@ -49,7 +67,7 @@ New-Item -ItemType Directory -Path $env:RD_V4_VERSION_STORE_ROOT -Force | Out-Nu
 .\.venv\Scripts\python.exe main.py serve --host 127.0.0.1 --port 8765
 ```
 
-服务地址为 http://127.0.0.1:8765，接口文档为 http://127.0.0.1:8765/docs。仓库根目录的 `start_prototype.ps1` 可同时启动 RAG 与 Streamlit 工作台。公开资料默认禁用在线生成：`/retrieve` 可用，`/query` 返回生成被数据策略禁用。只有确认资料允许发送给在线模型后，才另行配置密钥并显式开启生成。
+这一节的历史 Runtime 服务地址为 http://127.0.0.1:8765，接口文档为 http://127.0.0.1:8765/docs；`/retrieve` 与 `/query` 是历史合成资料接口，不是上文的 `/public/*` 公开知识接口。仓库根目录的 `start_prototype.ps1` 会启动当前公开 RAG 与 Streamlit 工作台；不加 `-EnableGeneration` 时只提供检索证据。确认公开资料允许发送给在线模型后，再于后端配置密钥并显式开启生成。
 
 `.env.example` 保留为其他本地运行配置示例；其中的 `data/rd_v2_corpus` 路径不属于公开克隆所需资产。
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
@@ -45,6 +46,18 @@ def _mock_client(monkeypatch):
         "status": "OK", "answer": "依据引用片段，建议核对相关资料中的参数顺序。",
         "sources": [dict(CHUNK)] if CHUNK["chunk_id"] in evidence_chunk_ids else [],
         "evidence": [dict(CHUNK)] if CHUNK["chunk_id"] in evidence_chunk_ids else [],
+        "review": {
+            "change_interpretation": "依据引用片段，建议核对相关资料中的参数顺序。",
+            "impact_candidates": [{
+                "evidence_chunk_id": CHUNK["chunk_id"],
+                "reason": "该章节说明参数优先级。",
+                "suggested_action": "核对示例与运维说明是否同步。",
+            }],
+            "evidence_gaps": ["尚未检查英文资料。"],
+            "version_ambiguities": [],
+            "reviewer_actions": ["逐版本确认变更影响。"],
+            "review_status": "REQUIRES_HUMAN_REVIEW",
+        },
     })
     monkeypatch.setattr(public_workbench, "_analyze_hypothetical", lambda client, selected, proposed_text: {
         "change": {"change_type": "MODIFIED"}, "selected_source": dict(CHUNK),
@@ -56,12 +69,31 @@ def _mock_client(monkeypatch):
         "review_advice": {
             "status": "OK", "answer": "依据本次官方片段，建议核对相关资料中的参数顺序。",
             "sources": [dict(CHUNK)],
+            "review": {
+                "change_interpretation": "依据本次官方片段，建议核对相关资料中的参数顺序。",
+                "impact_candidates": [{
+                    "evidence_chunk_id": CHUNK["chunk_id"],
+                    "reason": "该章节说明参数优先级。",
+                    "suggested_action": "核对示例与运维说明是否同步。",
+                }],
+                "evidence_gaps": ["尚未检查英文资料。"],
+                "version_ambiguities": [],
+                "reviewer_actions": ["逐版本确认变更影响。"],
+                "review_status": "REQUIRES_HUMAN_REVIEW",
+            },
         },
     })
 
 
+def _state_get(session_state, key, default=None):
+    try:
+        return session_state[key]
+    except KeyError:
+        return default
+
+
 def _start_agent_request(app, summary="假设调整全局参数优先级，并找出需要核对的资料。"):
-    if app.session_state.get("official_nav") != "新建变更审查":
+    if _state_get(app.session_state, "official_nav") != "新建变更审查":
         next(button for button in app.button if button.label == "发起变更审查").click().run()
     app.text_area(key="official_change_request").set_value(summary).run()
     next(button for button in app.button if button.label == "检索资料并分析影响").click().run()
@@ -97,10 +129,161 @@ def test_public_rag_keeps_answer_before_real_cited_source(monkeypatch):
     assert not app.exception
     text = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
     assert {item.value for item in app.subheader} >= {"回答", "引用依据"}
-    assert "查看官方原文" in text
+    assert "在 GitHub 查看固定版本来源" in text
     assert "[1] 参数优先级" in text
     assert "引用编号：[1]" in text
     assert "证据可信度" not in text
+
+
+def test_version_selector_uses_latest_published_workspace_version(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
+        "workspace": "Apache DolphinScheduler", "baseline_version": "3.4.3",
+        "current_version": "3.5.0", "source_count": 70, "chunk_count": 800,
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+
+    assert not app.exception
+    assert app.selectbox(key="official_version").value == "3.5.0"
+    labels = app.selectbox(key="official_version").options
+    assert labels[0].startswith("3.5.0") and labels[1].startswith("3.4.3")
+    assert labels[2] == "全部固定版本"
+
+
+def test_review_decision_cannot_approve_a_different_analysis(monkeypatch):
+    _mock_client(monkeypatch)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    _start_agent_request(app)
+    next(button for button in app.button if button.label == "确认已审阅本次影响分析").click().run()
+    request_target = app.session_state["official_review_decision_target"]
+
+    app.session_state["official_review"] = {
+        "request_mode": "selected_source",
+        "selected_source": {"chunk_id": "another-source"},
+        "patch_candidate": {"proposed_after": "另一个会话草案"},
+    }
+    next(button for button in app.button if button.label == "人工审核").click().run()
+
+    assert not app.exception
+    assert not any("已记录本次会话对会话草案" in item.value for item in app.success)
+    next(button for button in app.button if button.label == "确认已审阅会话草案").click().run()
+    assert app.session_state["official_review_decision_target"] != request_target
+
+
+def test_agent_shows_retrieval_trace_and_uncovered_change_clause(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    def search(self, question, **scope):
+        rows = [] if question.startswith("待排查") else [dict(CHUNK)]
+        return {"query": question, "results": rows, "retrieval_policy": "bm25"}
+
+    monkeypatch.setattr(PublicKnowledgeClient, "search", search)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    _start_agent_request(app, "调整参数优先级；待排查调度失败恢复说明。")
+
+    assert not app.exception
+    assert app.session_state["official_request_review"]["retrieval_trace"]["uncovered_queries"]
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
+    assert "检索过程与覆盖范围" in {item.label for item in app.expander}
+    assert "待排查调度失败恢复说明" in visible
+
+
+def test_agent_shows_model_abstention_gaps_as_unconfirmed_prompts(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    monkeypatch.setattr(PublicKnowledgeClient, "review_advice", lambda self, change_summary, evidence_chunk_ids: {
+        "status": "ABSTAINED", "answer": "N/A", "sources": [],
+        "evidence": [dict(CHUNK)],
+        "review": {
+            "change_interpretation": "需要进一步核对。",
+            "impact_candidates": [],
+            "evidence_gaps": ["缺少下游节点恢复行为说明。"],
+            "version_ambiguities": ["尚未核对历史版本。"],
+            "reviewer_actions": ["补充恢复策略来源后重新审查。"],
+            "review_status": "REQUIRES_HUMAN_REVIEW",
+        },
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    _start_agent_request(app, "调整故障恢复策略")
+
+    assert not app.exception
+    result = app.session_state["official_request_review"]
+    assert result["impacts"] == []
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
+    assert "模型提示待核对" in visible
+    assert "缺少下游节点恢复行为说明" in visible
+    assert "尚未核对历史版本" in visible
+    assert "补充恢复策略来源后重新审查" in visible
+
+
+def test_review_export_records_task_evidence_and_human_decision_without_raw_draft():
+    from public_workbench import _review_report
+
+    result = {
+        "task_id": "task-123", "request_fingerprint": "request-sha", "request_mode": "selected_source",
+        "selected_source": {"chunk_id": "3.4.3:zh:guide/test:1", "source_url": "https://github.com/apache/dolphinscheduler/example"},
+        "patch_candidate": {"before": "official text", "proposed_after": "private proposed text"},
+        "retrieved_results": [], "review_advice": {"status": "OK", "review": {"impact_candidates": []}},
+        "retrieval_trace": {"queries": []}, "evidence_gaps": [], "public_baseline_written": False,
+    }
+
+    report = _review_report(result, "reviewed", "2026-09-28T00:00:00+00:00")
+
+    assert report["task_id"] == "task-123"
+    assert report["human_decision"] == "reviewed"
+    assert report["selected_source_id"] == "3.4.3:zh:guide/test:1"
+    assert report["public_baseline_written"] is False
+    assert report["proposed_after_sha256"]
+    assert "private proposed text" not in json.dumps(report, ensure_ascii=False)
+
+
+def test_generation_rate_limit_keeps_evidence_and_explains_retry(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: {
+        "answer": "N/A", "sources": [], "evidence": [dict(CHUNK)],
+        "status": "GENERATION_RATE_LIMITED", "consistency_notes": [],
+        "generation": {
+            "request_id": "test-request-1", "provider": "deepseek",
+            "requested_model": "deepseek-chat", "returned_model": None,
+            "finish_reason": None, "usage": None, "latency_ms": 1480,
+        },
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+    next(button for button in app.button if button.label == "生成带引用回答").click().run()
+
+    assert not app.exception
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
+    assert "限流" in visible and "稍后重试" in visible
+    assert "[1] 参数优先级" in visible
+    assert "test-request-1" in visible
+
+
+def test_long_hit_fragment_is_complete_once_and_names_github_as_snapshot(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    long_hit = {**CHUNK, "content": "命中证据。" * 200}
+    monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: {
+        "answer": "检索证据支持的回答。", "sources": [long_hit], "evidence": [long_hit],
+        "status": "OK", "consistency_notes": [],
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+    next(button for button in app.button if button.label == "生成带引用回答").click().run()
+
+    assert not app.exception
+    visible = "\n".join(item.value for item in app.markdown)
+    assert visible.count("命中证据。") == 200
+    assert all("完整命中片段" not in item.label for item in app.expander)
+    assert "在 GitHub 查看固定版本来源" in visible
 
 
 def test_generated_answer_shows_cited_evidence_first_and_collapses_other_hits(monkeypatch):
@@ -147,6 +330,8 @@ def test_agent_starts_with_natural_language_and_uses_rag_to_find_candidates(monk
     assert app.session_state["official_request_review"]["impacts"][0]["evidence"]["chunk_id"] == CHUNK["chunk_id"]
     headings = [item.value for item in app.subheader]
     assert headings.index("模型辅助核对建议") < headings.index("可能相关资料")
+    assert "建议引用的官方片段（变更分析）" not in headings
+    assert any("同一片段只展示一次" in item.value for item in app.caption)
 
 
 def test_rag_suggested_question_is_muted_placeholder_and_used_when_submitted_blank(monkeypatch):
@@ -212,7 +397,7 @@ def test_evidence_image_markdown_uses_text_placeholder_instead_of_missing_asset(
 
     assert not app.exception
     rendered = "\n".join(item.value for item in app.markdown)
-    assert "[图片：Apache DolphinScheduler]" in rendered
+    assert "原文配图「Apache DolphinScheduler」" in rendered
     assert "![Apache DolphinScheduler]" not in rendered
 
 
@@ -233,7 +418,7 @@ def test_agent_original_source_uses_placeholder_for_missing_markdown_images(monk
 
     assert not app.exception
     rendered = "\n".join(item.value for item in app.markdown)
-    assert "[图片：Apache DolphinScheduler]" in rendered
+    assert "原文配图「Apache DolphinScheduler」" in rendered
     assert "![Apache DolphinScheduler]" not in rendered
 
 
@@ -459,9 +644,33 @@ def test_corpus_image_references_have_readable_local_descriptions():
 
     content = '前文 ![流程图](../flow.png) <p align="center"><img src="../step.png" alt="执行步骤"/></p>'
     rendered = _replace_markdown_images(content)
-    assert "[图片：流程图]" in rendered
-    assert "[图片：执行步骤]" in rendered
+    assert "原文配图「流程图」" in rendered
+    assert "原文配图「执行步骤」" in rendered
+    assert "图中文字未纳入检索" in rendered
     assert "<img" not in rendered and "<p align" not in rendered
+
+
+def test_relative_corpus_links_point_to_the_pinned_official_source():
+    from public_workbench import _rewrite_relative_source_links
+
+    source_url = (
+        "https://github.com/apache/dolphinscheduler/blob/"
+        "a190201acffa03d199d4ca216288734a6513de3d/"
+        "docs/docs/zh/guide/parameter/priority.md"
+    )
+    content = (
+        "[内置参数](built-in.md) [本章](#priority) "
+        "[官方发布](https://github.com/apache/dolphinscheduler/releases)"
+    )
+    rendered = _rewrite_relative_source_links(content, source_url)
+
+    assert (
+        "[内置参数](https://github.com/apache/dolphinscheduler/blob/"
+        "a190201acffa03d199d4ca216288734a6513de3d/"
+        "docs/docs/zh/guide/parameter/built-in.md)"
+    ) in rendered
+    assert f"[本章]({source_url}#priority)" in rendered
+    assert "[官方发布](https://github.com/apache/dolphinscheduler/releases)" in rendered
 
 
 def test_wide_layout_uses_full_main_column_and_unframed_back_arrow():
@@ -542,6 +751,11 @@ def test_public_agent_change_and_review_are_session_local(monkeypatch):
     assert "依据引用片段，建议核对相关资料中的参数顺序。" in "\n".join(
         item.value for item in first.markdown
     )
+    visible = "\n".join(item.value for item in list(first.markdown) + list(first.caption))
+    assert "该章节说明参数优先级。" in visible
+    assert "核对示例与运维说明是否同步。" in visible
+    assert "尚未检查英文资料。" in visible
+    assert "等待人工审核" in visible
     headings = [item.value for item in first.subheader]
     assert headings.index("模型辅助核对建议") < headings.index("可能相关资料")
     next(button for button in first.button if button.label == "确认已审阅本次影响分析").click().run()
@@ -615,6 +829,69 @@ def test_public_navigation_exposes_versions_sources_evaluation_and_limits(monkey
     assert "双来源" in visible and "0/4" in visible
 
 
+def test_benchmark_prefers_server_verified_v3_and_labels_old_numbers_historical(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
+        "workspace": "Apache DolphinScheduler", "baseline_version": "3.4.2",
+        "current_version": "3.4.3", "source_count": 132, "chunk_count": 1322,
+        "retrieval_policy": "bm25", "retrieval_evaluation_status": "v3_validated",
+        "retrieval_evaluation": {
+            "name": "quality_v3", "policy": "bm25", "top_k": 5,
+            "dev": {
+                "question_count": 36, "answerable_count": 32, "no_answer_count": 4,
+                "complete_source_count": 30, "multi_source_question_count": 8,
+                "complete_multi_source_count": 6, "evidence_marker_found": 44,
+                "evidence_marker_count": 48, "source_hit_at_5": 0.96875,
+                "source_recall_at_5_macro": 0.953125, "mrr": 0.921875,
+                "warm_search_p95_ms": 7.52,
+            },
+            "holdout": {
+                "question_count": 36, "answerable_count": 32, "no_answer_count": 4,
+                "complete_source_count": 27, "multi_source_question_count": 8,
+                "complete_multi_source_count": 4, "evidence_marker_found": 37,
+                "evidence_marker_count": 49, "source_hit_at_5": 0.875,
+                "source_recall_at_5_macro": 0.859375, "mrr": 0.7604167,
+                "warm_search_p95_ms": 7.02,
+            },
+        },
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "检索评测").click().run()
+
+    assert not app.exception
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader))
+    assert "V3 当前扩充语料" in visible
+    assert "27/32" in visible and "4/8" in visible and "37/49" in visible
+    assert "历史选型（旧语料）" in visible
+    assert "正在单独复评" not in visible
+
+
+def test_benchmark_does_not_present_local_v3_as_current_without_matching_backend_release(monkeypatch):
+    _mock_client(monkeypatch)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "检索评测").click().run()
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader))
+
+    assert not app.exception
+    assert "V3 当前扩充语料" not in visible
+    assert "历史选型（旧语料）" in visible
+
+
+def test_relative_official_link_stays_on_commit_or_becomes_plain_text():
+    from public_workbench import _rewrite_relative_source_links
+
+    source = "https://github.com/apache/dolphinscheduler/blob/" + "a" * 40 + "/docs/docs/zh/guide/parameter/context.md"
+    raw = "[安全章节](./global.md) [越界章节](../../../../../../../../another-repo/README.md) [外部](https://example.com/x)"
+    visible = _rewrite_relative_source_links(raw, source)
+
+    assert "[安全章节](https://github.com/apache/dolphinscheduler/blob/" in visible
+    assert "越界章节" in visible
+    assert "[越界章节](" not in visible
+    assert "[外部](https://example.com/x)" in visible
+
+
 def test_verified_consistency_notice_names_primary_basis_and_both_versions(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
@@ -649,7 +926,7 @@ def test_agent_review_sections_remain_session_bound_after_navigation(monkeypatch
     assert not app.exception
     next(button for button in app.button if button.label == "影响候选").click().run()
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
-    assert "可能相关资料" in visible or "官方原文" in visible
+    assert "可能相关资料" in visible or "在 GitHub 查看固定版本来源" in visible
     next(button for button in app.button if button.label == "人工审核").click().run()
     assert app.session_state["official_request_review"]["sandbox_only"] is True
     next(button for button in app.button if button.label == "确认已审阅本次影响分析").click().run()
@@ -680,4 +957,4 @@ def test_switching_source_resets_previous_unsent_draft(monkeypatch):
     app.selectbox(key="official_change_chunk").set_value(second["chunk_id"]).run()
     assert not app.exception
     assert app.text_area(key="official_proposed_text").value == second["content"]
-    assert app.session_state.get("official_review_decision") is None
+    assert _state_get(app.session_state, "official_review_decision") is None

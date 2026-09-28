@@ -1,0 +1,18 @@
+{
+  "policy": "bm25",
+  "candidate_fingerprint": {
+    "public_knowledge.py": "f043f5e6f7ed9a57ebc0423d9a61352cabdd48fba3b9ccb5e83e3500451158c5",
+    "retrieval_policy.json": "ef768aba8d65be8f9a98f51bf9e9d42ff404617c55114c87f5ac41ed16064e32"
+  },
+  "dev_result_sha256": "4d87175fd4cd891f47d782099a22da81d65f7204d18c51fda444bcf9d77bd32f",
+  "input_sha256": {
+    "cases.jsonl": "890cb19824720a38dcd8456c61325926e04434e30c149a7029ac1d2daed30f60",
+    "frozen_split.json": "0c2b099f64154a26419ba6adb0779947e90eefe72d2c8923697f2a857c9edc81",
+    "run_quality_v3.py": "da61f54cf3ccd6a2051b08f1c99b5216f70357fc6e2344b9954f3038b4e3460d",
+    "corpus_manifest.json": "453d9de964b1c116cfa1ab9e4ed4446135da2567dac12ef8778a8b1d0350e996",
+    "chunks.json": "1258efb90ff3aa54e33248b65cead4a86f7342497d3ae584b3376f0851118f37",
+    "dense_vectors.npy": "4fd43b38c55084ef33550a4d0e1e07306b47007906f3522c420ff99243ddc0e6",
+    "retrieval_policy.json": "ef768aba8d65be8f9a98f51bf9e9d42ff404617c55114c87f5ac41ed16064e32"
+  },
+  "selected_at_utc": "2026-09-27T22:58:05.015724+00:00"
+}

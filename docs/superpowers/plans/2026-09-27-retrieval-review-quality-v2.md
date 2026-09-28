@@ -1,5 +1,7 @@
 # Retrieval and Review Quality Iteration V2 Implementation Plan
 
+> **2026-09-28 continuation:** This document preserves the V2 experiment and the earlier 52-source/659-chunk blocker as historical execution state. The pinned official corpus has since expanded to 132 sources/1322 chunks while preserving the old rows and IDs. Expanded-corpus retrieval is being evaluated separately under `evaluation/real_world_retrieval/quality_v3/`; BM25 remains the default until that gate is complete. Statements below that expansion was blocked describe the earlier run, not the current corpus.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Expand version-aligned official evidence, measure retrieval improvements on a new locked evaluation suite, and make change-review advice structured and reviewable without changing the human approval boundary.
@@ -33,6 +35,8 @@
 
 ### Task 1: Expand pinned official source coverage and rebuild artifacts
 
+> **Status: blocked.** This environment cannot fetch the pinned Apache pages (the local proxy refuses the request and the official GitHub/raw endpoints return cache misses). No upstream text was fabricated or substituted; the checked-in snapshot remains 52 sources / 659 chunks. Resume this task in an environment with official-source access.
+
 **Files:**
 - Create: `versioned-rag-service/scripts/sync_pinned_sources.py`
 - Create: `versioned-rag-service/public_corpus/source_coverage.json`
@@ -46,9 +50,9 @@
 
 **Interfaces:**
 - Consumes: the existing manifest's pinned commits `71eb6412f940afa1f171f1097dc0e99ed61d16e2` (3.4.2) and `a190201acffa03d199d4ca216288734a6513de3d` (3.4.3).
-- Produces: `sync_sources(root: Path, fetcher) -> SyncResult`, `raw_source_url(commit: str, path: str) -> str`, and a coverage record distinguishing fetched pages from paths absent at the pinned source commit; a manifest and artifacts accepted by `PublicKnowledgeIndex`.
+- Produces: `sync_sources(root: Path, fetcher) -> dict[str, int]`, `raw_source_url(commit: str, path: str) -> str`, and a coverage record distinguishing fetched pages from paths absent at the pinned source commit; a manifest and artifacts accepted by `PublicKnowledgeIndex`.
 
-- [ ] **Step 1: Write failing source-provenance tests.** Test that every manifest path exists, its bytes match the manifest SHA-256, its URL commit matches the version's pinned commit, and coverage records every requested counterpart as present or absent.
+- [x] **Step 1: Write failing source-provenance tests.** Added tests for pinned URLs/path traversal, verified bytes plus present/absent coverage, failure-before-write behavior, and rejection of a current-version allowlist entry pinned to the wrong commit.
 
 ```python
 def test_raw_source_url_uses_the_pinned_commit():
@@ -62,17 +66,17 @@ def test_raw_source_url_uses_the_pinned_commit():
     )
 ```
 
-- [ ] **Step 2: Run the new test and confirm it fails** because the synchronizer and coverage record do not exist.
+- [x] **Step 2: Run the new tests and confirm they fail** because the synchronizer was missing, then because the allowlist did not yet enforce the current pinned commit.
 
 Run: `pytest versioned-rag-service/tests/test_sync_pinned_sources.py -q`
 
-- [ ] **Step 3: Implement the pinned-source synchronizer.** Use the current 3.4.3 documentation paths as the allowlist, fetch matching bilingual 3.4.2 files only from the 3.4.2 pinned commit, and record absent paths instead of substituting newer text. Preserve license and NOTICE attribution.
+- [x] **Step 3: Implement the pinned-source synchronizer.** It uses only pinned 3.4.3 official Markdown paths, fetches counterparts from the pinned 3.4.2 commit, records 404 paths as absent, preserves attribution/license metadata, and prepares all responses before writing. Offline injected-fetcher tests exercise the contract.
 
-- [ ] **Step 4: Rebuild and validate the corpus.** Run the synchronizer, regenerate chunks/vectors from the manifest, and update manifest/index SHA-256 fields through one reproducible command. Do not change the version range or retrieval default in this task.
+- [ ] **Step 4: Rebuild and validate the corpus.** The real sync and index rebuild are blocked because `raw.githubusercontent.com` DNS resolution fails even for a read-only request. No corpus files were changed in this step; run the command only after official-source access is restored. The default retrieval policy remains BM25.
 
 Run: `python versioned-rag-service/scripts/sync_pinned_sources.py --rebuild`
 
-- [ ] **Step 5: Run source and public-index tests.** Confirm the new tests and public-corpus integrity tests pass.
+- [x] **Step 5: Run source and public-index tests.** The injected-source contract and current public-index integrity tests pass (15 total); validation against newly fetched real sources remains part of blocked Step 4.
 
 Run: `pytest versioned-rag-service/tests/test_sync_pinned_sources.py versioned-rag-service/tests/test_public_knowledge.py -q`
 
@@ -121,14 +125,14 @@ Run: `pytest versioned-rag-service/tests/test_public_knowledge.py -q`
 
 **Interfaces:**
 - Consumes: the V2 corpus manifest, `PublicKnowledgeIndex`, and query/ground-truth fields compatible with the existing retrieval benchmark.
-- Produces: `complete_source_recall(ranked_source_ids: list[int], required_source_ids: set[int]) -> bool`, 40 newly authored cases, deterministic 20/20 DEV/HOLDOUT assignment, hash-locked inputs, per-policy metrics and ranked evidence IDs written only under `quality_v2/results/`.
+- Produces: `complete_source_recall(ranked_source_ids: list[str], required_source_ids: set[str]) -> bool`, 40 newly authored cases, deterministic 20/20 DEV/HOLDOUT assignment, hash-locked inputs, per-policy metrics and ranked evidence IDs written only under `quality_v2/results/`. Source IDs use `version|language|document_key` so manifest reordering cannot change their identity.
 
 - [ ] **Step 1: Write failing split and metric tests.** Assert deterministic query IDs per category, 20 DEV plus 20 HOLDOUT, split disjointness, locked input hashes, and complete-source scoring for two-source queries.
 
 ```python
 def test_cross_document_metric_requires_both_sources():
-    assert complete_source_recall([0], {0, 1}) is False
-    assert complete_source_recall([0, 1], {0, 1}) is True
+    assert complete_source_recall(["source-a"], {"source-a", "source-b"}) is False
+    assert complete_source_recall(["source-a", "source-b"], {"source-a", "source-b"}) is True
 ```
 
 - [ ] **Step 2: Run the tests and confirm they fail** because the V2 split and runner do not exist.
@@ -137,7 +141,7 @@ Run: `pytest evaluation/real_world_retrieval/quality_v2/test_quality_v2.py -q`
 
 - [ ] **Step 3: Author 40 new questions from the pinned sources and documented 3.4.2→3.4.3 changes.** Include eight cross-document cases, eight version-scope cases, six Chinese cases, six English cases, four mixed-language cases, four hard/ambiguous cases, and four no-answer cases. Record exact expected evidence markers and source identity; label hypothetical scenarios explicitly.
 
-- [ ] **Step 4: Implement the deterministic split and runner.** Use category-stratified SHA-256 assignment, lock the hashes of the query set, ground truth, and corpus manifest, and report Recall@5, MRR, nDCG@5, complete multi-source Top-5 recall, no-answer Top-1 score distribution as a retrieval-only diagnostic, errors, and local warm P95. Do not label nearest-neighbor candidate presence as a false answer.
+- [ ] **Step 4: Implement the deterministic split and runner.** Use category-stratified SHA-256 assignment, lock the hashes of the query set, ground truth, and corpus manifest, and report source-deduplicated Recall@5, MRR and nDCG@5, complete multi-source Top-5 recall, no-answer Top-1 score distribution as a retrieval-only diagnostic, errors, and local warm P95. Do not label nearest-neighbor candidate presence as a false answer.
 
 - [ ] **Step 5: Run DEV candidate comparisons only.** Compare `bm25` and `bm25_fields`; write outputs under `quality_v2/results/`. Do not run the V1 final-selection runner or overwrite any V1 result.
 
@@ -159,32 +163,29 @@ Run: `python evaluation/real_world_retrieval/quality_v2/run_quality_v2.py --spli
 
 **Interfaces:**
 - Consumes: only current-version evidence chunks already selected by the Agent; generic RAG answers continue using their current answer/citation contract.
-- Produces: structured review fields for change assumption, suggested impacts, evidence gaps, and reviewer actions, plus validated cited sources and a pending-human-review status. Confirmed relations remain deterministic and outside model output.
+- Produces: `change_interpretation`, `impact_candidates[{evidence_chunk_id, reason, suggested_action}]`, `evidence_gaps`, `version_ambiguities`, `reviewer_actions`, and a fixed `REQUIRES_HUMAN_REVIEW` status. Every ID must belong to this request's RAG evidence. Confirmed relations remain deterministic and outside model output.
 
-- [ ] **Step 1: Write failing review-response tests.** Cover a valid structured response, an unknown evidence ID, a missing field, malformed JSON, and an unavailable provider; assert the generic answer decoder and prompt contract remain unchanged.
+- [x] **Step 1: Write failing review-response tests.** Cover a valid structured response, an unknown evidence ID, a missing field, malformed JSON, and an unavailable provider; assert the generic answer decoder and prompt contract remain unchanged.
 
 ```python
 def test_review_advice_rejects_evidence_id_outside_supplied_chunks():
-    payload = {
-        "change_assumption": "假设变更",
-        "suggested_impacts": [{"statement": "需要核对", "reason": "相关证据", "evidence_ids": ["not-supplied"]}],
-        "evidence_gaps": [], "reviewer_actions": ["人工核对"],
-        "review_status": "PENDING_HUMAN_REVIEW",
-        "relevant_sources": [{"document_id": "not-supplied", "page_number": 1}],
-    }
+    payload = {"impact_candidates": [{
+        "evidence_chunk_id": "not-supplied", "reason": "相关证据",
+        "suggested_action": "人工核对",
+    }]}
     with pytest.raises(ValueError, match="evidence"):
-        decode_review_advice(payload, allowed_ids={"chunk-1"})
+        validate_review_evidence_membership(payload, allowed_chunk_ids={"chunk-1"})
 ```
 
-- [ ] **Step 2: Run the focused tests and confirm they fail** because no separate review schema exists.
+- [x] **Step 2: Run the focused tests and confirm they fail** because no separate review schema exists.
 
 Run: `pytest versioned-rag-service/tests/test_formal_runtime_contract.py versioned-rag-service/tests/test_public_server.py change-review-agent/tests/test_public_review.py -q`
 
-- [ ] **Step 3: Implement a separate review prompt and decoder.** Keep `StructuredAnswerGenerator.generate()` behavior intact. Validate exact response keys, field types, status, source citation membership, and every suggested-impact evidence ID against supplied chunks. Never accept model-created confirmed relations.
+- [x] **Step 3: Implement a separate review prompt and decoder.** Keep the external `StructuredAnswerGenerator.generate()` contract intact. Validate exact response keys, field types, status, and every suggested-impact evidence ID against supplied chunks. Never accept model-created confirmed relations.
 
-- [ ] **Step 4: Integrate the structured response in `/public/review-advice` and `PublicReviewAgent`.** On missing credentials or provider errors, retain retrieved candidates and return a non-success review-advice status; do not turn fallback evidence into model-confirmed impact.
+- [x] **Step 4: Integrate the structured response in `/public/review-advice` and `PublicReviewAgent`.** On missing credentials or provider errors, retain retrieved candidates and return a non-success review-advice status; do not turn fallback evidence into model-confirmed impact.
 
-- [ ] **Step 5: Run the focused service and Agent tests.**
+- [x] **Step 5: Run the focused service and Agent tests.** 39 backend tests and 7 Agent tests pass, including rejection of unknown chunk IDs and the fixed pending-review state.
 
 Run: `pytest versioned-rag-service/tests/test_formal_runtime_contract.py versioned-rag-service/tests/test_public_server.py change-review-agent/tests/test_public_review.py -q`
 
@@ -192,8 +193,7 @@ Run: `pytest versioned-rag-service/tests/test_formal_runtime_contract.py version
 
 **Files:**
 - Modify: `demo-ui/public_workbench.py`
-- Modify: `demo-ui/tests/test_custom_change_review.py`
-- Modify: `demo-ui/tests/test_business_workflow_ui.py`
+- Modify: `demo-ui/tests/test_public_official_workbench.py`
 - Modify: `README.md`
 - Modify: `demo-ui/README.md`
 - Create: `evaluation/real_world_retrieval/quality_v2/report.md`
@@ -202,17 +202,17 @@ Run: `pytest versioned-rag-service/tests/test_formal_runtime_contract.py version
 - Consumes: the validated structured review response from Task 4 and V2 metrics from Task 3.
 - Produces: separate UI sections for assumptions, suggested candidates, evidence gaps, reviewer actions, and human decision; documentation that distinguishes V1 historical selection from current measured behavior.
 
-- [ ] **Step 1: Write failing UI tests** asserting those sections render independently and no generated impact is labeled confirmed.
+- [x] **Step 1: Write failing UI tests** asserting the interpretation, candidate reason/action, evidence gaps, and pending review state are visible.
 
-- [ ] **Step 2: Run the focused UI tests and confirm they fail.**
+- [x] **Step 2: Run the focused UI tests.** The initially selected interpreter lacked Streamlit; the existing `data-juicer` environment was then used to run the public-workbench AppTest suite.
 
 Run: `pytest demo-ui/tests/test_custom_change_review.py demo-ui/tests/test_business_workflow_ui.py -q`
 
-- [ ] **Step 3: Render structured fields and preserve existing safe fallbacks.** Keep the public-baseline disclaimer and current session-only review decision behavior.
+- [x] **Step 3: Render structured fields and preserve existing safe fallbacks.** Keep the public-baseline disclaimer and current session-only review decision behavior.
 
-- [ ] **Step 4: Update READMEs and add the V2 report.** State the new corpus count and actual selected policy only after Task 3's gate; retain the V1 selection results as historical evidence and report the V2 split, metrics, and limitations separately.
+- [x] **Step 4: Update READMEs and add the V2 report.** The V2 candidate failed the HOLDOUT promotion gate; retain BM25 as the formal default and report the V2 split, metrics, and unchanged corpus coverage separately from V1.
 
-- [ ] **Step 5: Run focused UI tests and documentation whitespace checks.**
+- [x] **Step 5: Run focused UI tests and documentation whitespace checks.** The public-workbench AppTest suite passed (34 tests) under Python 3.10 / Streamlit 1.56, although Streamlit warns that Python 3.10 is outside its supported 3.11–3.13 range. `git diff --check` passed.
 
 Run: `pytest demo-ui/tests/test_custom_change_review.py demo-ui/tests/test_business_workflow_ui.py -q`
 
@@ -221,13 +221,13 @@ Run: `pytest demo-ui/tests/test_custom_change_review.py demo-ui/tests/test_busin
 **Files:**
 - Validate only the explicit files listed in Tasks 1–5; do not stage unrelated workspace content.
 
-- [ ] **Step 1: Run targeted corpus, retrieval, API, Agent, and UI tests.** Do not run unrelated full-repository tests or a live paid model call.
+- [x] **Step 1: Run targeted retrieval, API, Agent, UI, and sync-contract tests.** Public knowledge/server/runtime-contract tests: 40 passed; Agent review tests: 8 passed; V2 evaluation tests: 7 passed; public-workbench AppTests: 34 passed under Python 3.10 / Streamlit 1.56; source-sync contract plus public-index tests: 15 passed. Real source synchronization remains blocked by DNS failure. No unrelated full suite or live paid model call was run.
 
-Run: `pytest versioned-rag-service/tests/test_sync_pinned_sources.py versioned-rag-service/tests/test_public_knowledge.py versioned-rag-service/tests/test_formal_runtime_contract.py versioned-rag-service/tests/test_public_server.py change-review-agent/tests/test_public_review.py demo-ui/tests/test_custom_change_review.py demo-ui/tests/test_business_workflow_ui.py evaluation/real_world_retrieval/quality_v2/test_quality_v2.py -q`
+Runs: `python -m pytest versioned-rag-service/tests/test_public_knowledge.py versioned-rag-service/tests/test_formal_runtime_contract.py versioned-rag-service/tests/test_public_server.py -q`; `python -m pytest change-review-agent/tests/test_public_review.py -q`; `python -m pytest evaluation/real_world_retrieval/quality_v2/test_quality_v2.py -q -p no:cacheprovider`; and the `demo-ui/tests/test_public_official_workbench.py` AppTest suite using the existing Streamlit environment.
 
-- [ ] **Step 2: Run corpus/hash validation, the finalized V2 evaluation gates, and `git diff --check`.** Confirm the documentation reports the actual expanded source/chunk counts, labels V1 selection results as historical, and does not present old V1 metrics as the new corpus result.
+- [x] **Step 2: Run corpus/hash validation and `git diff --check`.** The current chunks hash matches `retrieval_policy.json`; all 659 existing chunks retain their pre-existing fields and order, with only `document_title` and `heading_path` added. The 52-source manifest and dense vector bytes are unchanged; default policy remains BM25. The V2 candidate did not pass HOLDOUT promotion.
 
-- [ ] **Step 3: Inspect changed paths, staged paths, diff, secret scan, and tracked status.** Stage explicit files; verify `RAG-Challenge-2-main/` remains untracked and untouched.
+- [x] **Step 3: Inspect changed paths, staged paths, diff, secret scan, and tracked status.** Reviewed the scoped source diffs, confirmed no staged paths and no credential-like literals, and verified protected corpus sources, vectors, V1 final-selection artifacts, and public baseline paths are unchanged. The unrelated untracked `RAG-Challenge-2-main/` remains untouched. No files were staged because Task 1 is blocked and promotion gates are incomplete.
 
 - [ ] **Step 4: Create one implementation commit** on `codex/retrieval-review-quality-20260927` after all checks pass.
 

@@ -3,7 +3,7 @@
 - [GitHub 源码仓库](https://github.com/Wdp-SE/enterprise-rag-agent-suite)
 - [在线工作台](https://enterprise-rag-agent-suite-bfmkgsimdisxcewgco7ydk.streamlit.app/)
 
-默认入口 [app.py](app.py) 展示 **Apache DolphinScheduler 官方公开资料**：左侧导航按“知识服务”“变更审查”“系统说明”分组，提供总览、可信检索问答、版本与历史、资料与来源、会话审查各步骤、检索评测与已知限制。首页说明来源与非官方身份。知识服务支持 3.4.2 / 3.4.3 固定版本、中文优先/中英双语检索、真实官方原文引用和可核验的资料差异提醒。变更审查 Agent 调用当前版本 RAG 证据，整理待核查影响与修改建议，草案和人工审核状态只留在当前 Streamlit 会话，不写公共基线。
+默认入口 [app.py](app.py) 展示 **Apache DolphinScheduler 官方公开资料**：左侧导航按“知识服务”“变更审查”“系统说明”分组，提供总览、可信检索问答、版本与历史、资料与来源、会话审查各步骤、检索评测与已知限制。首页说明来源与非官方身份。知识服务从 RAG 后端的固定语料清单读取当前版本与历史版本，默认选择清单声明的当前版本 3.4.3；它不会实时自动追踪 Apache 上游。工作台提供中文优先/中英双语检索、真实官方原文引用和可核验的资料差异提醒。变更审查 Agent 依据自然语言变更请求调用当前版本检索，整理待核查影响与修改建议；审核决定和可下载的审查记录只留在当前 Streamlit 会话，不写公共基线。
 
 ![本地 V1.0 候选工作台首页截图（非当前公网页面）](../project_delivery/final_engineering_review/home.png)
 
@@ -22,20 +22,24 @@
 ## 操作路径
 
 1. “可信检索问答”：选版本和语言，输入问题，先查看答案，再核对引用依据 Top 3；其余结果折叠。“技术详情”才显示检索得分，该分数不是事实可信度。
-2. “新建变更审查”：选择真实官方文档和段落，输入假设内容，查看 Diff、可能受影响的资料与官方链接、会话草案，最后人工审核。仅官方 PR 明确引用 DSIP 的关系会标记为已确认；语义检索只标记建议。
-3. “检索评测”页面保留早期字符哈希 Dense 的历史对照，不代表真实 multilingual E5 选型结果。V1.0 当前正式策略为 Chunk A（1250 chars、无 overlap）+ BM25 + Top-5；同条件 E5/Hybrid 对照及 HOLDOUT 边界见[最终选型报告](../evaluation/real_world_retrieval/final_selection/final_selection.md)。服务未配置在线模型或生成未通过引用校验时，问答页只展示待核对的检索候选。
+2. “发起变更审查”：用自然语言描述假设变更，系统拆分检索子问题并在当前版本资料中寻找证据，展示检索轨迹、影响候选和证据缺口；可选片段做修改前后对照，最后由人审核。人工决定绑定当前任务编号，可下载包含请求指纹、证据 ID、决定和时间的会话 JSON，但不会自动进入审批系统。仅官方 PR 明确引用 DSIP 的关系会标记为已确认；语义检索只标记建议。
+3. “检索评测”页面保留早期字符哈希 Dense 的历史对照，不代表真实 multilingual E5 选型结果，也不是当前扩充语料的质量指标。当前默认为 Chunk A（1250 chars、无 overlap）+ BM25 + Top-5；它已在 V3 的 DEV 上锁定并经过一次性 HOLDOUT 检验。旧语料上的 E5/Hybrid 对照及边界见[历史最终选型报告](../evaluation/real_world_retrieval/final_selection/final_selection.md)。服务未配置在线模型或生成未通过引用校验时，问答页只展示待核对的检索候选。
 
 原合成 Case A/B 仍供测试使用。仅需复现这些历史测试夹具界面时，显式设置 `DEMO_LEGACY_FIXTURES=true`；公网默认不会展示或加载合成案例。
 
-## V1.0 检索结论与已知限制
+## 检索结论与已知限制
 
-正式检索保持 BM25 + Top-5、Chunk A 为 1250 chars 且无 overlap，不设置文档数上限。multilingual E5 与 Hybrid 仅用于同条件选型比较，不进入正式链路；Hybrid 的 MRR 仅小幅增加，Hit@1、Hit@5、双来源完整命中没有改善，P95 明显高于 BM25。四条跨文档题双来源完整命中为 0/4。HOLDOUT 是既有 46 条题目的回顾性确定划分，不是独立真实用户测试。
+当前运行默认仍为 BM25 + Top-5、Chunk A 为 1250 chars 且无 overlap，不设置文档数上限。旧版 52 份来源上的 multilingual E5 与 Hybrid 仅用于同条件选型比较，不进入正式链路；当时 Hybrid 的 MRR 仅小幅增加，Hit@1、Hit@5、双来源完整命中没有改善，P95 明显高于 BM25。V1 的四条跨文档题双来源完整命中为 0/4；其 HOLDOUT 是既有 46 条题目的回顾性确定划分，不是独立真实用户测试。
 
-语料仅是 52 份官方资料的有限子集。Agent 工作状态保存在当前 Session 沙箱，不修改公共语料或 Apache 上游。系统不实现 locale sibling consistency；影响候选需要人工复核，审查结果不会写回公共资料。详细结果见[最终选型报告](../evaluation/real_world_retrieval/final_selection/final_selection.md)。
+历史 V2 检索质量实验在扩充之前的 52 份来源和 659 个 chunk 上比较了 BM25 与实验性字段加权候选。候选只在 DEV 上提升跨文档完整命中，未通过一次性 HOLDOUT 门槛，因此工作台没有切换默认策略。当前语料已扩至 132 份来源和 1322 个 chunk，并已通过下面的 V3 独立评测；不能把 V2 历史成绩当作当前成绩。结果和指标定义见[V2 检索质量实验报告](../evaluation/real_world_retrieval/quality_v2/report.md)。
+
+针对当前语料，V3 冻结 72 道新业务题，按场景家族划分 DEV/HOLDOUT 各 36 道；在 DEV 比较三种来源多样化候选后锁定 BM25，并只运行一次 BM25 的 HOLDOUT。HOLDOUT 的 32 道可回答题中，27 道找齐全部必需来源；8 道多来源题有 4 道找齐，返回片段找到 37/49 个原文锚点。检索表现不等于生成答案的准确率或幻觉率，也不能代表真实用户开放提问。复现 DEV 基线时从仓库根目录运行 `python evaluation/real_world_retrieval/quality_v3/run_quality_v3.py --split dev --policy bm25`；题库与锁定边界见[V3 评测说明](../evaluation/real_world_retrieval/quality_v3/README.md)，一次性结果与失败题见[V3 报告](../evaluation/real_world_retrieval/quality_v3/report.md)。已开封的 HOLDOUT 不应重复运行或用于继续调参。
+
+132 份语料仍是官方资料的有限子集，原文图片中的文字尚未纳入正式索引或检索；界面的配图提示不是 OCR 结果。Agent 工作状态保存在当前 Session 沙箱，下载审查 JSON 需要用户自行保存，不修改公共语料或 Apache 上游。系统不实现 locale sibling consistency；影响候选需要人工复核，审查结果不会写回公共资料。历史选型详见[最终选型报告](../evaluation/real_world_retrieval/final_selection/final_selection.md)。
 
 ## 云端配置
 
-Streamlit Community Cloud 入口仍是 `demo-ui/app.py`；本文不指定其 Python 版本，以当前应用配置和平台选项为准。至少设置 `APP_ENV="public_demo"` 与 `RAG_API_BASE_URL="<真实 Render URL>"`；完整字段见 [部署指南](../project_delivery/public_value_prototype/free_deployment_guide.md)及[Secrets 示例](.streamlit/secrets.toml.example)。应用本身不设置固定生成次数；模型服务商的限流和计费规则仍适用。在线生成密钥只配置在 Render RAG 后端：默认 DashScope 使用 `DASHSCOPE_API_KEY`；若改用 DeepSeek，设置 `RD_V2_GENERATION_PROVIDER=deepseek`、`RD_V2_GENERATION_MODEL=deepseek-v4-flash` 和 `DEEPSEEK_API_KEY`。不要把模型密钥放进 Streamlit 前端 Secrets，也不要提交 `secrets.toml`。
+Streamlit Community Cloud 入口仍是 `demo-ui/app.py`；本文不指定其 Python 版本，以当前应用配置和平台选项为准。至少设置 `APP_ENV="public_demo"` 与 `RAG_API_BASE_URL="<真实 Render URL>"`；完整字段见 [部署指南](../project_delivery/public_value_prototype/free_deployment_guide.md)及[Secrets 示例](.streamlit/secrets.toml.example)。应用本身不设置固定生成次数或自动无限重试；模型服务商的余额、限流和网络状态仍决定单次请求能否完成。在线生成密钥只配置在 Render RAG 后端：默认 DashScope 使用 `DASHSCOPE_API_KEY`；若改用 DeepSeek，设置 `RD_V2_GENERATION_PROVIDER=deepseek`、`RD_V2_GENERATION_MODEL=deepseek-v4-flash` 和 `DEEPSEEK_API_KEY`。不要把模型密钥放进 Streamlit 前端 Secrets，也不要提交 `secrets.toml`。
 
 ## UI 回归
 

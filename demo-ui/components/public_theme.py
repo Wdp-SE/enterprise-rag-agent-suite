@@ -204,13 +204,6 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible 
   background:var(--quiet)!important;border:0!important;
   border-left:3px solid var(--ink)!important;border-radius:0!important;
 }
-[class*="st-key-grounded_review_advice_"] {
-  background:var(--quiet)!important;border:0!important;
-  border-left:3px solid var(--ink)!important;border-radius:0!important;
-}
-[class*="st-key-grounded_review_advice_"] [data-testid="stMarkdownContainer"] p {
-  color:var(--ink)!important;font-size:1.19rem!important;line-height:1.7!important;
-}
 .st-key-generated_answer [data-testid="stMarkdownContainer"] p {
   color:var(--ink)!important;font-size:1.3rem!important;line-height:1.75!important;
 }

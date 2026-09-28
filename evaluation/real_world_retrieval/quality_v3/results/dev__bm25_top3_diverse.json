@@ -1,0 +1,1419 @@
+{
+  "split": "dev",
+  "policy": "bm25_top3_diverse",
+  "candidate_fingerprint": {
+    "public_knowledge.py": "f043f5e6f7ed9a57ebc0423d9a61352cabdd48fba3b9ccb5e83e3500451158c5",
+    "retrieval_policy.json": "ef768aba8d65be8f9a98f51bf9e9d42ff404617c55114c87f5ac41ed16064e32"
+  },
+  "input_sha256": {
+    "cases.jsonl": "890cb19824720a38dcd8456c61325926e04434e30c149a7029ac1d2daed30f60",
+    "frozen_split.json": "0c2b099f64154a26419ba6adb0779947e90eefe72d2c8923697f2a857c9edc81",
+    "run_quality_v3.py": "da61f54cf3ccd6a2051b08f1c99b5216f70357fc6e2344b9954f3038b4e3460d",
+    "corpus_manifest.json": "453d9de964b1c116cfa1ab9e4ed4446135da2567dac12ef8778a8b1d0350e996",
+    "chunks.json": "1258efb90ff3aa54e33248b65cead4a86f7342497d3ae584b3376f0851118f37",
+    "dense_vectors.npy": "4fd43b38c55084ef33550a4d0e1e07306b47007906f3522c420ff99243ddc0e6",
+    "retrieval_policy.json": "ef768aba8d65be8f9a98f51bf9e9d42ff404617c55114c87f5ac41ed16064e32"
+  },
+  "top_k": 5,
+  "overall": {
+    "question_count": 36,
+    "answerable_count": 32,
+    "no_answer_count": 4,
+    "source_hit_at_5": 0.96875,
+    "source_recall_at_5_macro": 0.96875,
+    "source_recall_at_5_micro": 0.95,
+    "complete_source_at_5": 0.96875,
+    "multi_source_question_count": 8,
+    "complete_multi_source_at_5": 0.875,
+    "mrr": 0.921875,
+    "evidence_marker_recall_at_5_micro": 0.8958333333333334,
+    "warm_search_p50_ms": 4.092450020834804,
+    "warm_search_p95_ms": 6.97099999524653,
+    "no_answer_top1_score": {
+      "count": 4,
+      "median": 15.101283073425293,
+      "p95": 19.892921447753906
+    }
+  },
+  "by_category": {
+    "api_alert": {
+      "question_count": 4,
+      "answerable_count": 4,
+      "no_answer_count": 0,
+      "source_hit_at_5": 1,
+      "source_recall_at_5_macro": 1.0,
+      "source_recall_at_5_micro": 1.0,
+      "complete_source_at_5": 1,
+      "multi_source_question_count": 0,
+      "complete_multi_source_at_5": null,
+      "mrr": 1.0,
+      "evidence_marker_recall_at_5_micro": 1.0,
+      "warm_search_p50_ms": 4.440799937583506,
+      "warm_search_p95_ms": 4.968699999153614,
+      "no_answer_top1_score": {
+        "count": 0,
+        "median": null,
+        "p95": null
+      }
+    },
+    "cross_document": {
+      "question_count": 4,
+      "answerable_count": 4,
+      "no_answer_count": 0,
+      "source_hit_at_5": 0.75,
+      "source_recall_at_5_macro": 0.75,
+      "source_recall_at_5_micro": 0.75,
+      "complete_source_at_5": 0.75,
+      "multi_source_question_count": 4,
+      "complete_multi_source_at_5": 0.75,
+      "mrr": 0.625,
+      "evidence_marker_recall_at_5_micro": 0.375,
+      "warm_search_p50_ms": 5.229000060353428,
+      "warm_search_p95_ms": 6.114299991168082,
+      "no_answer_top1_score": {
+        "count": 0,
+        "median": null,
+        "p95": null
+      }
+    },
+    "no_answer": {
+      "question_count": 4,
+      "answerable_count": 0,
+      "no_answer_count": 4,
+      "source_hit_at_5": null,
+      "source_recall_at_5_macro": null,
+      "source_recall_at_5_micro": null,
+      "complete_source_at_5": null,
+      "multi_source_question_count": 0,
+      "complete_multi_source_at_5": null,
+      "mrr": null,
+      "evidence_marker_recall_at_5_micro": null,
+      "warm_search_p50_ms": 2.225999953225255,
+      "warm_search_p95_ms": 5.664700060151517,
+      "no_answer_top1_score": {
+        "count": 4,
+        "median": 15.101283073425293,
+        "p95": 19.892921447753906
+      }
+    },
+    "parameters": {
+      "question_count": 4,
+      "answerable_count": 4,
+      "no_answer_count": 0,
+      "source_hit_at_5": 1,
+      "source_recall_at_5_macro": 1.0,
+      "source_recall_at_5_micro": 1.0,
+      "complete_source_at_5": 1,
+      "multi_source_question_count": 0,
+      "complete_multi_source_at_5": null,
+      "mrr": 1.0,
+      "evidence_marker_recall_at_5_micro": 1.0,
+      "warm_search_p50_ms": 5.206250003539026,
+      "warm_search_p95_ms": 6.803999887779355,
+      "no_answer_top1_score": {
+        "count": 0,
+        "median": null,
+        "p95": null
+      }
+    },
+    "recovery_dependencies": {
+      "question_count": 4,
+      "answerable_count": 4,
+      "no_answer_count": 0,
+      "source_hit_at_5": 1,
+      "source_recall_at_5_macro": 1.0,
+      "source_recall_at_5_micro": 1.0,
+      "complete_source_at_5": 1,
+      "multi_source_question_count": 0,
+      "complete_multi_source_at_5": null,
+      "mrr": 0.875,
+      "evidence_marker_recall_at_5_micro": 1.0,
+      "warm_search_p50_ms": 3.714349935762584,
+      "warm_search_p95_ms": 6.742700003087521,
+      "no_answer_top1_score": {
+        "count": 0,
+        "median": null,
+        "p95": null
+      }
+    },
+    "scheduling": {
+      "question_count": 4,
+      "answerable_count": 4,
+      "no_answer_count": 0,
+      "source_hit_at_5": 1,
+      "source_recall_at_5_macro": 1.0,
+      "source_recall_at_5_micro": 1.0,
+      "complete_source_at_5": 1,
+      "multi_source_question_count": 0,
+      "complete_multi_source_at_5": null,
+      "mrr": 1.0,
+      "evidence_marker_recall_at_5_micro": 1.0,
+      "warm_search_p50_ms": 3.9610000094398856,
+      "warm_search_p95_ms": 5.697699962183833,
+      "no_answer_top1_score": {
+        "count": 0,
+        "median": null,
+        "p95": null
+      }
+    },
+    "task_resources": {
+      "question_count": 4,
+      "answerable_count": 4,
+      "no_answer_count": 0,
+      "source_hit_at_5": 1,
+      "source_recall_at_5_macro": 1.0,
+      "source_recall_at_5_micro": 1.0,
+      "complete_source_at_5": 1,
+      "multi_source_question_count": 0,
+      "complete_multi_source_at_5": null,
+      "mrr": 0.875,
+      "evidence_marker_recall_at_5_micro": 1.0,
+      "warm_search_p50_ms": 3.2312500406987965,
+      "warm_search_p95_ms": 4.280099994502962,
+      "no_answer_top1_score": {
+        "count": 0,
+        "median": null,
+        "p95": null
+      }
+    },
+    "upgrade_operations": {
+      "question_count": 4,
+      "answerable_count": 4,
+      "no_answer_count": 0,
+      "source_hit_at_5": 1,
+      "source_recall_at_5_macro": 1.0,
+      "source_recall_at_5_micro": 1.0,
+      "complete_source_at_5": 1,
+      "multi_source_question_count": 0,
+      "complete_multi_source_at_5": null,
+      "mrr": 1.0,
+      "evidence_marker_recall_at_5_micro": 1.0,
+      "warm_search_p50_ms": 3.5727000213228166,
+      "warm_search_p95_ms": 8.405599975958467,
+      "no_answer_top1_score": {
+        "count": 0,
+        "median": null,
+        "p95": null
+      }
+    },
+    "version_compare": {
+      "question_count": 4,
+      "answerable_count": 4,
+      "no_answer_count": 0,
+      "source_hit_at_5": 1,
+      "source_recall_at_5_macro": 1.0,
+      "source_recall_at_5_micro": 1.0,
+      "complete_source_at_5": 1,
+      "multi_source_question_count": 4,
+      "complete_multi_source_at_5": 1,
+      "mrr": 1.0,
+      "evidence_marker_recall_at_5_micro": 1.0,
+      "warm_search_p50_ms": 4.6283999690786,
+      "warm_search_p95_ms": 6.97099999524653,
+      "no_answer_top1_score": {
+        "count": 0,
+        "median": null,
+        "p95": null
+      }
+    }
+  },
+  "cases": [
+    {
+      "query_id": "p01",
+      "category": "parameters",
+      "family": "project_scope",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.3|zh|guide/parameter/project-parameter"
+      ],
+      "top5_source_ids": [
+        "3.4.3|zh|guide/parameter/project-parameter",
+        "3.4.3|zh|guide/parameter/priority",
+        "3.4.3|zh|guide/parameter/local",
+        "3.4.3|zh|guide/task/switch"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:guide/parameter/project-parameter:1",
+        "3.4.3:zh:guide/parameter/priority:3",
+        "3.4.3:zh:guide/parameter/project-parameter:3",
+        "3.4.3:zh:guide/parameter/local:2",
+        "3.4.3:zh:guide/task/switch:2"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 24.088802337646484,
+      "latency_ms": 4.046799964271486
+    },
+    {
+      "query_id": "p02",
+      "category": "parameters",
+      "family": "project_scope",
+      "answerable": true,
+      "version_scope": "3.4.2",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.2|en|guide/parameter/project-parameter"
+      ],
+      "top5_source_ids": [
+        "3.4.2|en|guide/parameter/project-parameter",
+        "3.4.2|en|guide/parameter/local",
+        "3.4.2|en|guide/parameter/context",
+        "3.4.2|en|guide/parameter/priority",
+        "3.4.2|en|architecture/task-structure"
+      ],
+      "top5_chunk_ids": [
+        "3.4.2:en:guide/parameter/project-parameter:3",
+        "3.4.2:en:guide/parameter/local:3",
+        "3.4.2:en:guide/parameter/context:4",
+        "3.4.2:en:guide/parameter/priority:2",
+        "3.4.2:en:architecture/task-structure:44"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 26.805362701416016,
+      "latency_ms": 4.805400036275387
+    },
+    {
+      "query_id": "p07",
+      "category": "parameters",
+      "family": "builtin_context",
+      "answerable": true,
+      "version_scope": "3.4.2",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.2|zh|guide/parameter/built-in"
+      ],
+      "top5_source_ids": [
+        "3.4.2|zh|guide/parameter/built-in",
+        "3.4.2|zh|guide/parameter/local",
+        "3.4.2|zh|guide/task/dependent",
+        "3.4.2|zh|guide/parameter/context"
+      ],
+      "top5_chunk_ids": [
+        "3.4.2:zh:guide/parameter/built-in:2",
+        "3.4.2:zh:guide/parameter/built-in:1",
+        "3.4.2:zh:guide/parameter/local:3",
+        "3.4.2:zh:guide/task/dependent:3",
+        "3.4.2:zh:guide/parameter/context:5"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 42.84360122680664,
+      "latency_ms": 6.803999887779355
+    },
+    {
+      "query_id": "p08",
+      "category": "parameters",
+      "family": "builtin_context",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.3|en|guide/parameter/context"
+      ],
+      "top5_source_ids": [
+        "3.4.3|en|guide/parameter/context",
+        "3.4.3|en|guide/parameter/local",
+        "3.4.3|en|guide/parameter/priority"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:en:guide/parameter/context:4",
+        "3.4.3:en:guide/parameter/context:3",
+        "3.4.3:en:guide/parameter/context:6",
+        "3.4.3:en:guide/parameter/local:6",
+        "3.4.3:en:guide/parameter/priority:4"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 2,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 40.47312545776367,
+      "latency_ms": 5.607099970802665
+    },
+    {
+      "query_id": "s01",
+      "category": "scheduling",
+      "family": "schedule_activation",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.3|zh|guide/project/workflow-definition"
+      ],
+      "top5_source_ids": [
+        "3.4.3|zh|guide/project/workflow-definition",
+        "3.4.3|zh|guide/project/project-list",
+        "3.4.3|zh|guide/parameter/built-in",
+        "3.4.3|zh|guide/task/conditions"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:guide/project/workflow-definition:9",
+        "3.4.3:zh:guide/project/workflow-definition:4",
+        "3.4.3:zh:guide/project/project-list:3",
+        "3.4.3:zh:guide/parameter/built-in:1",
+        "3.4.3:zh:guide/task/conditions:2"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 30.530529022216797,
+      "latency_ms": 2.9082000255584717
+    },
+    {
+      "query_id": "s02",
+      "category": "scheduling",
+      "family": "schedule_activation",
+      "answerable": true,
+      "version_scope": "3.4.2",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.2|en|guide/project/workflow-definition"
+      ],
+      "top5_source_ids": [
+        "3.4.2|en|guide/project/workflow-definition",
+        "3.4.2|en|guide/parameter/context",
+        "3.4.2|en|architecture/design"
+      ],
+      "top5_chunk_ids": [
+        "3.4.2:en:guide/project/workflow-definition:20",
+        "3.4.2:en:guide/project/workflow-definition:18",
+        "3.4.2:en:guide/project/workflow-definition:15",
+        "3.4.2:en:guide/parameter/context:4",
+        "3.4.2:en:architecture/design:18"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 34.46438980102539,
+      "latency_ms": 5.697699962183833
+    },
+    {
+      "query_id": "s07",
+      "category": "scheduling",
+      "family": "execution_priority",
+      "answerable": true,
+      "version_scope": "3.4.2",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.2|zh|guide/project/workflow-definition"
+      ],
+      "top5_source_ids": [
+        "3.4.2|zh|guide/project/workflow-definition",
+        "3.4.2|zh|architecture/design",
+        "3.4.2|zh|architecture/configuration",
+        "3.4.2|zh|guide/task/dependent"
+      ],
+      "top5_chunk_ids": [
+        "3.4.2:zh:guide/project/workflow-definition:6",
+        "3.4.2:zh:guide/project/workflow-definition:1",
+        "3.4.2:zh:architecture/design:10",
+        "3.4.2:zh:architecture/configuration:32",
+        "3.4.2:zh:guide/task/dependent:1"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 27.10059356689453,
+      "latency_ms": 3.8069000001996756
+    },
+    {
+      "query_id": "s08",
+      "category": "scheduling",
+      "family": "execution_priority",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.3|en|guide/project/workflow-definition"
+      ],
+      "top5_source_ids": [
+        "3.4.3|en|guide/project/workflow-definition",
+        "3.4.3|en|guide/project/project-list",
+        "3.4.3|en|guide/parameter/priority",
+        "3.4.3|en|guide/project/workflow-instance",
+        "3.4.3|en|architecture/design"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:en:guide/project/workflow-definition:15",
+        "3.4.3:en:guide/project/project-list:3",
+        "3.4.3:en:guide/parameter/priority:5",
+        "3.4.3:en:guide/project/workflow-instance:7",
+        "3.4.3:en:architecture/design:21"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 24.413795471191406,
+      "latency_ms": 4.115100018680096
+    },
+    {
+      "query_id": "r01",
+      "category": "recovery_dependencies",
+      "family": "failed_flow",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.3|zh|guide/project/workflow-instance"
+      ],
+      "top5_source_ids": [
+        "3.4.3|zh|guide/project/workflow-instance",
+        "3.4.3|zh|architecture/design",
+        "3.4.3|zh|guide/project/workflow-definition",
+        "3.4.3|zh|guide/project/task-instance"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:guide/project/workflow-instance:5",
+        "3.4.3:zh:architecture/design:9",
+        "3.4.3:zh:guide/project/workflow-instance:3",
+        "3.4.3:zh:guide/project/workflow-definition:6",
+        "3.4.3:zh:guide/project/task-instance:1"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 2,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 25.628969192504883,
+      "latency_ms": 2.8831999516114593
+    },
+    {
+      "query_id": "r02",
+      "category": "recovery_dependencies",
+      "family": "failed_flow",
+      "answerable": true,
+      "version_scope": "3.4.2",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.2|en|guide/project/workflow-instance"
+      ],
+      "top5_source_ids": [
+        "3.4.2|en|guide/parameter/global",
+        "3.4.2|en|guide/project/workflow-instance",
+        "3.4.2|en|guide/project/workflow-definition",
+        "3.4.2|en|guide/parameter/context",
+        "3.4.2|en|guide/parameter/local"
+      ],
+      "top5_chunk_ids": [
+        "3.4.2:en:guide/parameter/global:1",
+        "3.4.2:en:guide/project/workflow-instance:7",
+        "3.4.2:en:guide/project/workflow-definition:10",
+        "3.4.2:en:guide/parameter/context:10",
+        "3.4.2:en:guide/parameter/local:1"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 0.5,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 20.08822250366211,
+      "latency_ms": 6.742700003087521
+    },
+    {
+      "query_id": "r05",
+      "category": "recovery_dependencies",
+      "family": "dependent_failure",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.3|zh|guide/task/dependent"
+      ],
+      "top5_source_ids": [
+        "3.4.3|zh|guide/task/dependent",
+        "3.4.3|zh|guide/task/conditions",
+        "3.4.3|zh|architecture/design",
+        "3.4.3|zh|guide/parameter/context",
+        "3.4.3|zh|guide/parameter/file-parameter"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:guide/task/dependent:3",
+        "3.4.3:zh:guide/task/conditions:3",
+        "3.4.3:zh:architecture/design:9",
+        "3.4.3:zh:guide/parameter/context:3",
+        "3.4.3:zh:guide/parameter/file-parameter:4"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 2,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 51.09746551513672,
+      "latency_ms": 3.6334999604150653
+    },
+    {
+      "query_id": "r06",
+      "category": "recovery_dependencies",
+      "family": "dependent_failure",
+      "answerable": true,
+      "version_scope": "3.4.2",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.2|en|guide/task/dependent"
+      ],
+      "top5_source_ids": [
+        "3.4.2|en|guide/task/dependent",
+        "3.4.2|en|architecture/task-structure",
+        "3.4.2|en|guide/parameter/context",
+        "3.4.2|en|guide/task/conditions"
+      ],
+      "top5_chunk_ids": [
+        "3.4.2:en:guide/task/dependent:4",
+        "3.4.2:en:architecture/task-structure:44",
+        "3.4.2:en:guide/task/dependent:1",
+        "3.4.2:en:guide/parameter/context:4",
+        "3.4.2:en:guide/task/conditions:10"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 21.279457092285156,
+      "latency_ms": 3.795199911110103
+    },
+    {
+      "query_id": "t01",
+      "category": "task_resources",
+      "family": "task_group_scope",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.3|zh|guide/resource/task-group"
+      ],
+      "top5_source_ids": [
+        "3.4.3|zh|guide/resource/task-group",
+        "3.4.3|zh|architecture/configuration",
+        "3.4.3|zh|guide/upgrade/upgrade"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:guide/resource/task-group:2",
+        "3.4.3:zh:guide/resource/task-group:1",
+        "3.4.3:zh:guide/resource/task-group:4",
+        "3.4.3:zh:architecture/configuration:32",
+        "3.4.3:zh:guide/upgrade/upgrade:6"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 33.635494232177734,
+      "latency_ms": 2.2631000028923154
+    },
+    {
+      "query_id": "t02",
+      "category": "task_resources",
+      "family": "task_group_scope",
+      "answerable": true,
+      "version_scope": "3.4.2",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.2|en|guide/resource/task-group"
+      ],
+      "top5_source_ids": [
+        "3.4.2|en|guide/parameter/project-parameter",
+        "3.4.2|en|guide/resource/task-group",
+        "3.4.2|en|guide/alert/alert_plugin_user_guide",
+        "3.4.2|en|guide/parameter/context"
+      ],
+      "top5_chunk_ids": [
+        "3.4.2:en:guide/parameter/project-parameter:3",
+        "3.4.2:en:guide/parameter/project-parameter:1",
+        "3.4.2:en:guide/resource/task-group:1",
+        "3.4.2:en:guide/alert/alert_plugin_user_guide:1",
+        "3.4.2:en:guide/parameter/context:4"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 0.5,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 13.740771293640137,
+      "latency_ms": 4.280099994502962
+    },
+    {
+      "query_id": "t03",
+      "category": "task_resources",
+      "family": "task_group_dispatch",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.3|zh|guide/resource/task-group"
+      ],
+      "top5_source_ids": [
+        "3.4.3|zh|guide/resource/task-group",
+        "3.4.3|zh|guide/task/sub-workflow",
+        "3.4.3|zh|guide/parameter/context"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:guide/resource/task-group:4",
+        "3.4.3:zh:guide/resource/task-group:1",
+        "3.4.3:zh:guide/resource/task-group:2",
+        "3.4.3:zh:guide/task/sub-workflow:7",
+        "3.4.3:zh:guide/parameter/context:10"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 26.576316833496094,
+      "latency_ms": 2.770500024780631
+    },
+    {
+      "query_id": "t04",
+      "category": "task_resources",
+      "family": "task_group_dispatch",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.3|en|guide/resource/task-group"
+      ],
+      "top5_source_ids": [
+        "3.4.3|en|guide/resource/task-group",
+        "3.4.3|en|guide/resource/file-manage",
+        "3.4.3|en|architecture/design"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:en:guide/resource/task-group:6",
+        "3.4.3:en:guide/resource/task-group:4",
+        "3.4.3:en:guide/resource/task-group:5",
+        "3.4.3:en:guide/resource/file-manage:8",
+        "3.4.3:en:architecture/design:20"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 2,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 22.75958251953125,
+      "latency_ms": 3.692000056616962
+    },
+    {
+      "query_id": "a01",
+      "category": "api_alert",
+      "family": "api_auth",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.3|zh|guide/api/open-api"
+      ],
+      "top5_source_ids": [
+        "3.4.3|zh|guide/api/open-api",
+        "3.4.3|zh|guide/alert/alert_plugin_user_guide",
+        "3.4.3|zh|guide/resource/file-manage",
+        "3.4.3|zh|architecture/configuration"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:guide/api/open-api:2",
+        "3.4.3:zh:guide/api/open-api:1",
+        "3.4.3:zh:guide/alert/alert_plugin_user_guide:1",
+        "3.4.3:zh:guide/resource/file-manage:11",
+        "3.4.3:zh:architecture/configuration:28"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 2,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 38.56189727783203,
+      "latency_ms": 3.806499997153878
+    },
+    {
+      "query_id": "a02",
+      "category": "api_alert",
+      "family": "api_auth",
+      "answerable": true,
+      "version_scope": "3.4.2",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.2|en|guide/api/open-api"
+      ],
+      "top5_source_ids": [
+        "3.4.2|en|guide/api/open-api",
+        "3.4.2|en|release-notes",
+        "3.4.2|en|guide/project/project-list",
+        "3.4.2|en|architecture/task-structure"
+      ],
+      "top5_chunk_ids": [
+        "3.4.2:en:guide/api/open-api:3",
+        "3.4.2:en:guide/api/open-api:2",
+        "3.4.2:en:release-notes:14",
+        "3.4.2:en:guide/project/project-list:3",
+        "3.4.2:en:architecture/task-structure:4"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 28.6297607421875,
+      "latency_ms": 4.727499908767641
+    },
+    {
+      "query_id": "a05",
+      "category": "api_alert",
+      "family": "alerts",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.3|zh|guide/alert/alert_plugin_user_guide"
+      ],
+      "top5_source_ids": [
+        "3.4.3|zh|guide/alert/alert_plugin_user_guide",
+        "3.4.3|zh|guide/project/workflow-definition",
+        "3.4.3|zh|guide/resource/task-group",
+        "3.4.3|zh|guide/parameter/project-parameter",
+        "3.4.3|zh|guide/api/open-api"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:guide/alert/alert_plugin_user_guide:1",
+        "3.4.3:zh:guide/project/workflow-definition:1",
+        "3.4.3:zh:guide/resource/task-group:1",
+        "3.4.3:zh:guide/parameter/project-parameter:3",
+        "3.4.3:zh:guide/api/open-api:4"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 53.774051666259766,
+      "latency_ms": 4.968699999153614
+    },
+    {
+      "query_id": "a06",
+      "category": "api_alert",
+      "family": "alerts",
+      "answerable": true,
+      "version_scope": "3.4.2",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.2|en|guide/alert/alert_plugin_user_guide"
+      ],
+      "top5_source_ids": [
+        "3.4.2|en|guide/alert/alert_plugin_user_guide",
+        "3.4.2|en|architecture/design",
+        "3.4.2|en|guide/project/workflow-definition",
+        "3.4.2|en|architecture/task-structure",
+        "3.4.2|en|guide/parameter/context"
+      ],
+      "top5_chunk_ids": [
+        "3.4.2:en:guide/alert/alert_plugin_user_guide:1",
+        "3.4.2:en:architecture/design:20",
+        "3.4.2:en:guide/project/workflow-definition:4",
+        "3.4.2:en:architecture/task-structure:4",
+        "3.4.2:en:guide/parameter/context:4"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 2,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 16.594755172729492,
+      "latency_ms": 4.154099966399372
+    },
+    {
+      "query_id": "u05",
+      "category": "upgrade_operations",
+      "family": "upgrade_preflight",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.3|en|guide/upgrade/upgrade"
+      ],
+      "top5_source_ids": [
+        "3.4.3|en|guide/upgrade/upgrade",
+        "3.4.3|en|guide/upgrade/incompatible",
+        "3.4.3|en|guide/task/switch",
+        "3.4.3|en|guide/task/conditions",
+        "3.4.3|en|guide/task/dependent"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:en:guide/upgrade/upgrade:10",
+        "3.4.3:en:guide/upgrade/incompatible:6",
+        "3.4.3:en:guide/task/switch:3",
+        "3.4.3:en:guide/task/conditions:1",
+        "3.4.3:en:guide/task/dependent:4"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 21.57966423034668,
+      "latency_ms": 3.390899975784123
+    },
+    {
+      "query_id": "u06",
+      "category": "upgrade_operations",
+      "family": "upgrade_preflight",
+      "answerable": true,
+      "version_scope": "3.4.2",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.2|zh|guide/upgrade/upgrade"
+      ],
+      "top5_source_ids": [
+        "3.4.2|zh|guide/upgrade/upgrade",
+        "3.4.2|zh|guide/upgrade/incompatible",
+        "3.4.2|zh|architecture/configuration",
+        "3.4.2|zh|architecture/task-structure"
+      ],
+      "top5_chunk_ids": [
+        "3.4.2:zh:guide/upgrade/upgrade:2",
+        "3.4.2:zh:guide/upgrade/incompatible:7",
+        "3.4.2:zh:guide/upgrade/upgrade:5",
+        "3.4.2:zh:architecture/configuration:6",
+        "3.4.2:zh:architecture/task-structure:27"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 1,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 43.52546310424805,
+      "latency_ms": 2.5894000427797437
+    },
+    {
+      "query_id": "u07",
+      "category": "upgrade_operations",
+      "family": "remote_logs",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.3|en|guide/remote-logging"
+      ],
+      "top5_source_ids": [
+        "3.4.3|en|guide/remote-logging",
+        "3.4.3|en|guide/resource/file-manage",
+        "3.4.3|en|guide/parameter/file-parameter",
+        "3.4.3|en|architecture/design",
+        "3.4.3|en|guide/parameter/local"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:en:guide/remote-logging:1",
+        "3.4.3:en:guide/resource/file-manage:7",
+        "3.4.3:en:guide/parameter/file-parameter:5",
+        "3.4.3:en:architecture/design:20",
+        "3.4.3:en:guide/parameter/local:3"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 2,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 33.4547004699707,
+      "latency_ms": 8.405599975958467
+    },
+    {
+      "query_id": "u08",
+      "category": "upgrade_operations",
+      "family": "remote_logs",
+      "answerable": true,
+      "version_scope": "3.4.2",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.2|zh|guide/remote-logging"
+      ],
+      "top5_source_ids": [
+        "3.4.2|zh|guide/remote-logging",
+        "3.4.2|zh|architecture/design",
+        "3.4.2|zh|architecture/configuration"
+      ],
+      "top5_chunk_ids": [
+        "3.4.2:zh:guide/remote-logging:2",
+        "3.4.2:zh:guide/remote-logging:1",
+        "3.4.2:zh:guide/remote-logging:3",
+        "3.4.2:zh:architecture/design:11",
+        "3.4.2:zh:architecture/configuration:19"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 2,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 44.009437561035156,
+      "latency_ms": 3.7545000668615103
+    },
+    {
+      "query_id": "c01",
+      "category": "cross_document",
+      "family": "resource_and_file",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.3|zh|guide/parameter/file-parameter",
+        "3.4.3|zh|guide/resource/file-manage"
+      ],
+      "top5_source_ids": [
+        "3.4.3|zh|guide/parameter/file-parameter",
+        "3.4.3|zh|guide/resource/file-manage",
+        "3.4.3|zh|guide/upgrade/upgrade",
+        "3.4.3|zh|guide/parameter/context"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:guide/parameter/file-parameter:5",
+        "3.4.3:zh:guide/resource/file-manage:9",
+        "3.4.3:zh:guide/resource/file-manage:4",
+        "3.4.3:zh:guide/upgrade/upgrade:6",
+        "3.4.3:zh:guide/parameter/context:1"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 0.5,
+      "top1_score": 34.05945587158203,
+      "latency_ms": 4.47160005569458
+    },
+    {
+      "query_id": "c02",
+      "category": "cross_document",
+      "family": "resource_and_file",
+      "answerable": true,
+      "version_scope": "3.4.2",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.2|en|guide/project/workflow-definition",
+        "3.4.2|en|guide/resource/task-group"
+      ],
+      "top5_source_ids": [
+        "3.4.2|en|architecture/design",
+        "3.4.2|en|guide/project/workflow-definition",
+        "3.4.2|en|guide/parameter/priority",
+        "3.4.2|en|guide/resource/task-group"
+      ],
+      "top5_chunk_ids": [
+        "3.4.2:en:architecture/design:22",
+        "3.4.2:en:guide/project/workflow-definition:4",
+        "3.4.2:en:guide/project/workflow-definition:14",
+        "3.4.2:en:guide/parameter/priority:1",
+        "3.4.2:en:guide/resource/task-group:1"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 0.5,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 0.5,
+      "top1_score": 21.35772132873535,
+      "latency_ms": 5.986400065012276
+    },
+    {
+      "query_id": "c05",
+      "category": "cross_document",
+      "family": "alert_monitor",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.3|zh|guide/alert/alert_plugin_user_guide",
+        "3.4.3|zh|guide/monitor"
+      ],
+      "top5_source_ids": [
+        "3.4.3|zh|guide/alert/alert_plugin_user_guide",
+        "3.4.3|zh|guide/api/open-api",
+        "3.4.3|zh|guide/monitor",
+        "3.4.3|zh|contribute/api-test",
+        "3.4.3|zh|architecture/configuration"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:guide/alert/alert_plugin_user_guide:1",
+        "3.4.3:zh:guide/api/open-api:3",
+        "3.4.3:zh:guide/monitor:1",
+        "3.4.3:zh:contribute/api-test:2",
+        "3.4.3:zh:architecture/configuration:41"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 1,
+      "evidence_marker_recall_at_5": 0.5,
+      "top1_score": 42.0774040222168,
+      "latency_ms": 4.0698000229895115
+    },
+    {
+      "query_id": "c06",
+      "category": "cross_document",
+      "family": "alert_monitor",
+      "answerable": true,
+      "version_scope": "3.4.3",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.3|en|guide/upgrade/incompatible",
+        "3.4.3|en|guide/upgrade/upgrade"
+      ],
+      "top5_source_ids": [
+        "3.4.3|en|guide/resource/task-group",
+        "3.4.3|en|proposals/dsip-107-implementation",
+        "3.4.3|en|guide/project/workflow-definition",
+        "3.4.3|en|contribute/api-test",
+        "3.4.3|en|guide/parameter/context"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:en:guide/resource/task-group:6",
+        "3.4.3:en:proposals/dsip-107-implementation:2",
+        "3.4.3:en:guide/project/workflow-definition:4",
+        "3.4.3:en:contribute/api-test:2",
+        "3.4.3:en:guide/parameter/context:4"
+      ],
+      "source_hit_at_5": false,
+      "source_recall_at_5": 0.0,
+      "complete_source_at_5": false,
+      "reciprocal_rank": 0.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 0,
+      "evidence_marker_recall_at_5": 0.0,
+      "top1_score": 27.74675750732422,
+      "latency_ms": 6.114299991168082
+    },
+    {
+      "query_id": "v01",
+      "category": "version_compare",
+      "family": "file_transfer_versions",
+      "answerable": true,
+      "version_scope": "all",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.2|zh|guide/parameter/file-parameter",
+        "3.4.3|zh|guide/parameter/file-parameter"
+      ],
+      "top5_source_ids": [
+        "3.4.3|zh|guide/parameter/file-parameter",
+        "3.4.2|zh|guide/parameter/file-parameter",
+        "3.4.3|zh|architecture/task-structure",
+        "3.4.2|zh|architecture/task-structure"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:guide/parameter/file-parameter:5",
+        "3.4.2:zh:guide/parameter/file-parameter:5",
+        "3.4.3:zh:guide/parameter/file-parameter:1",
+        "3.4.3:zh:architecture/task-structure:2",
+        "3.4.2:zh:architecture/task-structure:2"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 2,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 22.803083419799805,
+      "latency_ms": 4.4639999978244305
+    },
+    {
+      "query_id": "v02",
+      "category": "version_compare",
+      "family": "file_transfer_versions",
+      "answerable": true,
+      "version_scope": "all",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.2|en|guide/parameter/file-parameter",
+        "3.4.3|en|guide/parameter/file-parameter"
+      ],
+      "top5_source_ids": [
+        "3.4.3|en|guide/parameter/file-parameter",
+        "3.4.2|en|guide/parameter/file-parameter",
+        "3.4.3|en|guide/resource/file-manage",
+        "3.4.2|en|guide/resource/file-manage",
+        "3.4.3|en|guide/project/workflow-definition"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:en:guide/parameter/file-parameter:5",
+        "3.4.2:en:guide/parameter/file-parameter:5",
+        "3.4.3:en:guide/resource/file-manage:8",
+        "3.4.2:en:guide/resource/file-manage:8",
+        "3.4.3:en:guide/project/workflow-definition:4"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 2,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 21.745298385620117,
+      "latency_ms": 4.79279994033277
+    },
+    {
+      "query_id": "v07",
+      "category": "version_compare",
+      "family": "remote_log_versions",
+      "answerable": true,
+      "version_scope": "all",
+      "language": "zh",
+      "required_source_ids": [
+        "3.4.2|zh|guide/remote-logging",
+        "3.4.3|zh|guide/remote-logging"
+      ],
+      "top5_source_ids": [
+        "3.4.3|zh|guide/remote-logging",
+        "3.4.2|zh|guide/remote-logging",
+        "3.4.3|zh|architecture/design",
+        "3.4.2|zh|architecture/design",
+        "3.4.3|zh|guide/api/open-api"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:guide/remote-logging:1",
+        "3.4.2:zh:guide/remote-logging:1",
+        "3.4.3:zh:architecture/design:11",
+        "3.4.2:zh:architecture/design:11",
+        "3.4.3:zh:guide/api/open-api:3"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 2,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 64.006591796875,
+      "latency_ms": 4.058599937707186
+    },
+    {
+      "query_id": "v08",
+      "category": "version_compare",
+      "family": "remote_log_versions",
+      "answerable": true,
+      "version_scope": "all",
+      "language": "en",
+      "required_source_ids": [
+        "3.4.2|en|guide/remote-logging",
+        "3.4.3|en|guide/remote-logging"
+      ],
+      "top5_source_ids": [
+        "3.4.3|en|guide/remote-logging",
+        "3.4.2|en|guide/remote-logging",
+        "3.4.3|en|architecture/design",
+        "3.4.2|en|architecture/design",
+        "3.4.3|en|guide/parameter/context"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:en:guide/remote-logging:1",
+        "3.4.2:en:guide/remote-logging:1",
+        "3.4.3:en:architecture/design:20",
+        "3.4.2:en:architecture/design:20",
+        "3.4.3:en:guide/parameter/context:10"
+      ],
+      "source_hit_at_5": true,
+      "source_recall_at_5": 1.0,
+      "complete_source_at_5": true,
+      "reciprocal_rank": 1.0,
+      "evidence_marker_count": 2,
+      "evidence_marker_found": 2,
+      "evidence_marker_recall_at_5": 1.0,
+      "top1_score": 16.273611068725586,
+      "latency_ms": 6.97099999524653
+    },
+    {
+      "query_id": "n05",
+      "category": "no_answer",
+      "family": "future_version",
+      "answerable": false,
+      "version_scope": "3.4.3",
+      "language": "zh",
+      "required_source_ids": [],
+      "top5_source_ids": [
+        "3.4.3|zh|architecture/configuration",
+        "3.4.3|zh|guide/upgrade/incompatible",
+        "3.4.3|zh|guide/task/dependent"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:architecture/configuration:34",
+        "3.4.3:zh:architecture/configuration:28",
+        "3.4.3:zh:architecture/configuration:38",
+        "3.4.3:zh:guide/upgrade/incompatible:5",
+        "3.4.3:zh:guide/task/dependent:3"
+      ],
+      "source_hit_at_5": null,
+      "source_recall_at_5": null,
+      "complete_source_at_5": null,
+      "reciprocal_rank": 0.0,
+      "evidence_marker_count": 0,
+      "evidence_marker_found": 0,
+      "evidence_marker_recall_at_5": null,
+      "top1_score": 12.930652618408203,
+      "latency_ms": 2.1773999324068427
+    },
+    {
+      "query_id": "n06",
+      "category": "no_answer",
+      "family": "future_version",
+      "answerable": false,
+      "version_scope": "3.4.2",
+      "language": "en",
+      "required_source_ids": [],
+      "top5_source_ids": [
+        "3.4.2|en|guide/upgrade/upgrade",
+        "3.4.2|en|guide/project/workflow-definition",
+        "3.4.2|en|guide/upgrade/incompatible",
+        "3.4.2|en|architecture/task-structure"
+      ],
+      "top5_chunk_ids": [
+        "3.4.2:en:guide/upgrade/upgrade:6",
+        "3.4.2:en:guide/project/workflow-definition:18",
+        "3.4.2:en:guide/project/workflow-definition:4",
+        "3.4.2:en:guide/upgrade/incompatible:3",
+        "3.4.2:en:architecture/task-structure:4"
+      ],
+      "source_hit_at_5": null,
+      "source_recall_at_5": null,
+      "complete_source_at_5": null,
+      "reciprocal_rank": 0.0,
+      "evidence_marker_count": 0,
+      "evidence_marker_found": 0,
+      "evidence_marker_recall_at_5": null,
+      "top1_score": 17.271913528442383,
+      "latency_ms": 5.664700060151517
+    },
+    {
+      "query_id": "n07",
+      "category": "no_answer",
+      "family": "private_runtime",
+      "answerable": false,
+      "version_scope": "3.4.3",
+      "language": "zh",
+      "required_source_ids": [],
+      "top5_source_ids": [
+        "3.4.3|zh|guide/project/workflow-instance",
+        "3.4.3|zh|guide/project/project-list",
+        "3.4.3|zh|architecture/design",
+        "3.4.3|zh|guide/project/workflow-definition",
+        "3.4.3|zh|guide/task/conditions"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:zh:guide/project/workflow-instance:5",
+        "3.4.3:zh:guide/project/project-list:3",
+        "3.4.3:zh:architecture/design:9",
+        "3.4.3:zh:guide/project/workflow-definition:6",
+        "3.4.3:zh:guide/task/conditions:6"
+      ],
+      "source_hit_at_5": null,
+      "source_recall_at_5": null,
+      "complete_source_at_5": null,
+      "reciprocal_rank": 0.0,
+      "evidence_marker_count": 0,
+      "evidence_marker_found": 0,
+      "evidence_marker_recall_at_5": null,
+      "top1_score": 19.892921447753906,
+      "latency_ms": 1.7232999671250582
+    },
+    {
+      "query_id": "n08",
+      "category": "no_answer",
+      "family": "private_runtime",
+      "answerable": false,
+      "version_scope": "3.4.3",
+      "language": "en",
+      "required_source_ids": [],
+      "top5_source_ids": [
+        "3.4.3|en|architecture/design",
+        "3.4.3|en|guide/task/dependent",
+        "3.4.3|en|guide/project/workflow-definition",
+        "3.4.3|en|guide/resource/file-manage",
+        "3.4.3|en|guide/parameter/global"
+      ],
+      "top5_chunk_ids": [
+        "3.4.3:en:architecture/design:12",
+        "3.4.3:en:guide/task/dependent:1",
+        "3.4.3:en:guide/project/workflow-definition:16",
+        "3.4.3:en:guide/resource/file-manage:8",
+        "3.4.3:en:guide/parameter/global:2"
+      ],
+      "source_hit_at_5": null,
+      "source_recall_at_5": null,
+      "complete_source_at_5": null,
+      "reciprocal_rank": 0.0,
+      "evidence_marker_count": 0,
+      "evidence_marker_found": 0,
+      "evidence_marker_recall_at_5": null,
+      "top1_score": 10.417231559753418,
+      "latency_ms": 2.2745999740436673
+    }
+  ],
+  "interpretation": "Retrieval-only; no-answer scores are diagnostics, not refusal accuracy; no answer faithfulness measured."
+}

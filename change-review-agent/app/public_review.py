@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import re
 import unicodedata
+import uuid
 from typing import Protocol
 
 
@@ -26,6 +27,62 @@ def _normalized_hash(content: str) -> str:
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
 
+def _request_queries(summary: str) -> list[str]:
+    """Search the whole change and up to three distinct clauses of a compound request."""
+    clauses = [part.strip() for part in re.split(r"[。！？；;\n]+", summary) if part.strip()]
+    if len(clauses) < 2:
+        return [summary]
+    if len(clauses) > 3:
+        clauses = [*clauses[:2], " ".join(clauses[2:])]
+    return list(dict.fromkeys([summary, *clauses]))
+
+
+def _official_hit(row: dict, current_version: str) -> bool:
+    score = row.get("retrieval_score")
+    return (
+        row.get("version") == current_version
+        and str(row.get("source_url", "")).startswith("https://github.com/apache/dolphinscheduler/")
+        and bool(row.get("chunk_id"))
+        and (score is None or isinstance(score, (int, float)) and score > 0)
+    )
+
+
+def _select_request_evidence(searches: list[tuple[dict, list[dict]]]) -> list[dict]:
+    """Reserve a citation from each subquery, then fill the model's five-item budget."""
+    selected: dict[str, dict] = {}
+    for _trace, rows in searches[1:] if len(searches) > 1 else searches:
+        if len(selected) >= 5:
+            break
+        for row in rows:
+            if row["chunk_id"] not in selected:
+                selected[row["chunk_id"]] = row
+                break
+    for _trace, rows in searches:
+        for row in rows:
+            if len(selected) >= 5:
+                return list(selected.values())
+            selected.setdefault(row["chunk_id"], row)
+    return list(selected.values())
+
+
+def _retrieval_gaps(searches: list[tuple[dict, list[dict]]]) -> list[str]:
+    scope = searches[1:] if len(searches) > 1 else searches
+    labels = {
+        "no_retrieval_match": "当前版本未检索到匹配资料",
+        "candidate_outside_evidence_budget": "检索命中未纳入本次模型证据上限",
+        "search_unavailable": "检索服务未完成",
+    }
+    return [f"{labels[trace['status']]}：{trace['query']}" for trace, _rows in scope if trace["status"] in labels]
+
+
+def _model_evidence_gaps(advice: dict) -> list[str]:
+    review = advice.get("review")
+    if not isinstance(review, dict):
+        return []
+    gaps = review.get("evidence_gaps")
+    return [gap.strip() for gap in gaps if isinstance(gap, str) and gap.strip()] if isinstance(gaps, list) else []
+
+
 def _item(source: dict, content: str) -> dict:
     return {
         "item_id": source["chunk_id"],
@@ -41,6 +98,54 @@ def _item(source: dict, content: str) -> dict:
         "content_hash": _normalized_hash(content),
         "metadata": {"source_url": source["source_url"]},
     }
+
+
+def _normalize_review_advice(advice: dict, allowed_sources: dict[str, dict]) -> tuple[dict, list[dict]]:
+    """Keep only structured model suggestions tied to this request's RAG evidence."""
+    review = advice.get("review")
+    if (
+        advice.get("status") == "ABSTAINED"
+        and isinstance(review, dict)
+        and review.get("review_status") == "REQUIRES_HUMAN_REVIEW"
+        and review.get("impact_candidates") == []
+    ):
+        return {**advice, "answer": "N/A", "sources": [], "review": review}, []
+    if advice.get("status") != "OK":
+        return {**advice, "sources": [], "review": None}, []
+    candidates = review.get("impact_candidates") if isinstance(review, dict) else None
+    if (
+        not isinstance(candidates, list)
+        or review.get("review_status") != "REQUIRES_HUMAN_REVIEW"
+        or not candidates
+    ):
+        return {
+            **advice, "status": "ABSTAINED", "answer": "N/A",
+            "sources": [], "review": None,
+        }, []
+
+    impacts = []
+    sources = []
+    seen = set()
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            return {**advice, "status": "ABSTAINED", "answer": "N/A", "sources": [], "review": None}, []
+        chunk_id = candidate.get("evidence_chunk_id")
+        reason = candidate.get("reason")
+        action = candidate.get("suggested_action")
+        if (
+            not isinstance(chunk_id, str) or chunk_id not in allowed_sources or chunk_id in seen
+            or not isinstance(reason, str) or not reason.strip()
+            or not isinstance(action, str) or not action.strip()
+        ):
+            return {**advice, "status": "ABSTAINED", "answer": "N/A", "sources": [], "review": None}, []
+        seen.add(chunk_id)
+        source = allowed_sources[chunk_id]
+        sources.append(source)
+        impacts.append({
+            "status": "SUGGESTED", "relation": "suggested", "reason": reason,
+            "suggested_action": action, "evidence": source,
+        })
+    return {**advice, "sources": sources, "review": review}, impacts
 
 
 def _confirmed_dsip_document_reference(
@@ -84,25 +189,56 @@ class PublicReviewAgent:
             raise ValueError("变更描述应为 1 到 4000 字")
 
         current_version = self.gateway.workspace()["current_version"]
-        search_result = self.gateway.search(
-            summary, version=current_version, language="zh_preferred", top_k=5,
-        )
-        retrieved = search_result.get("results", [])
-        candidates = [
-            row for row in retrieved
-            if row.get("version") == current_version
-            and row.get("source_url", "").startswith("https://github.com/apache/dolphinscheduler/")
-            and row.get("chunk_id")
-        ]
+        task_id = uuid.uuid4().hex
+        fingerprint = _normalized_hash(f"natural_language:{current_version}:{summary}")[:20]
+        searches: list[tuple[dict, list[dict]]] = []
+        retrieval_policy = "bm25"
+        for query in _request_queries(summary):
+            trace = {"query": query, "status": "no_retrieval_match", "top_chunk_ids": [], "selected_chunk_ids": []}
+            try:
+                search_result = self.gateway.search(
+                    query, version=current_version, language="zh_preferred", top_k=5,
+                )
+                retrieval_policy = search_result.get("retrieval_policy", retrieval_policy)
+                rows = [row for row in search_result.get("results", []) if _official_hit(row, current_version)]
+                trace["top_chunk_ids"] = [row["chunk_id"] for row in rows]
+            except Exception:
+                # A failed search is distinct from a successful search without matches.
+                rows = []
+                trace["status"] = "search_unavailable"
+            searches.append((trace, rows))
+
+        candidates = _select_request_evidence(searches)
+        candidate_ids = {row["chunk_id"] for row in candidates}
+        for trace, rows in searches:
+            trace["selected_chunk_ids"] = [row["chunk_id"] for row in rows if row["chunk_id"] in candidate_ids]
+            if trace["status"] != "search_unavailable" and rows:
+                trace["status"] = "candidate_found" if trace["selected_chunk_ids"] else "candidate_outside_evidence_budget"
+        scope_traces = searches[1:] if len(searches) > 1 else searches
+        retrieval_trace = {
+            "queries": [trace for trace, _rows in searches],
+            "uncovered_queries": [
+                trace["query"] for trace, _rows in scope_traces
+                if trace["status"] != "candidate_found"
+            ],
+            "model_status": "NOT_CALLED",
+        }
+        evidence_gaps = _retrieval_gaps(searches)
         base_advice = {"status": "NO_EVIDENCE", "answer": "N/A", "sources": []}
         if not candidates:
+            if all(trace["status"] == "search_unavailable" for trace, _rows in searches):
+                base_advice["status"] = "RETRIEVAL_UNAVAILABLE"
             return {
+                "task_id": task_id,
+                "request_fingerprint": fingerprint,
                 "request_mode": "natural_language",
                 "request_summary": summary,
-                "retrieval_policy": search_result.get("retrieval_policy", "bm25"),
+                "retrieval_policy": retrieval_policy,
+                "retrieval_trace": retrieval_trace,
                 "retrieved_results": [],
                 "impacts": [],
                 "review_advice": base_advice,
+                "evidence_gaps": evidence_gaps,
                 "sandbox_only": True,
                 "public_baseline_written": False,
             }
@@ -115,28 +251,21 @@ class PublicReviewAgent:
             # Model assistance is optional; the underlying RAG candidates remain visible.
             advice = {"status": "GENERATION_PROVIDER_UNAVAILABLE", "answer": "N/A", "sources": []}
         allowed = {row["chunk_id"]: row for row in candidates}
-        cited = [
-            allowed[row["chunk_id"]]
-            for row in advice.get("sources", [])
-            if row.get("chunk_id") in allowed
-        ]
-        if advice.get("status") == "OK" and not cited:
-            advice = {**advice, "status": "ABSTAINED", "answer": "N/A", "sources": []}
-        else:
-            advice = {**advice, "sources": cited}
+        advice, grounded_impacts = _normalize_review_advice(advice, allowed)
+        retrieval_trace["model_status"] = advice.get("status", "UNKNOWN")
+        evidence_gaps.extend(_model_evidence_gaps(advice))
 
         return {
+            "task_id": task_id,
+            "request_fingerprint": fingerprint,
             "request_mode": "natural_language",
             "request_summary": summary,
-            "retrieval_policy": search_result.get("retrieval_policy", "bm25"),
+            "retrieval_policy": retrieval_policy,
+            "retrieval_trace": retrieval_trace,
             "retrieved_results": candidates,
-            "impacts": [{
-                "status": "SUGGESTED",
-                "relation": "suggested",
-                "reason": "模型依据此官方片段建议进一步核对；检索相关性不代表已确认实际影响。",
-                "evidence": row,
-            } for row in cited],
+            "impacts": grounded_impacts,
             "review_advice": advice,
+            "evidence_gaps": evidence_gaps,
             "sandbox_only": True,
             "public_baseline_written": False,
         }
@@ -157,14 +286,18 @@ class PublicReviewAgent:
         change = changes[0]
         if change["change_type"] == "UNCHANGED":
             raise ValueError("修改后内容与原文相同")
+        task_id = uuid.uuid4().hex
+        fingerprint = _normalized_hash(
+            f"exact:{current_version}:{selected['chunk_id']}:{old_item['content_hash']}:{new_item['content_hash']}"
+        )[:20]
+        related_query = (selected["heading"] + " " + proposed)[:1000]
         retrieved = self.gateway.search(
-            (selected["heading"] + " " + proposed)[:1000],
+            related_query,
             version=current_version, language="all", top_k=12,
         )["results"]
         related = [
             row for row in retrieved
             if row["chunk_id"] != selected["chunk_id"]
-            and row["document_id"] != selected["document_id"]
         ][:5]
         document_reference = _confirmed_dsip_document_reference(
             self.gateway, selected, current_version
@@ -193,22 +326,36 @@ class PublicReviewAgent:
             except Exception:
                 # Optional model advice must never block the deterministic review flow.
                 review_advice = {"status": "GENERATION_PROVIDER_UNAVAILABLE", "answer": "N/A", "sources": []}
-            allowed_ids = {row["chunk_id"] for row in related}
-            cited_sources = [
-                row for row in review_advice.get("sources", [])
-                if row.get("chunk_id") in allowed_ids
-            ]
-            if review_advice.get("status") == "OK" and not cited_sources:
-                review_advice = {"status": "ABSTAINED", "answer": "N/A", "sources": []}
-            else:
-                review_advice = {**review_advice, "sources": cited_sources}
+            review_advice, _grounded_impacts = _normalize_review_advice(review_advice, by_id)
+        model_candidates = {
+            row["evidence"]["chunk_id"]: row
+            for row in _grounded_impacts
+        } if related else {}
+        retrieval_trace = {
+            "queries": [{
+                "query": related_query,
+                "status": "candidate_found" if related else "no_retrieval_match",
+                "top_chunk_ids": [row["chunk_id"] for row in related],
+                "selected_chunk_ids": [row["chunk_id"] for row in related],
+            }],
+            "uncovered_queries": [] if related else [related_query],
+            "model_status": review_advice.get("status", "NOT_CALLED") if related else "NOT_CALLED",
+        }
         return {
+            "task_id": task_id,
+            "request_fingerprint": fingerprint,
+            "retrieval_trace": retrieval_trace,
             "change": change,
             "selected_source": selected,
             "impacts": [{
                 "status": row["review_status"],
                 "relation": "suggested",
-                "reason": "检索发现主题相关，可能受影响；尚无可核验的段落级显式引用。",
+                "reason": model_candidates.get(row["impacted_item_id"], {}).get(
+                    "reason", "RAG 检索到主题相关候选；模型未将其列为优先核对项，仍需人工确认。"
+                ),
+                "suggested_action": model_candidates.get(row["impacted_item_id"], {}).get(
+                    "suggested_action", "人工确认该资料是否涉及本次变更。"
+                ),
                 "evidence": by_id[row["impacted_item_id"]],
             } for row in impacts],
             "confirmed_relations": [document_reference] if document_reference else [],
@@ -218,6 +365,10 @@ class PublicReviewAgent:
                 "status": "REQUIRES_HUMAN_REVIEW",
             },
             "review_advice": review_advice,
+            "evidence_gaps": (
+                ([] if related else ["当前版本未检索到其他需要核对的资料。"])
+                + _model_evidence_gaps(review_advice)
+            ),
             "sandbox_only": True,
             "public_baseline_written": False,
         }
