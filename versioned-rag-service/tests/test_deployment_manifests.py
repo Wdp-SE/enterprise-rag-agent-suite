@@ -11,6 +11,11 @@ def test_deployment_manifests_use_public_profile_and_lightweight_dependencies() 
     assert "versioned-rag-service" in render
     assert "uvicorn src.public_server:app --host 0.0.0.0 --port $PORT" in render
     assert "APP_ENV" in render and "public_demo" in render
+    assert "RD_V2_ALLOW_EXTERNAL_GENERATION" in render
+    assert "RD_V2_GENERATION_PROVIDER" in render and "deepseek" in render
+    assert "RD_V2_GENERATION_MODEL" in render and "deepseek-v4-flash" in render
+    assert "DEEPSEEK_API_KEY" in render and "sync: false" in render
+    assert "MAX_LLM_CALLS_PER_SESSION" not in render
     requirements = (
         ROOT / "versioned-rag-service/requirements-render.txt"
     ).read_text(encoding="utf-8").casefold()

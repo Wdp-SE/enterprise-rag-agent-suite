@@ -14,5 +14,9 @@ services:
         value: public_demo
       - key: RD_V2_ALLOW_EXTERNAL_GENERATION
         value: "true"
-      - key: DASHSCOPE_API_KEY
+      - key: RD_V2_GENERATION_PROVIDER
+        value: deepseek
+      - key: RD_V2_GENERATION_MODEL
+        value: deepseek-v4-flash
+      - key: DEEPSEEK_API_KEY
         sync: false
