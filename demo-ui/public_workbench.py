@@ -469,7 +469,7 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
     examples = [
         "DolphinScheduler 参数优先级从高到低是什么？",
         f"{example_version} 的 missed_fire_policy 对旧 schedule 默认什么？",
-        "What is the API server health-check endpoint?",
+        "What is the API-Server health endpoint?",
     ]
     with st.expander("从官方资料选择示例问题"):
         st.selectbox("示例问题", examples, key="official_example", on_change=_use_example)
@@ -517,7 +517,41 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                     st.markdown(f'<span class="citation-index">引用编号：{citation_numbers}</span>', unsafe_allow_html=True)
             else:
                 if payload.get("status") == "NO_EVIDENCE":
-                    st.caption("当前范围内没有找到足够相关的资料；请调整问题或扩大版本范围。")
+                    st.caption("当前版本与语言范围内没有正分检索命中；请检查检索范围，或改用资料中的关键术语后重试。")
+                elif payload.get("status") == "ABSTAINED":
+                    diagnostic = payload.get("generation") or {}
+                    reason = diagnostic.get("failure_reason")
+                    if reason == "MODEL_NO_SUPPORTED_ANSWER":
+                        candidate_count = diagnostic.get("candidate_count", len(payload.get("evidence") or []))
+                        st.caption(
+                            f"模型服务已正常响应，但没有从本次检索证据形成可引用答案；系统已安全拒答。"
+                            f"本次 RAG 召回 {candidate_count} 条候选。"
+                        )
+                        coverage = diagnostic.get("evidence_coverage") or {}
+                        missing_terms = coverage.get("missing_terms") or []
+                        if missing_terms:
+                            missing_label = "、".join(str(term) for term in missing_terms[:6])
+                            st.caption(
+                                f"候选证据未覆盖问题关键词：{missing_label}。更像是检索证据没有覆盖问题重点，"
+                                "不是网络或 API Key 故障。请核对下方候选，改写关键词或缩小问题后重试。"
+                            )
+                        else:
+                            st.caption(
+                                "当前证据覆盖了部分问题关键词，但模型没有给出可核验结论；"
+                                "请先核对下方原文证据。这不是网络或 API Key 故障。"
+                            )
+                    elif reason == "NO_VALID_EVIDENCE_CITATIONS":
+                        claimed = diagnostic.get("claimed_citation_count", 0)
+                        valid = diagnostic.get("valid_citation_count", 0)
+                        st.caption(
+                            f"模型已返回答案，但引用未能匹配本次检索证据（有效引用 {valid}/{claimed}）；"
+                            "系统已隐藏答案。这是引用校验失败，不是网络或 API Key 故障。"
+                        )
+                    else:
+                        st.caption(
+                            f"回答因证据校验未通过而被隐藏（原因码：{reason or '未返回'}）；"
+                            "请核对下方检索原文及本次检索技术详情。"
+                        )
                 elif payload.get("status") == "GENERATION_NOT_CONFIGURED":
                     st.caption("当前仅展示检索证据；RAG 后端尚未启用在线生成。")
                     st.caption(
@@ -552,9 +586,11 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                 elif payload.get("status") == "GENERATION_RESPONSE_TRUNCATED":
                     st.caption("模型回复因输出长度截断，未形成可核验的完整回答；检索证据仍保留。")
                 else:
+                    diagnostic = payload.get("generation") or {}
+                    request_id = diagnostic.get("request_id") or "未返回"
                     st.caption(
-                        "在线生成未完成或未通过引用核验；下方只展示检索证据。"
-                        "请检查 RAG 后端出网连接、模型密钥和生成配置。"
+                        f"RAG 后端返回未分类状态：{payload.get('status', 'UNKNOWN')}；下方保留了检索证据。"
+                        f"仅凭该状态不能判断为网络或密钥故障。请求编号：{request_id}，可据此查后端日志。"
                     )
             primary = sources[0] if sources else None
             _consistency(payload.get("consistency_notes", []), primary=primary)

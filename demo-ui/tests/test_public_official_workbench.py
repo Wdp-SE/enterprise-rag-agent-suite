@@ -502,6 +502,16 @@ def test_rag_generation_uses_user_edited_question(monkeypatch):
     assert submitted == ["DolphinScheduler 健康检查接口是什么？"]
 
 
+def test_api_server_health_example_matches_the_indexed_api_server_section(monkeypatch):
+    _mock_client(monkeypatch)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+
+    options = app.selectbox(key="official_example").options
+    assert "What is the API-Server health endpoint?" in options
+    assert "What is the API server health-check endpoint?" not in options
+
+
 def test_evidence_image_markdown_uses_text_placeholder_instead_of_missing_asset(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
@@ -583,8 +593,33 @@ def test_public_rag_generation_failure_explains_backend_fallback(monkeypatch):
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
 
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
-    assert "在线生成未完成或未通过引用核验" in visible
-    assert "RAG 后端出网连接" in visible
+    assert "后端返回未分类状态：FAIL_CLOSED" in visible
+    assert "不能判断为网络或密钥故障" in visible
+    assert "[1] 参数优先级" in visible
+
+
+def test_abstained_answer_explains_missing_retrieval_terms(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: {
+        "answer": "N/A", "sources": [], "evidence": [dict(CHUNK)],
+        "status": "ABSTAINED", "consistency_notes": [],
+        "generation": {
+            "failure_reason": "MODEL_NO_SUPPORTED_ANSWER",
+            "candidate_count": 5,
+            "evidence_coverage": {"matched_terms": ["api", "server"], "missing_terms": ["health", "check", "endpoint"]},
+            "request_id": "request-abstained-test",
+        },
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+    next(button for button in app.button if button.label == "生成带引用回答").click().run()
+
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
+    assert "模型服务已正常响应" in visible
+    assert "health、check、endpoint" in visible
+    assert "更像是检索证据没有覆盖问题重点，不是网络或 API Key 故障" in visible
     assert "[1] 参数优先级" in visible
 
 

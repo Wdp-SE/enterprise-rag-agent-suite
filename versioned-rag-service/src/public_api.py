@@ -21,7 +21,7 @@ from src.answer_generation import (
     StructuredAnswerGenerator, validate_review_evidence_membership,
 )
 from src.public_knowledge import (
-    PublicKnowledgeIndex, verified_consistency_notes,
+    PublicKnowledgeIndex, tokens, verified_consistency_notes,
 )
 from src.rd_v2_runtime import _format_context, validate_citation_membership
 
@@ -46,6 +46,11 @@ def _generation_diagnostics(generator) -> dict:
         "finish_reason": None,
         "usage": None,
         "latency_ms": None,
+        "failure_reason": None,
+        "candidate_count": None,
+        "evidence_coverage": None,
+        "claimed_citation_count": None,
+        "valid_citation_count": None,
     }
 
 
@@ -73,6 +78,38 @@ def _log_generation_failure(*, operation: str, status: str, diagnostics: dict, e
         operation, diagnostics["request_id"], status, diagnostics["provider"],
         diagnostics["requested_model"], type(exc).__name__,
     )
+
+
+_QUERY_STOPWORDS = frozenset({
+    "what", "is", "the", "a", "an", "of", "for", "to", "does", "do",
+    "which", "in", "on", "from", "and", "or", "can", "could", "would",
+})
+
+
+def _evidence_query_coverage(question: str, hits: list[dict]) -> dict:
+    """Explain which meaningful query terms the retrieved evidence did not cover."""
+    question_terms = []
+    for term in tokens(question):
+        pieces = term.split("-") if "-" in term else [term]
+        question_terms.extend(
+            piece for piece in pieces
+            if piece and piece not in _QUERY_STOPWORDS and len(piece) > 1
+        )
+    question_terms = list(dict.fromkeys(question_terms))[:12]
+    evidence_text = " ".join(
+        " ".join((
+            str(hit.get("document_title", "")),
+            str(hit.get("document_key", "")),
+            str(hit.get("heading", "")),
+            " ".join(str(value) for value in hit.get("heading_path", [])),
+            str(hit.get("content", "")),
+        ))
+        for hit in hits
+    )
+    evidence_terms = set(tokens(evidence_text))
+    matched = [term for term in question_terms if term in evidence_terms]
+    missing = [term for term in question_terms if term not in evidence_terms]
+    return {"matched_terms": matched, "missing_terms": missing}
 
 
 class SearchRequest(BaseModel):
@@ -360,6 +397,9 @@ async def query(payload: SearchRequest, request: Request) -> dict:
         "retrieval_policy": _runtime_policy(index),
     }
     if not hits:
+        diagnostics["failure_reason"] = "NO_POSITIVE_RETRIEVAL_EVIDENCE"
+        diagnostics["candidate_count"] = 0
+        diagnostics["evidence_coverage"] = _evidence_query_coverage(payload.query, hits)
         return {**base, "status": "NO_EVIDENCE"}
     if generator is None:
         return {**base, "status": "GENERATION_NOT_CONFIGURED"}
@@ -397,8 +437,28 @@ async def query(payload: SearchRequest, request: Request) -> dict:
         diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
         answer = generated["final_answer"]
         citations = validate_citation_membership(generated["relevant_sources"], generator_hits)
-        if not isinstance(answer, str) or not answer.strip() or answer == "N/A" or not citations:
+        diagnostics["candidate_count"] = len(hits)
+        if not isinstance(answer, str) or not answer.strip() or answer == "N/A":
+            diagnostics["failure_reason"] = "MODEL_NO_SUPPORTED_ANSWER"
+            diagnostics["evidence_coverage"] = _evidence_query_coverage(payload.query, hits)
+            logger.info(
+                "Public generation request_id=%s status=ABSTAINED reason=%s candidate_count=%s",
+                diagnostics["request_id"], diagnostics["failure_reason"], diagnostics["candidate_count"],
+            )
             return {**base, "status": "ABSTAINED"}
+        if not citations:
+            claimed_sources = generated.get("relevant_sources")
+            diagnostics["failure_reason"] = "NO_VALID_EVIDENCE_CITATIONS"
+            diagnostics["claimed_citation_count"] = len(claimed_sources) if isinstance(claimed_sources, list) else 0
+            diagnostics["valid_citation_count"] = 0
+            logger.info(
+                "Public generation request_id=%s status=ABSTAINED reason=%s candidate_count=%s claimed_citations=%s",
+                diagnostics["request_id"], diagnostics["failure_reason"], diagnostics["candidate_count"],
+                diagnostics["claimed_citation_count"],
+            )
+            return {**base, "status": "ABSTAINED"}
+        diagnostics["claimed_citation_count"] = len(generated["relevant_sources"])
+        diagnostics["valid_citation_count"] = len(citations)
         cited_ids = {row["document_id"] for row in citations}
         logger.info(
             "Public generation request_id=%s status=OK provider=%s requested_model=%s returned_model=%s "

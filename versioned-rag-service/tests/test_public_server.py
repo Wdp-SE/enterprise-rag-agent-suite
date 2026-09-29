@@ -195,6 +195,61 @@ def test_public_query_without_generator_returns_evidence_not_fake_answer():
         assert payload["evidence"]
 
 
+def test_api_server_health_example_retrieves_the_exact_endpoint_evidence():
+    index = PublicKnowledgeIndex()
+    hits = index.search(
+        "What is the API-Server health endpoint?",
+        version="current", language="zh_preferred", top_k=5,
+    )
+
+    assert hits[0]["document_key"] == "guide/api/healthcheck"
+    assert hits[0]["heading"] == "API-Server"
+    assert "/dolphinscheduler/actuator/health" in hits[0]["content"]
+
+
+def test_abstention_reports_missing_question_terms_instead_of_infrastructure_failure():
+    class AbstainingGenerator:
+        provider = "deepseek"
+        model = "test-model"
+
+        def generate(self, *, question, context):
+            return {"final_answer": "N/A", "relevant_sources": []}
+
+    query = "What is the API server health-check endpoint?"
+    with TestClient(create_app(index=PublicKnowledgeIndex(), generator=AbstainingGenerator())) as client:
+        payload = client.post("/public/query", json={"query": query}).json()
+
+    assert payload["status"] == "ABSTAINED"
+    diagnostic = payload["generation"]
+    assert diagnostic["failure_reason"] == "MODEL_NO_SUPPORTED_ANSWER"
+    assert diagnostic["candidate_count"] == len(payload["evidence"]) == 5
+    assert {"health", "check", "endpoint"}.issubset(
+        set(diagnostic["evidence_coverage"]["missing_terms"])
+    )
+
+
+def test_answer_with_no_valid_evidence_citation_reports_citation_failure():
+    class UncitedGenerator:
+        provider = "deepseek"
+        model = "test-model"
+
+        def generate(self, *, question, context):
+            return {
+                "final_answer": "The endpoint is /example.",
+                "relevant_sources": [{"document_id": "not-in-evidence", "page_number": 1}],
+            }
+
+    with TestClient(create_app(index=PublicKnowledgeIndex(), generator=UncitedGenerator())) as client:
+        payload = client.post("/public/query", json={"query": QUESTION}).json()
+
+    assert payload["status"] == "ABSTAINED"
+    assert payload["answer"] == "N/A"
+    diagnostic = payload["generation"]
+    assert diagnostic["failure_reason"] == "NO_VALID_EVIDENCE_CITATIONS"
+    assert diagnostic["claimed_citation_count"] == 1
+    assert diagnostic["valid_citation_count"] == 0
+
+
 def test_oov_bm25_does_not_send_zero_score_candidates_to_paid_generator():
     class Generator:
         def generate(self, *, question, context):
