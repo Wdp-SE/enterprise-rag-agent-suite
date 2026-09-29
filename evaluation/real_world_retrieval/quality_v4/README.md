@@ -28,3 +28,5 @@ python evaluation/real_world_retrieval/quality_v4/run_quality_v4.py --split dev 
 ```
 
 所有五种策略的 DEV 结果见 `results/dev__*.json`，解释和晋级门槛见 [report.md](report.md)。候选 `bm25_figure_ocr` 未达到原文锚点召回非劣化门槛，因此服务默认仍为 BM25；下一轮若采用“文字与图片分通道”的新方案，必须使用 V5/独立题集重新选型。V4 冻结 runner 的 nDCG 对同一来源的多个片段存在重复计数缺陷，不能用于策略比较；下一版修正后再报告该指标。
+
+评测流程限制：冻结 runner 的 `--lock-selection` 会校验 DEV 结果指纹，但不会自动计算或把晋级阈值写入选择锁。当前候选与 BM25 的 DEV 对比按配对门槛复核为通过；不过 V4 锁没有保存阈值和门槛明细，不能把这次复核表述为代码强制的、可复演的 DEV 晋级门禁。候选已完成唯一一次 HOLDOUT，结果未通过原文锚点非劣化检查，线上仍保留 BM25。新的检索策略必须放到 V5 或独立评测目录，在打开 HOLDOUT 前由 runner 强制执行并哈希绑定 DEV 门槛、结果与选择记录；不要修改这份已冻结的 V4 runner 或结果来补记流程。

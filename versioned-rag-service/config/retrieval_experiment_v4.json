@@ -4,7 +4,7 @@
   "status": "candidate_not_promoted",
   "active_policy": "bm25",
   "candidate_policy": "bm25_figure_ocr",
-  "decision_reason": "The OCR candidate improves image and multi-source retrieval but lowers anchor_recall_at_5 by 9.43 percentage points, exceeding the predeclared 5-point tolerance.",
+  "decision_reason": "The OCR candidate improves image and multi-source retrieval but lowers anchor_recall_at_5 by 9.43 percentage points, exceeding the 5-point tolerance applied in this comparison.",
   "interpretation": "Offline retrieval evidence only. These metrics do not measure generated-answer accuracy, refusal quality, hallucination rate, public cold-start latency, or production user outcomes.",
   "scope": {
     "source_count": 132,

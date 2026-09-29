@@ -6,7 +6,7 @@ from evaluation.real_world_retrieval.quality_v4.run_quality_v4_baseline import (
 )
 
 
-def test_paired_comparison_applies_predeclared_promotion_gates():
+def test_paired_comparison_applies_documented_promotion_gates():
     candidate = {
         "overall": {
             "complete_source_at_5": 0.90,

@@ -43,7 +43,7 @@ def validate_baseline_run(
 
 
 def compare_results(candidate: dict, baseline: dict) -> dict:
-    """Apply the DEV-declared release thresholds to matched retrieval metrics."""
+    """Apply the documented release thresholds to matched retrieval metrics."""
     c, b = candidate["overall"], baseline["overall"]
     cdoc = candidate["by_category"]["cross_document"]["complete_source_at_5"]
     bdoc = baseline["by_category"]["cross_document"]["complete_source_at_5"]
@@ -75,7 +75,7 @@ def compare_results(candidate: dict, baseline: dict) -> dict:
                 c["no_answer_nonempty_candidate_rate"] - baseline["overall"]["no_answer_nonempty_candidate_rate"]
             ),
         },
-        "decision_basis": "Retrieval-only matched baseline gate; nDCG is excluded because the frozen V4 implementation can overcount duplicate chunks from one relevant source.",
+        "decision_basis": "Retrieval-only matched baseline comparison; nDCG is excluded because the frozen V4 implementation can overcount duplicate chunks from one relevant source.",
     }
 
 

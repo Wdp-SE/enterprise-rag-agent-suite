@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
@@ -16,6 +17,7 @@ from src.answer_generation import (
 from src.engineering_change import (
     EngineeringImpactService, EngineeringItem, TraceLink, compare_engineering_items,
 )
+from src.figure_sidecar_integrity import validate_reviewed_sidecar
 from src.public_api import router as public_router
 from src.public_knowledge import PublicKnowledgeIndex
 from src.public_retrieval_runtime import PublicRetrievalRuntime
@@ -37,13 +39,21 @@ class ImpactRequest(BaseModel):
 
 
 def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None,
-               retrieval_config_path=None, figure_sidecar_path=None) -> FastAPI:
+               retrieval_config_path=None, figure_sidecar_path=None,
+               figure_sidecar_lock_path=None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         base_index = index or PublicKnowledgeIndex()
+        sidecar_path = Path(figure_sidecar_path or base_index.root / "figure_evidence_reviewed.json")
+        lock_path = Path(figure_sidecar_lock_path or base_index.root / "figure_evidence_reviewed.lock.json")
+        validate_reviewed_sidecar(
+            sidecar_path=sidecar_path,
+            lock_path=lock_path,
+            manifest_path=base_index.root / "corpus_manifest.json",
+        )
         app.state.public_base_knowledge_index = base_index
         app.state.public_knowledge_index = PublicRetrievalRuntime(
-            base_index, config_path=retrieval_config_path, sidecar_path=figure_sidecar_path,
+            base_index, config_path=retrieval_config_path, sidecar_path=sidecar_path,
         )
         app.state.public_generator = generator
         generation_allowed = os.environ.get(

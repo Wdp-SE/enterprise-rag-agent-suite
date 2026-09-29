@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from datetime import datetime, timezone
 
+import pytest
 from fastapi.testclient import TestClient
 
 from src.answer_generation import GenerationProviderError, GenerationResponseError
@@ -100,6 +101,9 @@ def test_public_deployment_exposes_only_official_corpus_and_engineering_support(
         assert workspace["retrieval_evaluation"]["holdout"]["complete_source_at_5"] == 0.8571428571428571
         assert workspace["retrieval_evaluation"]["holdout"]["anchor_recall_at_5"] == 0.7924528301886793
         assert workspace["retrieval_experiment"]["status"] == "candidate_not_promoted"
+        decision_reason = workspace["retrieval_experiment"]["decision_reason"]
+        assert "applied in this comparison" in decision_reason
+        assert "predeclared" not in decision_reason
         assert workspace["retrieval_experiment"]["promotion_comparison"]["passed"] is False
         assert workspace["retrieval_experiment"]["promotion_comparison"]["checks"]["anchor_noninferiority"] is False
         response = client.post("/public/search", json={"query": QUESTION})
@@ -232,6 +236,21 @@ def test_public_search_does_not_allow_request_to_choose_experimental_policy():
         response = client.post("/public/search", json={"query": QUESTION, "policy": "hybrid"})
 
     assert response.status_code == 422
+
+
+def test_public_server_rejects_changed_reviewed_ocr_text_even_if_image_hash_is_unchanged(tmp_path):
+    index = PublicKnowledgeIndex()
+    sidecar_path = tmp_path / "tampered-figure-evidence.json"
+    sidecar = json.loads((index.root / "figure_evidence_reviewed.json").read_text(encoding="utf-8"))
+    image_chunk = next(row for row in sidecar["chunks"] if row["figure_id"] == "db6baeb0b9b5364a")
+    original_image_hash = image_chunk["sha256"]
+    image_chunk["content"] = "ATTACKER-CHANGED OCR CONTENT"
+    image_chunk["sha256"] = original_image_hash
+    sidecar_path.write_text(json.dumps(sidecar), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="figure evidence sidecar integrity"):
+        with TestClient(create_app(index=index, figure_sidecar_path=sidecar_path)):
+            pass
 
 
 def test_configured_runtime_policy_returns_reviewed_image_evidence(tmp_path):
