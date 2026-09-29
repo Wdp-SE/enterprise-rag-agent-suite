@@ -113,6 +113,33 @@ def test_public_deployment_exposes_only_official_corpus_and_engineering_support(
         )
 
 
+@pytest.mark.parametrize("newline", [b"\n", b"\r\n"], ids=["lf", "crlf"])
+def test_v4_workspace_fingerprint_is_portable_across_text_line_endings(monkeypatch, newline):
+    index = PublicKnowledgeIndex()
+    service = Path(__file__).resolve().parents[1]
+    newline_sensitive_files = {
+        (index.root / "retrieval_policy.json").resolve(),
+        (index.root / "figure_evidence_reviewed.json").resolve(),
+        (service / "src" / "retrieval_fusion.py").resolve(),
+        (service / "src" / "public_retrieval_runtime.py").resolve(),
+    }
+    original_read_bytes = Path.read_bytes
+
+    def read_with_line_ending(path):
+        data = original_read_bytes(path)
+        if path.resolve() in newline_sensitive_files:
+            data = data.replace(b"\r\n", b"\n").replace(b"\n", newline)
+        return data
+
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, "read_bytes", read_with_line_ending)
+        with TestClient(create_app(index=index)) as client:
+            workspace = client.get("/public/workspace").json()
+
+    assert workspace["retrieval_evaluation_status"] == "v4_bm25_validated"
+    assert workspace["retrieval_experiment"]["status"] == "candidate_not_promoted"
+
+
 def test_workspace_hides_v4_release_for_mismatched_runtime_policy_or_manifest(monkeypatch):
     index = PublicKnowledgeIndex()
     with TestClient(create_app(index=index)) as client:

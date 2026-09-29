@@ -168,15 +168,19 @@ def _validated_v4_experiment(index: PublicKnowledgeIndex) -> dict | None:
         config_bytes = json.dumps(
             config_behavior, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
         ).encode("utf-8")
+        def portable_text_sha256(path: Path) -> str:
+            """Hash text inputs identically on Windows and Linux checkouts."""
+            return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
         fingerprints = {
             "corpus_manifest_sha256": hashlib.sha256((root / "corpus_manifest.json").read_bytes()).hexdigest(),
-            "retrieval_policy_sha256": hashlib.sha256((root / "retrieval_policy.json").read_bytes()).hexdigest(),
+            "retrieval_policy_sha256": portable_text_sha256(root / "retrieval_policy.json"),
             "chunks_sha256": hashlib.sha256((root / "chunks.json").read_bytes()).hexdigest(),
             "dense_vectors_sha256": hashlib.sha256((root / "dense_vectors.npy").read_bytes()).hexdigest(),
-            "figure_evidence_reviewed_sha256": hashlib.sha256((root / "figure_evidence_reviewed.json").read_bytes()).hexdigest(),
+            "figure_evidence_reviewed_sha256": portable_text_sha256(root / "figure_evidence_reviewed.json"),
             "public_knowledge_sha256": hashlib.sha256((service / "src" / "public_knowledge.py").read_bytes()).hexdigest(),
-            "retrieval_fusion_sha256": hashlib.sha256((service / "src" / "retrieval_fusion.py").read_bytes()).hexdigest(),
-            "public_retrieval_runtime_sha256": hashlib.sha256((service / "src" / "public_retrieval_runtime.py").read_bytes()).hexdigest(),
+            "retrieval_fusion_sha256": portable_text_sha256(service / "src" / "retrieval_fusion.py"),
+            "public_retrieval_runtime_sha256": portable_text_sha256(service / "src" / "public_retrieval_runtime.py"),
             "runtime_config_behavior_sha256": hashlib.sha256(config_bytes).hexdigest(),
         }
         if index.manifest != json.loads((root / "corpus_manifest.json").read_text(encoding="utf-8")):
