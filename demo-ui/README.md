@@ -3,9 +3,9 @@
 - [GitHub 源码仓库](https://github.com/Wdp-SE/enterprise-rag-agent-suite)
 - [在线工作台](https://enterprise-rag-agent-suite-bfmkgsimdisxcewgco7ydk.streamlit.app/)
 
-默认入口 [app.py](app.py) 展示 **Apache DolphinScheduler 官方公开资料**：左侧导航按“知识服务”“变更审查”“系统说明”分组，提供总览、可信检索问答、版本与历史、资料与来源、会话审查各步骤、检索评测与已知限制。首页说明来源与非官方身份。知识服务从 RAG 后端的固定语料清单读取当前版本与历史版本，默认选择清单声明的当前版本 3.4.3；它不会实时自动追踪 Apache 上游。工作台提供中文优先/中英双语检索、真实官方原文引用和可核验的资料差异提醒。变更审查 Agent 依据自然语言变更请求调用当前版本检索，整理待核查影响与修改建议；审核决定和可下载的审查记录只留在当前 Streamlit 会话，不写公共基线。
+默认公网入口 [app.py](app.py) 加载 **Apache DolphinScheduler 官方公开资料工作台**。知识服务从 RAG 后端的固定语料清单读取当前版本与历史版本，默认选择清单声明的当前已收录版本；它不会实时追踪 Apache 上游。工作台提供中文优先/中英双语检索、官方原文引用和可核验的资料差异提醒。变更审查 Agent 保留自然语言原文，可选补充变更类型与影响范围；未填写类型时用确定性规则归类，无法识别时回退到通用检索。Agent 最多发起 4 次 RAG 查询、选取最多 5 条证据，并显示检索轨迹与结构化证据缺口。人工审核决定和可下载记录只留在当前 Streamlit 会话，不写公共基线。
 
-![本地 V1.0 候选工作台首页截图（非当前公网页面）](../project_delivery/final_engineering_review/home.png)
+本仓库还包含本地合成研发资料工作台，用于演示文档版本 Diff、追踪关系、PatchCandidate、审核、冲突检测和候选版本安全激活。它使用完全合成资料，不是第二个项目，也不默认加载在公网入口；仅在本机设置 `DEMO_LEGACY_FIXTURES=true` 后重启进入。
 
 ## 本地启动
 
@@ -22,10 +22,10 @@
 ## 操作路径
 
 1. “可信检索问答”：选版本和语言，输入问题，先查看答案，再核对引用依据 Top 3；其余结果折叠。“技术详情”才显示检索得分，该分数不是事实可信度。
-2. “发起变更审查”：用自然语言描述假设变更，系统拆分检索子问题并在当前版本资料中寻找证据，展示检索轨迹、影响候选和证据缺口；可选片段做修改前后对照，最后由人审核。人工决定绑定当前任务编号，可下载包含请求指纹、证据 ID、决定和时间的会话 JSON，但不会自动进入审批系统。仅官方 PR 明确引用 DSIP 的关系会标记为已确认；语义检索只标记建议。
+2. “发起变更审查”：用自然语言描述假设变更；需要时展开可选字段补充变更类型与影响范围。系统拆分检索子问题并在当前版本资料中寻找证据，展示规则分类、检索轨迹、影响候选和结构化证据缺口；可选片段做修改前后对照，最后由人审核。人工决定绑定当前任务编号，可下载包含请求指纹、证据 ID、决定和时间的会话 JSON，但不会自动进入审批系统。仅官方 PR 明确引用 DSIP 的关系会标记为已确认；语义检索只标记建议。
 3. “检索评测”页面保留早期字符哈希 Dense 的历史对照，不代表真实 multilingual E5 选型结果，也不是当前扩充语料的质量指标。当前默认为 Chunk A（1250 chars、无 overlap）+ BM25 + Top-5；它已在 V3 的 DEV 上锁定并经过一次性 HOLDOUT 检验。旧语料上的 E5/Hybrid 对照及边界见[历史最终选型报告](../evaluation/real_world_retrieval/final_selection/final_selection.md)。服务未配置在线模型或生成未通过引用校验时，问答页只展示待核对的检索候选。
 
-原合成 Case A/B 仍供测试使用。仅需复现这些历史测试夹具界面时，显式设置 `DEMO_LEGACY_FIXTURES=true`；公网默认不会展示或加载合成案例。
+查询拆解评测使用 8 条手工样例测类型分类、子问题覆盖及 4 次查询上限：`python evaluation/agent_query_decomposition/run_evaluation.py`。这是规则规划契约的轻量离线评测，不代表端到端检索准确率、回答正确率或线上延迟。
 
 ## 检索结论与已知限制
 
@@ -35,7 +35,7 @@
 
 针对当前语料，V3 冻结 72 道新业务题，按场景家族划分 DEV/HOLDOUT 各 36 道；在 DEV 比较三种来源多样化候选后锁定 BM25，并只运行一次 BM25 的 HOLDOUT。HOLDOUT 的 32 道可回答题中，27 道找齐全部必需来源；8 道多来源题有 4 道找齐，返回片段找到 37/49 个原文锚点。检索表现不等于生成答案的准确率或幻觉率，也不能代表真实用户开放提问。复现 DEV 基线时从仓库根目录运行 `python evaluation/real_world_retrieval/quality_v3/run_quality_v3.py --split dev --policy bm25`；题库与锁定边界见[V3 评测说明](../evaluation/real_world_retrieval/quality_v3/README.md)，一次性结果与失败题见[V3 报告](../evaluation/real_world_retrieval/quality_v3/report.md)。已开封的 HOLDOUT 不应重复运行或用于继续调参。
 
-132 份语料仍是官方资料的有限子集，原文图片中的文字尚未纳入正式索引或检索；界面的配图提示不是 OCR 结果。Agent 工作状态保存在当前 Session 沙箱，下载审查 JSON 需要用户自行保存，不修改公共语料或 Apache 上游。系统不实现 locale sibling consistency；影响候选需要人工复核，审查结果不会写回公共资料。历史选型详见[最终选型报告](../evaluation/real_world_retrieval/final_selection/final_selection.md)。
+132 份语料仍是官方资料的有限子集，原文图片中的文字尚未纳入正式索引或检索；界面的配图提示不是 OCR 结果。规则分类使用小型关键词表，遇到领域新词时可能回退为通用类别；审查状态保存在当前 Session，下载审查 JSON 需要用户自行保存，不修改公共语料或 Apache 上游。系统不实现 locale sibling consistency；影响候选需要人工复核，审查结果不会写回公共资料。历史选型详见[最终选型报告](../evaluation/real_world_retrieval/final_selection/final_selection.md)。
 
 ## 云端配置
 

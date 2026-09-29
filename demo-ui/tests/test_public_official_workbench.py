@@ -303,6 +303,7 @@ def test_review_export_records_task_evidence_and_human_decision_without_raw_draf
     assert report["selected_source_id"] == "3.4.3:zh:guide/test:1"
     assert report["public_baseline_written"] is False
     assert report["proposed_after_sha256"]
+    assert report["schema_version"] == 2
     assert "private proposed text" not in json.dumps(report, ensure_ascii=False)
 
 

@@ -124,17 +124,42 @@ class ChangeImpactClient:
     def prepare_demo(self) -> dict[str, Any]:
         return self._prepare()
 
-    def prepare_custom(self, requirement_id: str, proposed_content: str) -> dict[str, Any]:
+    def prepare_custom(
+        self,
+        requirement_id: str,
+        proposed_content: str,
+        change_type: str | None = None,
+        impact_scope: str | None = None,
+    ) -> dict[str, Any]:
         """Review a session-only revision of the current case's traced requirement."""
         if requirement_id != self.demo_case.changed_external_identifier:
             raise ValueError("当前需求没有可安全复用的设计与测试追踪关系")
         proposed_content = proposed_content.strip()
         if not proposed_content or len(proposed_content) > 4000 or requirement_id not in proposed_content:
             raise ValueError("请输入包含所选工程编号的需求内容（不超过 4000 字）")
-        return self._prepare(custom_content=proposed_content)
+        from app.change_request import resolve_change_type
 
-    def _prepare(self, *, custom_content: str | None = None) -> dict[str, Any]:
+        resolved_type, classification_source = resolve_change_type(proposed_content, change_type)
+        normalized_scope = (impact_scope or "").strip()
+        if len(normalized_scope) > 160:
+            raise ValueError("影响范围不超过 160 字")
+        return self._prepare(
+            custom_content=proposed_content,
+            custom_context={
+                "change_type": resolved_type,
+                "classification_source": classification_source,
+                "impact_scope": normalized_scope,
+            },
+        )
+
+    def _prepare(
+        self,
+        *,
+        custom_content: str | None = None,
+        custom_context: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
         from app.change_impact_review import PatchCandidate, PatchOperation
+        from app.change_request import CHANGE_TYPES
         from app.document_workflow.configuration import DocumentWorkflowConfig
         from app.document_workflow.evidence_models import Evidence, normalize_text, sha256_text
         from app.document_workflow.evidence_selection import EvidenceSelectionPolicy, EvidenceSelector
@@ -179,6 +204,17 @@ class ChangeImpactClient:
                 for item in current_items
             ]
             evidence_item = baseline
+            context = custom_context or {
+                "change_type": "general",
+                "classification_source": "unclassified",
+                "impact_scope": "",
+            }
+            category = CHANGE_TYPES[context["change_type"]]
+            search_query = (
+                f"{changed['content']}\n变更类型：{category['label']}"
+                f"\n检索关注点：{category['focus']}"
+                + (f"\n影响范围：{context['impact_scope']}" if context["impact_scope"] else "")
+            )
             active_items = [
                 item for item in items
                 if item["version_id"] != case.requirement_old_version_id
@@ -189,9 +225,11 @@ class ChangeImpactClient:
                 if link["source_item_id"] == baseline["item_id"] else link
                 for link in inventory["trace_links"]
             ]
+        if custom_content is None:
+            search_query = changed["content"]
         changes = self.rag.diff_engineering_items(old_items, new_items)["changes"]
         scope = {"project_ids": [case.project_id], "active_only": True}
-        dense = self.rag.search_candidate_versions(changed["content"], scope, top_k=20)["results"]
+        dense = self.rag.search_candidate_versions(search_query, scope, top_k=20)["results"]
         by_location = {
             (item["document_id"], item["version_id"], item["section_id"]): item
             for item in active_items
@@ -217,7 +255,7 @@ class ChangeImpactClient:
                 version_label=row["version_label"],
                 version_status=row["version_status"],
                 chunk_id=row["chunk_id"],
-                query=changed["content"],
+                query=search_query,
                 section=row["section_id"],
                 section_path=row["section_path"],
                 page_number=row["page_number"],
@@ -330,6 +368,10 @@ class ChangeImpactClient:
                 "requirement_id": case.changed_external_identifier,
                 "old_content": baseline["content"],
                 "new_content": custom_content,
+                **context,
+                "change_type_label": category["label"],
+                "retrieval_focus": category["focus"],
+                "retrieval_query": search_query,
                 "publication_available": False,
             }
         return result

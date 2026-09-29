@@ -12,6 +12,8 @@ import unicodedata
 import uuid
 from typing import Protocol
 
+from app.change_request import CHANGE_TYPES, build_request_plan, request_queries
+
 
 class PublicKnowledgeGateway(Protocol):
     def workspace(self) -> dict: ...
@@ -29,12 +31,7 @@ def _normalized_hash(content: str) -> str:
 
 def _request_queries(summary: str) -> list[str]:
     """Search the whole change and up to three distinct clauses of a compound request."""
-    clauses = [part.strip() for part in re.split(r"[。！？；;\n]+", summary) if part.strip()]
-    if len(clauses) < 2:
-        return [summary]
-    if len(clauses) > 3:
-        clauses = [*clauses[:2], " ".join(clauses[2:])]
-    return list(dict.fromkeys([summary, *clauses]))
+    return request_queries(summary)
 
 
 def _official_hit(row: dict, current_version: str) -> bool:
@@ -66,13 +63,37 @@ def _select_request_evidence(searches: list[tuple[dict, list[dict]]]) -> list[di
 
 
 def _retrieval_gaps(searches: list[tuple[dict, list[dict]]]) -> list[str]:
+    return [row["message"] for row in _retrieval_gap_details(searches)]
+
+
+def _retrieval_gap_details(
+    searches: list[tuple[dict, list[dict]]], plan: dict | None = None,
+) -> list[dict]:
     scope = searches[1:] if len(searches) > 1 else searches
     labels = {
-        "no_retrieval_match": "当前版本未检索到匹配资料",
-        "candidate_outside_evidence_budget": "检索命中未纳入本次模型证据上限",
-        "search_unavailable": "检索服务未完成",
+        "no_retrieval_match": ("NO_MATCH", "当前版本未检索到匹配资料"),
+        "candidate_outside_evidence_budget": ("EVIDENCE_BUDGET", "检索命中未纳入本次模型证据上限"),
+        "search_unavailable": ("SEARCH_UNAVAILABLE", "检索服务未完成"),
     }
-    return [f"{labels[trace['status']]}：{trace['query']}" for trace, _rows in scope if trace["status"] in labels]
+    material = (CHANGE_TYPES.get((plan or {}).get("change_type"), CHANGE_TYPES["general"]) or {}).get(
+        "materials", CHANGE_TYPES["general"]["materials"]
+    )
+    action = (plan or {}).get("gap_action", CHANGE_TYPES["general"]["action"])
+    details = []
+    for trace, _rows in scope:
+        definition = labels.get(trace["status"])
+        if definition is None:
+            continue
+        gap_type, label = definition
+        details.append({
+            "gap_type": gap_type,
+            "message": f"{label}：{trace['query']}",
+            "query": trace["query"],
+            "expected_materials": material,
+            "suggested_action": action,
+            "requires_human_review": True,
+        })
+    return details
 
 
 def _model_evidence_gaps(advice: dict) -> list[str]:
@@ -81,6 +102,20 @@ def _model_evidence_gaps(advice: dict) -> list[str]:
         return []
     gaps = review.get("evidence_gaps")
     return [gap.strip() for gap in gaps if isinstance(gap, str) and gap.strip()] if isinstance(gaps, list) else []
+
+
+def _model_evidence_gap_details(advice: dict) -> list[dict]:
+    return [
+        {
+            "gap_type": "MODEL_REPORTED",
+            "message": gap,
+            "query": None,
+            "expected_materials": None,
+            "suggested_action": "模型提示尚未核验；请审核人根据原文确认是否确实缺少该资料。",
+            "requires_human_review": True,
+        }
+        for gap in _model_evidence_gaps(advice)
+    ]
 
 
 def _item(source: dict, content: str) -> dict:
@@ -182,19 +217,35 @@ class PublicReviewAgent:
     def __init__(self, gateway: PublicKnowledgeGateway):
         self.gateway = gateway
 
-    def analyze_request(self, change_summary: str) -> dict:
+    def analyze_request(
+        self,
+        change_summary: str,
+        *,
+        change_type: str | None = None,
+        impact_scope: str | None = None,
+    ) -> dict:
         """Find current-version candidates from a natural-language change request."""
         summary = change_summary.strip()
         if not summary or len(summary) > 4000:
             raise ValueError("变更描述应为 1 到 4000 字")
 
+        plan = build_request_plan(summary, change_type=change_type, impact_scope=impact_scope)
+
         current_version = self.gateway.workspace()["current_version"]
         task_id = uuid.uuid4().hex
-        fingerprint = _normalized_hash(f"natural_language:{current_version}:{summary}")[:20]
+        fingerprint = _normalized_hash(
+            f"natural_language:{current_version}:{plan['change_type']}:{plan['impact_scope']}:{summary}"
+        )[:20]
         searches: list[tuple[dict, list[dict]]] = []
         retrieval_policy = "bm25"
-        for query in _request_queries(summary):
-            trace = {"query": query, "status": "no_retrieval_match", "top_chunk_ids": [], "selected_chunk_ids": []}
+        for query_step in plan["queries"]:
+            query = query_step["query"]
+            trace = {
+                **query_step,
+                "status": "no_retrieval_match",
+                "top_chunk_ids": [],
+                "selected_chunk_ids": [],
+            }
             try:
                 search_result = self.gateway.search(
                     query, version=current_version, language="zh_preferred", top_k=5,
@@ -222,8 +273,10 @@ class PublicReviewAgent:
                 if trace["status"] != "candidate_found"
             ],
             "model_status": "NOT_CALLED",
+            "query_limit": plan["query_limit"],
         }
-        evidence_gaps = _retrieval_gaps(searches)
+        evidence_gap_details = _retrieval_gap_details(searches, plan)
+        evidence_gaps = [row["message"] for row in evidence_gap_details]
         base_advice = {"status": "NO_EVIDENCE", "answer": "N/A", "sources": []}
         if not candidates:
             if all(trace["status"] == "search_unavailable" for trace, _rows in searches):
@@ -233,19 +286,26 @@ class PublicReviewAgent:
                 "request_fingerprint": fingerprint,
                 "request_mode": "natural_language",
                 "request_summary": summary,
+                "request_plan": plan,
                 "retrieval_policy": retrieval_policy,
                 "retrieval_trace": retrieval_trace,
                 "retrieved_results": [],
                 "impacts": [],
                 "review_advice": base_advice,
                 "evidence_gaps": evidence_gaps,
+                "evidence_gap_details": evidence_gap_details,
                 "sandbox_only": True,
                 "public_baseline_written": False,
             }
 
         try:
             advice = self.gateway.review_advice(
-                summary, [row["chunk_id"] for row in candidates]
+                (
+                    f"变更描述：{summary}\n变更类型：{plan['change_type_label']}"
+                    f"（{plan['classification_source']}）\n影响范围：{plan['impact_scope'] or '未指定'}"
+                    f"\n检索关注点：{plan['retrieval_focus']}"
+                ),
+                [row["chunk_id"] for row in candidates],
             )
         except Exception:
             # Model assistance is optional; the underlying RAG candidates remain visible.
@@ -253,19 +313,23 @@ class PublicReviewAgent:
         allowed = {row["chunk_id"]: row for row in candidates}
         advice, grounded_impacts = _normalize_review_advice(advice, allowed)
         retrieval_trace["model_status"] = advice.get("status", "UNKNOWN")
-        evidence_gaps.extend(_model_evidence_gaps(advice))
+        model_gap_details = _model_evidence_gap_details(advice)
+        evidence_gap_details.extend(model_gap_details)
+        evidence_gaps.extend(row["message"] for row in model_gap_details)
 
         return {
             "task_id": task_id,
             "request_fingerprint": fingerprint,
             "request_mode": "natural_language",
             "request_summary": summary,
+            "request_plan": plan,
             "retrieval_policy": retrieval_policy,
             "retrieval_trace": retrieval_trace,
             "retrieved_results": candidates,
             "impacts": grounded_impacts,
             "review_advice": advice,
             "evidence_gaps": evidence_gaps,
+            "evidence_gap_details": evidence_gap_details,
             "sandbox_only": True,
             "public_baseline_written": False,
         }
@@ -368,6 +432,17 @@ class PublicReviewAgent:
             "evidence_gaps": (
                 ([] if related else ["当前版本未检索到其他需要核对的资料。"])
                 + _model_evidence_gaps(review_advice)
+            ),
+            "evidence_gap_details": (
+                ([] if related else [{
+                    "gap_type": "NO_RELATED_MATERIAL",
+                    "message": "当前版本未检索到其他需要核对的资料。",
+                    "query": related_query,
+                    "expected_materials": "当前版本相关官方资料",
+                    "suggested_action": "请人工确认是否需要扩大检索范围或补充资料。",
+                    "requires_human_review": True,
+                }])
+                + _model_evidence_gap_details(review_advice)
             ),
             "sandbox_only": True,
             "public_baseline_written": False,

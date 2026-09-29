@@ -1,0 +1,8 @@
+{"case_id":"parameter_multi_check","change_type":"parameter_config","summary":"将全局参数最大并发从 500 调整到 800；检查默认值和配置示例是否同步。","required_clauses":["将全局参数最大并发从 500 调整到 800","检查默认值和配置示例是否同步"]}
+{"case_id":"interface_contract","change_type":"interface_compatibility","summary":"API 响应增加异步任务状态字段；核对调用方兼容性与接口示例。","required_clauses":["API 响应增加异步任务状态字段","核对调用方兼容性与接口示例"]}
+{"case_id":"workflow_recovery","change_type":"workflow_behavior","summary":"调整工作流失败后的节点恢复策略；检查调度和重试行为。","required_clauses":["调整工作流失败后的节点恢复策略","检查调度和重试行为"]}
+{"case_id":"data_migration","change_type":"data_storage","summary":"变更数据库表结构并增加状态字段；核对升级迁移与回滚步骤。","required_clauses":["变更数据库表结构并增加状态字段","核对升级迁移与回滚步骤"]}
+{"case_id":"permission_boundary","change_type":"security_permission","summary":"收紧接口鉴权和角色权限；检查认证配置及安全指南。","required_clauses":["收紧接口鉴权和角色权限","检查认证配置及安全指南"]}
+{"case_id":"general_document_change","change_type":"general","summary":"新增一份部署说明并调整章节顺序；检查相关版本资料是否需要更新。","required_clauses":["新增一份部署说明并调整章节顺序","检查相关版本资料是否需要更新"]}
+{"case_id":"parameter_and_workflow","change_type":"parameter_config","summary":"降低任务并发参数并调整超时阈值；检查失败重试和节点恢复。","required_clauses":["降低任务并发参数并调整超时阈值","检查失败重试和节点恢复"]}
+{"case_id":"bounded_long_request","change_type":"interface_compatibility","summary":"API 新增一个请求字段；检查接口兼容性；更新调用示例；核对版本升级说明；安排回归验证。","required_clauses":["API 新增一个请求字段","检查接口兼容性","更新调用示例；核对版本升级说明；安排回归验证"]}

@@ -104,6 +104,10 @@ def test_natural_language_review_searches_current_corpus_before_grounded_advice(
     assert gateway.calls[0] == ("search", "3.4.3", "zh_preferred", 5)
     assert result["request_mode"] == "natural_language"
     assert result["request_summary"] == summary
+    assert result["request_plan"]["change_type"] == "parameter_config"
+    assert result["request_plan"]["classification_source"] == "rule_inferred"
+    assert result["retrieval_trace"]["query_limit"] == 4
+    assert len(result["retrieval_trace"]["queries"]) <= 4
     assert result["review_advice"]["status"] == "OK"
     assert result["review_advice"]["review"]["review_status"] == "REQUIRES_HUMAN_REVIEW"
     assert result["impacts"][0]["reason"] == "该章节解释当前参数优先级。"
@@ -174,6 +178,8 @@ def test_no_retrieval_match_reports_gap_and_skips_model():
     assert result["retrieval_trace"]["queries"][0]["status"] == "no_retrieval_match"
     assert result["retrieval_trace"]["uncovered_queries"] == ["核对未收录的恢复策略"]
     assert "核对未收录的恢复策略" in result["evidence_gaps"][0]
+    assert result["evidence_gap_details"][0]["gap_type"] == "NO_MATCH"
+    assert result["evidence_gap_details"][0]["requires_human_review"] is True
     assert [row[0] for row in gateway.calls] == ["search"]
 
 
@@ -324,6 +330,29 @@ def test_natural_language_review_rejects_empty_or_oversized_change_request():
         agent.analyze_request("   ")
     with pytest.raises(ValueError, match="1 到 4000"):
         agent.analyze_request("a" * 4001)
+
+
+def test_structured_change_context_is_searchable_and_kept_in_the_plan():
+    gateway = Gateway()
+    original_search = gateway.search
+    observed_queries = []
+
+    def search(query, *, version, language, top_k=5):
+        observed_queries.append(query)
+        return original_search(query, version=version, language=language, top_k=top_k)
+
+    gateway.search = search
+    result = PublicReviewAgent(gateway).analyze_request(
+        "增加任务状态响应字段；核对工作流调用方。",
+        change_type="interface_compatibility",
+        impact_scope="任务状态 API",
+    )
+
+    assert result["request_plan"]["change_type"] == "interface_compatibility"
+    assert result["request_plan"]["classification_source"] == "user_selected"
+    assert result["request_plan"]["impact_scope"] == "任务状态 API"
+    assert observed_queries[0].startswith("任务状态 API API 契约、字段、调用方与兼容性")
+    assert len(result["retrieval_trace"]["queries"]) <= 4
 
 
 def test_dsip_reference_confirms_documents_without_confirming_unrelated_paragraph_impact():

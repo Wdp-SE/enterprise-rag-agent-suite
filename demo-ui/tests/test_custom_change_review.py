@@ -18,6 +18,9 @@ from src.engineering_change import (  # noqa: E402
 class LocalEngineeringRag:
     """Keep the real domain algorithms; only replace network and embedding calls."""
 
+    def __init__(self):
+        self.search_queries = []
+
     def diff_engineering_items(self, old_items, new_items):
         changes = compare_engineering_items(
             [EngineeringItem.model_validate(item) for item in old_items],
@@ -27,6 +30,7 @@ class LocalEngineeringRag:
 
     def search_candidate_versions(self, query, scope, *, top_k):
         assert scope["active_only"] is True
+        self.search_queries.append(query)
         return {"results": []}
 
     def discover_engineering_impacts(
@@ -62,7 +66,10 @@ def test_custom_requirement_reuses_diff_impact_and_human_review_in_isolated_sess
         client = ChangeImpactClient(config, case)
         client.rag = LocalEngineeringRag()
         client._ensure_seeded = lambda _: None
-        result = client.prepare_custom(case.changed_external_identifier, edited)
+        result = client.prepare_custom(
+            case.changed_external_identifier, edited,
+            "parameter_config", "批处理容量",
+        )
         clients.append(client)
         results.append(result)
 
@@ -79,6 +86,10 @@ def test_custom_requirement_reuses_diff_impact_and_human_review_in_isolated_sess
         assert result["state"]["patches"]
         assert result["evidence"]
         assert result["custom_change"]["source"] == "用户输入"
+        assert result["custom_change"]["change_type"] == "parameter_config"
+        assert result["custom_change"]["impact_scope"] == "批处理容量"
+        assert "批处理容量" in result["custom_change"]["retrieval_query"]
+        assert "参数 / 配置变更" in clients[results.index(result)].rag.search_queries[0]
     assert results[0]["state"]["task_id"] != results[1]["state"]["task_id"]
     assert results[0]["state"]["source_path"] != results[1]["state"]["source_path"]
     assert hashlib.sha256(source.read_bytes()).hexdigest() == source_hash
@@ -146,7 +157,7 @@ def test_custom_submit_navigates_without_streamlit_session_state_error(monkeypat
     monkeypatch.setattr(RAGClient, "health", lambda self: {"service_status": "READY"})
     monkeypatch.setattr(RAGClient, "artifact_status", lambda self: {})
     monkeypatch.setattr(RAGClient, "documents", lambda self: {"documents": []})
-    monkeypatch.setattr(ChangeImpactClient, "prepare_custom", lambda self, req, content: {
+    monkeypatch.setattr(ChangeImpactClient, "prepare_custom", lambda self, req, content, *_args: {
         "state": {"task_id": "custom-task", "status": "REVIEW_REQUIRED", "impacts": [], "patches": []},
         "changes": [], "evidence": {}, "custom_change": {"source": "用户输入"},
     })

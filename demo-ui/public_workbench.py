@@ -578,12 +578,19 @@ def _analyze_hypothetical(client: PublicKnowledgeClient, selected: dict, propose
     return PublicReviewAgent(client).analyze(selected, proposed)
 
 
-def _analyze_change_request(client: PublicKnowledgeClient, change_summary: str) -> dict:
+def _analyze_change_request(
+    client: PublicKnowledgeClient,
+    change_summary: str,
+    change_type: str | None = None,
+    impact_scope: str | None = None,
+) -> dict:
     agent_root = Path(__file__).resolve().parents[1] / "change-review-agent"
     if str(agent_root) not in sys.path:
         sys.path.insert(0, str(agent_root))
     from app.public_review import PublicReviewAgent
-    return PublicReviewAgent(client).analyze_request(change_summary)
+    return PublicReviewAgent(client).analyze_request(
+        change_summary, change_type=change_type, impact_scope=impact_scope,
+    )
 
 
 def _review_steps(stage: int) -> None:
@@ -825,18 +832,20 @@ def _review_report(result: dict, decision: str, decided_at: str) -> dict:
         return hashlib.sha256(value.encode("utf-8")).hexdigest() if isinstance(value, str) else None
 
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "record_scope": "session_export_only",
         "task_id": _review_target_id(result),
         "request_fingerprint": result.get("request_fingerprint"),
         "request_mode": result.get("request_mode"),
         "request_summary": result.get("request_summary"),
+        "request_plan": result.get("request_plan"),
         "selected_source_id": (result.get("selected_source") or {}).get("chunk_id"),
         "before_sha256": content_hash(patch.get("before")),
         "proposed_after_sha256": content_hash(patch.get("proposed_after")),
         "retrieval_policy": result.get("retrieval_policy"),
         "retrieval_trace": result.get("retrieval_trace"),
         "evidence_gaps": result.get("evidence_gaps", []),
+        "evidence_gap_details": result.get("evidence_gap_details", []),
         "evidence_sources": sources,
         "model_status": result.get("review_advice", {}).get("status"),
         "model_review": result.get("review_advice", {}).get("review"),
@@ -939,6 +948,15 @@ def _retrieval_trace_panel(result: dict) -> None:
     retrieval_gaps = [gap for gap in result.get("evidence_gaps", []) if gap not in model_gaps]
     if retrieval_gaps:
         st.caption("尚需补充检索证据：" + "；".join(retrieval_gaps))
+    gap_details = result.get("evidence_gap_details") or []
+    if gap_details:
+        with st.expander(f"结构化证据缺口（{len(gap_details)}）"):
+            for gap in gap_details:
+                st.markdown(f"**{gap.get('gap_type', 'REVIEW_REQUIRED')}** · {gap.get('message', '')}")
+                if gap.get("expected_materials"):
+                    st.caption(f"建议补查资料：{gap['expected_materials']}")
+                if gap.get("suggested_action"):
+                    st.write(gap["suggested_action"])
     with st.expander("检索过程与覆盖范围"):
         st.caption(f"任务编号：{result.get('task_id', '当前会话')} · 模型建议状态：{trace.get('model_status', '未调用')}")
         labels = {
@@ -958,6 +976,10 @@ def _clear_change_request_results() -> None:
     st.session_state.pop("official_review_decision", None)
     st.session_state.pop("official_review_decision_target", None)
     st.session_state.pop("official_review_decision_at", None)
+
+
+def _change_request_context_changed() -> None:
+    _clear_change_request_results()
 
 
 def _save_change_request() -> None:
@@ -983,11 +1005,33 @@ def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None
         placeholder="例如：计划将全局参数优先级调整为最高，请找出需要核对的官方资料。",
         key="official_change_request", on_change=_save_change_request,
     )
-    st.caption("先描述变更意图，不需要预先指定文档或段落。Agent 会检索完整描述和最多 3 个子问题，选取最多 5 条最新已收录资料供模型分析。")
+    type_options = {
+        "自动识别": None,
+        "参数 / 配置变更": "parameter_config",
+        "接口 / 兼容性变更": "interface_compatibility",
+        "工作流 / 行为变更": "workflow_behavior",
+        "数据 / 存储变更": "data_storage",
+        "安全 / 权限变更": "security_permission",
+        "其他 / 待识别": "general",
+    }
+    with st.expander("可选：补充结构化变更信息"):
+        selected_type = st.selectbox(
+            "变更类型", list(type_options), key="official_change_type",
+            on_change=_change_request_context_changed,
+        )
+        impact_scope = st.text_input(
+            "影响范围（模块、项目或对象）", max_chars=160,
+            placeholder="例如：DAG 调度、API 任务状态字段",
+            key="official_impact_scope", on_change=_change_request_context_changed,
+        )
+        st.caption("留空时由规则从原始描述识别；结构化字段只辅助检索规划，不替代原始描述或人工审核。")
+    st.caption("Agent 保留原始描述，并在最多 4 次 RAG 查询内覆盖完整请求与拆分子问题；最多选取 5 条最新已收录资料供模型分析。")
     if st.button("检索资料并分析影响", type="primary", disabled=not ready or not summary.strip()):
         with st.spinner("正在检索当前版本官方资料并整理影响建议……"):
             result = _request(
-                lambda: _analyze_change_request(client, summary),
+                lambda: _analyze_change_request(
+                    client, summary, type_options[selected_type], impact_scope,
+                ),
                 fallback="变更影响分析暂未完成。",
             )
         if result:
@@ -997,10 +1041,30 @@ def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None
             st.rerun()
 
     request_result = st.session_state.get("official_request_review")
-    active_request = request_result if request_result and request_result.get("request_summary") == summary.strip() else None
+    request_plan = (request_result or {}).get("request_plan") or {}
+    selected_type_code = type_options.get(st.session_state.get("official_change_type", "自动识别"))
+    context_matches = (
+        request_plan.get("impact_scope", "") == st.session_state.get("official_impact_scope", "").strip()
+        and (
+            request_plan.get("change_type") == selected_type_code
+            and request_plan.get("classification_source") == "user_selected"
+            if selected_type_code else request_plan.get("classification_source") != "user_selected"
+        )
+    )
+    active_request = (
+        request_result if request_result
+        and request_result.get("request_summary") == summary.strip()
+        and context_matches else None
+    )
     if active_request:
         stage = 3 if _review_decision_for(active_request) else 2
         _review_steps(stage)
+        plan = active_request.get("request_plan") or {}
+        st.caption(
+            f"变更类型：{plan.get('change_type_label', '待识别')} · "
+            f"识别方式：{'人工选择' if plan.get('classification_source') == 'user_selected' else '规则识别'} · "
+            f"检索关注点：{plan.get('retrieval_focus', '按原始描述检索')}"
+        )
         st.markdown('<div class="section-rule">本次变更分析</div>', unsafe_allow_html=True)
         _review_advice_panel(active_request, context="变更分析")
         _request_candidates_panel(active_request)

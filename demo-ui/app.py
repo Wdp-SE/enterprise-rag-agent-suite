@@ -497,6 +497,23 @@ with overview_tab:
                     key="custom_requirement_content",
                     height=180,
                 )
+                v4_change_types = {
+                    "自动识别": None,
+                    "参数 / 配置变更": "parameter_config",
+                    "接口 / 兼容性变更": "interface_compatibility",
+                    "工作流 / 行为变更": "workflow_behavior",
+                    "数据 / 存储变更": "data_storage",
+                    "安全 / 权限变更": "security_permission",
+                    "其他 / 待识别": "general",
+                }
+                selected_v4_change_type = st.selectbox(
+                    "变更类型（可选）", list(v4_change_types), key="custom_change_type",
+                )
+                v4_impact_scope = st.text_input(
+                    "影响范围（可选）", max_chars=160,
+                    placeholder="例如：批处理容量、任务状态 API",
+                    key="custom_impact_scope",
+                )
                 st.caption("本次输入只进入当前会话的影响分析与人工审核，不改变公共资料。")
                 if st.button(
                     "开始变更审查", type="primary", key="custom_prepare",
@@ -505,7 +522,10 @@ with overview_tab:
                     try:
                         with st.spinner("正在识别变更并准备引用依据与修改建议……"):
                             st.session_state.v4_change_result = change_impact.prepare_custom(
-                                selected_case.changed_external_identifier, custom_content
+                                selected_case.changed_external_identifier,
+                                custom_content,
+                                v4_change_types[selected_v4_change_type],
+                                v4_impact_scope,
                             )
                         st.session_state["_pending_navigation"] = "变更分析"
                         st.session_state["_intro_dismissed"] = True
@@ -948,6 +968,14 @@ with analysis_tab:
     st.markdown(f"**{selected_case.title}**")
     st.write(selected_case.description)
     if v4_result:
+        if v4_result.get("custom_change"):
+            custom_change = v4_result["custom_change"]
+            st.caption(
+                f"变更类型：{custom_change.get('change_type_label', '待识别')} · "
+                f"识别方式：{'人工选择' if custom_change.get('classification_source') == 'user_selected' else '规则识别'} · "
+                f"影响范围：{custom_change.get('impact_scope') or '未指定'} · "
+                f"检索关注点：{custom_change.get('retrieval_focus', '按原文检索')}"
+            )
         affected = [
             (v4_result.get("items") or {}).get(row.get("impacted_item_id"), {}).get("external_identifier")
             for row in (v4_result.get("state") or {}).get("impacts") or []
