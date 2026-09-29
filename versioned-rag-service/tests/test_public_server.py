@@ -207,6 +207,23 @@ def test_api_server_health_example_retrieves_the_exact_endpoint_evidence():
     assert "/dolphinscheduler/actuator/health" in hits[0]["content"]
 
 
+def test_public_search_matches_hyphenated_user_terms_to_official_compounds():
+    with TestClient(create_app(index=PublicKnowledgeIndex())) as client:
+        response = client.post(
+            "/public/search",
+            json={"query": "What is the API server health-check endpoint?"},
+        )
+
+    assert response.status_code == 200
+    results = response.json()["results"]
+    endpoint_evidence = [
+        row for row in results
+        if row["document_key"] == "guide/api/healthcheck" and row["heading"] == "API-Server"
+    ]
+    assert endpoint_evidence
+    assert "/dolphinscheduler/actuator/health" in endpoint_evidence[0]["content"]
+
+
 def test_abstention_reports_missing_question_terms_instead_of_infrastructure_failure():
     class AbstainingGenerator:
         provider = "deepseek"
@@ -223,9 +240,10 @@ def test_abstention_reports_missing_question_terms_instead_of_infrastructure_fai
     diagnostic = payload["generation"]
     assert diagnostic["failure_reason"] == "MODEL_NO_SUPPORTED_ANSWER"
     assert diagnostic["candidate_count"] == len(payload["evidence"]) == 5
-    assert {"health", "check", "endpoint"}.issubset(
-        set(diagnostic["evidence_coverage"]["missing_terms"])
+    assert {"api", "server", "health", "check"}.issubset(
+        set(diagnostic["evidence_coverage"]["matched_terms"])
     )
+    assert diagnostic["evidence_coverage"]["missing_terms"] == []
 
 
 def test_answer_with_no_valid_evidence_citation_reports_citation_failure():

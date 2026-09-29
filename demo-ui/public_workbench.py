@@ -537,8 +537,9 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                             )
                         else:
                             st.caption(
-                                "当前证据覆盖了部分问题关键词，但模型没有给出可核验结论；"
-                                "请先核对下方原文证据。这不是网络或 API Key 故障。"
+                                "候选片段命中了问题中的词面关键词，但这不代表内容足以回答问题；"
+                                "模型仍未给出可核验结论。请核对下方原文是否包含所需接口路径或参数值。"
+                                "这是模型未形成受证据支持的回答，不是网络或 API Key 故障。"
                             )
                     elif reason == "NO_VALID_EVIDENCE_CITATIONS":
                         claimed = diagnostic.get("claimed_citation_count", 0)

@@ -623,6 +623,32 @@ def test_abstained_answer_explains_missing_retrieval_terms(monkeypatch):
     assert "[1] 参数优先级" in visible
 
 
+def test_abstained_answer_distinguishes_keyword_match_from_supported_answer(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: {
+        "answer": "N/A", "sources": [], "evidence": [dict(CHUNK)],
+        "status": "ABSTAINED", "consistency_notes": [],
+        "generation": {
+            "failure_reason": "MODEL_NO_SUPPORTED_ANSWER",
+            "candidate_count": 5,
+            "evidence_coverage": {
+                "matched_terms": ["api", "server", "health", "check", "endpoint"],
+                "missing_terms": [],
+            },
+        },
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+    next(button for button in app.button if button.label == "生成带引用回答").click().run()
+
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
+    assert "词面关键词，但这不代表内容足以回答问题" in visible
+    assert "这是模型未形成受证据支持的回答，不是网络或 API Key 故障" in visible
+    assert "当前证据覆盖了部分问题关键词" not in visible
+
+
 def test_public_rag_has_no_fixed_generation_count_limit(monkeypatch):
     _mock_client(monkeypatch)
     monkeypatch.setenv("MAX_LLM_CALLS_PER_SESSION", "10")

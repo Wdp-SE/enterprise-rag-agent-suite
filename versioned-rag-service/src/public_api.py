@@ -107,9 +107,43 @@ def _evidence_query_coverage(question: str, hits: list[dict]) -> dict:
         for hit in hits
     )
     evidence_terms = set(tokens(evidence_text))
+    for term in tuple(evidence_terms):
+        if "-" in term:
+            evidence_terms.update(piece for piece in term.split("-") if piece)
     matched = [term for term in question_terms if term in evidence_terms]
     missing = [term for term in question_terms if term not in evidence_terms]
     return {"matched_terms": matched, "missing_terms": missing}
+
+
+def _query_with_compound_aliases(question: str, index) -> str:
+    """Match common spaced/hyphenated forms without changing stored evidence text."""
+    if not _runtime_policy(index).startswith("bm25"):
+        return question
+    query_terms = tokens(question)
+    base_index = getattr(index, "base_index", index)
+    vocabulary = getattr(base_index, "doc_freq", {})
+    split_terms = []
+    for term in query_terms:
+        if "-" in term:
+            pieces = [piece for piece in term.split("-") if piece]
+            if term not in vocabulary and len(pieces) > 1 and all(piece in vocabulary for piece in pieces):
+                split_terms.extend(pieces)
+                continue
+        split_terms.append(term)
+
+    normalized_terms = []
+    cursor = 0
+    while cursor < len(split_terms):
+        if cursor + 1 < len(split_terms):
+            left, right = split_terms[cursor:cursor + 2]
+            compound = f"{left}-{right}"
+            if left not in _QUERY_STOPWORDS and right not in _QUERY_STOPWORDS and compound in vocabulary:
+                normalized_terms.append(compound)
+                cursor += 2
+                continue
+        normalized_terms.append(split_terms[cursor])
+        cursor += 1
+    return " ".join(normalized_terms)
 
 
 class SearchRequest(BaseModel):
@@ -366,15 +400,17 @@ def document(payload: DocumentRequest, request: Request) -> dict:
 
 @router.post("/search")
 def search(payload: SearchRequest, request: Request) -> dict:
+    index = _index(request)
     try:
-        hits = _positive_retrieval_hits(_index(request).search(
-            payload.query, top_k=payload.top_k, version=payload.version, language=payload.language,
+        hits = _positive_retrieval_hits(index.search(
+            _query_with_compound_aliases(payload.query, index),
+            top_k=payload.top_k, version=payload.version, language=payload.language,
         ))
     except ValueError as exc:
         raise HTTPException(status_code=422, detail="INVALID_PUBLIC_SEARCH") from exc
     return {
         "query": payload.query, "results": hits,
-        "retrieval_policy": _runtime_policy(_index(request)),
+        "retrieval_policy": _runtime_policy(index),
         "consistency_notes": verified_consistency_notes(hits),
     }
 
@@ -384,7 +420,8 @@ async def query(payload: SearchRequest, request: Request) -> dict:
     index = _index(request)
     try:
         hits = _positive_retrieval_hits(await asyncio.to_thread(
-            index.search, payload.query, top_k=5, version=payload.version, language=payload.language
+            index.search, _query_with_compound_aliases(payload.query, index),
+            top_k=5, version=payload.version, language=payload.language
         ))
     except ValueError as exc:
         raise HTTPException(status_code=422, detail="INVALID_PUBLIC_SEARCH") from exc
