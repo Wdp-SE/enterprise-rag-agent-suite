@@ -238,6 +238,20 @@ def test_public_search_does_not_allow_request_to_choose_experimental_policy():
     assert response.status_code == 422
 
 
+@pytest.mark.parametrize("newline", [b"\n", b"\r\n"], ids=["lf", "crlf"])
+def test_reviewed_figure_sidecar_lock_is_stable_across_platform_line_endings(tmp_path, newline):
+    index = PublicKnowledgeIndex()
+    original = (index.root / "figure_evidence_reviewed.json").read_bytes()
+    normalized = original.replace(b"\r\n", b"\n")
+    sidecar_path = tmp_path / "figure-evidence.json"
+    sidecar_path.write_bytes(normalized.replace(b"\n", newline))
+
+    with TestClient(create_app(index=index, figure_sidecar_path=sidecar_path)) as client:
+        response = client.get("/health")
+
+    assert response.status_code == 200
+
+
 def test_public_server_rejects_changed_reviewed_ocr_text_even_if_image_hash_is_unchanged(tmp_path):
     index = PublicKnowledgeIndex()
     sidecar_path = tmp_path / "tampered-figure-evidence.json"
