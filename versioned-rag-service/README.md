@@ -1,6 +1,6 @@
 # Apache DolphinScheduler 版本化研发知识 RAG 服务
 
-公网 Demo 使用 `src.public_server:app` 入口和固定提交的 Apache DolphinScheduler 3.4.2 / 3.4.3 官方资料快照。当前语料为 132 份来源、1322 个检索片段，语料清单声明 3.4.3 为当前默认版本；服务不会自动追踪上游发布。V3 在 DEV 上锁定 BM25 并只运行一次 HOLDOUT，运行默认策略仍为 BM25；52 来源、659 片段上的 V1/V2 选型结果是历史基线，不代表扩充语料的效果。来源、许可证与评测见仓库根目录 [README](../README.md)、[语料清单](public_corpus/corpus_manifest.json)、[V2 历史报告](../evaluation/real_world_retrieval/quality_v2/report.md)和 [V3 扩充语料评测](../evaluation/real_world_retrieval/quality_v3/README.md)。
+公网 Demo 使用 `src.public_server:app` 入口和固定提交的 Apache DolphinScheduler 3.4.2 / 3.4.3 官方资料快照。当前语料为 132 份来源、1322 个检索片段，语料清单声明 3.4.3 为当前默认版本；服务不会自动追踪上游发布。当前默认 BM25 已通过 V4 文字检索 HOLDOUT 基线核验；经审核的截图 OCR 有 30 条派生证据，但合并排序候选因原文锚点召回下降 9.4 个百分点而未晋级，线上继续使用 BM25。V1/V2/V3 结果分别按旧语料或旧评测快照解读。来源、许可证与评测见仓库根目录 [README](../README.md)、[语料清单](public_corpus/corpus_manifest.json)、[V2 历史报告](../evaluation/real_world_retrieval/quality_v2/report.md)、[V3 评测](../evaluation/real_world_retrieval/quality_v3/README.md)和 [V4 评测](../evaluation/real_world_retrieval/quality_v4/README.md)。
 
 本服务由仓库根目录的 `render.yaml` 部署；对外职责是版本化资料检索、引用溯源和可选的引用约束生成。下文关于 `DENSE_ONLY + SECTION_PATH` 的说明属于保留的历史企业合成资料 Runtime 与测试路径，不等同于当前公开语料使用的 BM25 策略。
 
@@ -12,7 +12,7 @@
 - `POST /public/review-advice` 基于本次指定的证据片段提供受引用约束的变更审查建议，不能直接修改语料或上游项目。
 - `GET /health` 区分生成已关闭、缺少密钥、无效供应商和“已配置但未经实时验证”；它不是对供应商计费余额或下一次请求成功率的保证。
 
-应用不设固定会话生成次数上限，也不自动无限重试。供应商余额、限流、服务故障、网络超时或无效/截断响应仍会导致单次调用失败。生成接口返回不含密钥的请求编号、供应商/模型、结束原因、用量和耗时等安全诊断，便于定位失败；不要把密钥放在 Streamlit Secrets 或日志中。服务目前检索的是固定官方文档**文字**，原文配图中的文字尚未纳入正式索引或检索。
+应用不设固定会话生成次数上限，也不自动无限重试。供应商余额、限流、服务故障、网络超时或无效/截断响应仍会导致单次调用失败。生成接口返回不含密钥的请求编号、供应商/模型、结束原因、用量和耗时等安全诊断，便于定位失败；不要把密钥放在 Streamlit Secrets 或日志中。固定来源截图 OCR 已在离线候选中审核并纳入独立检索实验；由于直接融合挤压了原文锚点召回，当前公共服务默认 BM25 不使用图片候选。OCR 证据保留原图 SHA、版本、提交和原始图片 URL，不会在请求时下载图片或调用视觉/付费模型。
 
 扩充语料的 V3 评测冻结了 72 道新业务题，按场景家族分成 DEV/HOLDOUT 各 36 道。DEV 比较后锁定 BM25；一次性 HOLDOUT 的 32 道可回答题中，27 道找齐全部必需来源，8 道多来源题仅 4 道找齐，返回片段找到 37/49 个证据锚点。检索指标区分“至少命中一份来源”“所需来源完整覆盖”及“返回片段含有证据锚点”，不把来源命中率当作答案准确率或幻觉率。评测 runner、锁文件和结果见 [V3 目录](../evaluation/real_world_retrieval/quality_v3/README.md)；可从仓库根目录用只读测试核对冻结输入与已保存结果的哈希：
 
@@ -21,6 +21,8 @@ python -m unittest discover -s evaluation/real_world_retrieval/quality_v3 -p tes
 ```
 
 不要在当前冻结目录重跑 `run_quality_v3.py --split dev`：它会覆盖已锁定的 DEV 结果文件并改变其哈希。重新实验请使用独立工作树或新评测版本、独立输出路径。V3 的 HOLDOUT 已开封并留有一次性执行锁，不能反复运行并据结果调参。当前运行默认策略仍为 BM25，具体冻结结论与失败题见 [V3 报告](../evaluation/real_world_retrieval/quality_v3/report.md)。
+
+V4 继续在同一 132 份来源、1322 个文字片段上评测跨资料、跨版本、截图 OCR、图文联合和无答案问题，共 104 条并按资料/题族隔离 DEV 与 HOLDOUT。OCR 候选图片 Hit@5 为 100%，但原文锚点召回比同题集 BM25 低 9.4 个百分点，超过 5 个百分点的退化上限，因此候选未晋级。线上仍为 BM25，工作台公开 V4 BM25 当前基线和候选未晋级原因。V4 的 nDCG 实现会重复计入同一来源的多个片段，报告已将其排除；详细数字、失败门槛和下一轮方向见 [V4 报告](../evaluation/real_world_retrieval/quality_v4/report.md)。
 
 ---
 

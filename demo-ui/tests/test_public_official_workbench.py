@@ -135,6 +135,65 @@ def test_public_rag_keeps_answer_before_real_cited_source(monkeypatch):
     assert "证据可信度" not in text
 
 
+def test_rag_renders_approved_image_ocr_as_derived_evidence(monkeypatch):
+    _mock_client(monkeypatch)
+    import public_workbench
+
+    image = {
+        **CHUNK,
+        "chunk_id": "3.4.3:zh:guide/parameter/context:figure:1",
+        "document_key": "guide/parameter/context",
+        "document_id": "3.4.3:zh:guide/parameter/context",
+        "heading": "参数上下文 / 查看运行结果",
+        "content": "Node_A 日志截图显示输出 100 和 66。",
+        "modality": "image_ocr", "figure_id": "64bd324feb4e55a2",
+        "review_status": "approved", "sha256": "a" * 64,
+        "commit": "a190201acffa03d199d4ca216288734a6513de3d",
+        "raw_url": "https://raw.githubusercontent.com/apache/dolphinscheduler/a190201acffa03d199d4ca216288734a6513de3d/docs/img/example.png",
+        "source_url": "https://github.com/apache/dolphinscheduler/blob/a190201acffa03d199d4ca216288734a6513de3d/docs/docs/zh/guide/parameter/context.md",
+    }
+    from services.public_knowledge_client import PublicKnowledgeClient
+    monkeypatch.setattr(PublicKnowledgeClient, "search", lambda self, question, **scope: {
+        "query": question, "results": [dict(image)], "retrieval_policy": "bm25_figure_ocr",
+    })
+
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+    next(button for button in app.button if button.label == "仅查看检索原文").click().run()
+
+    assert not app.exception
+    text = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
+    assert "截图 OCR 文字" in text
+    assert "需对照原图" in text
+    assert "[查看原图]" in text
+    assert "在 GitHub 查看固定版本来源" in text
+
+
+def test_rag_hides_image_ocr_when_approval_or_pinned_image_url_is_invalid(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    image = {
+        **CHUNK,
+        "modality": "image_ocr", "figure_id": "untrusted-figure",
+        "review_status": "pending", "sha256": "bad-hash",
+        "raw_url": "https://example.com/image.png",
+        "content": "untrusted screenshot text",
+    }
+    monkeypatch.setattr(PublicKnowledgeClient, "search", lambda self, question, **scope: {
+        "query": question, "results": [dict(image)], "retrieval_policy": "bm25_figure_ocr",
+    })
+
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+    next(button for button in app.button if button.label == "仅查看检索原文").click().run()
+
+    assert not app.exception
+    text = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info) + list(app.warning))
+    assert "截图证据未通过来源校验，已隐藏" in text
+    assert "untrusted screenshot text" not in text
+
+
 def test_version_selector_uses_latest_published_workspace_version(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
@@ -942,6 +1001,49 @@ def test_benchmark_does_not_present_local_v3_as_current_without_matching_backend
     assert not app.exception
     assert "V3 当前扩充语料" not in visible
     assert "历史选型（旧语料）" in visible
+
+
+def test_benchmark_shows_v4_bm25_and_rejected_image_candidate_tradeoff(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
+        "workspace": "Apache DolphinScheduler", "current_version": "3.4.3",
+        "source_count": 132, "chunk_count": 1322, "retrieval_policy": "bm25",
+        "retrieval_evaluation_status": "v4_bm25_validated",
+        "retrieval_evaluation": {
+            "name": "quality_v4", "policy": "bm25", "top_k": 5,
+            "interpretation": "Retrieval only.",
+            "dev": {"question_count": 51, "complete_source_at_5": 0.7436,
+                     "anchor_recall_at_5": 0.5510, "image_hit_at_5": 0.0,
+                     "version_mismatch_count": 0, "no_answer_nonempty_candidate_rate": 1.0,
+                     "warm_p95_ms": 9.83},
+            "holdout": {"question_count": 53, "complete_source_at_5": 0.8571,
+                         "anchor_recall_at_5": 0.7925, "image_hit_at_5": 0.0,
+                         "version_mismatch_count": 0, "no_answer_nonempty_candidate_rate": 1.0,
+                         "warm_p95_ms": 6.20},
+        },
+        "retrieval_experiment": {
+            "name": "quality_v4_image_ocr_candidate", "status": "candidate_not_promoted",
+            "candidate_policy": "bm25_figure_ocr",
+            "decision_reason": "原文锚点召回下降 9.4 个百分点，超过 5 个百分点门槛。",
+            "holdout_candidate": {"question_count": 53, "complete_source_at_5": 0.9184,
+                                  "anchor_recall_at_5": 0.6981, "image_hit_at_5": 1.0,
+                                  "warm_p95_ms": 8.33},
+            "promotion_comparison": {"passed": False},
+        },
+    })
+
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "检索评测").click().run()
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader))
+
+    assert not app.exception
+    assert "V4 当前 BM25 基线" in visible
+    assert "图片 OCR 候选未晋级" in visible
+    assert "BM25（线上默认）" in visible
+    assert "BM25 + 图片 OCR（实验候选）" in visible
+    assert "原文锚点召回下降 9.4 个百分点" in visible
 
 
 def test_relative_official_link_stays_on_commit_or_becomes_plain_text():

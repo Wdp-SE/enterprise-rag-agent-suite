@@ -20,7 +20,7 @@
     公网默认：固定版本公开语料 → FastAPI BM25 → 问题/变更描述 → 引用证据 → Agent 辅助分析 → 人工审核
     本地扩展演示：合成研发文件 → 结构解析与元数据 → 版本 Diff / RAG 影响发现 → PatchCandidate → 人工审核 → 安全候选版本
 
-在线工作台用于体验产品流程；API 文档用于查看公开 RAG 接口。当前公开语料是 Apache DolphinScheduler 3.4.2 与 3.4.3 的固定提交快照，共 132 份来源、1322 个检索片段；默认版本由语料清单的 `current_version` 指向 3.4.3，并不实时追踪上游发布。启动时不抓取上游，也不重建索引。扩充后的 V3 冻结评测在 DEV 上比较候选后锁定 BM25，并对它运行一次 HOLDOUT；运行默认策略保留 BM25。旧语料上的选型成绩不能当成新语料成绩。
+在线工作台用于体验产品流程；API 文档用于查看公开 RAG 接口。当前公开语料是 Apache DolphinScheduler 3.4.2 与 3.4.3 的固定提交快照，共 132 份来源、1322 个文字检索片段；默认版本由语料清单的 `current_version` 指向 3.4.3，并不实时追踪上游发布。启动时不抓取上游，也不重建索引。V4 在当前资料上重新核验 BM25，并测试了经过人工复核的截图 OCR。OCR 候选因图片命中提升但原文锚点召回退化超限而未晋级，公网默认继续用 BM25；工作台会显示实际对照结果和未晋级原因。
 
 ### 目录职责
 
@@ -55,7 +55,7 @@ python evaluation/agent_query_decomposition/run_evaluation.py
 
 Hybrid 的最佳配置只让 DEV MRR 小幅增加 0.0175；Hit@1、Hit@5 和跨文档双来源命中均未改善，P95 则显著高于 BM25。因此 V1.0 保留 Chunk A（1250 chars、无 overlap）+ BM25 + Top-5，不设置文档数上限；Hybrid、神经 Dense 和 Rerank 不进入正式检索链路。跨文档题合计双来源完整命中为 0/4。HOLDOUT 是从此前已评测的 46 条题目中做的回顾性确定划分，不是独立真实用户测试，不能据此声称真实用户准确率。
 
-工作台评测页优先展示与当前语料和检索实现指纹匹配的 V3 成绩；下方早期字符哈希 Dense 对照明确标为历史实验，不代表 multilingual E5 选型结果。历史选型的方法、切分和失败分析见[最终选型报告](evaluation/real_world_retrieval/final_selection/final_selection.md)。
+工作台评测页优先展示与当前语料和检索实现指纹匹配的 V4 BM25 基线及图片 OCR 候选取舍；V3 和下方早期字符哈希 Dense 对照明确标为历史实验，不代表当前语料的在线答案质量。历史选型的方法、切分和失败分析见[最终选型报告](evaluation/real_world_retrieval/final_selection/final_selection.md)。
 
 ### V2 检索质量实验
 
@@ -65,12 +65,16 @@ Hybrid 的最佳配置只让 DEV MRR 小幅增加 0.0175；Hit@1、Hit@5 和跨�
 
 面向当前 132 份来源、1322 个片段，V3 新建并冻结了 72 道业务题，按场景家族分为 DEV/HOLDOUT 各 36 道，避免同一场景家族跨组。DEV 比较 BM25 与三种来源多样化候选：候选多找到一题的必需来源，却挤掉了部分含关键原文的片段，因此在打开 HOLDOUT 前锁定 BM25。BM25 在一次性 HOLDOUT 的 32 道可回答题中，27 道找齐全部必需来源；8 道多来源题只有 4 道找齐，返回片段找到 37/49 个原文证据锚点。该结果验证了当前运行策略的离线检索表现，也暴露跨资料、跨版本核对短板；它不是答案准确率、幻觉率或公网性能证明。题库、锁文件、结果与失败题见 [V3 评测说明](evaluation/real_world_retrieval/quality_v3/README.md)和 [V3 报告](evaluation/real_world_retrieval/quality_v3/report.md)。
 
-原文配图另有[固定版本图片证据清单](versioned-rag-service/public_corpus/FIGURE_EVIDENCE.md)：132 份来源里扫描到 307 张按提交固定的图片，仅 6 张完成实际下载与完整解码校验；其中 5 张提取到尚未人工校对的 OCR 候选文字。图片文字尚未进入正式检索索引，不能把 Markdown 的 alt 文本或文件名当作图像识别结果。下一步须人工校对并为图片问题建立独立评测，才能决定是否索引。
+### V4 图片证据与多资料复评
 
-在仓库根目录可用只读测试核对 V3 冻结输入、已保存的 DEV 结果哈希与一次性 HOLDOUT 记录；这不是完整线上性能测试：
+V4 冻结了 104 道单资料、跨资料、跨版本、截图 OCR、图文联合与无答案问题，按问题族和图片分组为 DEV 51、HOLDOUT 53。经人工复核的 OCR 候选在 HOLDOUT 上将图片 Hit@5 从 0 提升至 100%，完整来源率从 85.7% 提升至 91.8%，跨资料完整命中从 37.5% 提升至 75%；但原文锚点召回从 79.2% 降至 69.8%，超过 5 个百分点退化上限。候选未晋级，公网仍使用 BM25。无答案题仍全部返回候选（4/4），候选噪声指标不是生成幻觉率；nDCG 实现存在重复计数问题，未用于结论。具体逐项门槛与 SHA 记录见 [V4 评测说明](evaluation/real_world_retrieval/quality_v4/README.md)和 [V4 报告](evaluation/real_world_retrieval/quality_v4/report.md)。
+
+原文配图另有[固定版本图片证据清单](versioned-rag-service/public_corpus/FIGURE_EVIDENCE.md)：132 份来源里扫描到 307 张按提交固定的图片；15 张截图通过固定提交校验和人工 OCR 复核，共整理出 30 条中英文派生证据。它们能覆盖截图上清晰可读的文字和值，不包含复杂箭头、拓扑或未读出内容。OCR 融合策略虽然找图更好，但在前五名里挤掉了关键文字证据，所以没有部署为默认策略。后续优先评估文字与图片的并行证据通道。
+
+V3 是历史评测。其旧发布清单中的 `retrieval_policy.json`、V3 candidate-selection 与 holdout-execution 哈希已和仓库当前文件不一致；不要用它宣称当前服务通过 V3 发布校验，也不应通过重写旧 V3 记录来掩盖偏差。当前 BM25 的语料和实现指纹由 V4 服务端摘要校验，V4 runner 的指标单测可在仓库根目录运行：
 
 ```powershell
-python -m unittest discover -s evaluation/real_world_retrieval/quality_v3 -p test_quality_v3.py
+python -m pytest -p no:cacheprovider evaluation/real_world_retrieval/quality_v4 -q
 ```
 
 不要在当前冻结目录重跑 `run_quality_v3.py --split dev`：它会覆盖 `results/dev__bm25.json`，新测得的耗时会改变已锁定的结果哈希。需要重新实验时，应使用独立工作树或新评测版本，并把结果写到独立路径，保留这份冻结记录不变。
@@ -92,7 +96,7 @@ python .\evaluation\real_world_retrieval\final_selection\run_selection.py chunk 
 
 ## Known Limitations
 
-- 132 份语料仍是官方资料的有限子集，不覆盖 DolphinScheduler 全部功能和历史；原文图片中的文字尚未纳入检索。
+- 132 份语料仍是官方资料的有限子集，不覆盖 DolphinScheduler 全部功能和历史；人工复核截图 OCR 当前用于独立实验，未进入公网默认 BM25 排序。
 - 企业工程工作台使用完全合成的小型文档集与固定案例，用于验证流程与安全边界，不能代表真实企业文档覆盖率或业务效果。
 - 历史 V1 四条跨文档题的双来源完整 Top-5 命中为 0/4。扩充语料会改变排序，现有新语料成绩必须单独复评，不能沿用历史指标。
 - V1 HOLDOUT 来自此前使用过的题集，是回顾性确定划分；V2 是旧语料的独立锁定题集；V3 是当前语料的新冻结题集，但题目及标注在仓库可见，都不能等同于真实用户开放测试。

@@ -101,8 +101,14 @@ def _index(request: Request) -> PublicKnowledgeIndex:
     return index
 
 
+def _runtime_policy(index) -> str:
+    return getattr(index, "runtime_policy", index.policy["default_policy"])
+
+
 def _validated_retrieval_release(index: PublicKnowledgeIndex) -> dict | None:
     """Publish offline V3 numbers only for the exact index and policy now serving requests."""
+    if getattr(index, "runtime_policy", index.policy.get("default_policy")) != index.policy.get("default_policy"):
+        return None
     root = index.root
     try:
         manifest_raw = (root / "corpus_manifest.json").read_bytes()
@@ -148,6 +154,74 @@ def _validated_retrieval_release(index: PublicKnowledgeIndex) -> dict | None:
     return release
 
 
+def _validated_v4_experiment(index: PublicKnowledgeIndex) -> dict | None:
+    """Return the V4 experiment only when its inputs match the live BM25 index."""
+    if _runtime_policy(index) != "bm25" or index.policy.get("default_policy") != "bm25":
+        return None
+    service = Path(__file__).resolve().parents[1]
+    root = index.root
+    try:
+        artifact = json.loads((service / "config" / "retrieval_experiment_v4.json").read_text(encoding="utf-8"))
+        config = json.loads((service / "config" / "public_retrieval_runtime.json").read_text(encoding="utf-8"))
+        config_behavior = dict(config)
+        config_behavior.pop("default_policy", None)
+        config_bytes = json.dumps(
+            config_behavior, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+        ).encode("utf-8")
+        fingerprints = {
+            "corpus_manifest_sha256": hashlib.sha256((root / "corpus_manifest.json").read_bytes()).hexdigest(),
+            "retrieval_policy_sha256": hashlib.sha256((root / "retrieval_policy.json").read_bytes()).hexdigest(),
+            "chunks_sha256": hashlib.sha256((root / "chunks.json").read_bytes()).hexdigest(),
+            "dense_vectors_sha256": hashlib.sha256((root / "dense_vectors.npy").read_bytes()).hexdigest(),
+            "figure_evidence_reviewed_sha256": hashlib.sha256((root / "figure_evidence_reviewed.json").read_bytes()).hexdigest(),
+            "public_knowledge_sha256": hashlib.sha256((service / "src" / "public_knowledge.py").read_bytes()).hexdigest(),
+            "retrieval_fusion_sha256": hashlib.sha256((service / "src" / "retrieval_fusion.py").read_bytes()).hexdigest(),
+            "public_retrieval_runtime_sha256": hashlib.sha256((service / "src" / "public_retrieval_runtime.py").read_bytes()).hexdigest(),
+            "runtime_config_behavior_sha256": hashlib.sha256(config_bytes).hexdigest(),
+        }
+        if index.manifest != json.loads((root / "corpus_manifest.json").read_text(encoding="utf-8")):
+            return None
+        if index.policy != json.loads((root / "retrieval_policy.json").read_text(encoding="utf-8")):
+            return None
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return None
+    if (
+        not isinstance(artifact, dict)
+        or artifact.get("schema_version") != 1
+        or artifact.get("name") != "quality_v4"
+        or artifact.get("status") != "candidate_not_promoted"
+        or artifact.get("active_policy") != "bm25"
+        or artifact.get("candidate_policy") != "bm25_figure_ocr"
+        or artifact.get("runtime_fingerprint") != fingerprints
+    ):
+        return None
+    comparison = artifact.get("promotion_comparison")
+    checks = comparison.get("checks") if isinstance(comparison, dict) else None
+    if not isinstance(checks, dict) or comparison.get("passed") is not False:
+        return None
+    if checks.get("anchor_noninferiority") is not False or any(
+        checks.get(key) is not True for key in (
+            "image_hit_at_5", "complete_source_noninferiority", "cross_document_noninferiority",
+            "cross_version_noninferiority", "version_mismatch_zero", "latency_budget",
+            "no_answer_candidate_rate_noninferiority",
+        )
+    ):
+        return None
+    for split in ("dev_bm25", "holdout_bm25", "holdout_candidate"):
+        values = artifact.get(split)
+        if not isinstance(values, dict) or values.get("question_count", 0) <= 0:
+            return None
+        for key in ("complete_source_at_5", "anchor_recall_at_5", "image_hit_at_5", "no_answer_nonempty_candidate_rate"):
+            value = values.get(key)
+            if not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(value) or not 0 <= value <= 1:
+                return None
+        if values.get("version_mismatch_count") != 0:
+            return None
+        if not isinstance(values.get("warm_p95_ms"), (int, float)) or values["warm_p95_ms"] < 0:
+            return None
+    return artifact
+
+
 def _positive_retrieval_hits(hits: list[dict]) -> list[dict]:
     """Zero-score Top-K padding is not evidence and must never trigger paid generation."""
     return [
@@ -162,6 +236,7 @@ def workspace(request: Request) -> dict:
     index = _index(request)
     manifest = index.manifest
     release = _validated_retrieval_release(index)
+    experiment = _validated_v4_experiment(index)
     source_retrieval_times = []
     for source in manifest.get("sources", []):
         value = source.get("retrieval_timestamp")
@@ -180,9 +255,15 @@ def workspace(request: Request) -> dict:
         "current_version": manifest["current_version"],
         "source_count": len(manifest["sources"]), "chunk_count": len(index.chunks),
         "languages": ["zh-CN", "en-US"],
-        "retrieval_policy": index.policy["default_policy"],
-        "retrieval_evaluation_status": "v3_validated" if release else "expanded_corpus_pending_rebenchmark",
+        "retrieval_policy": _runtime_policy(index),
+        "base_retrieval_policy": index.policy["default_policy"],
+        "approved_image_chunk_count": len(getattr(index, "_images", [])),
+        "retrieval_evaluation_status": (
+            "v4_bm25_validated" if experiment else
+            "v3_validated" if release else "expanded_corpus_pending_rebenchmark"
+        ),
         "frozen_benchmark_query_count": (
+            experiment["scope"]["question_count"] if experiment else
             release["dev"]["question_count"] + release["holdout"]["question_count"]
             if release else index.policy.get("frozen_selection_evidence", {}).get("query_count")
         ),
@@ -191,7 +272,23 @@ def workspace(request: Request) -> dict:
     }
     if source_retrieval_times:
         result["latest_source_retrieval_timestamp"] = max(source_retrieval_times).isoformat()
-    if release:
+    if experiment:
+        result["retrieval_evaluation"] = {
+            "name": "quality_v4", "policy": "bm25", "top_k": experiment["scope"]["top_k"],
+            "dev": experiment["dev_bm25"], "holdout": experiment["holdout_bm25"],
+            "interpretation": experiment["interpretation"],
+        }
+        result["retrieval_experiment"] = {
+            "name": "quality_v4_image_ocr_candidate",
+            "status": experiment["status"],
+            "candidate_policy": experiment["candidate_policy"],
+            "decision_reason": experiment["decision_reason"],
+            "holdout_candidate": experiment["holdout_candidate"],
+            "cross_document_complete_at_5": experiment["cross_document_complete_at_5"],
+            "cross_version_complete_at_5": experiment["cross_version_complete_at_5"],
+            "promotion_comparison": experiment["promotion_comparison"],
+        }
+    elif release:
         result["retrieval_evaluation"] = {
             key: release[key] for key in ("name", "policy", "top_k", "manifest_sha256", "dev", "holdout", "interpretation")
         }
@@ -236,7 +333,7 @@ def search(payload: SearchRequest, request: Request) -> dict:
         raise HTTPException(status_code=422, detail="INVALID_PUBLIC_SEARCH") from exc
     return {
         "query": payload.query, "results": hits,
-        "retrieval_policy": _index(request).policy["default_policy"],
+        "retrieval_policy": _runtime_policy(_index(request)),
         "consistency_notes": verified_consistency_notes(hits),
     }
 
@@ -256,6 +353,7 @@ async def query(payload: SearchRequest, request: Request) -> dict:
     base = {
         "answer": "N/A", "sources": [], "evidence": hits,
         "consistency_notes": notes, "generation": diagnostics,
+        "retrieval_policy": _runtime_policy(index),
     }
     if not hits:
         return {**base, "status": "NO_EVIDENCE"}
@@ -270,12 +368,15 @@ async def query(payload: SearchRequest, request: Request) -> dict:
         for hit in hits
     ]
     provenance = "\n".join(
-        f"{row['chunk_id']} | version={row['version']} | locale={row['locale']} | source={row['source_url']}"
+        f"{row['chunk_id']} | version={row['version']} | locale={row['locale']} | "
+        f"modality={row.get('modality', 'text')} | commit={row.get('commit', 'n/a')} | "
+        f"image_sha256={row.get('sha256', 'n/a')} | source={row['source_url']}"
         for row in hits
     )
     context = (
         "以下内容均是 Apache DolphinScheduler 官方公开资料。仅使用这些证据；"
         "不同版本或语言的资料若有明显差异，说明来源并避免静默混用。"
+        "modality=image_ocr 的内容是经人工目视校对的截图派生 OCR，不是作者原文；只可陈述其中清晰可见的文字或数值。"
         "page_number=1 只是内部引用槽位，并非原文页码。\n"
         + provenance + "\n" + _format_context(generator_hits)
     )

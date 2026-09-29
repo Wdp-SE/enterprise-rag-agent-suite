@@ -23,7 +23,7 @@
 
 1. “可信检索问答”：选版本和语言，输入问题，先查看答案，再核对引用依据 Top 3；其余结果折叠。“技术详情”才显示检索得分，该分数不是事实可信度。
 2. “发起变更审查”：用自然语言描述假设变更；需要时展开可选字段补充变更类型与影响范围。系统拆分检索子问题并在当前版本资料中寻找证据，展示规则分类、检索轨迹、影响候选和结构化证据缺口；可选片段做修改前后对照，最后由人审核。人工决定绑定当前任务编号，可下载包含请求指纹、证据 ID、决定和时间的会话 JSON，但不会自动进入审批系统。仅官方 PR 明确引用 DSIP 的关系会标记为已确认；语义检索只标记建议。
-3. “检索评测”页面保留早期字符哈希 Dense 的历史对照，不代表真实 multilingual E5 选型结果，也不是当前扩充语料的质量指标。当前默认为 Chunk A（1250 chars、无 overlap）+ BM25 + Top-5；它已在 V3 的 DEV 上锁定并经过一次性 HOLDOUT 检验。旧语料上的 E5/Hybrid 对照及边界见[历史最终选型报告](../evaluation/real_world_retrieval/final_selection/final_selection.md)。服务未配置在线模型或生成未通过引用校验时，问答页只展示待核对的检索候选。
+3. “检索评测”页面保留早期字符哈希 Dense 的历史对照，不代表真实 multilingual E5 选型结果，也不是当前扩充语料的质量指标。当前默认为 Chunk A（1250 chars、无 overlap）+ BM25 + Top-5；V4 在当前语料上重新核验 BM25，并独立比较了经审核截图 OCR 候选。候选虽改善图片与跨资料召回，但因原文锚点召回下降 9.4 个百分点未晋级，线上继续使用 BM25。服务未配置在线模型或生成未通过引用校验时，问答页只展示待核对的检索候选。
 
 查询拆解评测使用 8 条手工样例测类型分类、子问题覆盖及 4 次查询上限：`python evaluation/agent_query_decomposition/run_evaluation.py`。这是规则规划契约的轻量离线评测，不代表端到端检索准确率、回答正确率或线上延迟。
 
@@ -33,9 +33,9 @@
 
 历史 V2 检索质量实验在扩充之前的 52 份来源和 659 个 chunk 上比较了 BM25 与实验性字段加权候选。候选只在 DEV 上提升跨文档完整命中，未通过一次性 HOLDOUT 门槛，因此工作台没有切换默认策略。当前语料已扩至 132 份来源和 1322 个 chunk，并已通过下面的 V3 独立评测；不能把 V2 历史成绩当作当前成绩。结果和指标定义见[V2 检索质量实验报告](../evaluation/real_world_retrieval/quality_v2/report.md)。
 
-针对当前语料，V3 冻结 72 道新业务题，按场景家族划分 DEV/HOLDOUT 各 36 道；在 DEV 比较三种来源多样化候选后锁定 BM25，并只运行一次 BM25 的 HOLDOUT。HOLDOUT 的 32 道可回答题中，27 道找齐全部必需来源；8 道多来源题有 4 道找齐，返回片段找到 37/49 个原文锚点。检索表现不等于生成答案的准确率或幻觉率，也不能代表真实用户开放提问。复现 DEV 基线时从仓库根目录运行 `python evaluation/real_world_retrieval/quality_v3/run_quality_v3.py --split dev --policy bm25`；题库与锁定边界见[V3 评测说明](../evaluation/real_world_retrieval/quality_v3/README.md)，一次性结果与失败题见[V3 报告](../evaluation/real_world_retrieval/quality_v3/report.md)。已开封的 HOLDOUT 不应重复运行或用于继续调参。
+针对当前语料，V3 冻结 72 道新业务题并锁定 BM25；结果现作为历史复评记录。V4 冻结 104 道跨资料、跨版本、截图 OCR、图文联合和无答案问题。53 道 HOLDOUT 上，BM25 完整来源@5 为 85.7%、原文锚点召回为 79.2%；OCR 融合候选分别为 91.8% 和 69.8%，跨资料完整命中从 37.5% 提升至 75%，图片 Hit@5 为 100%。锚点下降 9.4 个百分点超过 5 点门槛，所以候选未晋级；无答案题仍全部召回候选（4/4），这不等于回答幻觉。nDCG 存在重复计数缺陷，不纳入决策。题库、锁文件、基线与候选结果见[V4 评测说明](../evaluation/real_world_retrieval/quality_v4/README.md)和[V4 报告](../evaluation/real_world_retrieval/quality_v4/report.md)；已开封的 HOLDOUT 不得用于继续调参。
 
-132 份语料仍是官方资料的有限子集，原文图片中的文字尚未纳入正式索引或检索；界面的配图提示不是 OCR 结果。规则分类使用小型关键词表，遇到领域新词时可能回退为通用类别；审查状态保存在当前 Session，下载审查 JSON 需要用户自行保存，不修改公共语料或 Apache 上游。系统不实现 locale sibling consistency；影响候选需要人工复核，审查结果不会写回公共资料。历史选型详见[最终选型报告](../evaluation/real_world_retrieval/final_selection/final_selection.md)。
+132 份语料仍是官方资料的有限子集。15 张固定提交截图的人工复核 OCR 已进入实验侧车，但融合排序因原文锚点回退未进入公共服务默认链路；复杂流程图关系仍无法由 OCR 表示。规则分类使用小型关键词表，遇到领域新词时可能回退为通用类别；审查状态保存在当前 Session，下载审查 JSON 需要用户自行保存，不修改公共语料或 Apache 上游。系统不实现 locale sibling consistency；影响候选需要人工复核，审查结果不会写回公共资料。历史选型详见[最终选型报告](../evaluation/real_world_retrieval/final_selection/final_selection.md)。
 
 ## 云端配置
 

@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "name": "quality_v4",
+  "status": "candidate_not_promoted",
+  "active_policy": "bm25",
+  "candidate_policy": "bm25_figure_ocr",
+  "decision_reason": "The OCR candidate improves image and multi-source retrieval but lowers anchor_recall_at_5 by 9.43 percentage points, exceeding the predeclared 5-point tolerance.",
+  "interpretation": "Offline retrieval evidence only. These metrics do not measure generated-answer accuracy, refusal quality, hallucination rate, public cold-start latency, or production user outcomes.",
+  "scope": {
+    "source_count": 132,
+    "text_chunk_count": 1322,
+    "approved_image_chunks": 30,
+    "question_count": 104,
+    "dev_question_count": 51,
+    "holdout_question_count": 53,
+    "top_k": 5
+  },
+  "runtime_fingerprint": {
+    "corpus_manifest_sha256": "453d9de964b1c116cfa1ab9e4ed4446135da2567dac12ef8778a8b1d0350e996",
+    "retrieval_policy_sha256": "22a543bb5c33c96b2374b686f6b2f5771b7db984109a754dafb34d882c38b103",
+    "chunks_sha256": "1258efb90ff3aa54e33248b65cead4a86f7342497d3ae584b3376f0851118f37",
+    "dense_vectors_sha256": "4fd43b38c55084ef33550a4d0e1e07306b47007906f3522c420ff99243ddc0e6",
+    "figure_evidence_reviewed_sha256": "45419cb47564593751f6d8f7d9a21eb7a3f182d65b204b27b5641407d379f23d",
+    "public_knowledge_sha256": "f043f5e6f7ed9a57ebc0423d9a61352cabdd48fba3b9ccb5e83e3500451158c5",
+    "retrieval_fusion_sha256": "da65e1d5043f7e29e76d88cf02676fda8ec9be811b6f7d5965b5cdce4120ca8f",
+    "public_retrieval_runtime_sha256": "a365f7024f8932612f1399c031f6e0d47b6c18fcae8331698022f090e38bb726",
+    "runtime_config_behavior_sha256": "5d4013944719da77bf2ff6674ad817b5256d891e1f846fcc790cfa5cf5b3cf4c"
+  },
+  "input_sha256": {
+    "cases.jsonl": "0d30e0365a5f23c45ab2f4199373cbca762527bb6af00c26598e4fdd6db68334",
+    "frozen_split.json": "9ba9bad7611c8b0358a6bcb19b343b4ef46583b6a92c1f2cb5e2e071bb56401d",
+    "run_quality_v4.py": "53961d9550b002d0ffa86c6f0fb2f235eadc247e2cdbf8de846d1127b709686e",
+    "corpus_manifest.json": "453d9de964b1c116cfa1ab9e4ed4446135da2567dac12ef8778a8b1d0350e996",
+    "chunks.json": "1258efb90ff3aa54e33248b65cead4a86f7342497d3ae584b3376f0851118f37",
+    "dense_vectors.npy": "4fd43b38c55084ef33550a4d0e1e07306b47007906f3522c420ff99243ddc0e6",
+    "figure_evidence_reviewed.json": "45419cb47564593751f6d8f7d9a21eb7a3f182d65b204b27b5641407d379f23d",
+    "retrieval_fusion.py": "da65e1d5043f7e29e76d88cf02676fda8ec9be811b6f7d5965b5cdce4120ca8f",
+    "public_retrieval_runtime.py": "a365f7024f8932612f1399c031f6e0d47b6c18fcae8331698022f090e38bb726",
+    "public_retrieval_runtime.json": "5d4013944719da77bf2ff6674ad817b5256d891e1f846fcc790cfa5cf5b3cf4c"
+  },
+  "candidate_fingerprint": {
+    "retrieval_fusion.py": "da65e1d5043f7e29e76d88cf02676fda8ec9be811b6f7d5965b5cdce4120ca8f",
+    "public_retrieval_runtime.py": "a365f7024f8932612f1399c031f6e0d47b6c18fcae8331698022f090e38bb726",
+    "public_retrieval_runtime.json": "5d4013944719da77bf2ff6674ad817b5256d891e1f846fcc790cfa5cf5b3cf4c"
+  },
+  "result_sha256": {
+    "baseline": "1749432f25bbfbbf9f22c72cf3edb27e7af8fc14119142aced96b1b3b01f8cba",
+    "candidate": "36f6b2ff454786dc0b1688704a9e7f8688f81d90f8adff5e8031ea9c019b24f9"
+  },
+  "dev_bm25": {
+    "question_count": 51,
+    "answerable_count": 39,
+    "no_answer_count": 12,
+    "source_recall_at_20": 0.896551724137931,
+    "complete_source_at_5": 0.7435897435897436,
+    "anchor_recall_at_5": 0.5510204081632653,
+    "image_hit_at_5": 0,
+    "version_mismatch_count": 0,
+    "no_answer_nonempty_candidate_rate": 1,
+    "warm_p50_ms": 4.846399882808328,
+    "warm_p95_ms": 9.829199872910976
+  },
+  "holdout_bm25": {
+    "question_count": 53,
+    "answerable_count": 49,
+    "no_answer_count": 4,
+    "source_recall_at_20": 0.9142857142857143,
+    "complete_source_at_5": 0.8571428571428571,
+    "anchor_recall_at_5": 0.7924528301886793,
+    "image_hit_at_5": 0,
+    "version_mismatch_count": 0,
+    "no_answer_nonempty_candidate_rate": 1,
+    "warm_p50_ms": 3.2856001053005457,
+    "warm_p95_ms": 6.200699834153056
+  },
+  "holdout_candidate": {
+    "question_count": 53,
+    "answerable_count": 49,
+    "no_answer_count": 4,
+    "source_recall_at_20": 0.9285714285714286,
+    "complete_source_at_5": 0.9183673469387755,
+    "anchor_recall_at_5": 0.6981132075471698,
+    "image_hit_at_5": 1,
+    "version_mismatch_count": 0,
+    "no_answer_nonempty_candidate_rate": 1,
+    "warm_p50_ms": 4.8368999268859625,
+    "warm_p95_ms": 8.333500009030104
+  },
+  "cross_document_complete_at_5": {
+    "bm25": 0.375,
+    "candidate": 0.75
+  },
+  "cross_version_complete_at_5": {
+    "bm25": 0.75,
+    "candidate": 0.75
+  },
+  "promotion_comparison": {
+    "checks": {
+      "image_hit_at_5": true,
+      "complete_source_noninferiority": true,
+      "anchor_noninferiority": false,
+      "cross_document_noninferiority": true,
+      "cross_version_noninferiority": true,
+      "version_mismatch_zero": true,
+      "latency_budget": true,
+      "no_answer_candidate_rate_noninferiority": true
+    },
+    "passed": false,
+    "deltas": {
+      "complete_source_at_5": 0.061224489795918435,
+      "anchor_recall_at_5": -0.09433962264150952,
+      "cross_document_complete_at_5": 0.375,
+      "cross_version_complete_at_5": 0.0,
+      "image_hit_at_5": 1,
+      "warm_p95_ms": 2.1328001748770475,
+      "no_answer_nonempty_candidate_rate": 0
+    },
+    "decision_basis": "Retrieval-only matched baseline gate; nDCG is excluded because the frozen V4 implementation can overcount duplicate chunks from one relevant source."
+  }
+}

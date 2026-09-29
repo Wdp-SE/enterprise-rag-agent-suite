@@ -7,6 +7,7 @@ import importlib.util
 import json
 import struct
 import zlib
+from copy import deepcopy
 from pathlib import Path
 
 
@@ -71,6 +72,34 @@ def _corpus(tmp_path: Path) -> Path:
     return root
 
 
+def _manifest(root: Path) -> dict:
+    manifest = json.loads((root / "corpus_manifest.json").read_text(encoding="utf-8"))
+    manifest["commits"] = {"3.4.3": COMMIT}
+    source = manifest["sources"][0]
+    source["source_url"] = (
+        f"https://github.com/apache/dolphinscheduler/blob/{COMMIT}/"
+        f"{source['document_path']}"
+    )
+    return manifest
+
+
+def _reviewed_figure(root: Path) -> dict:
+    module = _module()
+    row = deepcopy(module.scan_inventory(root)["figures"][0])
+    row["validation"] = {"status": "verified", "sha256": "a" * 64}
+    row["ocr"] = {
+        "status": "text_extracted", "engine": "tesseract",
+        "index_review_status": "approved", "mean_confidence": 98.0,
+        "text": "MAX_RETRY=3",
+    }
+    row["review"] = {
+        "status": "approved", "sha256": "a" * 64,
+        "reviewed_text": "MAX_RETRY = 3", "reviewed_at": "2026-09-29T00:00:00Z",
+        "note": "逐项对照原图核验",
+    }
+    return row
+
+
 def test_resolve_pinned_relative_image_without_accepting_external_or_escape():
     module = _module()
     source = "docs/docs/zh/guide/parameter/priority.md"
@@ -97,6 +126,7 @@ def test_inventory_groups_same_asset_and_does_not_turn_alt_into_ocr(tmp_path):
         f"{COMMIT}/docs/img/new_ui/dev/parameter/priority_parameter01.png"
     )
     assert len(figure["references"]) == 2
+    assert figure["references"][0]["heading"] == "优先级"
     assert figure["ocr"]["status"] == "not_run"
     assert "text" not in figure["ocr"]
 
@@ -114,6 +144,7 @@ def test_fetch_records_sha_and_real_ocr_only_when_returned(tmp_path):
     result = module.verify_selected_images(
         inventory, selectors=(figure_path,), fetcher=fetcher,
         ocr_runner=lambda payload: ("识别出的图中文字", 83.5),
+        review_dir=tmp_path / "review-images",
     )
     figure = result["figures"][0]
     assert len(seen) == 1
@@ -127,6 +158,100 @@ def test_fetch_records_sha_and_real_ocr_only_when_returned(tmp_path):
     assert figure["ocr"]["status"] == "text_extracted"
     assert figure["ocr"]["quality"] == "unreviewed"
     assert figure["ocr"]["index_review_status"] == "pending"
+    preview_name = figure["validation"]["review_preview"]
+    assert preview_name.endswith(".png")
+    assert (tmp_path / "review-images" / preview_name).read_bytes() == PNG
+
+
+def test_selected_figure_sample_is_stratified_and_bounded():
+    module = _module()
+    paths = module.SELECTED_FIGURES
+    assert len(paths) == 20
+    assert len(set(paths)) == 20
+    assert any("parameter" in path for path in paths)
+    assert any("project" in path for path in paths)
+    assert any("monitor" in path for path in paths)
+    assert any("open-api" in path for path in paths)
+    assert any("tasks" in path for path in paths)
+
+
+def test_reviewed_builder_accepts_only_pinned_approved_ocr(tmp_path):
+    module = _module()
+    root = _corpus(tmp_path)
+    row = _reviewed_figure(root)
+
+    chunks = module.build_reviewed_figure_chunks([row], _manifest(root))
+
+    assert len(chunks) == 1
+    hit = chunks[0]
+    assert hit["schema_version"] == 1
+    assert hit["modality"] == "image_ocr"
+    assert hit["review_status"] == "approved"
+    assert hit["content"] == "MAX_RETRY = 3"
+    assert hit["version"] == "3.4.3"
+    assert hit["heading"] == "优先级"
+    assert hit["sha256"] == "a" * 64
+    assert hit["raw_url"].endswith(f"/{COMMIT}/docs/img/new_ui/dev/parameter/priority_parameter01.png")
+
+
+def test_reviewed_builder_rejects_unreviewed_or_mismatched_image_rows(tmp_path):
+    module = _module()
+    root = _corpus(tmp_path)
+    base = _reviewed_figure(root)
+    pending = deepcopy(base)
+    pending["review"]["status"] = "pending"
+    wrong_hash = deepcopy(base)
+    wrong_hash["review"]["sha256"] = "b" * 64
+    invalid_image = deepcopy(base)
+    invalid_image["validation"]["status"] = "unverified"
+    empty_review = deepcopy(base)
+    empty_review["review"]["reviewed_text"] = "  "
+    wrong_url = deepcopy(base)
+    wrong_url["raw_url"] = "https://example.com/other.png"
+    wrong_commit = deepcopy(base)
+    wrong_commit["commit"] = "b" * 40
+    wrong_schema = deepcopy(base)
+    wrong_schema["schema_version"] = 2
+
+    chunks = module.build_reviewed_figure_chunks(
+        [pending, wrong_hash, invalid_image, empty_review, wrong_url, wrong_commit, wrong_schema],
+        _manifest(root),
+    )
+
+    assert chunks == []
+
+
+def test_reviewed_builder_keeps_language_specific_transcriptions(tmp_path):
+    module = _module()
+    root = _corpus(tmp_path)
+    row = _reviewed_figure(root)
+    row["review"]["reviewed_text_by_language"] = {
+        "zh": "参数输出为 MAX_RETRY = 3",
+        "en": "The parameter output is MAX_RETRY = 3",
+    }
+    row["references"].append({
+        "document_key": "guide/parameter/priority",
+        "language": "en",
+        "local_path": "sources/3.4.3/en/guide/parameter/priority.md",
+        "line": 2,
+        "heading": "Priority",
+    })
+    manifest = _manifest(root)
+    en_source = deepcopy(manifest["sources"][0])
+    en_source.update({
+        "language": "en",
+        "local_path": "sources/3.4.3/en/guide/parameter/priority.md",
+        "document_path": "docs/docs/en/guide/parameter/priority.md",
+        "source_url": f"https://github.com/apache/dolphinscheduler/blob/{COMMIT}/docs/docs/en/guide/parameter/priority.md",
+    })
+    manifest["sources"].append(en_source)
+
+    chunks = module.build_reviewed_figure_chunks([row], manifest)
+
+    assert {chunk["language"]: chunk["content"] for chunk in chunks} == {
+        "zh": "参数输出为 MAX_RETRY = 3",
+        "en": "The parameter output is MAX_RETRY = 3",
+    }
 
 
 def test_verified_image_without_ocr_engine_has_no_searchable_text(tmp_path):

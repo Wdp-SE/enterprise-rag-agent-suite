@@ -1,0 +1,23 @@
+{
+  "policy": "bm25_figure_ocr",
+  "candidate_fingerprint": {
+    "retrieval_fusion.py": "da65e1d5043f7e29e76d88cf02676fda8ec9be811b6f7d5965b5cdce4120ca8f",
+    "public_retrieval_runtime.py": "a365f7024f8932612f1399c031f6e0d47b6c18fcae8331698022f090e38bb726",
+    "public_retrieval_runtime.json": "5d4013944719da77bf2ff6674ad817b5256d891e1f846fcc790cfa5cf5b3cf4c"
+  },
+  "opened_at_utc": "2026-09-29T12:11:09.107353+00:00",
+  "input_sha256": {
+    "cases.jsonl": "0d30e0365a5f23c45ab2f4199373cbca762527bb6af00c26598e4fdd6db68334",
+    "frozen_split.json": "9ba9bad7611c8b0358a6bcb19b343b4ef46583b6a92c1f2cb5e2e071bb56401d",
+    "run_quality_v4.py": "53961d9550b002d0ffa86c6f0fb2f235eadc247e2cdbf8de846d1127b709686e",
+    "corpus_manifest.json": "453d9de964b1c116cfa1ab9e4ed4446135da2567dac12ef8778a8b1d0350e996",
+    "chunks.json": "1258efb90ff3aa54e33248b65cead4a86f7342497d3ae584b3376f0851118f37",
+    "dense_vectors.npy": "4fd43b38c55084ef33550a4d0e1e07306b47007906f3522c420ff99243ddc0e6",
+    "figure_evidence_reviewed.json": "45419cb47564593751f6d8f7d9a21eb7a3f182d65b204b27b5641407d379f23d",
+    "retrieval_fusion.py": "da65e1d5043f7e29e76d88cf02676fda8ec9be811b6f7d5965b5cdce4120ca8f",
+    "public_retrieval_runtime.py": "a365f7024f8932612f1399c031f6e0d47b6c18fcae8331698022f090e38bb726",
+    "public_retrieval_runtime.json": "5d4013944719da77bf2ff6674ad817b5256d891e1f846fcc790cfa5cf5b3cf4c"
+  },
+  "status": "completed",
+  "result_sha256": "36f6b2ff454786dc0b1688704a9e7f8688f81d90f8adff5e8031ea9c019b24f9"
+}

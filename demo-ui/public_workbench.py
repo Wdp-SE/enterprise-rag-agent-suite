@@ -182,18 +182,43 @@ def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None
         "github_issue": "官方 Issue",
         "github_pull_request": "官方 PR",
     }.get(row.get("source_type"), "官方公开资料")
+    if row.get("modality") == "image_ocr" and not _verified_image_citation(row):
+        st.warning(f"[{index}] 截图证据未通过来源校验，已隐藏识别文本。")
+        return
     with st.container(border=True, key=f"source_card_{key_prefix}_{index}"):
-        st.markdown(f"**[{index}] {document_title}**")
-        st.caption(f"章节：{section}　｜　{version_label} {version}　｜　{row.get('locale', '')}　｜　{source_label}")
-        content = _replace_markdown_images(row.get("content", ""))
-        content = _rewrite_relative_source_links(content, row.get("source_url", ""))
-        st.write(content)
+        is_image = row.get("modality") == "image_ocr"
+        if is_image:
+            st.markdown(f"**[{index}] 截图 OCR 证据 · {document_title}**")
+            st.caption(f"章节：{section}　｜　派生证据　｜　{version_label} {version}　｜　{row.get('locale', '')}")
+            st.info("截图 OCR 文字 · 经目视校对的派生证据，需对照原图；不等同于官方文档正文。")
+            st.write(row.get("content", ""))
+            st.markdown(f"[查看原图]({row['raw_url']})")
+        else:
+            st.markdown(f"**[{index}] {document_title}**")
+            st.caption(f"章节：{section}　｜　{version_label} {version}　｜　{row.get('locale', '')}　｜　{source_label}")
+            content = _replace_markdown_images(row.get("content", ""))
+            content = _rewrite_relative_source_links(content, row.get("source_url", ""))
+            st.write(content)
         if row.get("source_url"):
             st.markdown(f"[在 GitHub 查看固定版本来源]({row['source_url']})")
         with st.expander("技术详情"):
             st.code(f"document_key={row.get('document_key', '')}\nchunk_id={row.get('chunk_id', '')}\npolicy={row.get('retrieval_policy', '')}")
+            if is_image:
+                st.code(f"figure_id={row.get('figure_id', '')}\ncommit={row.get('commit', '')}\nsha256={row.get('sha256', '')}")
             if "retrieval_score" in row:
                 st.caption(f"候选排序分数：{row['retrieval_score']:.4f}。该分数仅用于当前检索策略下的结果排序，不代表事实正确性。")
+
+
+def _verified_image_citation(row: dict) -> bool:
+    commit = row.get("commit", "")
+    sha = row.get("sha256", "")
+    if row.get("review_status") != "approved" or not re.fullmatch(r"[0-9a-f]{40}", commit):
+        return False
+    if not re.fullmatch(r"[0-9a-f]{64}", sha) or not str(row.get("content", "")).strip():
+        return False
+    raw_prefix = f"https://raw.githubusercontent.com/apache/dolphinscheduler/{commit}/"
+    source_prefix = f"https://github.com/apache/dolphinscheduler/blob/{commit}/"
+    return str(row.get("raw_url", "")).startswith(raw_prefix) and str(row.get("source_url", "")).startswith(source_prefix)
 
 
 def _evidence(hits: list[dict], *, heading: str = "引用依据") -> None:
@@ -1251,8 +1276,49 @@ def _benchmark(workspace: dict | None) -> None:
     st.write("检索策略依据有版本记录的 Benchmark 选择；语料变更后必须重新评测。")
     policy = str(workspace.get("retrieval_policy", "由服务配置") if workspace else "由服务配置").upper()
     st.markdown(f"**当前默认：{policy}**。Dense 是字符哈希向量基线，不是神经语义 Embedding；Hybrid 在旧语料选型中未超过 BM25。")
-    release = workspace.get("retrieval_evaluation") if workspace and workspace.get("retrieval_evaluation_status") == "v3_validated" else None
-    if isinstance(release, dict) and release.get("name") == "quality_v3" and release.get("policy", "").upper() == policy:
+    release_status = workspace.get("retrieval_evaluation_status") if workspace else None
+    release = workspace.get("retrieval_evaluation") if workspace and release_status in ("v4_bm25_validated", "v3_validated") else None
+    experiment = workspace.get("retrieval_experiment") if workspace else None
+    if isinstance(release, dict) and release.get("name") == "quality_v4" and release.get("policy", "").upper() == policy:
+        st.markdown("**V4 当前 BM25 基线（索引与评测指纹已匹配）**")
+        st.caption("132 份官方固定来源、1322 个文本片段，并使用 30 条人工复核截图 OCR 证据进行独立策略实验。当前线上仍使用 BM25；下面是冻结题集的离线结果，不是生成答案准确率、幻觉率或公网延迟。")
+        fields = (
+            ("complete_source_at_5", "完整来源@5"),
+            ("anchor_recall_at_5", "原文锚点召回@5"),
+            ("image_hit_at_5", "图片命中@5"),
+            ("no_answer_nonempty_candidate_rate", "无答案仍召回候选"),
+        )
+        rows = ["| 切分 | 题数 | " + " | ".join(label for _, label in fields) + " | 错版本 | warm P95 |",
+                "| --- | ---: | " + " | ".join("---:" for _ in fields) + " | ---: | ---: |"]
+        for split, label in (("dev", "DEV"), ("holdout", "HOLDOUT")):
+            values = release.get(split, {})
+            rows.append(
+                f"| {label} | {values['question_count']} | "
+                + " | ".join(f"{values[key] * 100:.1f}%" for key, _ in fields)
+                + f" | {values['version_mismatch_count']} | {values['warm_p95_ms']:.2f} ms |"
+            )
+        st.markdown("\n".join(rows))
+        if isinstance(experiment, dict) and experiment.get("status") == "candidate_not_promoted":
+            ocr = experiment["holdout_candidate"]
+            # The baseline and candidate are shown side by side to make the trade-off explicit.
+            baseline_metrics = release.get("holdout", {})
+            fields = (("complete_source_at_5", "完整来源@5"), ("anchor_recall_at_5", "原文锚点召回@5"),
+                      ("image_hit_at_5", "图片命中@5"), ("warm_p95_ms", "warm P95"))
+            comparison_rows = ["| HOLDOUT 策略 | " + " | ".join(label for _, label in fields) + " |",
+                               "| --- | " + " | ".join("---:" for _ in fields) + " |"]
+            comparison_rows.append("| BM25（线上默认） | " + " | ".join(
+                f"{baseline_metrics[key] * 100:.1f}%" if key != "warm_p95_ms" else f"{baseline_metrics[key]:.2f} ms"
+                for key, _ in fields
+            ) + " |")
+            comparison_rows.append("| BM25 + 图片 OCR（实验候选） | " + " | ".join(
+                f"{ocr[key] * 100:.1f}%" if key != "warm_p95_ms" else f"{ocr[key]:.2f} ms"
+                for key, _ in fields
+            ) + " |")
+            st.markdown("**图片 OCR 候选未晋级**")
+            st.markdown("\n".join(comparison_rows))
+            st.caption(experiment.get("decision_reason", "候选未达到预先设定的非劣化门槛。"))
+            st.caption("无答案题仍有检索候选，说明需要另做相关性阈值与拒答评测；这不等于模型产生了幻觉。图片 OCR 为派生证据，需核对固定版本原图。")
+    elif isinstance(release, dict) and release.get("name") == "quality_v3" and release.get("policy", "").upper() == policy:
         st.markdown("**V3 当前扩充语料（后端语料、策略与索引指纹已匹配）**")
         st.caption("132 份官方固定来源、1322 个片段；DEV 选型后仅对 BM25 打开一次 HOLDOUT。Top-5 来源与原文锚点指标，分母只含可回答题；无答案题另作检索诊断。")
         st.caption("当前服务核对语料、默认检索策略与片段索引指纹；选型和 DEV/HOLDOUT 结果哈希由仓库测试核验。以下是离线检索评测，不是线上实时质量监控。")
@@ -1276,7 +1342,7 @@ def _benchmark(workspace: dict | None) -> None:
         st.markdown("\n".join(rows))
         st.caption("HOLDOUT 多来源完整命中仅 4/8，跨资料与跨版本核对仍是短板。本机 warm 检索时间不含公网、冷启动和模型生成；这些指标也不能代表答案正确率或幻觉率。")
     else:
-        st.caption("当前后端尚未匹配 V3 扩充语料评测的发布指纹；可能仍运行旧服务或语料、策略已变化。不能把仓库内 V3 指标当作当前后端成绩。")
+        st.caption("当前后端尚未匹配已发布评测的语料与策略指纹；可能仍运行旧服务、候选策略或不同语料。不能把仓库内离线指标当作当前后端成绩。")
     st.caption("Rerank：NOT EVALUATED。尚未完成符合轻量部署条件的可重复双语评测，当前不进入默认链路。")
     st.markdown("**历史选型（旧语料）**")
     st.caption("以下冻结实验只用于说明最初选择 BM25 的依据；语料范围较小，不能作为当前 132 份资料的检索质量。")

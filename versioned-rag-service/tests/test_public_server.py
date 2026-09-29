@@ -94,14 +94,14 @@ def test_public_deployment_exposes_only_official_corpus_and_engineering_support(
         assert workspace["source_count"] > 0
         assert workspace["chunk_count"] == len(index.chunks)
         assert workspace["upstream_writes_enabled"] is False
-        assert workspace["retrieval_evaluation_status"] == "v3_validated"
+        assert workspace["retrieval_evaluation_status"] == "v4_bm25_validated"
         assert workspace["retrieval_evaluation"]["policy"] == "bm25"
-        assert workspace["retrieval_evaluation"]["holdout"]["complete_source_count"] == 27
-        assert workspace["retrieval_evaluation"]["holdout"]["answerable_count"] == 32
-        assert workspace["retrieval_evaluation"]["holdout"]["complete_multi_source_count"] == 4
-        assert workspace["retrieval_evaluation"]["holdout"]["multi_source_question_count"] == 8
-        assert workspace["retrieval_evaluation"]["holdout"]["evidence_marker_found"] == 37
-        assert workspace["retrieval_evaluation"]["holdout"]["evidence_marker_count"] == 49
+        assert workspace["retrieval_evaluation"]["holdout"]["question_count"] == 53
+        assert workspace["retrieval_evaluation"]["holdout"]["complete_source_at_5"] == 0.8571428571428571
+        assert workspace["retrieval_evaluation"]["holdout"]["anchor_recall_at_5"] == 0.7924528301886793
+        assert workspace["retrieval_experiment"]["status"] == "candidate_not_promoted"
+        assert workspace["retrieval_experiment"]["promotion_comparison"]["passed"] is False
+        assert workspace["retrieval_experiment"]["promotion_comparison"]["checks"]["anchor_noninferiority"] is False
         response = client.post("/public/search", json={"query": QUESTION})
         assert response.status_code == 200
         assert response.json()["results"][0]["source_url"].startswith(
@@ -109,18 +109,18 @@ def test_public_deployment_exposes_only_official_corpus_and_engineering_support(
         )
 
 
-def test_workspace_does_not_claim_v3_release_for_mismatched_runtime_policy_or_manifest(monkeypatch):
+def test_workspace_hides_v4_release_for_mismatched_runtime_policy_or_manifest(monkeypatch):
     index = PublicKnowledgeIndex()
     with TestClient(create_app(index=index)) as client:
         index.policy["default_policy"] = "dense"
         changed_policy = client.get("/public/workspace").json()
-        assert changed_policy["retrieval_evaluation_status"] != "v3_validated"
+        assert changed_policy["retrieval_evaluation_status"] != "v4_bm25_validated"
         assert "retrieval_evaluation" not in changed_policy
 
         index.policy["default_policy"] = "bm25"
         index.manifest["current_version"] = "3.5.0"
         changed_manifest = client.get("/public/workspace").json()
-        assert changed_manifest["retrieval_evaluation_status"] != "v3_validated"
+        assert changed_manifest["retrieval_evaluation_status"] != "v4_bm25_validated"
         assert "retrieval_evaluation" not in changed_manifest
 
         index.manifest["current_version"] = "3.4.3"
@@ -132,15 +132,15 @@ def test_workspace_does_not_claim_v3_release_for_mismatched_runtime_policy_or_ma
         with monkeypatch.context() as patch:
             patch.setattr(Path, "read_bytes", code_changed)
             changed_code = client.get("/public/workspace").json()
-        assert changed_code["retrieval_evaluation_status"] != "v3_validated"
+        assert changed_code["retrieval_evaluation_status"] != "v4_bm25_validated"
         assert "retrieval_evaluation" not in changed_code
 
 
-def test_workspace_degrades_if_release_summary_is_incomplete(monkeypatch):
+def test_workspace_degrades_if_v4_experiment_summary_is_incomplete(monkeypatch):
     index = PublicKnowledgeIndex()
-    release_path = index.root / "retrieval_release.json"
+    release_path = Path(__file__).resolve().parents[1] / "config" / "retrieval_experiment_v4.json"
     release = json.loads(release_path.read_text(encoding="utf-8"))
-    del release["dev"]["question_count"]
+    del release["dev_bm25"]["question_count"]
     original_read_text = Path.read_text
 
     def incomplete_release(path, *args, **kwargs):
@@ -151,7 +151,7 @@ def test_workspace_degrades_if_release_summary_is_incomplete(monkeypatch):
         with TestClient(create_app(index=index)) as client:
             workspace = client.get("/public/workspace").json()
 
-    assert workspace["retrieval_evaluation_status"] != "v3_validated"
+    assert workspace["retrieval_evaluation_status"] != "v4_bm25_validated"
     assert "retrieval_evaluation" not in workspace
 
 
@@ -225,6 +225,51 @@ def test_health_reports_generation_configuration_without_exposing_a_secret(monke
     assert health["generation"]["provider"] == "deepseek"
     assert health["generation"]["model"] == "deepseek-v4-flash"
     assert "wrong-provider-secret" not in str(health)
+
+
+def test_public_search_does_not_allow_request_to_choose_experimental_policy():
+    with TestClient(create_app(index=PublicKnowledgeIndex())) as client:
+        response = client.post("/public/search", json={"query": QUESTION, "policy": "hybrid"})
+
+    assert response.status_code == 422
+
+
+def test_configured_runtime_policy_returns_reviewed_image_evidence(tmp_path):
+    config = json.loads((Path(__file__).resolve().parents[1] / "config" / "public_retrieval_runtime.json").read_text(encoding="utf-8"))
+    config["default_policy"] = "bm25_figure_ocr"
+    config_path = tmp_path / "runtime.json"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+
+    with TestClient(create_app(index=PublicKnowledgeIndex(), retrieval_config_path=config_path)) as client:
+        workspace = client.get("/public/workspace").json()
+        response = client.post("/public/search", json={
+            "query": "processExitValue=0", "version": "3.4.3", "language": "en", "top_k": 20,
+        })
+
+    assert workspace["retrieval_policy"] == "bm25_figure_ocr"
+    assert workspace["base_retrieval_policy"] == "bm25"
+    assert workspace["approved_image_chunk_count"] == 30
+    assert response.status_code == 200
+    hits = response.json()["results"]
+    image = next(row for row in hits if row.get("figure_id") == "db6baeb0b9b5364a")
+    assert image["modality"] == "image_ocr"
+    assert image["review_status"] == "approved"
+    assert image["sha256"]
+    assert image["raw_url"].startswith("https://raw.githubusercontent.com/apache/dolphinscheduler/")
+
+
+def test_non_v3_runtime_policy_does_not_publish_bm25_v3_metrics(tmp_path):
+    config = json.loads((Path(__file__).resolve().parents[1] / "config" / "public_retrieval_runtime.json").read_text(encoding="utf-8"))
+    config["default_policy"] = "bm25_figure_ocr"
+    config_path = tmp_path / "runtime.json"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+
+    with TestClient(create_app(index=PublicKnowledgeIndex(), retrieval_config_path=config_path)) as client:
+        workspace = client.get("/public/workspace").json()
+
+    assert workspace["retrieval_policy"] == "bm25_figure_ocr"
+    assert workspace["retrieval_evaluation_status"] != "v4_bm25_validated"
+    assert "retrieval_evaluation" not in workspace
 
 
 def test_health_reports_injected_generator_as_configured_but_unverified(monkeypatch):

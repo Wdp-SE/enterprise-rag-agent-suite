@@ -33,15 +33,30 @@ _MARKDOWN_IMAGE = re.compile(
 )
 _HTML_IMAGE = re.compile(r"<img\b[^>]*\bsrc\s*=\s*['\"](?P<url>[^'\"]+)['\"][^>]*>", re.I)
 _HTML_ALT = re.compile(r"\balt\s*=\s*['\"](?P<alt>[^'\"]*)['\"]", re.I)
+_HEADING = re.compile(r"^\s{0,3}(?P<marks>#{1,6})\s+(?P<title>.+?)\s*#*\s*$")
 
-# Deliberately small: sampling high-value business figures costs six GETs at most.
+# Stratified sample spanning parameter, project, task, monitoring, and API figures.
 SELECTED_FIGURES = (
     "docs/img/new_ui/dev/parameter/priority_parameter01.png",
     "docs/img/new_ui/dev/parameter/context_parameter01.png",
+    "docs/img/new_ui/dev/parameter/context_parameter02.png",
+    "docs/img/new_ui/dev/parameter/context_log01.png",
+    "docs/img/new_ui/dev/parameter/context_log02.png",
+    "docs/img/new_ui/dev/parameter/context_log03.png",
+    "docs/img/new_ui/dev/parameter/context-sub-workflow01.png",
+    "docs/img/new_ui/dev/parameter/context-sub-workflow05.png",
     "docs/img/new_ui/dev/project/instance-parameter.png",
+    "docs/img/new_ui/dev/project/workflow-task-run-config.png",
+    "docs/img/new_ui/dev/project/workflow-tree.png",
+    "docs/img/new_ui/dev/project/workflow-time01.png",
     "docs/img/tasks/demo/dependent_task01.png",
+    "docs/img/tasks/demo/dependent_task02.png",
+    "docs/img/tasks/demo/condition_task01.png",
     "docs/img/new_ui/dev/monitor/failure-command-list.png",
+    "docs/img/new_ui/dev/monitor/command-list.png",
+    "docs/img/new_ui/dev/monitor/audit-log.png",
     "docs/img/new_ui/dev/open-api/api_doc.png",
+    "docs/img/new_ui/dev/open-api/api_test.png",
 )
 
 
@@ -70,12 +85,19 @@ def resolve_asset_path(document_path: str, target: str) -> str | None:
 
 
 def _references_in_markdown(text: str):
+    headings: list[tuple[int, str]] = []
     for number, line in enumerate(text.splitlines(), 1):
+        heading = _HEADING.match(line)
+        if heading:
+            level = len(heading.group("marks"))
+            headings = [(depth, title) for depth, title in headings if depth < level]
+            headings.append((level, heading.group("title").strip()))
+        section = " / ".join(title for _, title in headings)
         for match in _MARKDOWN_IMAGE.finditer(line):
-            yield number, match.group("angle") or match.group("url"), match.group("alt")
+            yield number, match.group("angle") or match.group("url"), match.group("alt"), section
         for match in _HTML_IMAGE.finditer(line):
             alt = _HTML_ALT.search(match.group(0))
-            yield number, match.group("url"), alt.group("alt") if alt else ""
+            yield number, match.group("url"), alt.group("alt") if alt else "", section
 
 
 def scan_inventory(root: Path = ROOT) -> dict:
@@ -102,7 +124,7 @@ def scan_inventory(root: Path = ROOT) -> dict:
         if source.get("sha256") and hashlib.sha256(content).hexdigest() != source["sha256"]:
             raise ValueError(f"source hash differs from manifest: {local_path}")
         text = content.decode("utf-8")
-        for line, target, alt in _references_in_markdown(text):
+        for line, target, alt, heading in _references_in_markdown(text):
             asset_path = resolve_asset_path(source["document_path"], target)
             if asset_path is None:
                 if urlsplit(target).scheme or urlsplit(target).netloc:
@@ -115,6 +137,7 @@ def scan_inventory(root: Path = ROOT) -> dict:
             if key not in figures:
                 figure_id = hashlib.sha256(f"{commit}:{asset_path}".encode()).hexdigest()[:16]
                 figures[key] = {
+                    "schema_version": 1,
                     "figure_id": figure_id,
                     "version": version,
                     "commit": commit,
@@ -133,6 +156,7 @@ def scan_inventory(root: Path = ROOT) -> dict:
                 "local_path": local_path,
                 "line": line,
                 "alt_text": alt,
+                "heading": heading,
             })
     ordered = sorted(figures.values(), key=lambda row: (row["version"], row["asset_path"]))
     return {
@@ -242,7 +266,8 @@ def verify_selected_images(
     selectors: tuple[str, ...] = SELECTED_FIGURES,
     fetcher: Callable[[str, int], tuple[bytes, str] | None] = _fetch_raw_image,
     ocr_runner: Callable[[bytes], tuple[str, float | None]] | None = None,
-    max_images: int = 8,
+    max_images: int = 20,
+    review_dir: Path | None = None,
 ) -> dict:
     """Fetch a bounded sample; no image binaries or alt-derived OCR are retained."""
     count = 0
@@ -280,6 +305,18 @@ def verify_selected_images(
                 "height": height,
                 "checked_at": datetime.now(timezone.utc).isoformat(),
             }
+            if review_dir is not None and decode_status == "verified":
+                extension = {
+                    "image/png": ".png",
+                    "image/jpeg": ".jpg",
+                    "image/gif": ".gif",
+                    "image/webp": ".webp",
+                }.get(sniffed)
+                if extension:
+                    preview_name = f"{figure['validation']['sha256']}{extension}"
+                    review_dir.mkdir(parents=True, exist_ok=True)
+                    (review_dir / preview_name).write_bytes(payload)
+                    figure["validation"]["review_preview"] = preview_name
             if decode_status != "verified":
                 figure["ocr"] = {"status": "not_run"}
                 continue
@@ -319,19 +356,114 @@ def verify_selected_images(
     return inventory
 
 
+def build_reviewed_figure_chunks(rows: list[dict], manifest: dict) -> list[dict]:
+    """Build index-ready image evidence only from hash-bound human approvals."""
+    commits = manifest.get("commits", {})
+    sources = {
+        (source.get("version"), source.get("commit"), source.get("document_key"), source.get("language")): source
+        for source in manifest.get("sources", [])
+        if source.get("source_type") == "official_documentation"
+        and source.get("repository") == "apache/dolphinscheduler"
+    }
+    chunks: list[dict] = []
+    seen: set[str] = set()
+    for row in rows:
+        validation = row.get("validation") or {}
+        ocr = row.get("ocr") or {}
+        review = row.get("review") or {}
+        version = row.get("version")
+        commit = row.get("commit")
+        asset_path = row.get("asset_path")
+        sha256 = validation.get("sha256")
+        if (
+            row.get("schema_version") != 1
+            or validation.get("status") != "verified"
+            or not isinstance(sha256, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", sha256)
+            or review.get("status") != "approved"
+            or review.get("sha256") != sha256
+            or ocr.get("status") != "text_extracted"
+            or ocr.get("index_review_status") != "approved"
+            or not isinstance(asset_path, str)
+            or not asset_path.startswith("docs/img/")
+            or not isinstance(row.get("figure_id"), str)
+            or not row.get("figure_id")
+            or not isinstance(commit, str)
+            or not _COMMIT.fullmatch(commit)
+            or (version in commits and commits[version] != commit)
+        ):
+            continue
+        expected_raw = (
+            f"https://raw.githubusercontent.com/apache/dolphinscheduler/"
+            f"{commit}/{quote(asset_path, safe='/-._')}"
+        )
+        if row.get("raw_url") != expected_raw:
+            continue
+        reviewed_by_language = review.get("reviewed_text_by_language") or {}
+        for reference in row.get("references", []):
+            language = reference.get("language")
+            document_key = reference.get("document_key")
+            text = reviewed_by_language.get(language, review.get("reviewed_text"))
+            if not isinstance(text, str) or not text.strip():
+                continue
+            source = sources.get((version, commit, document_key, language))
+            if not source:
+                continue
+            expected_source = (
+                f"https://github.com/apache/dolphinscheduler/blob/{commit}/"
+                f"{quote(source['document_path'], safe='/-._')}"
+            )
+            if source.get("source_url") != expected_source:
+                continue
+            chunk_id = hashlib.sha256(
+                (
+                    f"{version}:{language}:{document_key}:{row.get('figure_id')}:{sha256}:"
+                    f"{reference.get('local_path')}:{reference.get('heading', '')}"
+                ).encode()
+            ).hexdigest()[:24]
+            if chunk_id in seen:
+                continue
+            seen.add(chunk_id)
+            chunks.append({
+                "schema_version": 1,
+                "chunk_id": chunk_id,
+                "figure_id": row.get("figure_id"),
+                "version": version,
+                "commit": commit,
+                "language": language,
+                "document_key": document_key,
+                "heading": reference.get("heading", ""),
+                "modality": "image_ocr",
+                "review_status": "approved",
+                "reviewed_at": review.get("reviewed_at"),
+                "review_note": review.get("note", ""),
+                "ocr_engine": ocr.get("engine"),
+                "ocr_mean_confidence": ocr.get("mean_confidence"),
+                "sha256": sha256,
+                "content": text.strip(),
+                "source_url": source["source_url"],
+                "raw_url": expected_raw,
+            })
+    return chunks
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--fetch-selected", action="store_true")
-    parser.add_argument("--max-images", type=int, default=6)
+    parser.add_argument("--max-images", type=int, default=20)
+    parser.add_argument("--review-dir", type=Path, help="save verified sample images here for manual review")
     args = parser.parse_args()
     if args.max_images < 0 or args.max_images > 20:
         parser.error("--max-images must be between 0 and 20")
     inventory = scan_inventory(args.root)
     if args.fetch_selected:
         runner = run_tesseract_ocr if _tesseract_path() else None
-        verify_selected_images(inventory, ocr_runner=runner, max_images=args.max_images)
+        verify_selected_images(
+            inventory, ocr_runner=runner, max_images=args.max_images,
+            review_dir=args.review_dir,
+        )
     output = args.output or args.root / "figure_evidence.json"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(inventory, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

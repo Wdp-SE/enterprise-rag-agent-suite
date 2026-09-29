@@ -18,6 +18,7 @@ from src.engineering_change import (
 )
 from src.public_api import router as public_router
 from src.public_knowledge import PublicKnowledgeIndex
+from src.public_retrieval_runtime import PublicRetrievalRuntime
 
 
 class DiffRequest(BaseModel):
@@ -35,10 +36,15 @@ class ImpactRequest(BaseModel):
     evidence_by_item: dict[str, list[str]] = Field(default_factory=dict)
 
 
-def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None) -> FastAPI:
+def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None,
+               retrieval_config_path=None, figure_sidecar_path=None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        app.state.public_knowledge_index = index or PublicKnowledgeIndex()
+        base_index = index or PublicKnowledgeIndex()
+        app.state.public_base_knowledge_index = base_index
+        app.state.public_knowledge_index = PublicRetrievalRuntime(
+            base_index, config_path=retrieval_config_path, sidecar_path=figure_sidecar_path,
+        )
         app.state.public_generator = generator
         generation_allowed = os.environ.get(
             "RD_V2_ALLOW_EXTERNAL_GENERATION", "false"
@@ -91,6 +97,8 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None) -> 
             "alive": True, "rag_ready": bool(app.state.public_knowledge_index),
             "workspace": "Apache DolphinScheduler",
             "retrieval_policy": app.state.public_knowledge_index.policy["default_policy"],
+            "runtime_retrieval_policy": app.state.public_knowledge_index.runtime_policy,
+            "approved_image_chunk_count": len(app.state.public_knowledge_index._images),
             "generation": app.state.public_generation_config,
         }
 
