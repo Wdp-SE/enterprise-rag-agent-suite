@@ -1,0 +1,358 @@
+{
+  "corpus_manifest_sha256": "ab00dfd18c11c0de4511729f9612d3176c8fe95dd390e0bc7ba2a337ff72a0fa",
+  "schema_version": 1,
+  "relations": [
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-934d93c51db69d1b",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines/languages/cmake",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-efd23c36d8833594",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines/languages/cmake",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines/languages/cpp",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-d174cfe0a744e685",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines/languages/cpp",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/class-design",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-b61b74ddd022307b",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/class-design",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-1da83c7a2183a84a",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/coordinate-system",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-341be87cca203fde",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/coordinate-system",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/directory-structure",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-c0c95f354f14f57b",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/directory-structure",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/launch-files",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-4f656eca49b7f60f",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/launch-files",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/message-guidelines",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-5e24aa798a97c7e9",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/message-guidelines",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-f02e1e1467f7144b",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/topic-message-handling",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-8fb9c864c3d06d4e",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/topic-message-handling",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/topic-message-handling/supp-intra-process-comm",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-99846b5eb3439116",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/topic-message-handling/supp-intra-process-comm",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/topic-message-handling/supp-wait_set",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-05e8802e1c7615b4",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/topic-message-handling/supp-wait_set",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/topic-namespaces",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-e1a6f7bce009e553",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/topic-namespaces",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/discussion-guidelines",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-ea2304051b9c1552",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/discussion-guidelines",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/documentation-guidelines",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-b853a533e0f799f6",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/documentation-guidelines",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-1de7fe5150bb26c9",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/license",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-b104509ab1814910",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/license",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/ai-pr-review",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-446492849e98bbbc",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/ai-pr-review",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/ci-checks",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-f091dededa6bff68",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/ci-checks",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-777be2e89dff8df1",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/commit-guidelines",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-3cc8a9f0d6556536",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/commit-guidelines",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-677f3385c613d98b",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/pull-request-guidelines",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-guidelines",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-33469ae7b7c8092c",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/review-guidelines",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-tips",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-aa5699802ae32794",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/review-tips",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/testing-guidelines",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-c17304dddc125146",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/testing-guidelines",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/testing-guidelines/integration-testing",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-40c63ab184f1c722",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/testing-guidelines/integration-testing",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/contributing/testing-guidelines/unit-testing",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-424261b8e2785614",
+      "target_document_id": "docs-main:en:autoware-documentation/contributing/testing-guidelines/unit-testing",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-8bddeb43926c63f8",
+      "target_document_id": "docs-main:en:autoware-documentation/datasets/data-anonymization",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/datasets",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-4f45e21feca477da",
+      "target_document_id": "docs-main:en:autoware-documentation/datasets",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/design/autoware-concepts/difference-from-ai-and-auto",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-e0255b809c6883fe",
+      "target_document_id": "docs-main:en:autoware-documentation/design/autoware-concepts/difference-from-ai-and-auto",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/design/autoware-concepts",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-58e88fe4c8d83272",
+      "target_document_id": "docs-main:en:autoware-documentation/design/autoware-concepts",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/design",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-e6626a19267a813c",
+      "target_document_id": "docs-main:en:autoware-documentation/design",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/index",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-eeaf8a6f6c85c9e8",
+      "target_document_id": "docs-main:en:autoware-documentation/index",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/console-settings",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-9f29cea5d812555a",
+      "target_document_id": "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/console-settings",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-17d1bde002f26611",
+      "target_document_id": "docs-main:en:autoware-documentation/installation/additional-settings-for-developers",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-e5c4aa0975622fe8",
+      "target_document_id": "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/enable-multicast-for-lo",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-00743d2c576a30d0",
+      "target_document_id": "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/enable-multicast-for-lo",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-58fb0d282b353da5",
+      "target_document_id": "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-bd63ddc9d83ae8ea",
+      "target_document_id": "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/installation/autoware/docker-installation",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-ffd402828c6cb464",
+      "target_document_id": "docs-main:en:autoware-documentation/installation/autoware/docker-installation",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/installation/autoware/source-installation",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-6717e803a105278e",
+      "target_document_id": "docs-main:en:autoware-documentation/installation/autoware/source-installation",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/installation",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-a5f4d5a8872f0bc1",
+      "target_document_id": "docs-main:en:autoware-documentation/installation",
+      "relation_type": "translation_of"
+    },
+    {
+      "source_document_id": "docs-main:zh:autoware-documentation/tutorials",
+      "verification_status": "candidate",
+      "verification_evidence": "Existing corpus metadata aligns the canonical path to a pinned English source URL; semantic and completeness equivalence has not been manually reviewed.",
+      "relation_id": "path-candidate-e81d903af107b61a",
+      "target_document_id": "docs-main:en:autoware-documentation/tutorials",
+      "relation_type": "translation_of"
+    }
+  ]
+}

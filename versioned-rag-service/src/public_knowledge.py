@@ -13,6 +13,8 @@ from pathlib import Path
 
 import numpy as np
 
+from src.document_relations import DocumentRelationIndex
+
 
 ROOT = Path(__file__).resolve().parents[1] / "public_corpus"
 TOKEN_RE = re.compile(r"[a-z][a-z0-9_.-]*|[0-9]+|[\u3400-\u9fff]+", re.I)
@@ -156,6 +158,9 @@ class PublicKnowledgeIndex:
     def __init__(self, root: Path = ROOT):
         self.root = root
         self.manifest = json.loads((root / "corpus_manifest.json").read_text(encoding="utf-8"))
+        # Relationship integrity is independent from ordinary retrieval. An absent or
+        # stale registry disables relationship claims, but leaves corpus search usable.
+        self.document_relations = DocumentRelationIndex.from_corpus(root, self.manifest)
         self.chunks = json.loads((root / "chunks.json").read_text(encoding="utf-8"))
         self.matrix = np.load(root / "dense_vectors.npy", allow_pickle=False)
         if len(self.chunks) != len(self.matrix):
