@@ -689,6 +689,43 @@ def test_public_query_returns_provider_diagnostics_without_changing_answer_contr
     assert payload["generation"]["returned_model"] == "deepseek-v4-flash"
     assert payload["generation"]["usage"]["total_tokens"] == 100
     assert len(payload["generation"]["request_id"]) == 32
+    assert payload["evidence_support"]["label"] in {"较强", "一般", "有限"}
+    assert "不代表答案正确率" in payload["evidence_support"]["summary"]
+
+
+def test_answer_evidence_support_is_explainable_and_penalizes_translation_or_version_risks():
+    source = {
+        "chunk_id": "chunk-1", "document_key": "guide/launch",
+        "content": "Start Autoware launch modules with command line parameters.",
+        "document_title": "Autoware Launch", "heading": "Start modules",
+        "heading_path": ["Launch", "Start modules"],
+        "source_type": "official_documentation", "modality": "text",
+    }
+    strong = public_api._answer_evidence_support(
+        "How start Autoware launch modules with command line parameters?", [source], [],
+    )
+    assert strong["label"] == "较强"
+    assert strong["matched_terms"]
+    assert strong["total_terms"] == strong["matched_terms"] + strong["missing_terms"]
+    assert "覆盖问题关键词" in strong["summary"]
+
+    risky = public_api._answer_evidence_support(
+        "How start Autoware launch modules with command line parameters?",
+        [{**source, "source_type": "community_translation"}],
+        [{"kind": "verified_version_text_difference", "document_key": "guide/launch"}],
+    )
+    assert risky["label"] == "有限"
+    assert "译文" in risky["summary"]
+    assert "路径未匹配官方版本" in risky["summary"]
+    assert "版本文字差异" in risky["summary"]
+
+    aligned_translation = public_api._answer_evidence_support(
+        "How start Autoware launch modules with command line parameters?",
+        [{**source, "source_type": "community_translation",
+          "translation_alignment_status": "path_matched_to_official_main"}],
+        [],
+    )
+    assert aligned_translation["label"] == "一般"
 
 
 def test_public_query_keeps_evidence_for_safe_provider_error_categories():

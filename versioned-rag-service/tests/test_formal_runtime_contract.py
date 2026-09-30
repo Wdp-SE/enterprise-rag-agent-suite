@@ -47,6 +47,21 @@ def test_structured_answer_schema_is_strict() -> None:
         )
 
 
+def test_answer_prompt_requires_concise_direct_and_scope_bound_responses() -> None:
+    from src.answer_generation import SYSTEM_PROMPT
+
+    assert "先直接回答问题" in SYSTEM_PROMPT
+    assert "1 到 3 个简短要点" in SYSTEM_PROMPT
+    assert "不得拼接重复的启动命令" in SYSTEM_PROMPT
+    assert "最多给一个禁用参数和一个启用参数" in SYSTEM_PROMPT
+    assert "只引用直接支撑回答所需的最少来源" in SYSTEM_PROMPT
+    assert "启动命令只写一次" in SYSTEM_PROMPT
+    assert "开关参数单独列出，不要重复启动命令" in SYSTEM_PROMPT
+    assert "不列控制器模式等无关参数" in SYSTEM_PROMPT
+    assert "不要在 final_answer 中自行编写 [1] 形式的引用编号" in SYSTEM_PROMPT
+    assert "不得补充证据未明确支持的参数" in SYSTEM_PROMPT
+
+
 def test_structured_review_schema_requires_human_review_and_grounded_checks() -> None:
     value = StructuredAnswerGenerator._decode_review({
         "change_interpretation": "将启动参数的优先级提升。",
@@ -138,6 +153,7 @@ def test_deepseek_generator_uses_its_key_and_non_thinking_json_mode(monkeypatch)
     assert captured["authorization_present"] is True
     assert captured["body"]["thinking"] == {"type": "disabled"}
     assert captured["body"]["response_format"] == {"type": "json_object"}
+    assert "1 到 3 个简短要点" in captured["body"]["messages"][0]["content"]
     assert captured["body"]["max_tokens"] >= 256
     assert "test-secret-value" not in json.dumps(captured["body"])
     assert captured["timeout"] > 0

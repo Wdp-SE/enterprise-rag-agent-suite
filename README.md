@@ -125,7 +125,7 @@ python .\evaluation\real_world_retrieval\final_selection\run_selection.py chunk 
     & .\change-review-agent\.venv\Scripts\python.exe -m pip install -r demo-ui\requirements.txt
     .\start_prototype.ps1
 
-打开 http://127.0.0.1:8502/；本地 RAG API 文档为 http://127.0.0.1:8765/docs。无模型密钥时仍可检索和进行会话内变更审查。默认生成服务为 DashScope/Qwen（`DASHSCOPE_API_KEY`）；也支持 DeepSeek（`RD_V2_GENERATION_PROVIDER=deepseek`、`RD_V2_GENERATION_MODEL=deepseek-v4-flash`、`DEEPSEEK_API_KEY`）。仅在本机 RAG 后端或 Render RAG 后端配置密钥，不要写入仓库、日志或 Streamlit Secrets。详细字段见[部署指南](project_delivery/public_value_prototype/free_deployment_guide.md)和[工作台说明](demo-ui/README.md)。
+打开 http://127.0.0.1:8502/；本地 RAG API 文档为 http://127.0.0.1:8765/docs。启动脚本默认优先使用 DeepSeek（`deepseek-flash`）；本机配置所选供应商的 API Key 后会自动启用回答生成，缺少密钥时仍可检索和进行会话内变更审查。运行 `./start_prototype.ps1 -DisableGeneration` 可关闭生成。也支持 DashScope/Qwen：设置 `RD_V2_GENERATION_PROVIDER=dashscope` 与 `DASHSCOPE_API_KEY`。仅在本机 RAG 后端或 Render RAG 后端配置密钥，不要写入仓库、日志或 Streamlit Secrets。详细字段见[部署指南](project_delivery/public_value_prototype/free_deployment_guide.md)和[工作台说明](demo-ui/README.md)。
 
 应用不设固定会话生成次数上限。后端生成开关、模型密钥和供应商服务状态共同决定能否生成；供应商的计费余额、限流和网络超时仍可能导致单次失败。失败时保留可核查的检索证据，不能承诺“只要有余额每次必定成功”。`/health` 可区分关闭生成、缺密钥与已配置但未经实时验证；成功或失败请求返回不含密钥的生成诊断，便于定位问题。当前仅将两张经过人工复核的 Autoware 图中文字纳入检索，不推断复杂图形关系；复核清单见[图片证据说明](versioned-rag-service/public_corpus_autoware/FIGURE_EVIDENCE.md)。
 

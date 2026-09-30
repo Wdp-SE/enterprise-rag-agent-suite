@@ -1,7 +1,8 @@
 param(
     [int]$RagPort = 8765,
     [int]$UiPort = 8502,
-    [switch]$EnableGeneration
+    [switch]$EnableGeneration,
+    [switch]$DisableGeneration
 )
 
 $ErrorActionPreference = 'Stop'
@@ -21,7 +22,8 @@ if (-not (Test-Path -LiteralPath $uiPython -PathType Leaf)) {
     # Keep the existing local virtual environment usable after the folder rename.
     $uiPython = Join-Path $legacyAgentRoot '.venv\Scripts\python.exe'
 }
-$officialCorpus = Join-Path $ragRoot 'public_corpus\retrieval_policy.json'
+$autowareCorpus = Join-Path $ragRoot 'public_corpus_autoware'
+$officialCorpus = Join-Path $autowareCorpus 'retrieval_policy.json'
 
 # Codex can inject a loopback HTTP proxy into its child processes. If that
 # proxy is unavailable while Windows has a configured system proxy, let the
@@ -114,12 +116,25 @@ New-Item -ItemType Directory -Path $runRoot -Force | Out-Null
 
 $env:APP_ENV = 'public_demo'
 $env:RD_V2_PROJECT_ROOT = $ragRoot
-if ($EnableGeneration) {
-    $provider = if ([string]::IsNullOrWhiteSpace($env:RD_V2_GENERATION_PROVIDER)) {
-        'dashscope'
-    } else {
-        $env:RD_V2_GENERATION_PROVIDER.Trim().ToLowerInvariant()
-    }
+$env:RAG_PUBLIC_CORPUS_ROOT = $autowareCorpus
+$env:RAG_PUBLIC_RETRIEVAL_CONFIG = Join-Path $autowareCorpus 'public_retrieval_runtime.json'
+if ($EnableGeneration -and $DisableGeneration) {
+    throw '不能同时指定 -EnableGeneration 和 -DisableGeneration。'
+}
+$provider = if ([string]::IsNullOrWhiteSpace($env:RD_V2_GENERATION_PROVIDER)) {
+    'deepseek'
+} else {
+    $env:RD_V2_GENERATION_PROVIDER.Trim().ToLowerInvariant()
+}
+$providerKeyName = switch ($provider) {
+    'dashscope' { 'DASHSCOPE_API_KEY' }
+    'deepseek' { 'DEEPSEEK_API_KEY' }
+    default { $null }
+}
+$providerKeyConfigured = $providerKeyName -and
+    -not [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($providerKeyName, 'Process'))
+$generationEnabled = -not $DisableGeneration -and ($EnableGeneration -or $providerKeyConfigured)
+if ($generationEnabled) {
     switch ($provider) {
         'dashscope' {
             $apiKeyName = 'DASHSCOPE_API_KEY'
@@ -127,7 +142,7 @@ if ($EnableGeneration) {
         }
         'deepseek' {
             $apiKeyName = 'DEEPSEEK_API_KEY'
-            $defaultModel = 'deepseek-v4-flash'
+            $defaultModel = 'deepseek-flash'
         }
         default {
             throw 'RD_V2_GENERATION_PROVIDER 仅支持 dashscope 或 deepseek。'
@@ -141,7 +156,7 @@ if ($EnableGeneration) {
         $env:RD_V2_GENERATION_MODEL = $defaultModel
     }
 }
-$env:RD_V2_ALLOW_EXTERNAL_GENERATION = if ($EnableGeneration) { 'true' } else { 'false' }
+$env:RD_V2_ALLOW_EXTERNAL_GENERATION = if ($generationEnabled) { 'true' } else { 'false' }
 
 if ($useWindowsProxyFallback) {
     Write-Host '检测到不可用的本机代理；RAG/UI 子进程本次回退到 Windows 系统代理，不修改永久环境变量。'

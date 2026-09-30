@@ -27,6 +27,7 @@ def _mock_client(monkeypatch):
     monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
         "workspace": "Apache DolphinScheduler", "baseline_version": "3.4.2",
         "current_version": "3.4.3", "source_count": 52, "chunk_count": 659,
+        "languages": ["zh-CN", "en-US"],
     })
     monkeypatch.setattr(PublicKnowledgeClient, "documents", lambda self: [{
         "document_id": CHUNK["document_id"], "document_key": CHUNK["document_key"],
@@ -43,6 +44,10 @@ def _mock_client(monkeypatch):
     monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: {
         "answer": "上游参数优先于启动参数。", "sources": [dict(CHUNK)],
         "evidence": [dict(CHUNK)], "status": "OK", "consistency_notes": [],
+        "evidence_support": {
+            "level": "partial", "label": "一般",
+            "summary": "引用覆盖了部分问题关键词；该提示不代表答案正确率。",
+        },
     })
     monkeypatch.setattr(PublicKnowledgeClient, "review_advice", lambda self, change_summary, evidence_chunk_ids: {
         "status": "OK", "answer": "依据引用片段，建议核对相关资料中的参数顺序。",
@@ -154,7 +159,34 @@ def test_workbench_warns_when_connected_public_rag_workspace_is_not_autoware(mon
     app = AppTest.from_file(APP, default_timeout=40).run()
 
     assert not app.exception
-    assert any("当前知识服务与 Autoware 演示资料不匹配" in item.value for item in app.warning)
+    warning = "\n".join(item.value for item in app.warning)
+    assert "Autoware 工作台不匹配" in warning
+    assert "RAG_API_BASE_URL" not in warning
+    assert "public_corpus_autoware" not in warning
+
+
+def test_home_hides_operational_and_corpus_detail_copy(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+    original_workspace = PublicKnowledgeClient.workspace
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
+        **original_workspace(self),
+        "corpus_scope": "Detailed corpus paths, repositories and version matching notes",
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+
+    assert not app.exception
+    visible = "\n".join(
+        item.value
+        for group in (app.markdown, app.caption, app.info, app.warning)
+        for item in group
+    )
+    assert "选择要查看的功能页面" not in visible
+    assert "精选资料范围，不代表上游项目全量" not in visible
+    assert "独立工程演示，并非上游官方产品" not in visible
+    assert "community Chinese translation snapshot" not in visible
+    assert "Detailed corpus paths" not in visible
+    assert "进入知识检索" in "\n".join(item.label for item in app.button)
 
 
 def test_agent_context_filter_keeps_scope_guard_and_rejects_stale_results():
@@ -234,9 +266,11 @@ def test_public_rag_keeps_answer_before_real_cited_source(monkeypatch):
     assert not app.exception
     text = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
     assert {item.value for item in app.subheader} >= {"回答", "引用依据"}
-    assert "在 GitHub 查看固定版本来源" in text
+    assert "查看固定提交来源" in text
     assert "[1] 参数优先级" in text
     assert "引用编号：[1]" in text
+    assert "证据支撑度：一般" in text
+    assert "不代表答案正确率" in text
     assert "证据可信度" not in text
 
 
@@ -624,11 +658,18 @@ def test_suggested_questions_match_current_autoware_corpus(monkeypatch):
     app = AppTest.from_file(APP, default_timeout=40).run()
     next(button for button in app.button if button.label == "版本化知识检索").click().run()
 
-    options = app.selectbox(key="official_example").options
+    example_picker = app.selectbox(key="official_example")
+    options = example_picker.options
     assert "Which parameters configure the planning validator?" in options
-    assert "Which input topics does the freespace planner use to plan a trajectory?" in options
-    assert "How do RightOfWay tags change the intersection module's attention area?" in options
+    assert "How does the start planner decide when to generate a pull-out path?" in options
+    assert "What does the planning validator check before publishing a trajectory?" in options
     assert not any("DolphinScheduler" in question or "API server" in question for question in options)
+    assert not any(item.label == "从已收录资料选择示例问题" for item in app.expander)
+    assert example_picker.label == "示例问题（选择后可编辑）"
+
+    selected_question = "Which parameters configure the planning validator?"
+    example_picker.set_value(selected_question).run()
+    assert app.text_area(key="official_question").value == selected_question
 
 
 def test_evidence_image_markdown_uses_text_placeholder_instead_of_missing_asset(monkeypatch):
@@ -689,10 +730,10 @@ def test_public_rag_without_generation_shows_compact_evidence_fallback(monkeypat
 
     assert not app.exception
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
-    assert "当前仅展示检索证据" in visible
-    assert "start_prototype.ps1 -EnableGeneration" in visible
-    assert "DASHSCOPE_API_KEY" in visible
-    assert "DEEPSEEK_API_KEY" in visible
+    assert "检索证据仍可查看" in visible
+    assert "模型生成尚未启用" in visible
+    assert "API_KEY" not in visible
+    assert "start_prototype.ps1" not in visible
     assert "[1] 参数优先级" in visible
     assert "检索候选" not in visible
     assert "只想核对原文？" in {item.label for item in app.expander}
@@ -712,8 +753,8 @@ def test_public_rag_generation_failure_explains_backend_fallback(monkeypatch):
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
 
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
-    assert "后端返回未分类状态：FAIL_CLOSED" in visible
-    assert "不能判断为网络或密钥故障" in visible
+    assert "生成未完成（FAIL_CLOSED）" in visible
+    assert "联系维护者时请提供请求编号" in visible
     assert "[1] 参数优先级" in visible
 
 
@@ -736,9 +777,10 @@ def test_abstained_answer_explains_missing_retrieval_terms(monkeypatch):
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
 
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
-    assert "模型服务已正常响应" in visible
+    assert "模型服务正常" in visible
     assert "health、check、endpoint" in visible
-    assert "更像是检索证据没有覆盖问题重点，不是网络或 API Key 故障" in visible
+    assert "未覆盖关键词" in visible
+    assert "不是网络或 API Key 故障" not in visible
     assert "[1] 参数优先级" in visible
 
 
@@ -763,8 +805,8 @@ def test_abstained_answer_distinguishes_keyword_match_from_supported_answer(monk
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
 
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
-    assert "词面关键词，但这不代表内容足以回答问题" in visible
-    assert "这是模型未形成受证据支持的回答，不是网络或 API Key 故障" in visible
+    assert "没有找到可支持答案的原文" in visible
+    assert "这是证据不足导致的拒答，不是网络或 API Key 故障" in visible
     assert "当前证据覆盖了部分问题关键词" not in visible
 
 
@@ -779,7 +821,7 @@ def test_public_rag_has_no_fixed_generation_count_limit(monkeypatch):
     assert app.button(key="knowledge_generate").disabled is False
     captions = [item.value for item in app.caption]
     assert not any("剩余生成次数" in caption or "生成额度已用完" in caption for caption in captions)
-    assert any("未设置固定生成次数上限" in caption for caption in captions)
+    assert any("应用不设固定生成次数上限" in caption for caption in captions)
 
 
 def test_provider_connection_failure_explains_proxy_or_network(monkeypatch):
@@ -795,8 +837,8 @@ def test_provider_connection_failure_explains_proxy_or_network(monkeypatch):
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
 
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
-    assert "RAG 后端无法连接模型服务" in visible
-    assert "HTTPS 代理配置" in visible
+    assert "后端无法连接模型服务" in visible
+    assert "检索证据已保留" in visible
     assert "[1] 参数优先级" in visible
 
 
@@ -814,12 +856,12 @@ def test_provider_rejection_and_invalid_response_explain_safe_fallback(monkeypat
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
     assert "模型服务拒绝了请求" in visible
-    assert "检索证据仍保留" in visible
+    assert "检索证据已保留" in visible
 
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
-    assert "模型返回内容未满足引用回答要求" in visible
-    assert "检索证据仍保留" in visible
+    assert "模型返回内容未满足引用要求" in visible
+    assert "检索证据已保留" in visible
 
 
 def test_generated_answer_typography_is_large_and_readable():
@@ -890,7 +932,8 @@ def test_rag_actions_alerts_and_typography_use_neutral_accessible_styles(monkeyp
     assert ".st-key-knowledge_search button" in PUBLIC_CSS
     assert "[data-testid=\"stAlert\"]" in PUBLIC_CSS
     assert "background:var(--paper)!important" in PUBLIC_CSS
-    assert "font-size:clamp(1.08rem,1rem + .18vw,1.24rem);line-height:1.65" in PUBLIC_CSS
+    assert "[data-testid=\"stMarkdownContainer\"] p" in PUBLIC_CSS
+    assert "font-size:clamp(1.14rem,1.06rem + .2vw,1.3rem)!important;" in PUBLIC_CSS
 
 
 def test_streamlit_alert_inner_layers_cannot_restore_blue_backgrounds():
@@ -920,7 +963,8 @@ def test_workbench_theme_keeps_neutral_base_and_equal_home_cards():
     assert ".st-key-public_rag_module,.st-key-public_agent_module {" in PUBLIC_CSS
     assert "background:var(--paper)!important;color:var(--ink);" in PUBLIC_CSS
     assert '[data-testid="stSelectbox"] .react-aria-ComboBox [role="group"] {' in PUBLIC_CSS
-    assert "min-height:20.75rem;padding:3.8rem clamp(4rem,5vw,4.5rem) 3.25rem!important;" in PUBLIC_CSS
+    assert "min-height:25rem;padding:4.2rem clamp(3.5rem,4.6vw,4.5rem) 3.7rem!important;" in PUBLIC_CSS
+    assert "grid-template-columns:repeat(5,minmax(0,1fr))" in PUBLIC_CSS
     assert '[data-testid="stHorizontalBlock"]:has(.st-key-public_rag_module) {flex-direction:column!important;' in PUBLIC_CSS
     assert '.st-key-public_rag_module::before {background-image:url("' + _frame_data_uri("rag-book-frame.svg") + '");}' in PUBLIC_CSS
     assert '.st-key-public_agent_module::before {background-image:url("' + _frame_data_uri("agent-robot-frame.svg") + '");}' in PUBLIC_CSS
@@ -938,9 +982,20 @@ def test_home_module_action_clearance_and_readable_text_scale_are_preserved():
 
     assert "v368" in book_frame
     assert "M320 381v32" in book_frame
-    assert "min-height:20.75rem;padding:3.8rem clamp(4rem,5vw,4.5rem) 3.25rem!important;" in PUBLIC_CSS
-    assert "p,li {font-size:clamp(1.08rem,1rem + .18vw,1.24rem);line-height:1.65;color:var(--body);}" in PUBLIC_CSS
-    assert "[data-testid=\"stButton\"] button {min-height:3rem;border-radius:4px;font-size:clamp(1.08rem,1rem + .15vw,1.2rem);" in PUBLIC_CSS
+    assert "min-height:25rem;padding:4.2rem clamp(3.5rem,4.6vw,4.5rem) 3.7rem!important;" in PUBLIC_CSS
+    assert "p,li {font-size:clamp(1.14rem,1.06rem + .2vw,1.3rem);line-height:1.65;color:var(--body);}" in PUBLIC_CSS
+    assert "[data-testid=\"stButton\"] button {min-height:3rem;border-radius:4px;font-size:clamp(1.12rem,1.05rem + .15vw,1.24rem);" in PUBLIC_CSS
+
+
+def test_workbench_typography_overrides_streamlit_default_small_text_nodes():
+    from components.public_theme import PUBLIC_CSS
+
+    assert '[data-testid="stMarkdownContainer"] p,' in PUBLIC_CSS
+    assert '[data-testid="stMarkdownContainer"] li {font-size:clamp(1.14rem,1.06rem + .2vw,1.3rem)!important;' in PUBLIC_CSS
+    assert '[data-testid="stButton"] button [data-testid="stMarkdownContainer"] p {color:inherit!important;font-size:clamp(1.12rem,1.05rem + .15vw,1.24rem)!important;line-height:1.25!important;}' in PUBLIC_CSS
+    assert '[data-testid="stWidgetLabel"] p {font-size:1.12rem!important;line-height:1.45!important;}' in PUBLIC_CSS
+    assert '[data-testid="stExpander"] summary p {font-size:1.14rem!important;' in PUBLIC_CSS
+    assert '.home-snapshot {color:var(--muted);font-size:1.18rem;line-height:1.55;}' in PUBLIC_CSS
 
 
 def test_corpus_image_references_have_readable_local_descriptions():
@@ -984,7 +1039,7 @@ def test_wide_layout_uses_full_main_column_and_unframed_back_arrow():
     assert ".block-container {background:var(--paper);" in PUBLIC_CSS
     assert '[data-testid="stHeader"] {background:var(--paper);}' in PUBLIC_CSS
     assert '[data-testid="stSidebar"][aria-expanded="true"]' in PUBLIC_CSS
-    assert "width:clamp(280px,19vw,360px)!important;" in PUBLIC_CSS
+    assert "width:clamp(260px,17vw,330px)!important;" in PUBLIC_CSS
     assert '[data-testid="stSidebar"][aria-expanded="false"]' in PUBLIC_CSS
     assert "flex:0 0 0!important;" in PUBLIC_CSS
     assert '[class*="st-key-page_header_"] [data-testid="stColumn"] > [data-testid="stVerticalBlock"] {' in PUBLIC_CSS
@@ -992,10 +1047,11 @@ def test_wide_layout_uses_full_main_column_and_unframed_back_arrow():
     assert '[class*="st-key-page_header_"] [data-testid="stMarkdownContainer"] {overflow:visible;display:flex;align-items:center;min-height:2.35rem;margin:0!important;' in PUBLIC_CSS
     assert '[class*="st-key-page_header_"] [data-testid="stMarkdownContainer"] p {margin:0!important;' in PUBLIC_CSS
     assert ".breadcrumb-separator {height:2.35rem;box-sizing:border-box;display:flex;align-items:center;justify-content:center;" in PUBLIC_CSS
-    assert "font-size:clamp(1.08rem,1rem + .18vw,1.24rem);line-height:1.65" in PUBLIC_CSS
-    assert "font-size:clamp(1.08rem,1rem + .15vw,1.2rem);font-weight:640" in PUBLIC_CSS
-    assert "font-size:1.25rem;font-weight:560" in PUBLIC_CSS
-    assert "grid-template-columns:1.3fr 1.05fr 1.1fr 1.2fr .95fr" in PUBLIC_CSS
+    assert "font-size:clamp(1.14rem,1.06rem + .2vw,1.3rem);line-height:1.65" in PUBLIC_CSS
+    assert "font-size:clamp(1.12rem,1.05rem + .15vw,1.24rem);font-weight:640" in PUBLIC_CSS
+    assert "font-size:1.3rem;font-weight:560" in PUBLIC_CSS
+    assert "grid-template-columns:repeat(5,minmax(0,1fr))" in PUBLIC_CSS
+    assert ".status-cell {display:flex;flex-direction:column;justify-content:center;min-height:6.1rem;" in PUBLIC_CSS
     assert "background:transparent!important;color:var(--ink)!important;border:0!important;box-shadow:none!important;" in PUBLIC_CSS
 
 
@@ -1006,12 +1062,13 @@ def test_workbench_navigation_is_larger_and_content_has_no_forced_empty_viewport
     assert ".breadcrumbs-current {height:2.35rem;" in PUBLIC_CSS
     assert "color:var(--ink);font-size:1.2rem;font-weight:740" in PUBLIC_CSS
     assert "[data-testid=\"stSidebar\"] [data-testid=\"stButton\"] button" in PUBLIC_CSS
-    assert "font-size:1.25rem;font-weight:560" in PUBLIC_CSS
+    assert "font-size:1.3rem;font-weight:560" in PUBLIC_CSS
+    assert '[data-testid="stWidgetLabel"] p {font-size:1.12rem!important;line-height:1.45!important;}' in PUBLIC_CSS
     assert 'width:100%!important;max-width:100%!important;flex-wrap:wrap!important;' in PUBLIC_CSS
     assert '.breadcrumbs-current {height:auto;min-height:2.35rem;}' in PUBLIC_CSS
     assert "margin:1.7rem 0 .85rem" in PUBLIC_CSS
     assert "[data-testid=\"stMainBlockContainer\"] > [data-testid=\"stVerticalBlock\"] {min-height:calc(100vh" not in PUBLIC_CSS
-    assert ".block-container {background:var(--paper);max-width:none!important;width:100%!important;margin:0!important;box-sizing:border-box;\n  padding:3rem 1.65rem 1.5rem;overflow:visible;}" in PUBLIC_CSS
+    assert ".block-container {background:var(--paper);max-width:none!important;width:100%!important;margin:0!important;box-sizing:border-box;\n  padding:3rem 1.25rem 1.5rem;overflow:visible;}" in PUBLIC_CSS
     assert "textarea::placeholder" in PUBLIC_CSS
 
 

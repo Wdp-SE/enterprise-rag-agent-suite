@@ -304,7 +304,7 @@ def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None
         if is_image:
             st.markdown(f"**[{index}] 截图 OCR 证据 · {document_title}**")
             st.caption(f"章节：{section}　｜　派生证据　｜　{version_label} {version}　｜　{row.get('locale', '')}")
-            st.info("截图 OCR 文字 · 经目视校对的派生证据，需对照原图；不等同于官方文档正文。")
+            st.info("人工校对的 OCR 派生证据，请对照原图。")
             st.write(row.get("content", ""))
             st.markdown(f"[查看原图]({row['raw_url']})")
         else:
@@ -315,11 +315,11 @@ def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None
             st.write(content)
             if row.get("source_type") == "community_translation":
                 if row.get("translation_alignment_status") == "path_matched_to_official_main":
-                    st.caption("社区维护的中文译文；此页按固定 canonical 路径匹配到官方 main 快照，不代表官方中文译文。")
+                    st.caption("路径已匹配 · 内容未逐句核验。")
                 else:
-                    st.caption("社区维护的中文译文；当前官方 main 快照中未找到同路径英文原文，版本对应关系未核实。")
+                    st.caption("英文对应关系待核验。")
                 if row.get("rendered_url"):
-                    st.markdown(f"[阅读社区中文页面（在线版本）]({row['rendered_url']})")
+                    st.markdown(f"[阅读社区译文]({row['rendered_url']})")
                 if row.get("english_source_url"):
                     st.markdown(f"[查看对应英文原文]({row['english_source_url']})")
                 elif row.get("canonical_url"):
@@ -330,8 +330,6 @@ def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None
             st.code(f"document_key={row.get('document_key', '')}\nchunk_id={row.get('chunk_id', '')}\npolicy={row.get('retrieval_policy', '')}")
             if is_image:
                 st.code(f"figure_id={row.get('figure_id', '')}\ncommit={row.get('commit', '')}\nsha256={row.get('sha256', '')}")
-            if "retrieval_score" in row:
-                st.caption(f"候选排序分数：{row['retrieval_score']:.4f}。该分数仅用于当前检索策略下的结果排序，不代表事实正确性。")
 
 
 def _verified_image_citation(row: dict) -> bool:
@@ -494,11 +492,7 @@ def _home(ready: bool, workspace: dict | None) -> None:
     language_label = " / ".join("中文" if value == "zh-CN" else "English" if value == "en-US" else value for value in locales) or "服务连接后确认"
     st.markdown('<div class="masthead"><span class="kicker">公开研发资料 / 版本化知识空间</span></div>', unsafe_allow_html=True)
     st.title("研发知识版本服务与变更影响审查")
-    st.write(f"基于 {name} 官方英文资料与社区中文译本，提供按版本检索、引用溯源和研发资料变更影响审查。")
-    st.markdown(
-        '<div class="public-note">独立工程演示，并非上游官方产品。假设变更仅保留在当前会话，不修改上游项目或公共资料。</div>',
-        unsafe_allow_html=True,
-    )
+    st.write(f"基于 {name} 已收录资料，提供版本检索、引用溯源与变更影响审查。")
     state = "已连接" if ready else "等待连接"
     status = [
         ("知识空间", name),
@@ -513,26 +507,19 @@ def _home(ready: bool, workspace: dict | None) -> None:
         for label, value in status
     )
     st.markdown(f'<div class="status-grid">{cells}</div>', unsafe_allow_html=True)
-    if workspace and workspace.get("corpus_scope"):
-        st.caption(str(workspace["corpus_scope"]))
-    coverage = _source_coverage_text(workspace)
-    if coverage:
-        st.caption(coverage)
     left, right = st.columns(2, gap="medium")
     with left:
         with st.container(border=True, key="public_rag_module"):
             _module_heading("版本化研发知识服务 · RAG")
             st.markdown("### 版本化知识检索与问答")
             st.write("按版本与语言范围检索研发资料，查看固定来源和引用依据，核对不同快照间的资料差异。")
-            st.caption("版本范围 · 资料检索 · 引用溯源 · 版本差异")
             st.button("进入知识检索", type="primary", use_container_width=True,
                       on_click=_navigate, args=("版本检索与问答",))
     with right:
         with st.container(border=True, key="public_agent_module"):
             _module_heading("Agent · 研发资料变更审查")
             st.markdown("### 研发资料变更影响审查")
-            st.write("基于输入的假设变更发现待核对资料、汇集证据并提供修改建议，由人工确认。")
-            st.caption("影响候选 · 引用依据 · 修改建议 · 人工审核")
+            st.write("根据变更描述查找相关资料并整理修改建议，由人工确认。")
             st.button("发起变更审查", type="primary", use_container_width=True,
                       on_click=_navigate, args=("新建变更审查",))
     st.markdown('<div class="section-rule">业务流程</div>', unsafe_allow_html=True)
@@ -555,7 +542,6 @@ def _use_example() -> None:
 
 def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | None) -> None:
     _page_header("知识服务", "版本化知识检索与问答", page_key="knowledge")
-    st.caption("先确定资料范围，再提出问题；回答下方始终保留可核对的官方来源。")
     versions = _published_versions(workspace)
     current = _confirmed_current_version(workspace)
     name = _workspace_name(workspace)
@@ -572,16 +558,10 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
         latest_source_time = _format_snapshot_timestamp(
             workspace.get("latest_source_retrieval_timestamp") if workspace else None
         )
-        st.caption(
-            f"默认使用 {default_version_label}；该范围只覆盖已固定快照，并非单一软件发行版本。"
-            "上游更新需同步入库后才可检索。"
-        )
         if latest_source_time:
-            st.caption(f"最近收录资料：{latest_source_time}。")
+            st.caption(f"最近收录：{latest_source_time}")
     else:
-        st.caption(
-            "无法确认最新已收录版本；下拉框中的版本只是离线回退配置，并不代表当前知识库的最新版本。"
-        )
+        st.caption("暂未获取当前版本信息；请以可选范围为准。")
     with st.container(border=True, key="knowledge_scope"):
         a, b, c = st.columns([1, 1, .9], gap="medium")
         with a:
@@ -601,7 +581,6 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
         with c:
             st.markdown("**资料类型**")
             st.caption("官方文档 / 发布说明 / 配置 / 验证资料")
-            st.caption("范围受已收录版本与语言限定")
     if str((workspace or {}).get("repository", "")).casefold() == "autowarefoundation/autoware_universe":
         examples = [
             "如何启动 Autoware 并通过命令行参数启用或禁用模块？",
@@ -617,8 +596,10 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
             "哪些公开资料描述了这个变更的相关模块与验证方式？",
             "What does the selected version's official documentation say about this feature?",
         ]
-    with st.expander("从已收录资料选择示例问题"):
-        st.selectbox("示例问题", examples, key="official_example", on_change=_use_example)
+    st.selectbox(
+        "示例问题（选择后可编辑）", examples, key="official_example",
+        on_change=_use_example,
+    )
     st.markdown('<div class="section-rule">提出问题</div>', unsafe_allow_html=True)
     question = st.text_area("你的问题", value="", placeholder=examples[0], height=100, key="official_question")
     submitted_question = question.strip() or examples[0]
@@ -629,10 +610,10 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                             use_container_width=True)
     with search_col:
         with st.expander("只想核对原文？"):
-            st.caption("直接查看 BM25 检索命中的资料，不调用生成模型。")
+            st.caption("只显示检索原文，不生成回答。")
             search_now = st.button("仅查看检索原文", key="knowledge_search",
                                    disabled=not ready, use_container_width=True)
-    st.caption("应用未设置固定生成次数上限；模型服务商的限流与计费规则仍适用。")
+    st.caption("应用不设固定生成次数上限；费用和限流以服务商规则为准。")
     if ask_now:
         with st.spinner("正在检索资料并核对引用……"):
             payload = _request(lambda: client.query_official(submitted_question, version=version, language=language), fallback="知识问答暂不可用。")
@@ -657,40 +638,37 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
             if payload.get("status") == "OK" and sources:
                 with st.container(border=True, key="generated_answer"):
                     st.write(payload["answer"])
+                    support = payload.get("evidence_support")
+                    if isinstance(support, dict) and support.get("label") and support.get("summary"):
+                        st.caption(f"证据支撑度：{support['label']} · {support['summary']}")
                     citation_numbers = "　".join(f"[{index}]" for index in range(1, len(sources) + 1))
                     st.markdown(f'<span class="citation-index">引用编号：{citation_numbers}</span>', unsafe_allow_html=True)
             else:
                 if payload.get("status") == "NO_EVIDENCE":
-                    st.caption("当前版本与语言范围内没有正分检索命中；请检查检索范围，或改用资料中的关键术语后重试。")
+                    st.caption("当前版本与语言范围内未找到匹配资料；请调整范围或改用原文术语。")
                 elif payload.get("status") == "ABSTAINED":
                     diagnostic = payload.get("generation") or {}
                     reason = diagnostic.get("failure_reason")
                     if reason == "MODEL_NO_SUPPORTED_ANSWER":
                         candidate_count = diagnostic.get("candidate_count", len(payload.get("evidence") or []))
-                        st.caption(
-                            f"模型服务已正常响应，但没有从本次检索证据形成可引用答案；系统已安全拒答。"
-                            f"本次 RAG 召回 {candidate_count} 条候选。"
-                        )
                         coverage = diagnostic.get("evidence_coverage") or {}
                         missing_terms = coverage.get("missing_terms") or []
                         if missing_terms:
                             missing_label = "、".join(str(term) for term in missing_terms[:6])
                             st.caption(
-                                f"候选证据未覆盖问题关键词：{missing_label}。更像是检索证据没有覆盖问题重点，"
-                                "不是网络或 API Key 故障。请核对下方候选，改写关键词或缩小问题后重试。"
+                                f"模型服务正常，但召回的 {candidate_count} 条资料未覆盖关键词：{missing_label}。"
+                                "系统已拒答；请改用原文术语或缩小问题范围。"
                             )
                         else:
                             st.caption(
-                                "候选片段命中了问题中的词面关键词，但这不代表内容足以回答问题；"
-                                "模型仍未给出可核验结论。请核对下方原文是否包含所需接口路径或参数值。"
-                                "这是模型未形成受证据支持的回答，不是网络或 API Key 故障。"
+                                f"模型服务正常，已召回 {candidate_count} 条资料，但没有找到可支持答案的原文；"
+                                "这是证据不足导致的拒答，不是网络或 API Key 故障。"
                             )
                     elif reason == "NO_VALID_EVIDENCE_CITATIONS":
                         claimed = diagnostic.get("claimed_citation_count", 0)
                         valid = diagnostic.get("valid_citation_count", 0)
                         st.caption(
-                            f"模型已返回答案，但引用未能匹配本次检索证据（有效引用 {valid}/{claimed}）；"
-                            "系统已隐藏答案。这是引用校验失败，不是网络或 API Key 故障。"
+                            f"答案引用未通过校验（有效引用 {valid}/{claimed}），已隐藏。请以检索原文为准。"
                         )
                     else:
                         st.caption(
@@ -698,48 +676,35 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                             "请核对下方检索原文及本次检索技术详情。"
                         )
                 elif payload.get("status") == "GENERATION_NOT_CONFIGURED":
-                    st.caption("当前仅展示检索证据；RAG 后端尚未启用在线生成。")
-                    st.caption(
-                        "本地可配置 DASHSCOPE_API_KEY，或选择 DeepSeek 并配置 DEEPSEEK_API_KEY；"
-                        "DeepSeek 需在启动前设置 RD_V2_GENERATION_PROVIDER=deepseek。"
-                        "随后使用 start_prototype.ps1 -EnableGeneration 启动。"
-                        "公网请在 Render 的 RAG 后端配置所选模型的密钥并启用生成开关。"
-                        "不要把密钥填入 Streamlit。"
-                    )
+                    st.caption("模型生成尚未启用；检索证据仍可查看。")
                 elif payload.get("status") == "GENERATION_PROVIDER_UNAVAILABLE":
-                    st.caption(
-                        "RAG 后端无法连接模型服务；请检查运行后端的网络或 HTTPS 代理配置。"
-                        "检索证据仍可用，修复连接后可重新生成。"
-                    )
+                    st.caption("后端无法连接模型服务；检索证据已保留，请稍后重试。")
                 elif payload.get("status") == "GENERATION_PROVIDER_TIMEOUT":
-                    st.caption("模型服务响应超时；本次检索证据已保留。请稍后重试，并用下方请求编号排查后端日志。")
+                    st.caption("模型服务响应超时；检索证据已保留，请稍后重试。")
                 elif payload.get("status") == "GENERATION_RATE_LIMITED":
-                    st.caption("模型服务当前限流；检索证据已保留，请稍后重试。此状态不表示应用内生成次数用完。")
+                    st.caption("模型服务当前限流；检索证据已保留，请稍后重试。")
                 elif payload.get("status") == "GENERATION_BILLING_REQUIRED":
-                    st.caption("模型服务返回计费或余额限制；检索证据已保留。请检查模型服务账户状态。")
+                    st.caption("模型账户余额或计费状态受限；检索证据已保留。")
                 elif payload.get("status") == "GENERATION_AUTH_FAILED":
-                    st.caption("模型服务鉴权失败；检索证据已保留。请检查 RAG 后端的模型密钥与访问权限。")
+                    st.caption("模型服务鉴权失败；检索证据已保留，请联系维护者。")
                 elif payload.get("status") == "GENERATION_PROVIDER_REJECTED":
-                    st.caption(
-                        "模型服务拒绝了请求；请检查模型名称、API Key 状态和账户调用权限。"
-                        "检索证据仍保留，可在配置修正后重新生成。"
-                    )
+                    st.caption("模型服务拒绝了请求；检索证据已保留，请稍后重试。")
                 elif payload.get("status") == "GENERATION_RESPONSE_INVALID":
                     st.caption(
-                        "模型返回内容未满足引用回答要求，本次答案已隐藏；检索证据仍保留。"
+                        "模型返回内容未满足引用要求，答案已隐藏；检索证据已保留。"
                     )
                 elif payload.get("status") == "GENERATION_RESPONSE_TRUNCATED":
-                    st.caption("模型回复因输出长度截断，未形成可核验的完整回答；检索证据仍保留。")
+                    st.caption("模型回复被截断，未形成完整回答；检索证据已保留。")
                 else:
                     diagnostic = payload.get("generation") or {}
                     request_id = diagnostic.get("request_id") or "未返回"
                     st.caption(
-                        f"RAG 后端返回未分类状态：{payload.get('status', 'UNKNOWN')}；下方保留了检索证据。"
-                        f"仅凭该状态不能判断为网络或密钥故障。请求编号：{request_id}，可据此查后端日志。"
+                        f"生成未完成（{payload.get('status', 'UNKNOWN')}）；检索证据已保留。"
+                        f"联系维护者时请提供请求编号：{request_id}。"
                     )
             primary = sources[0] if sources else None
             _consistency(payload.get("consistency_notes", []), primary=primary)
-            st.caption("引用可追溯到原文，但不代表回答中的每句话自动正确。")
+            st.caption("请对照引用原文核验回答。")
             if payload.get("status") == "OK" and sources:
                 _evidence(sources, heading="引用依据")
                 cited_ids = {row.get("chunk_id") for row in sources}
@@ -753,7 +718,6 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
             else:
                 _evidence(payload.get("evidence", []), heading="检索到的资料")
         else:
-            st.caption("以下内容按真实检索顺序排列；请通过版本、章节与官方原文核对。")
             _consistency(payload.get("consistency_notes", []))
             _evidence(payload.get("results", []), heading="检索到的资料")
         with st.expander("本次检索技术详情"):
@@ -818,11 +782,11 @@ def _review_steps(stage: int) -> None:
 
 def _impact_panel(result: dict) -> None:
     st.subheader("影响候选")
-    st.caption("以下资料由检索发现，表示需要进一步核对，不代表已确认实际影响。")
+    st.caption("以下为待核对线索，最终影响由人工确认。")
     references = result.get("confirmed_relations", [])
     if references:
         st.subheader("已确认文档关联")
-        st.caption("官方 PR 明确引用 DSIP，仅确认两份文档有关联；不证明所选段落受影响。")
+        st.caption("该引用只确认文档关联，不代表所选段落受影响。")
         for reference in references:
             with st.container(border=True):
                 st.markdown("**官方实现 PR #18464 → DSIP #18454**")
@@ -843,7 +807,7 @@ def _impact_panel(result: dict) -> None:
         evidence = item["evidence"]
         with st.container(border=True, key=f"impact_row_{index}"):
             st.markdown(f"**待核对资料 · {evidence.get('heading') or evidence.get('document_key')}**")
-            st.caption(f"{evidence.get('version', '')}　｜　{evidence.get('locale', '')}　｜　可能受影响")
+            st.caption(f"{evidence.get('version', '')}　｜　{evidence.get('locale', '')}")
             st.write(item.get("reason", "请核对官方原文与显式引用。"))
             content = _rewrite_relative_source_links(
                 _replace_markdown_images(evidence.get("content", "")), evidence.get("source_url", "")
@@ -857,7 +821,6 @@ def _impact_panel(result: dict) -> None:
 
 def _review_evidence_panel(result: dict) -> None:
     st.subheader("引用依据")
-    st.caption("以下是本次假设变更的官方原文起点；其他可能相关资料列在相应页面。")
     _source_card(result["selected_source"], index=1, key_prefix="selected_source")
 
 
@@ -880,11 +843,7 @@ def _review_advice_panel(result: dict, *, context: str = "review") -> None:
                 f'<p>{escape(str(interpretation))}</p></div>',
                 unsafe_allow_html=True,
             )
-            st.caption(
-                f"模型依据 {len(advice['sources'])} 条当前检索证据整理；"
-                f"以下 {len(candidates)} 条是待核对候选，不代表已确认影响。"
-            )
-            st.caption("同一片段只展示一次；候选与引用依据逐条对应，完整原文按需展开。")
+            st.caption(f"依据 {len(advice['sources'])} 条检索证据整理 · {len(candidates)} 项待核对")
             st.subheader("优先核对的影响候选")
             if candidates:
                 sources_by_id = {
@@ -998,7 +957,7 @@ def _review_advice_panel(result: dict, *, context: str = "review") -> None:
 
 def _patch_panel(result: dict) -> None:
     st.subheader("修改建议对照")
-    st.caption("右侧是你输入的会话内假设草案，不是自动生成或已批准的修改。官方原文不会被覆盖。")
+    st.caption("草案仅用于本次审查，不会写回源资料。")
     before, after = result["patch_candidate"]["before"], result["patch_candidate"]["proposed_after"]
     left, right = st.columns(2, gap="medium")
     with left:
@@ -1107,12 +1066,8 @@ def _save_review_draft() -> None:
 
 def _review_panel(result: dict) -> None:
     st.subheader("人工审核")
-    st.caption(
-        "审核决定会追加写入本地 SQLite，并按匿名浏览器会话隔离查询；不创建公开候选版本，也不修改公共资料。"
-    )
     st.info(
-        "这是演示审计记录，不是企业审批系统：当前没有登录身份或权限控制；公网托管实例的临时磁盘可能在重启/重新部署后清空。"
-        "请勿输入企业机密或个人敏感信息。"
+        "此处为匿名演示审核记录，可能随实例重启清空，不能替代正式审批；请勿提交敏感信息。"
     )
     request_only = result.get("request_mode") == "natural_language"
     review_target = "本次影响分析" if request_only else "会话草案"
@@ -1148,9 +1103,8 @@ def _review_panel(result: dict) -> None:
             file_name=f"review-{safe_id}.json", mime="application/json",
             key=f"review_export_{safe_id}",
         )
-        st.caption("下载内容是本次决定的 JSON 副本；本地 SQLite 只用于此演示实例留存，不等于企业审批系统。")
 
-    with st.expander("本匿名会话最近的审核记录"):
+    with st.expander("最近审核记录"):
         try:
             history = _audit_repository().list_recent(session_id=session_id, limit=10)
             if history:
@@ -1175,7 +1129,7 @@ def _request_candidates_panel(result: dict, *, standalone: bool = False) -> None
     advice_source_ids = {row.get("chunk_id") for row in advice_sources if row.get("chunk_id")}
     if standalone:
         st.subheader("可能相关资料")
-        st.caption("检索和模型引用均表示待核对线索，不代表已经确认实际影响。")
+        st.caption("检索与模型引用均为待核对线索。")
         if advice_sources:
             _evidence(advice_sources, heading="模型引用的官方片段")
         elif retrieved:
@@ -1408,7 +1362,7 @@ def _agent(
         candidates = active_request.get("retrieved_results", [])
         if candidates:
             with st.expander("可选：针对候选资料制作修改草案"):
-                st.caption("只有需要对具体段落准备前后对照时，才选择候选资料；草案仍只保留在当前会话。")
+                st.caption("需要形成段落建议时，可选择一份候选资料。")
                 documents_by_id = {row["document_id"]: row for row in docs if row.get("document_id")}
                 candidate_document_ids = list(dict.fromkeys(row["document_id"] for row in candidates))
                 for row in candidates:
@@ -1452,7 +1406,6 @@ def _agent(
                         "目标段落草案", height=170, key="official_proposed_text",
                         on_change=_save_review_draft,
                     )
-                    st.caption("描述目标版本的段落内容；不会写入当前语料或上游项目。")
                     if st.button(
                         "生成修改前后对照", type="secondary", key="official_create_patch",
                         disabled=not ready or proposed.strip() == selected["content"].strip(),
@@ -1488,7 +1441,6 @@ def _review_subpage(choice: str) -> None:
     if not result:
         st.info("当前会话还没有变更分析结果。请先用自然语言描述变更并检索相关资料。")
         return
-    st.caption("以下内容仅属于当前会话；已确认引用关系与检索建议会明确区分。")
     if choice == "可能相关资料":
         if result.get("request_mode") == "natural_language":
             _request_candidates_panel(result, standalone=True)
@@ -1506,7 +1458,7 @@ def _review_subpage(choice: str) -> None:
 
 def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None) -> None:
     _page_header("知识服务", "版本与历史", page_key="versions")
-    st.write("页面展示已固定提交的公开资料快照。默认范围是 Documentation main 与 Universe 0.52.0 的组合，不代表单一软件发行版本。")
+    st.write("仅展示已收录的公开资料快照；默认范围是多来源组合，并非单一软件发行版本。")
     if not ready:
         st.info("知识服务暂不可用，连接恢复后可查看各版本的真实资料。")
         return
@@ -1517,7 +1469,7 @@ def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None
         workspace.get("latest_source_retrieval_timestamp") if workspace else None
     )
     if latest_source_time:
-        st.caption(f"最近收录资料：{latest_source_time}。上游新内容只有固定提交并同步入库后才会进入检索范围。")
+        st.caption(f"最近收录：{latest_source_time} · 新资料入库后即可检索。")
     first, second = st.columns(2, gap="medium")
     for column, version, label in (
         (first, baseline, _version_option_label(baseline, workspace) if baseline else "历史基线"),
@@ -1547,18 +1499,18 @@ def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None
                             )
                             if row.get("rendered_url"):
                                 st.markdown(f"  [阅读社区中文页面]({row['rendered_url']})")
-    st.info("需要对照版本内容时，在版本化知识检索中选择“全部已收录版本”；版本差异提醒只报告可核验的文字差异。")
+    st.info("版本对照请在知识检索中选择“全部已收录版本”。")
     st.button("进入知识检索", on_click=_navigate, args=("版本检索与问答",))
 
 
 def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None) -> None:
     _page_header("知识服务", "资料来源", page_key="sources")
     name = _workspace_name(workspace)
-    st.write(f"本工作台使用 {name} 固定提交的公开资料；每条结果均保留版本信息与来源链接。")
-    st.caption("英文资料来自 Autoware 官方文档仓库；中文资料来自 Tomato ROS 社区译本，不代表官方翻译，页面会显示来源对应关系是否核验。")
+    st.write(f"资料来自 {name} 公开仓库的固定快照。中文内容为社区译本。")
     coverage = _source_coverage_text(workspace)
     if coverage:
-        st.info(coverage)
+        with st.expander("查看收录范围与语言对应情况"):
+            st.write(coverage)
     if not ready:
         st.info("知识服务暂不可用，资料目录将在连接恢复后显示。")
         return
@@ -1584,11 +1536,11 @@ def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None)
             st.caption(f"{_version_option_label(row.get('version', ''), workspace)}　｜　{row.get('locale', '')}　｜　{kind.get(row.get('source_type'), '公开资料')}")
             st.markdown(f"[查看固定提交来源]({row['source_url']})")
             if row.get("rendered_url"):
-                st.markdown(f"[阅读社区中文页面（网页为在线版本）]({row['rendered_url']})")
+                st.markdown(f"[阅读社区译文]({row['rendered_url']})")
             if row.get("translation_alignment_status") == "path_matched_to_official_main":
-                st.caption("译文 canonical 路径与本项目固定的官方 Documentation main 快照路径匹配；这不等于逐句翻译校验。")
+                st.caption("路径匹配 · 未做逐句翻译校验。")
             elif row.get("source_type") == "community_translation":
-                st.caption("未在固定的官方 main 快照中找到同路径英文原文，版本和内容对应关系未核验。")
+                st.caption("英文对应关系待核验。")
     if len(filtered) > 12:
         with st.expander(f"查看其余 {len(filtered)-12} 份资料"):
             for row in filtered[12:]:
@@ -1765,12 +1717,11 @@ def _benchmark(workspace: dict | None) -> None:
 def _limits() -> None:
     _page_header("系统说明", "已知限制", page_key="limits")
     for index, (title, detail) in enumerate((
-        ("资料范围", "当前知识库只包含来源清单中登记的公开资料，不覆盖上游项目的全部功能。"),
-        ("检索与回答", "检索候选不等于最终答案；无答案问题仍可能返回看似相关的片段。"),
-        ("引用", "引用能帮助定位来源，不保证回答中的每句话事实必然正确。"),
-        ("相关资料", "没有官方显式链接时，Agent 只列出建议人工核对的可能相关资料。"),
-        ("会话边界", "公网假设变更和人工审核不修改上游项目或公共资料。"),
-        ("Rerank", "尚未完成可重复的双语 Rerank 评测，因此未进入默认检索链路。"),
+        ("资料范围", "仅覆盖已收录的公开资料。"),
+        ("回答", "请对照引用原文核验；证据不足时系统会拒答。"),
+        ("影响分析", "没有显式关联时，Agent 提供的是待核对候选。"),
+        ("人工审核", "审核记录按匿名会话保存，公网实例重启后可能清空；不会写回源资料。"),
+        ("检索策略", "双语重排尚未完成评测，暂未启用。"),
     )):
         with st.container(border=True, key=f"limit_row_{index}"):
             st.markdown(f"**{title}**")
@@ -1779,18 +1730,9 @@ def _limits() -> None:
 
 def _about(workspace: dict | None) -> None:
     _page_header("系统说明", "系统说明", page_key="about")
-    st.write("版本化知识服务按版本查找资料并提供原文依据；变更审查 Agent 汇总影响候选与修改建议，由人工确认。")
-    st.markdown('<div class="flow-track"><span>研发资料</span><span>版本检索</span><span>引用溯源</span><span>资料变更</span><span>影响候选</span><span>人工审核</span></div>', unsafe_allow_html=True)
+    st.write("RAG 按版本检索公开资料并保留来源；Agent 根据证据整理影响候选和修改建议，交由人工确认。")
     name = _workspace_name(workspace)
-    st.info(f"本工作台是独立工程演示，不代表 {name} 官方或任何企业内部系统。")
-    if workspace:
-        baseline = workspace.get("baseline_version") or "未配置"
-        current = workspace.get("current_version") or "未配置"
-        st.caption(
-            f"历史基线 {_version_option_label(baseline, workspace)}；默认范围 {_version_option_label(current, workspace)}。"
-            f"资料 {workspace.get('source_count', '未知')} 份；"
-            f"当前默认策略 {workspace.get('retrieval_policy', '由服务配置')}。"
-        )
+    st.caption(f"独立工程演示 · 非 {name} 官方产品 · 不会写回源资料。")
     repositories = (workspace or {}).get("repositories") or [(workspace or {}).get("repository")]
     repository_links = [
         f"[{repository}](https://github.com/{repository})"
@@ -1799,7 +1741,6 @@ def _about(workspace: dict | None) -> None:
     ]
     if repository_links:
         st.markdown("公开来源仓库：" + " · ".join(repository_links))
-    st.caption("提案字段和人工审核流程参考成熟工程变更治理实践；KEP 仅作流程设计启发，不是本知识库语料或兼容性声明。")
 
 
 def render() -> None:
@@ -1818,18 +1759,12 @@ def render() -> None:
     _sync_workspace_version(workspace)
     with st.sidebar:
         st.markdown('<div class="sidebar-mark">工作台导航</div>', unsafe_allow_html=True)
-        st.caption("选择要查看的功能页面")
-        st.caption(f"{_workspace_name(workspace)} 官方英文资料 / 社区中文译本")
-        if workspace and workspace.get("corpus_scope"):
-            st.caption("精选资料范围，不代表上游项目全量")
         for group, pages in NAV_GROUPS:
             st.markdown(f'<div class="nav-heading">{escape(NAV_GROUP_LABELS.get(group, group))}</div>', unsafe_allow_html=True)
             for page in pages:
                 st.button(NAV_PAGE_LABELS.get(page, page), key="nav_" + page,
                           type="primary" if choice == page else "secondary",
                           on_click=_navigate, args=(page,), use_container_width=True)
-        st.divider()
-        st.caption(f"知识空间：{_workspace_name(workspace)}　｜　{'已连接' if ready else '等待连接'}")
     mismatch = public_workspace_mismatch(
         workspace, public_demo=_setting("APP_ENV", "local").strip().casefold() == "public_demo",
     )

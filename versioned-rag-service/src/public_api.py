@@ -85,8 +85,11 @@ def _log_generation_failure(*, operation: str, status: str, diagnostics: dict, e
 
 
 _QUERY_STOPWORDS = frozenset({
-    "what", "is", "the", "a", "an", "of", "for", "to", "does", "do",
-    "which", "in", "on", "from", "and", "or", "can", "could", "would",
+    "what", "is", "the", "a", "an", "of", "for", "to", "does", "do", "how",
+    "which", "in", "on", "from", "and", "or", "can", "could", "would", "with",
+    "如何", "怎么", "什么", "哪些", "是否", "可以", "通过", "并通", "过命", "令行",
+    "行参", "数启", "用或", "或禁", "用模", "请问", "请", "吗", "的", "与", "和",
+    "从", "到", "中", "里", "了", "吗？", "呢",
 })
 
 
@@ -117,6 +120,58 @@ def _evidence_query_coverage(question: str, hits: list[dict]) -> dict:
     matched = [term for term in question_terms if term in evidence_terms]
     missing = [term for term in question_terms if term not in evidence_terms]
     return {"matched_terms": matched, "missing_terms": missing}
+
+
+def _answer_evidence_support(question: str, cited_hits: list[dict], consistency_notes: list[dict]) -> dict | None:
+    """Return an explainable evidence-coverage hint, never a model confidence score."""
+    if not cited_hits:
+        return None
+    coverage = _evidence_query_coverage(question, cited_hits)
+    matched = coverage["matched_terms"]
+    missing = coverage["missing_terms"]
+    total = len(matched) + len(missing)
+    ratio = len(matched) / total if total else 0.0
+
+    cited_document_keys = {row.get("document_key") for row in cited_hits if row.get("document_key")}
+    relevant_differences = [
+        note for note in consistency_notes
+        if isinstance(note, dict) and note.get("document_key") in cited_document_keys
+    ]
+    source_types = {row.get("source_type") for row in cited_hits}
+    modalities = {row.get("modality", "text") for row in cited_hits}
+    unaligned_translation = any(
+        row.get("source_type") == "community_translation"
+        and row.get("translation_alignment_status") != "path_matched_to_official_main"
+        for row in cited_hits
+    )
+    cautions = []
+    if relevant_differences:
+        cautions.append("引用资料存在已识别的版本文字差异")
+    if "community_translation" in source_types:
+        cautions.append("引用包含社区译文，需对照官方原文")
+    if unaligned_translation:
+        cautions.append("社区译文路径未匹配官方版本，来源对应关系未核验")
+    if "image_ocr" in modalities:
+        cautions.append("引用包含图片 OCR 派生内容，需核对原图")
+
+    if total and ratio >= 0.8 and not cautions:
+        level, label = "strong", "较强"
+    elif total and ratio >= 0.45 and not unaligned_translation:
+        level, label = "partial", "一般"
+    else:
+        level, label = "limited", "有限"
+
+    details = [f"引用内容覆盖问题关键词 {len(matched)}/{total}" if total else "未能从问题中提取可比较的关键词"]
+    details.extend(cautions)
+    details.append("这是规则估算的证据覆盖提示，不代表答案正确率")
+    return {
+        "level": level,
+        "label": label,
+        "matched_terms": len(matched),
+        "missing_terms": len(missing),
+        "total_terms": total,
+        "summary": "；".join(details) + "。",
+    }
 
 
 def _query_with_compound_aliases(question: str, index) -> str:
@@ -667,6 +722,11 @@ async def query(payload: SearchRequest, request: Request) -> dict:
         )
         return {
             **base, "answer": answer, "sources": [hit for hit in hits if hit["chunk_id"] in cited_ids],
+            "evidence_support": _answer_evidence_support(
+                payload.query,
+                [hit for hit in hits if hit["chunk_id"] in cited_ids],
+                notes,
+            ),
             "status": "OK",
         }
     except GenerationProviderError as exc:

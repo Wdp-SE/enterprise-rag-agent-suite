@@ -17,7 +17,7 @@
 .\start_prototype.ps1
 ```
 
-访问 <http://127.0.0.1:8502/>。脚本使用仓库内固定 Autoware 资料和轻量索引，不需要历史 runtime 或私有文件；没有模型密钥仍可检索，模型未启用时会明确说明生成未配置。默认生成服务为 DashScope/Qwen，需在本机**环境变量**配置 `DASHSCOPE_API_KEY`。也可使用 DeepSeek：配置 `DEEPSEEK_API_KEY`，并在启动前设置 `RD_V2_GENERATION_PROVIDER=deepseek`（可选设置 `RD_V2_GENERATION_MODEL=deepseek-v4-flash`）。然后运行 `./start_prototype.ps1 -EnableGeneration`。不要把实际值写进仓库或日志。
+访问 <http://127.0.0.1:8502/>。脚本使用仓库内固定 Autoware 资料和轻量索引，不需要历史 runtime 或私有文件；本机配置所选供应商的 API Key 后会自动启用回答生成，默认 DeepSeek `deepseek-flash`；没有密钥时仍可检索。运行 `./start_prototype.ps1 -DisableGeneration` 可关闭生成。也可切换到 DashScope/Qwen：设置 `RD_V2_GENERATION_PROVIDER=dashscope` 并配置 `DASHSCOPE_API_KEY`。不要把实际值写进仓库或日志。
 
 手动启动时：在 `versioned-rag-service` 目录运行 `uvicorn src.public_server:app --host 127.0.0.1 --port 8765`，在 `demo-ui` 目录设置 `RAG_API_BASE_URL=http://127.0.0.1:8765` 后运行 `streamlit run app.py --server.port 8502`；使用仓库相应的虚拟环境解释器。
 
