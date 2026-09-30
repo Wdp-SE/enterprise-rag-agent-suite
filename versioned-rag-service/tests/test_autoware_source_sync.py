@@ -303,7 +303,17 @@ def test_inventory_rebuild_preserves_reviews_for_append_only_corpus_extension():
         "sources": [source],
     }
     added_source = {**source, "document_key": "planning/freespace", "document_path": "planning/freespace/README.md"}
-    current_manifest = {**previous_manifest, "scope": "expanded planning scope", "sources": [source, added_source]}
+    current_manifest = {
+        **previous_manifest,
+        "scope": "expanded planning and documentation scope",
+        "baseline_version": "0.51.0",
+        "current_version": "latest",
+        "available_versions": ["latest", "docs-main", "0.52.0", "0.51.0"],
+        "languages": ["en-US", "zh-CN"],
+        "commits": {"docs-main": "e" * 40, "0.51.0": "a" * 40, "0.52.0": "b" * 40},
+        "version_scopes": {"latest": {"versions": ["docs-main", "0.52.0"]}},
+        "sources": [source, added_source],
+    }
     previous_bytes = (json.dumps(previous_manifest, ensure_ascii=False, indent=2) + "\n").encode()
     current_bytes = (json.dumps(current_manifest, ensure_ascii=False, indent=2) + "\n").encode()
     figure = {

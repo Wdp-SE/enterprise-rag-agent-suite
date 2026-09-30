@@ -93,6 +93,64 @@ def test_consistency_warning_only_reports_verifiable_version_text_difference():
     ]) == []
 
 
+def test_consistency_warning_does_not_compare_different_languages_as_version_conflicts():
+    base = {
+        "document_key": "autoware-documentation/design/planning",
+        "heading": "Planning Architecture", "source_url": "https://example.invalid/source",
+    }
+
+    assert verified_consistency_notes([
+        {**base, "version": "docs-main", "language": "en", "content": "Plan a safe trajectory."},
+        {**base, "version": "docs-main", "language": "zh", "content": "规划安全轨迹。"},
+    ]) == []
+
+
+def test_current_scope_can_include_latest_snapshots_from_two_release_lines(tmp_path):
+    sources = []
+    for version, language, locale, key, text in (
+        ("docs-main", "en", "en-US", "autoware-documentation/design/planning", "planning architecture safe route"),
+        ("docs-main", "zh", "zh-CN", "autoware-documentation/design/planning", "规划架构 安全路线"),
+        ("0.52.0", "en", "en-US", "universe/planning/validator", "planning validator trajectory validation"),
+        ("0.51.0", "en", "en-US", "universe/planning/validator", "planning validator old trajectory validation"),
+    ):
+        local_path = f"sources/{version}/{language}/{len(sources)}.md"
+        raw = f"# Planning\n\n{text}\n".encode("utf-8")
+        target = tmp_path / local_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(raw)
+        sources.append({
+            "version": version, "language": language, "locale": locale,
+            "document_key": key, "document_path": f"docs/{len(sources)}.md",
+            "local_path": local_path, "source_type": "official_documentation",
+            "source_url": f"https://github.com/example/repo/blob/pinned/docs/{len(sources)}.md",
+            "repository": "example/repo", "commit": "pinned",
+            "sha256": hashlib.sha256(raw).hexdigest(),
+        })
+    manifest = {
+        "workspace": "Autoware", "repository": "example/repo",
+        "baseline_version": "0.51.0", "current_version": "latest",
+        "available_versions": ["latest", "docs-main", "0.52.0", "0.51.0"],
+        "version_scopes": {"latest": {"versions": ["docs-main", "0.52.0"]}},
+        "commits": {}, "sources": sources,
+    }
+    manifest_path = tmp_path / "corpus_manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    (tmp_path / "retrieval_policy.json").write_text(json.dumps({
+        "default_policy": "bm25", "benchmark_query_count": 0,
+        "benchmark_corpus_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+        "index_artifacts_sha256": {},
+    }), encoding="utf-8")
+
+    build_index(tmp_path)
+    latest = PublicKnowledgeIndex(tmp_path).search("planning", version="current", language="all")
+    exact = PublicKnowledgeIndex(tmp_path).search("planning", version="docs-main", language="all")
+    historical = PublicKnowledgeIndex(tmp_path).search("planning", version="0.51.0", language="all")
+
+    assert {row["version"] for row in latest} == {"docs-main", "0.52.0"}
+    assert {row["version"] for row in exact} == {"docs-main"}
+    assert {row["version"] for row in historical} == {"0.51.0"}
+
+
 def test_parts_keep_inherited_heading_path():
     parts = _parts("# API\n## Workflow\n### Recovery\nDefault: retry")
     assert parts[0] == ("Recovery", ["API", "Workflow", "Recovery"], "Default: retry")

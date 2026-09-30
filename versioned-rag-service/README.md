@@ -1,6 +1,6 @@
 # Autoware 版本化研发知识 RAG 服务
 
-公网 Render 服务仍使用 `src.public_server:app` 入口，由 `render.yaml` 指向固定提交的 Autoware Universe 官方资料快照。当前主语料包含 0.51.0 与 0.52.0 两个版本、26 条版本化来源（13 份不同的英文文档）和 562 个文本检索片段，覆盖 Planning 概览、Start/Goal Planner、Freespace Planner、Intersection Velocity Planner 及部分验证组件；它仍是精选子集而非整个 Autoware Universe。默认版本为 0.52.0，服务不会自动追踪上游发布。运行策略为 `bm25_figure_ocr`：BM25 结果中只补入哈希绑定且人工复核的图片文字。KEP 只启发变更提案/评审流程，不是 RAG 语料或兼容性声明。当前语料、图片审核记录和离线评测见 [语料目录](public_corpus_autoware/README.md)、[来源清单](public_corpus_autoware/corpus_manifest.json)、[图片证据说明](public_corpus_autoware/FIGURE_EVIDENCE.md)和[Autoware 检索评测](../evaluation/autoware_retrieval_v3/README.md)。旧 DolphinScheduler 语料和 V1-V4 指标是历史记录，不代表公网当前结果。
+公网 Render 服务仍使用 `src.public_server:app` 入口及 `public_corpus_autoware` 固定资产。当前语料包含 Autoware 官方 Documentation 的英文 `main` 和 `1.9.0` 快照、Tomato ROS 社区中文译本，以及 Universe Planning 的 `0.51.0` / `0.52.0` 快照，总计 1,148 条版本/语言来源、660 个资料主题/路径和 7,927 个文本片段。默认 `latest` 是 Documentation `main` + Universe `0.52.0` 的组合范围，不是单一产品发行版。260 页中文译文中 44 页路径匹配到当前官方英文快照；其余 216 页未能核实对应英文版本。服务不会实时追踪上游。扩充后当前策略为 BM25 基线，旧 43 题 V3 指标已与语料指纹解绑，新的双语质量评测尚待完成。KEP 仅启发变更提案/评审流程，不是 RAG 语料或兼容性声明。当前语料、图片审核记录和评测状态见 [语料目录](public_corpus_autoware/README.md)、[来源清单](public_corpus_autoware/corpus_manifest.json)、[图片证据说明](public_corpus_autoware/FIGURE_EVIDENCE.md)和[双语评测说明](../evaluation/autoware_bilingual_v1/README.md)。旧 DolphinScheduler 语料和 V1-V4 指标是历史记录，不代表公网当前结果。
 
 对外职责是版本化资料检索、引用溯源和可选的引用约束生成。下文关于 `DENSE_ONLY + SECTION_PATH` 的说明属于保留的合成企业资料 Runtime 与测试路径，不等同于当前公开语料使用的 BM25 + 审核图片文字策略。
 

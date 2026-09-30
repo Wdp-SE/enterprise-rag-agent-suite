@@ -117,6 +117,14 @@ def build_index(root: Path = ROOT) -> dict:
                 "document_title": document_title, "heading": heading,
                 "heading_path": heading_path, "content": content,
                 "repository": source["repository"], "document_path": source["document_path"],
+                **{
+                    field: source[field]
+                    for field in (
+                        "canonical_url", "rendered_url", "english_source_url",
+                        "translation_alignment_status", "release_alignment_status",
+                    )
+                    if source.get(field)
+                },
             })
     vectors = np.stack([
         dense_vector(c["heading"] + " " + c["document_key"] + " " + c["content"])
@@ -227,16 +235,38 @@ class PublicKnowledgeIndex:
                         )
         return scores
 
+    def _version_members(self, version: str) -> set[str] | None:
+        """Resolve an exact snapshot or a declared composite scope to source versions."""
+        if version == "current":
+            version = str(self.manifest.get("current_version", ""))
+        if version == "all":
+            return None
+        source_versions = {str(source["version"]) for source in self.manifest.get("sources", [])}
+        scopes = self.manifest.get("version_scopes", {})
+        if isinstance(scopes, dict) and version in scopes:
+            definition = scopes[version]
+            members = definition.get("versions") if isinstance(definition, dict) else None
+            if (
+                not isinstance(members, list) or not members
+                or any(not isinstance(member, str) or member not in source_versions for member in members)
+            ):
+                raise ValueError("invalid public corpus version scope")
+            return set(members)
+        if version in source_versions:
+            return {version}
+        raise ValueError("unsupported public corpus scope")
+
     def search(
         self, query: str, *, top_k: int = 5, version: str = "current",
         language: str = "zh_preferred", policy: str | None = None,
     ) -> list[dict]:
         if not query.strip() or len(query) > 4000 or not 1 <= top_k <= 20:
             raise ValueError("invalid search request")
-        if version == "current":
-            version = self.manifest["current_version"]
-        available_versions = {source["version"] for source in self.manifest["sources"]}
-        if (version != "all" and version not in available_versions) or language not in ("zh_preferred", "all", "zh", "en"):
+        try:
+            version_members = self._version_members(version)
+        except ValueError:
+            raise
+        if language not in ("zh_preferred", "all", "zh", "en"):
             raise ValueError("unsupported public corpus scope")
         policy = policy or self.policy.get("default_policy")
         if policy not in SUPPORTED_POLICIES:
@@ -246,7 +276,7 @@ class PublicKnowledgeIndex:
         fielded_sparse = self._bm25_fields(query) if policy == "bm25_fields" else None
         eligible = [
             i for i, chunk in enumerate(self.chunks)
-            if (version == "all" or chunk["version"] == version)
+            if (version_members is None or chunk["version"] in version_members)
             and (language not in ("zh", "en") or chunk["language"] == language)
         ]
         # Language preference is a candidate tie-break, not a hard filter.
@@ -303,7 +333,12 @@ def verified_consistency_notes(hits: list[dict]) -> list[dict]:
     seen = set()
     for left_pos, left in enumerate(hits):
         for right in hits[left_pos + 1:]:
-            if left["document_key"] != right["document_key"] or left["version"] == right["version"]:
+            if (
+                left["document_key"] != right["document_key"]
+                or left["version"] == right["version"]
+                or left.get("language") != right.get("language")
+                or left.get("repository") != right.get("repository")
+            ):
                 continue
             if left["heading"] != right["heading"] or left["content"] == right["content"]:
                 continue

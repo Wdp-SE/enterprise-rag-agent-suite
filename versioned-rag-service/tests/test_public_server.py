@@ -310,6 +310,50 @@ def test_legacy_default_corpus_routes_remain_available_without_stale_eval_claims
         )
 
 
+def test_autoware_bilingual_corpus_api_exposes_composite_latest_and_translation_provenance():
+    project = Path(__file__).resolve().parents[2]
+    corpus = project / "versioned-rag-service" / "public_corpus_autoware"
+    index = PublicKnowledgeIndex(corpus)
+    runtime = PublicRetrievalRuntime(index, config_path=corpus / "public_retrieval_runtime.json")
+
+    with TestClient(create_app(index=runtime)) as client:
+        workspace = client.get("/public/workspace").json()
+        docs = client.get("/public/documents").json()["documents"]
+        chinese = client.post("/public/search", json={
+            "query": "如何启动 Autoware 并通过命令行参数启用或禁用模块？",
+            "version": "latest", "language": "zh", "top_k": 5,
+        }).json()["results"]
+        english = client.post("/public/search", json={
+            "query": "What does the planning validator check before publishing a trajectory?",
+            "version": "latest", "language": "en", "top_k": 5,
+        }).json()["results"]
+        review = client.post("/public/review-advice", json={
+            "change_summary": "调整规划模块启动配置",
+            "evidence_chunk_ids": [chinese[0]["chunk_id"]],
+            "version": "latest",
+        })
+
+    assert workspace["current_version"] == "latest"
+    assert workspace["version_scopes"]["latest"]["versions"] == ["docs-main", "0.52.0"]
+    assert workspace["source_count"] == 1148
+    assert workspace["chunk_count"] == 7927
+    assert workspace["retrieval_evaluation_status"] == "expanded_corpus_pending_rebenchmark"
+    assert workspace["translation_alignment"] == {
+        "path_matched_to_official_main": 44,
+        "source_path_not_found_in_official_main": 216,
+    }
+    chinese_doc = next(row for row in docs if row["source_type"] == "community_translation")
+    assert chinese_doc["rendered_url"].startswith("https://tomato-ros.github.io/")
+    assert chinese_doc["translation_alignment_status"] in {
+        "path_matched_to_official_main", "source_path_not_found_in_official_main",
+    }
+    assert any(row["source_type"] == "community_translation" for row in chinese)
+    assert english and all(row["language"] == "en" for row in english)
+    assert all(row["version"] in {"docs-main", "0.52.0"} for row in english)
+    assert review.status_code == 200
+    assert review.json()["status"] == "GENERATION_NOT_CONFIGURED"
+
+
 @pytest.mark.parametrize("newline", [b"\n", b"\r\n"], ids=["lf", "crlf"])
 def test_legacy_v4_metrics_are_not_claimed_after_retrieval_runtime_change(monkeypatch, newline):
     index = PublicKnowledgeIndex()

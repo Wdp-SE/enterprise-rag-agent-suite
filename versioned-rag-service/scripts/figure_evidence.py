@@ -186,10 +186,11 @@ def _manifest_is_append_only_extension(previous_bytes: bytes, current_bytes: byt
         current_manifest = json.loads(current_bytes)
     except (json.JSONDecodeError, TypeError):
         return False
-    stable_fields = (
-        "repository", "workspace", "baseline_version", "current_version",
-        "available_versions", "languages", "commits",
-    )
+    # An unchanged pinned source list may be extended with another release line,
+    # locale, or composite current scope without invalidating reviewed old figures.
+    # Source rows themselves are compared byte-for-byte below; repository/workspace
+    # identity must still match.
+    stable_fields = ("repository", "workspace")
     if any(previous_manifest.get(key) != current_manifest.get(key) for key in stable_fields):
         return False
     previous_sources = previous_manifest.get("sources")

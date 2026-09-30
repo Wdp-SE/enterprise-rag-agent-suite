@@ -1,5 +1,9 @@
-This corpus contains selected documentation files from Autoware Universe.
-Repository: https://github.com/autowarefoundation/autoware_universe
-Baseline release: 0.51.0 (d4d260983d357e1b2b34291d91933f9f4b53bf94)
-Current release: 0.52.0 (6e477c645efec33f7909095eea684474e97f5e3d)
-Source files are retained unchanged and linked to their pinned upstream commits.
+This directory contains selected public documentation from the following Apache-2.0 repositories:
+
+- Autoware Universe: https://github.com/autowarefoundation/autoware_universe
+- Autoware Documentation: https://github.com/autowarefoundation/autoware-documentation
+- Autoware Documentation Chinese community translation: https://github.com/tomato-ros/autoware-documentation-cn
+
+Each source snapshot is pinned by commit in corpus_manifest.json. The Chinese repository is a community-maintained translation and is not an official Autoware translation. The local Markdown files generated from its HTML pages are derived, indexable representations; upstream HTML hashes are retained in the manifest.
+
+This project is an independent demonstration and is not affiliated with the Autoware Foundation or the listed repositories.

@@ -1,0 +1,22 @@
+# /api/remote/control_mode/list
+
+## 状态
+
+- 最后版本: not released
+- 方法: function call
+- 数据类型: [autoware_adapi_v1_msgs/srv/ListManualControlMode](../../../../../types/autoware_adapi_v1_msgs/srv/ListManualControlMode/)
+
+## 描述
+
+列出可用的手动控制模式,如 [手动控制](../../../../../features/manual-control/). 禁用模式不包含在可用模式中.
+
+## 请求
+
+None
+
+## 响应
+
+| 名称 | 类型 | 描述 |
+| --- | --- | --- |
+| status | autoware_adapi_v1_msgs/msg/ResponseStatus | 响应状态 |
+| modes | autoware_adapi_v1_msgs/msg/ManualControlMode[] | 可用模式列表. |

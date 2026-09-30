@@ -129,13 +129,21 @@ class PublicRetrievalRuntime:
         """Evidence accepted by review APIs, including independently validated OCR rows."""
         return [*self.chunks, *self._images]
 
+    def _version_members(self, version: str) -> set[str] | None:
+        """Expose the base index's exact/composite scope resolver to API consumers."""
+        return self.base_index._version_members(version)
+
     def _image_scope(self, *, version: str, language: str) -> list[dict]:
-        if version == "current":
-            version = self.manifest["current_version"]
-        available = {row["version"] for row in self.manifest.get("sources", [])}
-        if (version != "all" and version not in available) or language not in ("zh_preferred", "all", "zh", "en"):
+        try:
+            version_members = self.base_index._version_members(version)
+        except ValueError as exc:
+            raise ValueError("unsupported public corpus scope") from exc
+        if language not in ("zh_preferred", "all", "zh", "en"):
             raise ValueError("unsupported public corpus scope")
-        eligible = [row for row in self._images if version == "all" or row["version"] == version]
+        eligible = [
+            row for row in self._images
+            if version_members is None or row["version"] in version_members
+        ]
         if language in ("zh", "en"):
             return [row for row in eligible if row["language"] == language]
         # One citation per screenshot; zh_preferred and all both avoid duplicate OCR rows.

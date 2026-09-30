@@ -11,9 +11,12 @@
   "max_facets": 4,
   "rrf_k": 60,
   "image_top_k": 20,
-  "benchmark_corpus_sha256": "339c4ea6d30b8eda94699320567d1e2faa205d3a23ec92178a63d1c1636a827a",
+  "selection_status": "pending_bilingual_rebenchmark",
+  "benchmark_query_count": 0,
+  "selection_note": "BM25 is retained as the transparent lexical baseline after corpus expansion. No retrieval strategy is claimed as optimal until the bilingual Autoware evaluation is run.",
+  "benchmark_corpus_sha256": "ab00dfd18c11c0de4511729f9612d3176c8fe95dd390e0bc7ba2a337ff72a0fa",
   "index_artifacts_sha256": {
-    "chunks.json": "bbb4a58ea9e8d6eb9d15175b5a5404d6a9bad6e56ab6a3d417162c6db66261f4",
-    "dense_vectors.npy": "134fad171e574f6eaff49061a6adef5f6a71e72cf3f4e632420627bb2a13d811"
+    "chunks.json": "930d36eb10958b2c9a81482a2cb1a22c7bd9bc6da072921116cc4c0294444876",
+    "dense_vectors.npy": "5bfa9073987ce34a245562cd3b8b4d3ba7ec5a17ac1bb298c4641a87891cb888"
   }
 }

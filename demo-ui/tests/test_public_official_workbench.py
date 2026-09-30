@@ -102,6 +102,43 @@ def test_workspace_scoped_selectors_follow_the_latest_manifest_version():
     assert public_workbench._published_language_options({"languages": []}) == [("all", "语言元数据未声明")]
 
 
+def test_bilingual_language_options_default_to_chinese_priority_before_all_languages():
+    import public_workbench
+
+    options = public_workbench._published_language_options({"languages": ["en-US", "zh-CN"]})
+
+    assert options == [
+        ("zh_preferred", "中文优先"),
+        ("all", "全部已收录语言"),
+        ("zh", "中文"),
+        ("en", "English"),
+    ]
+
+
+def test_autoware_source_coverage_summary_calls_out_unverified_community_pages():
+    import public_workbench
+
+    summary = public_workbench._source_coverage_text({
+        "source_breakdown": [
+            {"version": "docs-main", "locale": "en-US", "source_type": "official_documentation", "count": 431},
+            {"version": "1.9.0", "locale": "en-US", "source_type": "official_documentation", "count": 431},
+            {"version": "docs-main", "locale": "zh-CN", "source_type": "community_translation", "count": 260},
+            {"version": "0.52.0", "locale": "en-US", "source_type": "official_documentation", "count": 13},
+            {"version": "0.51.0", "locale": "en-US", "source_type": "official_documentation", "count": 13},
+        ],
+        "translation_alignment": {
+            "path_matched_to_official_main": 44,
+            "source_path_not_found_in_official_main": 216,
+        },
+    })
+
+    assert summary is not None
+    assert "官方 Documentation 英文 main 431 页" in summary
+    assert "社区中文译文 260 页" in summary
+    assert "44 页按路径匹配" in summary
+    assert "216 页当前未匹配" in summary
+
+
 def test_workbench_warns_when_connected_public_rag_workspace_is_not_autoware(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient

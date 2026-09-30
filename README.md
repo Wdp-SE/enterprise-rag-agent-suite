@@ -14,13 +14,13 @@
 
 这是一个项目：公开 Autoware 资料是当前演示语料；KEP 只启发提案和审查流程设计，不是检索语料。另一种本地运行场景仍使用合成工程资料，不是第二个项目：
 
-1. **公网默认场景：Autoware 规划变更审查**。在固定提交的 Autoware Universe 0.51.0/0.52.0 官方资料中按版本、语言和资料范围检索；当前默认 0.52.0。RAG 检索规划模块、配置和验证资料，并将两条人工复核的图中文字作为绑定原图哈希的派生证据；Agent 按确定性规则识别变更类别，把原始描述拆成有上限的子问题调用 RAG，再将候选证据交给模型辅助分析。结果包含检索轨迹、覆盖状态、结构化证据缺口和人工核对动作。Agent 不写回公开语料或 Autoware 上游。
+1. **公网默认场景：Autoware 研发资料检索与变更审查**。RAG 默认检索范围由 Autoware 官方 Documentation `main` 英文快照、社区中文译本和 Universe Planning 0.52.0 组成；另可分别选 Documentation `1.9.0`、Universe `0.51.0` 等固定范围。中英文来源逐条保留版本、语言、commit 和路径；社区译文未匹配到官方英文路径的页面会明确标为未核验。Agent 按确定性规则识别变更类别，把原始描述拆成有上限的子问题调用 RAG，再将候选证据交给模型辅助分析。结果包含检索轨迹、覆盖状态、结构化证据缺口和人工核对动作。Agent 不写回公开语料或 Autoware 上游。
 2. **本地扩展场景：研发工程变更工作台**。使用完全合成的需求、设计、API、测试和运维文档，演示版本 Diff、标识符与追踪关系、RAG 影响发现、证据绑定、修改建议和人工审核。预置案例可继续演示冲突校验、候选版本验证与显式激活；用户自定义需求修改只进入当前审查。默认公网实例不加载这套合成工作流；本地设置 `DEMO_LEGACY_FIXTURES=true` 才能进入。
 
     公网默认：固定版本 Autoware 资料 → FastAPI BM25 + 经审核图中文字 → 问题/变更描述 → 引用证据 → Agent 辅助分析 → 人工审核
     本地扩展演示：合成研发文件 → 结构解析与元数据 → 版本 Diff / RAG 影响发现 → PatchCandidate → 人工审核 → 安全候选版本
 
-在线工作台用于体验产品流程；API 文档用于查看公开 RAG 接口。当前 Autoware 语料是 0.51.0 与 0.52.0 两个固定提交快照，共 26 条版本化来源（13 份不同的英文文档）、562 个文字检索片段；只覆盖 Planning 精选子集，不是完整 Autoware 语料；启动时不抓取上游，也不重建索引。冻结的 43 道检索题（DEV 32 / HOLDOUT 11）对照了 BM25、查询分面和经审核的图片文字。当前选用 `bm25_figure_ocr`：来源覆盖不低于 BM25，图片证据命中 DEV 从 0/4 升到 3/4、HOLDOUT 从 0/2 升到 2/2；HOLDOUT 必需来源召回为 91.67%，完整来源率为 90%，有一道跨资料题漏掉 Freespace Planner 来源。两组无答案问题仍会召回候选，因此这轮检索评测不证明回答准确率、幻觉率或可靠拒答能力；结果绑定语料、代码、评测集和图像侧车指纹。
+在线工作台用于体验产品流程；API 文档用于查看公开 RAG 接口。固定语料当前有 1,148 条版本/语言来源、660 个不同资料主题/路径和 7,927 个检索片段：官方 Documentation `main` 431 页英文资料、`1.9.0` 快照 431 页英文资料、Tomato ROS 社区中文译本 260 页、Universe Planning 0.51.0/0.52.0 各 13 份资料。中文页中 44 页的路径能与当前官方文档匹配，216 页未确认对应关系，系统不将其冒充为官方翻译。默认 `latest` 是 Documentation `main` 与 Universe `0.52.0` 的组合范围，不代表同一个软件发行版。语料扩展后恢复 BM25 基线，旧 43 题评测与当前语料指纹不符；当前双语评测仍待建立，不能沿用旧成绩宣称检索表现。启动时不抓取上游，也不重建索引。
 
 ### 目录职责
 
@@ -30,7 +30,8 @@
 - `project_delivery/v4_change_impact_review/demo_data/`：完全合成的研发资料与结构化清单，不包含企业真实文档。
 - `evaluation/agent_query_decomposition/`：规则分类、子问题覆盖和查询预算的轻量离线评测，不等价于端到端检索或答案质量评测。
 - `evaluation/change_review_v5/`：32 条 DolphinScheduler 语料上的历史变更审查评测，仅保留为旧版 Agent 规划记录；不代表当前 Autoware 语料效果，也不调用或评分生成模型。
-- `evaluation/autoware_retrieval_v3/`：当前 43 道 Autoware 版本化检索评测（DEV 32 / HOLDOUT 11），对比 BM25、查询分面和图片文字策略；包含跨模块、图片独有信息与无答案问题，不评分生成答案。
+- `evaluation/autoware_retrieval_v3/`：语料扩展前的 43 道 Autoware 小语料冻结检索评测，保留作历史记录，不代表当前语料表现。
+- `evaluation/autoware_bilingual_v1/`：当前语料的 10 条中英文检索冒烟样例，用于回归检查语言和版本过滤；不是质量 Benchmark，也不报告泛化指标。
 
 ### 变更规划与证据缺口
 
@@ -42,7 +43,7 @@
 python evaluation/change_review_v5/run_evaluation.py --split dev --policy bm25
 ```
 
-V5 共 32 条请求、18 个场景族，DEV 25 条、HOLDOUT 7 条；含跨资料、图片线索、无答案和私有范围请求。其规则分类和检索数据只描述旧 DolphinScheduler 版本，不是当前 Autoware 服务的指标，也不代表真实用户分布、答案准确率、幻觉率或公网延迟；越界问题拦截和公开无答案候选噪声见 [V5 历史评测说明](evaluation/change_review_v5/README.md)。当前 Autoware 检索结果以 [Autoware 检索评测 V3](evaluation/autoware_retrieval_v3/README.md) 为准。
+V5 共 32 条请求、18 个场景族，DEV 25 条、HOLDOUT 7 条；含跨资料、图片线索、无答案和私有范围请求。其规则分类和检索数据只描述旧 DolphinScheduler 版本，不是当前 Autoware 服务的指标，也不代表真实用户分布、答案准确率、幻觉率或公网延迟；越界问题拦截和公开无答案候选噪声见 [V5 历史评测说明](evaluation/change_review_v5/README.md)。Autoware V3 是双语语料扩充前的历史评测，不能代表当前语料效果；当前状态见[双语评测说明](evaluation/autoware_bilingual_v1/README.md)。
 
 ## 检索选型：历史基线与当前复评
 
@@ -73,13 +74,13 @@ V4 冻结了 104 道单资料、跨资料、跨版本、截图 OCR、图文联�
 
 上述图片评测与 OCR 记录均属于 DolphinScheduler 历史语料。当前 Autoware 的图片索引范围、人工复核边界和在线策略见 [Autoware 图片证据说明](versioned-rag-service/public_corpus_autoware/FIGURE_EVIDENCE.md)。
 
-旧 V3/V4 发布记录与当前 Autoware 语料无关；不要用它们宣称当前服务通过 DolphinScheduler 评测校验。当前 Autoware 评测及其指纹由 `/public/workspace` 核验，复算说明见 [Autoware 评测目录](evaluation/autoware_retrieval_v3/README.md)：
+旧 DolphinScheduler V3/V4 发布记录与当前 Autoware 语料无关；不要用它们宣称当前服务通过 Autoware 评测校验。旧 Autoware V3 也只描述扩充前的小语料。当前 `/public/workspace` 将新语料的评测状态标为待评测；10 条双语冒烟题仅核对语言过滤和 Top-5 预期来源，不是质量基准。历史复算说明见 [Autoware 检索评测 V3](evaluation/autoware_retrieval_v3/README.md)。
 
 运行相关服务测试时，请在 `versioned-rag-service/` 目录执行 `python -m pytest -q`；Autoware 冻结题集与复算方式见评测说明。
 
 ### 当前 Autoware 评测
 
-当前主语料、默认版本和线上策略以 [Autoware 语料清单](versioned-rag-service/public_corpus_autoware/corpus_manifest.json)、[图片证据审核清单](versioned-rag-service/public_corpus_autoware/FIGURE_EVIDENCE.md)及 [Autoware 检索评测 V3](evaluation/autoware_retrieval_v3/README.md)为准。43 道题按场景划分为 DEV 32 道、HOLDOUT 11 道。Top-5 上，图片文字策略的必需来源 Recall、完整来源率和错版本数不劣于 BM25；图片证据命中 DEV 从 0/4 提升到 3/4，HOLDOUT 从 0/2 提升到 2/2。HOLDOUT 必需来源召回为 91.67%、完整来源率为 90%，其中一道跨资料题漏掉 Freespace Planner 来源；DEV/HOLDOUT 的无答案题仍都召回候选（4/4、1/1），不能据此评估拒答能力。报告只有在语料、检索代码、侧车、配置和评测题指纹全部匹配时才会被 `/public/workspace` 展示。
+当前中英文语料和组合默认范围见 [Autoware 双语语料说明](versioned-rag-service/public_corpus_autoware/README.md) 及 [语料清单](versioned-rag-service/public_corpus_autoware/corpus_manifest.json)。扩充语料后旧 Autoware V3 评测指纹不再匹配，线上回到 BM25 基线；当前只新增了 10 条中英检索冒烟样例，确认预期来源可进入 Top-5，不能据此报告召回率、答案准确率或延迟结论。双语 DEV/HOLDOUT 评测和策略选型仍待完成，状态见[双语评测目录](evaluation/autoware_bilingual_v1/README.md)。
 
 不要在当前冻结目录重跑 `run_quality_v3.py --split dev`：它会覆盖 `results/dev__bm25.json`，新测得的耗时会改变已锁定的结果哈希。需要重新实验时，应使用独立工作树或新评测版本，并把结果写到独立路径，保留这份冻结记录不变。
 
@@ -100,10 +101,10 @@ python .\evaluation\real_world_retrieval\final_selection\run_selection.py chunk 
 
 ## Known Limitations
 
-- Autoware 的 26 条版本化来源对应 13 份不同的英文文档，仅覆盖 Planning 的部分模块，不覆盖整个 Autoware；目前只有两张图的可读标签经过人工复核，复杂图形关系不转成文本事实。
+- 当前 Autoware 语料来自多个固定文档快照，仍不是完整 Autoware 资料库。中文 260 页里有 216 页没有在当前官方 main 快照中找到同路径英文页，不能据此宣称中英版本一致；只有两张 Universe 图的可读标签经过人工复核，其他页面的图片像素没有统一 OCR。
 - 企业工程工作台使用完全合成的小型文档集与固定案例，用于验证流程与安全边界，不能代表真实企业文档覆盖率或业务效果。
 - 历史 V1 四条跨文档题的双来源完整 Top-5 命中为 0/4。扩充语料会改变排序，现有新语料成绩必须单独复评，不能沿用历史指标。
-- V1 HOLDOUT 来自此前使用过的题集，是回顾性确定划分；V2 是旧语料的独立锁定题集；V3 是当前语料的新冻结题集，但题目及标注在仓库可见，都不能等同于真实用户开放测试。
+- V1 HOLDOUT 来自此前使用过的题集，是回顾性确定划分；V2 是旧语料的独立锁定题集；Autoware V3 是扩充前语料的冻结题集。新的双语语料目前只有检索冒烟测试，尚无冻结质量题集；已发布题目和标注可见的离线测试也不能等同于真实用户开放测试。
 - 公开资料变更审查的人工决定会追加写入本地 SQLite，并可下载 JSON；记录按匿名 Streamlit 会话过滤，但没有身份认证，托管实例临时磁盘也可能在重启或重新部署后清空。它不等同集中式审批审计、跨实例任务存储或 ACL/RBAC。V4 预置工程案例使用本地文件 Checkpoint 和 Candidate Version 目录。
 - 系统不修改 Autoware 上游，不创建 PR，也不自动发布修改。
 - multilingual E5 仅用于选型实验；Hybrid 和 Rerank 均不在正式运行链路中。
@@ -130,4 +131,4 @@ python .\evaluation\real_world_retrieval\final_selection\run_selection.py chunk 
 
 ## 资料来源
 
-当前公开语料来自 [Autoware Universe](https://github.com/autowarefoundation/autoware_universe) 0.51.0 与 0.52.0 的固定公开提交，聚焦 Planning 模块；来源 URL、固定 commit、路径、语言、许可证与 SHA-256 见 [Autoware corpus manifest](versioned-rag-service/public_corpus_autoware/corpus_manifest.json)。上游原文及图片均可沿引用查看；派生图片文字额外绑定原图 SHA 与复核记录。本项目与 Autoware 基金会或维护组织无隶属关系。早期 Apache DolphinScheduler 评测和数据仍留作历史工程记录，不再作为公网默认语料。
+当前公开语料包括 [Autoware Documentation](https://github.com/autowarefoundation/autoware-documentation) 的固定英文快照、[Tomato ROS 中文社区译本](https://github.com/tomato-ros/autoware-documentation-cn) 和 [Autoware Universe](https://github.com/autowarefoundation/autoware_universe) Planning 资料；来源 URL、固定 commit、路径、语言、许可证、译文路径对应状态与 SHA-256 见 [Autoware corpus manifest](versioned-rag-service/public_corpus_autoware/corpus_manifest.json)。两张派生图片文字额外绑定原图 SHA 与人工复核记录。所有同步均需审核和重新评测；本项目与 Autoware 基金会或维护组织无隶属关系。早期 Apache DolphinScheduler 评测和数据仍留作历史工程记录，不再作为公网默认语料。

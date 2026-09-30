@@ -1,0 +1,10 @@
+{"id":"zh_launch_modules","query":"如何启动 Autoware 并启用或禁用规划模块？","version":"latest","language":"zh","expected_document_keys":["autoware-documentation/how-to-guides/integrating-autoware/launch-autoware"]}
+{"id":"zh_debug_logs","query":"如何使用 ROS 2 日志调试 Autoware？","version":"latest","language":"zh","expected_document_keys":["autoware-documentation/how-to-guides/others/debug-autoware"]}
+{"id":"zh_planning_architecture","query":"Autoware 规划模块由哪些部分组成？","version":"latest","language":"zh","expected_document_keys":["autoware-documentation/design/autoware-architecture/planning"]}
+{"id":"zh_node_parameters","query":"Autoware ROS 节点如何声明和读取参数？","version":"latest","language":"zh","expected_document_keys":["autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters"]}
+{"id":"zh_divided_map","query":"Autoware 如何使用分割点云地图？","version":"latest","language":"zh","expected_document_keys":["autoware-documentation/how-to-guides/others/using-divided-map"]}
+{"id":"en_planning_modules","query":"How can I enable or disable the planning modules in Autoware?","version":"latest","language":"en","expected_document_keys":["planning/overview"]}
+{"id":"en_planning_validator","query":"What checks does the planning validator run on trajectories?","version":"latest","language":"en","expected_document_keys":["planning/planning_validator/design"]}
+{"id":"en_node_parameters","query":"How do ROS node parameter files work in Autoware?","version":"latest","language":"en","expected_document_keys":["autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters"]}
+{"id":"en_console_logging","query":"How are console logging levels configured for Autoware ROS nodes?","version":"latest","language":"en","expected_document_keys":["autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging"]}
+{"id":"en_trajectory_checker","query":"What does the trajectory checker validate before a path is published?","version":"latest","language":"en","expected_document_keys":["planning/trajectory_checker/design"]}
