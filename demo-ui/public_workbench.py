@@ -279,6 +279,34 @@ def _rewrite_relative_source_links(content: str, source_url: str) -> str:
     return re.sub(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)", replace, content)
 
 
+def _document_relationship_caption(row: dict) -> str:
+    relationships = row.get("document_relationships")
+    if not isinstance(relationships, list):
+        return ""
+    labels = []
+    for relation in relationships:
+        if not isinstance(relation, dict):
+            continue
+        relation_type = relation.get("relation_type")
+        state = relation.get("verification_status")
+        if relation_type == "translation_of":
+            label = (
+                "中英文对应关系待核验（不据此判断同步差异）"
+                if state != "verified" else "译文关系已核验"
+            )
+        elif relation_type == "localized_variant_of":
+            label = "本地化变体待核验" if state != "verified" else "本地化变体关系已核验"
+        elif relation_type == "references_or_depends_on":
+            label = "显式工程关联已确认" if state == "verified" else "工程关联待核验"
+        elif relation_type == "supersedes":
+            label = "替代关系已确认" if state == "verified" else "替代关系待核验"
+        else:
+            continue
+        if label not in labels:
+            labels.append(label)
+    return " · ".join(labels)
+
+
 def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None:
     section = row.get("heading") or "正文"
     document_title = st.session_state.get("official_document_titles", {}).get(row.get("document_id")) or row.get("document_key") or "官方资料"
@@ -310,14 +338,18 @@ def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None
         else:
             st.markdown(f"**[{index}] {document_title}**")
             st.caption(f"章节：{section}　｜　{version_label}　｜　{_version_option_label(version, st.session_state.get('official_workspace'))}　｜　{row.get('locale', '')}　｜　{source_label}")
+            relation_caption = _document_relationship_caption(row)
+            if relation_caption:
+                st.caption(relation_caption)
             content = _replace_markdown_images(row.get("content", ""))
             content = _rewrite_relative_source_links(content, row.get("source_url", ""))
             st.write(content)
             if row.get("source_type") == "community_translation":
-                if row.get("translation_alignment_status") == "path_matched_to_official_main":
-                    st.caption("路径已匹配 · 内容未逐句核验。")
-                else:
-                    st.caption("英文对应关系待核验。")
+                if not relation_caption:
+                    if row.get("translation_alignment_status") == "path_matched_to_official_main":
+                        st.caption("路径已匹配 · 内容未逐句核验。")
+                    else:
+                        st.caption("英文对应关系待核验。")
                 if row.get("rendered_url"):
                     st.markdown(f"[阅读社区译文]({row['rendered_url']})")
                 if row.get("english_source_url"):

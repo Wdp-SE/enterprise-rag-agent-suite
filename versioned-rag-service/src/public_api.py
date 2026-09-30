@@ -232,6 +232,25 @@ def _index(request: Request) -> PublicKnowledgeIndex:
     return index
 
 
+def _relationship_index(index):
+    base_index = getattr(index, "base_index", index)
+    return getattr(base_index, "document_relations", None)
+
+
+def _with_document_relationships(index, rows: list[dict]) -> list[dict]:
+    relationships = _relationship_index(index)
+    return [
+        {
+            **row,
+            "document_relationships": (
+                relationships.for_document(str(row.get("document_id", "")))
+                if relationships is not None else []
+            ),
+        }
+        for row in rows
+    ]
+
+
 def _available_versions(manifest: dict) -> list[str]:
     """Use declared releases when present, and derive them for older manifests."""
     declared = manifest.get("available_versions")
@@ -526,6 +545,12 @@ def workspace(request: Request) -> dict:
         ),
         "data_origin": str(manifest.get("data_origin") or f"{manifest['workspace']} official public materials"),
         "upstream_writes_enabled": False,
+        "document_relationships": (
+            _relationship_index(index).summary()
+            if _relationship_index(index) is not None
+            else {"status": "missing", "available": False, "relation_count": 0,
+                  "by_type": {}, "by_verification_status": {}, "verified_translation_pairs": 0}
+        ),
     }
     result["unique_document_count"] = len({
         source.get("document_key")
@@ -593,6 +618,10 @@ def documents(request: Request) -> dict:
             "source_type": source["source_type"], "source_url": source["source_url"],
             "repository": source["repository"], "commit": source["commit"],
             "document_path": source["document_path"],
+            "document_relationships": (
+                _relationship_index(index).for_document(key)
+                if _relationship_index(index) is not None else []
+            ),
             **{
                 field: source[field]
                 for field in (
@@ -607,10 +636,19 @@ def documents(request: Request) -> dict:
 
 @router.post("/document")
 def document(payload: DocumentRequest, request: Request) -> dict:
-    rows = [row for row in _index(request).chunks if row["document_id"] == payload.document_id]
+    index = _index(request)
+    rows = [row for row in index.chunks if row["document_id"] == payload.document_id]
     if not rows:
         raise HTTPException(status_code=404, detail="OFFICIAL_DOCUMENT_NOT_FOUND")
-    return {"document_id": payload.document_id, "chunks": rows}
+    rows = _with_document_relationships(index, rows)
+    return {
+        "document_id": payload.document_id,
+        "document_relationships": (
+            _relationship_index(index).for_document(payload.document_id)
+            if _relationship_index(index) is not None else []
+        ),
+        "chunks": rows,
+    }
 
 
 @router.post("/search")
@@ -623,6 +661,7 @@ def search(payload: SearchRequest, request: Request) -> dict:
         ))
     except ValueError as exc:
         raise HTTPException(status_code=422, detail="INVALID_PUBLIC_SEARCH") from exc
+    hits = _with_document_relationships(index, hits)
     return {
         "query": payload.query, "results": hits,
         "retrieval_policy": _runtime_policy(index),
@@ -640,6 +679,7 @@ async def query(payload: SearchRequest, request: Request) -> dict:
         ))
     except ValueError as exc:
         raise HTTPException(status_code=422, detail="INVALID_PUBLIC_SEARCH") from exc
+    hits = _with_document_relationships(index, hits)
     notes = verified_consistency_notes(hits)
     generator = request.app.state.public_generator
     diagnostics = _generation_diagnostics(generator)

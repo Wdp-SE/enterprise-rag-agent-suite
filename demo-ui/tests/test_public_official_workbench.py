@@ -120,6 +120,31 @@ def test_bilingual_language_options_default_to_chinese_priority_before_all_langu
     ]
 
 
+def test_relationship_labels_keep_path_candidates_distinct_from_confirmed_translation():
+    import public_workbench
+
+    candidate = public_workbench._document_relationship_caption({
+        "document_relationships": [{
+            "relation_type": "translation_of", "verification_status": "candidate",
+        }],
+    })
+    verified = public_workbench._document_relationship_caption({
+        "document_relationships": [{
+            "relation_type": "translation_of", "verification_status": "verified",
+        }],
+    })
+    localized = public_workbench._document_relationship_caption({
+        "document_relationships": [{
+            "relation_type": "localized_variant_of", "verification_status": "verified",
+        }],
+    })
+
+    assert "待核验" in candidate
+    assert "不据此判断同步差异" in candidate
+    assert "已核验" in verified
+    assert "译文" not in localized
+
+
 def test_autoware_source_coverage_summary_calls_out_unverified_community_pages():
     import public_workbench
 

@@ -1221,3 +1221,60 @@ def test_public_review_advice_without_generator_returns_evidence_only():
     assert response.json()["answer"] == "N/A"
     assert response.json()["sources"] == []
     assert response.json()["evidence"][0]["chunk_id"] == hit["chunk_id"]
+
+
+def test_autoware_relationship_state_is_exposed_without_claiming_translation_drift():
+    index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
+    expected = next(
+        row for row in index.document_relations._rows
+        if row["verification_status"] == "candidate"
+    )
+
+    with TestClient(create_app(
+        index=index,
+        retrieval_config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+    )) as client:
+        workspace = client.get("/public/workspace").json()
+        documents = client.get("/public/documents").json()["documents"]
+        detail = client.post("/public/document", json={
+            "document_id": expected["source_document_id"],
+        }).json()
+        results = client.post("/public/search", json={
+            "query": "Autoware coding guidelines", "version": "docs-main", "language": "all", "top_k": 20,
+        }).json()["results"]
+
+    assert workspace["document_relationships"]["status"] == "ready"
+    assert workspace["document_relationships"]["verified_translation_pairs"] == 0
+    chinese_document = next(row for row in documents if row["document_id"] == expected["source_document_id"])
+    assert chinese_document["document_relationships"] == [expected]
+    assert detail["chunks"]
+    assert all(row["document_relationships"] == [expected] for row in detail["chunks"])
+    assert all("document_relationships" in row for row in results)
+    assert any(
+        relation["verification_status"] == "candidate"
+        for row in results for relation in row["document_relationships"]
+    )
+
+
+def test_invalid_relationship_registry_does_not_disable_public_search():
+    from src.document_relations import DocumentRelationIndex
+
+    index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
+    index.document_relations = DocumentRelationIndex(
+        status="invalid", issue="test stale relation registry",
+    )
+
+    with TestClient(create_app(
+        index=index,
+        retrieval_config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+    )) as client:
+        workspace = client.get("/public/workspace").json()
+        response = client.post("/public/search", json={
+            "query": "planning validator trajectory", "version": "current", "language": "en",
+        })
+
+    assert response.status_code == 200
+    assert response.json()["results"]
+    assert workspace["document_relationships"]["status"] == "invalid"
+    assert workspace["document_relationships"]["verified_translation_pairs"] == 0
+    assert all(not row["document_relationships"] for row in response.json()["results"])
