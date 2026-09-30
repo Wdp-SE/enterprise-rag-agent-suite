@@ -55,6 +55,10 @@ def test_autoware_workspace_profile_comes_from_manifest(tmp_path):
     assert workspace["current_version"] == "0.52.0"
     assert workspace["baseline_version"] == "0.51.0"
     assert workspace["languages"] == ["en-US"]
+    assert workspace["unique_document_count"] == 11
+    assert workspace["source_count"] == 22
+    assert workspace["corpus_is_complete"] is False
+    assert "planning" in workspace["corpus_scope"].casefold()
     assert workspace["data_origin"] == "Autoware official public materials"
     assert health["workspace"] == "Autoware"
     assert "DolphinScheduler" not in json.dumps(workspace)

@@ -19,6 +19,7 @@ from components.public_theme import PUBLIC_CSS
 from services.public_knowledge_client import PublicKnowledgeClient
 from services.review_audit import SQLiteReviewAudit
 from services.rag_client import ServiceError
+from services.public_workspace_profile import public_workspace_mismatch, workspace_snapshot
 
 
 CSS = PUBLIC_CSS
@@ -109,7 +110,7 @@ def _published_language_options(workspace: dict | None) -> list[tuple[str, str]]
     if len(locales) > 1:
         options.insert(0, ("all", "全部已收录语言"))
     if not options:
-        options = [("zh_preferred", "中文优先"), ("all", "全部已收录语言")]
+        options = [("all", "语言元数据未声明")]
     elif len(options) > 1 and not any(value == "all" for value, _ in options):
         options.insert(0, ("all", "全部已收录语言"))
     return options
@@ -461,6 +462,8 @@ def _home(ready: bool, workspace: dict | None) -> None:
         for label, value in status
     )
     st.markdown(f'<div class="status-grid">{cells}</div>', unsafe_allow_html=True)
+    if workspace and workspace.get("corpus_scope"):
+        st.caption(str(workspace["corpus_scope"]))
     left, right = st.columns(2, gap="medium")
     with left:
         with st.container(border=True, key="public_rag_module"):
@@ -487,8 +490,7 @@ def _home(ready: bool, workspace: dict | None) -> None:
     )
     if workspace:
         st.markdown(
-            f'<div class="home-snapshot">当前快照：{escape(str(workspace["source_count"]))} 份官方资料、'
-            f'{escape(str(workspace["chunk_count"]))} 个检索片段；检索策略以真实评测结果为准。</div>',
+            f'<div class="home-snapshot">{escape(workspace_snapshot(workspace))}</div>',
             unsafe_allow_html=True,
         )
 
@@ -1719,6 +1721,8 @@ def render() -> None:
         st.markdown('<div class="sidebar-mark">工作台导航</div>', unsafe_allow_html=True)
         st.caption("选择要查看的功能页面")
         st.caption(f"{_workspace_name(workspace)} 官方公开资料")
+        if workspace and workspace.get("corpus_scope"):
+            st.caption("精选资料范围，不代表上游项目全量")
         for group, pages in NAV_GROUPS:
             st.markdown(f'<div class="nav-heading">{escape(NAV_GROUP_LABELS.get(group, group))}</div>', unsafe_allow_html=True)
             for page in pages:
@@ -1727,6 +1731,11 @@ def render() -> None:
                           on_click=_navigate, args=(page,), use_container_width=True)
         st.divider()
         st.caption(f"知识空间：{_workspace_name(workspace)}　｜　{'已连接' if ready else '等待连接'}")
+    mismatch = public_workspace_mismatch(
+        workspace, public_demo=_setting("APP_ENV", "local").strip().casefold() == "public_demo",
+    )
+    if mismatch:
+        st.warning(mismatch)
     if choice == "总览":
         _home(ready, workspace)
     elif choice == "版本检索与问答":

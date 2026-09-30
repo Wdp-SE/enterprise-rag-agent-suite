@@ -30,6 +30,7 @@ router = APIRouter(prefix="/public", tags=["official-public-knowledge"])
 logger = logging.getLogger(__name__)
 _AUTOWARE_EVALUATION_ROOT = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_retrieval_v1"
 _AUTOWARE_BENCHMARK_SHA256 = "f43b8ea94fa57590d74bd4d65af5a37041e515c03d1ab80f908e20d113d95efd"
+_AUTOWARE_REPOSITORY = "autowarefoundation/autoware_universe"
 
 
 def _safe_diagnostic_label(value, *, max_length: int = 128) -> str | None:
@@ -453,6 +454,17 @@ def workspace(request: Request) -> dict:
         "data_origin": f"{manifest['workspace']} official public materials",
         "upstream_writes_enabled": False,
     }
+    result["unique_document_count"] = len({
+        (source.get("document_key"), source.get("language"))
+        for source in manifest.get("sources", [])
+        if source.get("document_key")
+    })
+    if manifest.get("repository") == _AUTOWARE_REPOSITORY:
+        result["corpus_is_complete"] = False
+        result["corpus_scope"] = (
+            "Curated Autoware Universe Planning subset: overview, Start/Goal Planner, "
+            "planning and trajectory validation; English sources only."
+        )
     if source_retrieval_times:
         result["latest_source_retrieval_timestamp"] = max(source_retrieval_times).isoformat()
     if autoware_evaluation:

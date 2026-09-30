@@ -1,6 +1,6 @@
 # Autoware 版本化研发知识 RAG 服务
 
-公网 Render 服务仍使用 `src.public_server:app` 入口，由 `render.yaml` 指向固定提交的 Autoware Universe 官方资料快照。当前主语料包含 0.51.0 与 0.52.0 两个版本、22 份来源和 410 个文本检索片段，默认版本为 0.52.0；服务不会自动追踪上游发布。运行策略为 `bm25_figure_ocr`：BM25 结果中只补入哈希绑定且人工复核的图片文字，Top-5 唯一来源覆盖不因插入图片而降低。KEP 只启发变更提案/评审流程，不是 RAG 语料或兼容性声明。当前语料、图片审核记录和离线评测见 [语料目录](public_corpus_autoware/README.md)、[来源清单](public_corpus_autoware/corpus_manifest.json)、[图片证据说明](public_corpus_autoware/FIGURE_EVIDENCE.md)和[Autoware 检索评测](../evaluation/autoware_retrieval_v1/README.md)。旧 DolphinScheduler 语料和 V1-V4 指标是历史记录，不代表公网当前结果。
+公网 Render 服务仍使用 `src.public_server:app` 入口，由 `render.yaml` 指向固定提交的 Autoware Universe 官方资料快照。当前主语料包含 0.51.0 与 0.52.0 两个版本、22 条版本化来源（11 份不同的英文文档）和 410 个文本检索片段，只覆盖 Planning 子集而非整个 Autoware Universe；默认版本为 0.52.0，服务不会自动追踪上游发布。运行策略为 `bm25_figure_ocr`：BM25 结果中只补入哈希绑定且人工复核的图片文字，Top-5 唯一来源覆盖不因插入图片而降低。KEP 只启发变更提案/评审流程，不是 RAG 语料或兼容性声明。当前语料、图片审核记录和离线评测见 [语料目录](public_corpus_autoware/README.md)、[来源清单](public_corpus_autoware/corpus_manifest.json)、[图片证据说明](public_corpus_autoware/FIGURE_EVIDENCE.md)和[Autoware 检索评测](../evaluation/autoware_retrieval_v1/README.md)。旧 DolphinScheduler 语料和 V1-V4 指标是历史记录，不代表公网当前结果。
 
 对外职责是版本化资料检索、引用溯源和可选的引用约束生成。下文关于 `DENSE_ONLY + SECTION_PATH` 的说明属于保留的合成企业资料 Runtime 与测试路径，不等同于当前公开语料使用的 BM25 + 审核图片文字策略。
 

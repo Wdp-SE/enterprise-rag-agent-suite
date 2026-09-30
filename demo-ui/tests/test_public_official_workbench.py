@@ -99,6 +99,25 @@ def test_workspace_scoped_selectors_follow_the_latest_manifest_version():
     assert public_workbench._published_versions(workspace) == ["0.52.0", "0.51.0"]
     assert public_workbench._review_version_selector(workspace) == (["0.52.0", "0.51.0"], 0)
     assert public_workbench._published_language_options(workspace) == [("en", "English")]
+    assert public_workbench._published_language_options({"languages": []}) == [("all", "语言元数据未声明")]
+
+
+def test_workbench_warns_when_connected_public_rag_workspace_is_not_autoware(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+    monkeypatch.setenv("APP_ENV", "public_demo")
+
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
+        "workspace": "Apache DolphinScheduler",
+        "repository": "apache/dolphinscheduler",
+        "baseline_version": "0.51.0", "current_version": "0.52.0",
+        "languages": ["zh-CN", "en-US"],
+    })
+
+    app = AppTest.from_file(APP, default_timeout=40).run()
+
+    assert not app.exception
+    assert any("当前知识服务与 Autoware 演示资料不匹配" in item.value for item in app.warning)
 
 
 def test_agent_context_filter_keeps_scope_guard_and_rejects_stale_results():
@@ -511,6 +530,12 @@ def test_rag_suggested_question_is_muted_placeholder_and_used_when_submitted_bla
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
 
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
+        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
+        "baseline_version": "0.51.0", "current_version": "0.52.0",
+        "available_versions": ["0.51.0", "0.52.0"], "languages": ["en-US"],
+    })
+
     submitted = []
     monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: (
         submitted.append(question) or {
@@ -523,11 +548,11 @@ def test_rag_suggested_question_is_muted_placeholder_and_used_when_submitted_bla
 
     question = app.text_area(key="official_question")
     assert question.value == ""
-    assert question.placeholder == "DolphinScheduler 参数优先级从高到低是什么？"
+    assert question.placeholder == "How does the start planner decide when to generate a pull-out path?"
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
 
     assert not app.exception
-    assert submitted == ["DolphinScheduler 参数优先级从高到低是什么？"]
+    assert submitted == ["How does the start planner decide when to generate a pull-out path?"]
     assert "依据官方资料生成的回答。" in "\n".join(item.value for item in app.markdown)
 
 
@@ -544,21 +569,27 @@ def test_rag_generation_uses_user_edited_question(monkeypatch):
     ))
     app = AppTest.from_file(APP, default_timeout=40).run()
     next(button for button in app.button if button.label == "版本化知识检索").click().run()
-    app.text_area(key="official_question").set_value("DolphinScheduler 健康检查接口是什么？").run()
+    app.text_area(key="official_question").set_value("Which parameters configure the planning validator?").run()
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
 
     assert not app.exception
-    assert submitted == ["DolphinScheduler 健康检查接口是什么？"]
+    assert submitted == ["Which parameters configure the planning validator?"]
 
 
-def test_api_server_health_example_matches_the_indexed_api_server_section(monkeypatch):
+def test_suggested_questions_match_current_autoware_corpus(monkeypatch):
     _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
+        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
+        "baseline_version": "0.51.0", "current_version": "0.52.0",
+        "available_versions": ["0.51.0", "0.52.0"], "languages": ["en-US"],
+    })
     app = AppTest.from_file(APP, default_timeout=40).run()
     next(button for button in app.button if button.label == "版本化知识检索").click().run()
 
     options = app.selectbox(key="official_example").options
-    assert "What is the API-Server health endpoint?" in options
-    assert "What is the API server health-check endpoint?" not in options
+    assert "Which parameters configure the planning validator?" in options
+    assert not any("DolphinScheduler" in question or "API server" in question for question in options)
 
 
 def test_evidence_image_markdown_uses_text_placeholder_instead_of_missing_asset(monkeypatch):
