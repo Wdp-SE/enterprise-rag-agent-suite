@@ -124,6 +124,11 @@ class PublicRetrievalRuntime:
     def runtime_policy(self) -> str:
         return self.config["default_policy"]
 
+    @property
+    def reviewable_chunks(self) -> list[dict]:
+        """Evidence accepted by review APIs, including independently validated OCR rows."""
+        return [*self.chunks, *self._images]
+
     def _image_scope(self, *, version: str, language: str) -> list[dict]:
         if version == "current":
             version = self.manifest["current_version"]

@@ -156,6 +156,35 @@ def test_checkout_info_rejects_tampered_source_snapshot(tmp_path):
         _checkout_info(snapshots["0.51.0"]["root"], "0.51.0")
 
 
+def test_checkout_info_rejects_missing_hash_for_allowlisted_source(tmp_path):
+    selection = {
+        "repository": REPOSITORY,
+        "releases": {"0.51.0": {"commit": "a" * 40}, "0.52.0": {"commit": "b" * 40}},
+        "sources": [{
+            "document_path": "planning/validator/README.md", "document_key": "planning/validator",
+            "source_type": "official_documentation", "language": "en", "locale": "en-US",
+        }],
+    }
+    selection_path = tmp_path / "selection.json"
+    selection_path.write_text(json.dumps(selection), encoding="utf-8")
+    snapshots = fetch_pinned_sources(
+        selection_path, tmp_path / "snapshots",
+        fetcher=lambda url: b"Apache License Version 2.0" if url.endswith("/LICENSE") else b"# source\n",
+    )
+    root = snapshots["0.51.0"]["root"]
+    metadata_path = root / ".autoware_source_ref.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    del metadata["files_sha256"]["planning/validator/README.md"]
+    metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="missing.*hash|incomplete"):
+        _checkout_info(
+            root,
+            "0.51.0",
+            required_files={"LICENSE", "planning/validator/README.md"},
+        )
+
+
 def test_inventory_rebuild_preserves_verified_review_only_for_identical_manifest_and_reference():
     manifest_sha = "a" * 64
     figure = {

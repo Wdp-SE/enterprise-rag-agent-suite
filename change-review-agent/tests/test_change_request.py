@@ -56,6 +56,22 @@ def test_explicit_recovery_behavior_remains_a_workflow_change():
     assert classify_change_type(summary) == "workflow_behavior"
 
 
+def test_autoware_planning_behavior_change_gets_domain_specific_category():
+    summary = "Review the Goal Planner pull-out trajectory behavior around obstacles and the drivable area."
+
+    plan = build_request_plan(summary)
+
+    assert plan["change_type"] == "planning_behavior"
+    assert plan["change_type_label"] == "规划 / 轨迹行为变更"
+    assert "规划" in plan["retrieval_focus"]
+
+
+def test_explicit_planner_parameter_change_keeps_parameter_category():
+    summary = "Adjust the Goal Planner obstacle-stop threshold parameter in the YAML config."
+
+    assert classify_change_type(summary) == "parameter_config"
+
+
 def test_quartz_schedule_default_is_not_misclassified_as_parameter_configuration():
     summary = "missed_fire_policy 对 schedule 的默认行为是什么；核对 Quartz 配置和默认值。"
 

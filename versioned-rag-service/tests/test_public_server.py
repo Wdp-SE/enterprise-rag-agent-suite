@@ -9,7 +9,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.answer_generation import GenerationProviderError, GenerationResponseError
+from src import public_api
 from src.public_knowledge import PublicKnowledgeIndex
+from src.public_retrieval_runtime import PublicRetrievalRuntime
 from src.public_server import create_app
 
 
@@ -80,6 +82,89 @@ def test_autoware_public_deployment_uses_benchmarked_image_policy_and_current_re
     assert workspace["retrieval_evaluation"]["holdout"]["image_evidence_hits"] == "2/2"
     assert response.status_code == 200
     assert any(row.get("figure_id") == "32682b345ea86e13" for row in response.json()["results"])
+
+
+def test_review_advice_accepts_reviewed_image_evidence_from_rag_search():
+    index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
+    query = "What two readable labels appear in the Goal Planner image about the drivable area and stopping?"
+    generated_contexts = []
+
+    class Generator:
+        cited_chunk_id = None
+
+        def generate_review(self, *, change_summary, context):
+            generated_contexts.append(context)
+            return {
+                "change_interpretation": "Check the Goal Planner behavior against the reviewed figure labels.",
+                "impact_candidates": [{
+                    "evidence_chunk_id": self.cited_chunk_id,
+                    "reason": "The reviewed image OCR contains the cited labels.",
+                    "suggested_action": "A reviewer should inspect the source figure and related behavior.",
+                }],
+                "evidence_gaps": [], "version_ambiguities": [],
+                "reviewer_actions": ["Manually confirm the original figure."],
+                "review_status": "REQUIRES_HUMAN_REVIEW",
+            }
+
+    generator = Generator()
+    with TestClient(create_app(
+        index=index,
+        generator=generator,
+        retrieval_config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+    )) as client:
+        search = client.post("/public/search", json={
+            "query": query, "version": "current", "language": "en",
+        })
+        image = next(row for row in search.json()["results"] if row.get("figure_id"))
+        generator.cited_chunk_id = image["chunk_id"]
+        response = client.post("/public/review-advice", json={
+            "change_summary": "Review the Goal Planner labels and related behavior.",
+            "evidence_chunk_ids": [image["chunk_id"]],
+        })
+
+    assert search.status_code == 200
+    assert response.status_code == 200
+    result = response.json()
+    assert result["status"] == "OK"
+    assert result["evidence"][0]["figure_id"] == image["figure_id"]
+    assert result["sources"][0]["raw_url"] == image["raw_url"]
+    assert result["review"]["impact_candidates"][0]["evidence_chunk_id"] == image["chunk_id"]
+    assert "figure_id=" + image["figure_id"] in generated_contexts[0]
+    assert image["raw_url"] in generated_contexts[0]
+    assert "image OCR contains transcribed labels only" in generated_contexts[0]
+
+
+def test_autoware_evaluation_rejects_report_metrics_changed_after_freeze(tmp_path, monkeypatch):
+    source_path = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_retrieval_v1" / "results" / "benchmark.json"
+    report = json.loads(source_path.read_text(encoding="utf-8"))
+    frozen_sha = public_api._portable_text_sha256(source_path)
+    report["splits"]["dev"]["bm25_figure_ocr"]["required_source_recall_at_5"] = 0.25
+    report_path = tmp_path / "benchmark.json"
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    monkeypatch.setattr(public_api, "_AUTOWARE_EVALUATION_ROOT", tmp_path, raising=False)
+    monkeypatch.setattr(public_api, "_AUTOWARE_BENCHMARK_SHA256", frozen_sha, raising=False)
+    runtime = PublicRetrievalRuntime(
+        PublicKnowledgeIndex(root=AUTOWARE_CORPUS),
+        config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+    )
+
+    assert public_api._validated_autoware_evaluation(runtime) is None
+
+
+def test_autoware_evaluation_rechecks_benchmark_selection_gates(tmp_path, monkeypatch):
+    source_path = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_retrieval_v1" / "results" / "benchmark.json"
+    report = json.loads(source_path.read_text(encoding="utf-8"))
+    report["splits"]["holdout"]["bm25_figure_ocr"]["image_evidence_hit_at_5"] = 0.0
+    report_path = tmp_path / "benchmark.json"
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    monkeypatch.setattr(public_api, "_AUTOWARE_EVALUATION_ROOT", tmp_path, raising=False)
+    monkeypatch.setattr(public_api, "_AUTOWARE_BENCHMARK_SHA256", public_api._portable_text_sha256(report_path), raising=False)
+    runtime = PublicRetrievalRuntime(
+        PublicKnowledgeIndex(root=AUTOWARE_CORPUS),
+        config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+    )
+
+    assert public_api._validated_autoware_evaluation(runtime) is None
 
 
 def test_public_server_selects_manifest_corpus_and_runtime_config_from_environment(monkeypatch):

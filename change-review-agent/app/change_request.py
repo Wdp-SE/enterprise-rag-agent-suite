@@ -40,6 +40,17 @@ CHANGE_TYPES: dict[str, dict[str, Any]] = {
         "materials": "用户指南、运行行为说明、升级说明",
         "action": "核对执行行为、节点依赖、失败恢复与操作说明；未命中的资料类型需人工补查。",
     },
+    "planning_behavior": {
+        "label": "规划 / 轨迹行为变更",
+        "keywords": (
+            "规划", "路径", "轨迹", "障碍物", "避障", "可行驶区域", "驶出", "泊车",
+            "planning", "planner", "trajectory", "obstacle", "collision", "drivable area",
+            "pull-out", "pull out", "goal planner", "start planner", "path planning",
+        ),
+        "focus": "规划模块职责、轨迹生成与校验、障碍物处理和车辆行为边界",
+        "materials": "规划模块设计说明、参数配置、轨迹验证与版本差异",
+        "action": "核对相关规划模块、轨迹校验、参数配置及版本差异；未命中的验证资料需人工补查。",
+    },
     "data_storage": {
         "label": "数据 / 存储变更",
         "keywords": ("数据", "存储", "数据库", "表结构", "迁移", "schema", "database", "storage"),
@@ -77,6 +88,14 @@ _CLASSIFICATION_RULES: dict[str, dict[str, tuple[str, ...]]] = {
     "workflow_behavior": {
         "strong": ("调度", "依赖", "恢复", "触发", "失败", "重试", "dag", "schedule", "dependency", "retry", "workflow", "approval"),
         "context": ("工作流", "任务", "节点", "workflow", "task"),
+    },
+    "planning_behavior": {
+        "strong": (
+            "规划", "路径", "轨迹", "障碍物", "避障", "可行驶区域", "驶出", "泊车",
+            "planning", "planner", "trajectory", "obstacle", "collision", "drivable area",
+            "pull-out", "pull out", "goal planner", "start planner", "path planning",
+        ),
+        "context": ("行为", "规划模块", "vehicle behavior", "planning module"),
     },
     "data_storage": {
         "strong": ("数据库", "存储", "迁移", "表结构", "持久化", "database", "storage", "migration", "data model"),
@@ -151,6 +170,12 @@ def _expand_retrieval_query(query: str) -> str:
 
 def classify_change_type(text: str) -> str:
     normalized = text.casefold()
+    explicit_parameter_terms = (
+        "参数", "parameter", "timeout", "concurrency", "并发", "容量", "阈值", "threshold",
+        "setvalue", "重试参数",
+    )
+    if any(_contains_term(normalized, term) for term in explicit_parameter_terms):
+        return "parameter_config"
     ranked = []
     for order, (key, terms) in enumerate(_CLASSIFICATION_RULES.items()):
         strong_hits = sum(_contains_term(normalized, term) for term in terms["strong"])

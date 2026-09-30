@@ -176,7 +176,10 @@ def build_pinned_sources(checkouts: dict[str, dict], selection: list[dict], outp
     return manifest
 
 
-def _checkout_info(root: Path, expected_tag: str) -> dict:
+def _checkout_info(root: Path, expected_tag: str, *, required_files: set[str] | None = None) -> dict:
+    root = Path(root).resolve()
+    required = {"LICENSE"}
+    required.update(_normalized_repo_path(value) for value in (required_files or set()))
     metadata_path = root / ".autoware_source_ref.json"
     if metadata_path.is_file():
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
@@ -191,9 +194,19 @@ def _checkout_info(root: Path, expected_tag: str) -> dict:
         hashes = metadata.get("files_sha256")
         if not isinstance(commit, str) or not SHA_RE.fullmatch(commit) or not isinstance(hashes, dict):
             raise ValueError("source snapshot metadata is invalid")
+        normalized_hashes = {}
         for relative, digest in hashes.items():
             normalized = _normalized_repo_path(relative)
-            path = root.joinpath(*PurePosixPath(normalized).parts)
+            if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+                raise ValueError(f"source snapshot hash metadata is invalid: {relative}")
+            normalized_hashes[normalized] = digest
+        missing_hashes = required - set(normalized_hashes)
+        if missing_hashes:
+            raise ValueError(f"source snapshot hash metadata is incomplete: {', '.join(sorted(missing_hashes))}")
+        for relative, digest in normalized_hashes.items():
+            path = root.joinpath(*PurePosixPath(relative).parts).resolve()
+            if not path.is_relative_to(root):
+                raise ValueError(f"source snapshot path escapes checkout: {relative}")
             if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
                 raise ValueError(f"source snapshot hash mismatch: {relative}")
         return {"root": root, "commit": commit}
@@ -203,6 +216,13 @@ def _checkout_info(root: Path, expected_tag: str) -> dict:
     ).stdout.strip()
     if actual_tag != expected_tag:
         raise ValueError(f"checkout must be the exact official tag {expected_tag}")
+    for relative in required:
+        path = root.joinpath(*PurePosixPath(relative).parts).resolve()
+        if not path.is_relative_to(root) or not path.is_file():
+            raise ValueError(f"allowlisted source is missing from pinned checkout: {relative}")
+    license_text = (root / "LICENSE").read_text(encoding="utf-8", errors="replace")
+    if "Apache License" not in license_text or "Version 2.0" not in license_text:
+        raise ValueError("repository license is not verified as Apache-2.0")
     commit = subprocess.run(
         ["git", "-C", str(root), "rev-parse", "HEAD"],
         capture_output=True, text=True, check=True,
@@ -218,11 +238,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--selection", type=Path, default=DEFAULT_SELECTION)
     parser.add_argument("--rebuild", action="store_true", required=True)
     args = parser.parse_args(argv)
+    selection = load_source_selection(args.selection)
+    required_files = {"LICENSE", *(row["document_path"] for row in selection)}
     checkouts = {
-        BASELINE_VERSION: _checkout_info(args.baseline_checkout, BASELINE_VERSION),
-        CURRENT_VERSION: _checkout_info(args.current_checkout, CURRENT_VERSION),
+        BASELINE_VERSION: _checkout_info(
+            args.baseline_checkout, BASELINE_VERSION, required_files=required_files,
+        ),
+        CURRENT_VERSION: _checkout_info(
+            args.current_checkout, CURRENT_VERSION, required_files=required_files,
+        ),
     }
-    manifest = build_pinned_sources(checkouts, load_source_selection(args.selection), args.root)
+    manifest = build_pinned_sources(checkouts, selection, args.root)
     args.root.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(DEFAULT_POLICY, args.root / "retrieval_policy.json")
     shutil.copyfile(DEFAULT_POLICY, args.root / "public_retrieval_runtime.json")

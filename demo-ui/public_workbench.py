@@ -1238,6 +1238,7 @@ def _agent(
         "参数 / 配置变更": "parameter_config",
         "接口 / 兼容性变更": "interface_compatibility",
         "工作流 / 行为变更": "workflow_behavior",
+        "规划 / 轨迹行为变更": "planning_behavior",
         "数据 / 存储变更": "data_storage",
         "安全 / 权限变更": "security_permission",
         "其他 / 待识别": "general",
