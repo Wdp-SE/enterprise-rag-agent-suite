@@ -589,6 +589,8 @@ def test_suggested_questions_match_current_autoware_corpus(monkeypatch):
 
     options = app.selectbox(key="official_example").options
     assert "Which parameters configure the planning validator?" in options
+    assert "Which input topics does the freespace planner use to plan a trajectory?" in options
+    assert "How do RightOfWay tags change the intersection module's attention area?" in options
     assert not any("DolphinScheduler" in question or "API server" in question for question in options)
 
 
@@ -1142,6 +1144,44 @@ def test_benchmark_does_not_present_local_v3_as_current_without_matching_backend
     assert not app.exception
     assert "V3 当前扩充语料" not in visible
     assert "历史选型（旧语料）" in visible
+
+
+def test_verified_autoware_v3_exposes_cross_source_holdout_gap(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    metrics = {
+        "query_count": 11,
+        "complete_required_sources_at_5": 0.9,
+        "required_source_recall_at_5": 0.9167,
+        "image_evidence_hit_at_5": 1.0,
+        "image_evidence_hits": "2/2",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 1,
+        "search_p95_ms": 3.6,
+    }
+    baseline = {**metrics, "image_evidence_hit_at_5": 0.0, "image_evidence_hits": "0/2"}
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
+        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
+        "current_version": "0.52.0", "source_count": 26, "chunk_count": 562,
+        "retrieval_policy": "bm25_figure_ocr",
+        "retrieval_evaluation_status": "autoware_retrieval_v3_validated",
+        "retrieval_evaluation": {
+            "name": "autoware_retrieval_v3", "policy": "bm25_figure_ocr", "top_k": 5,
+            "metric_scope": "retrieval only; no LLM answer quality or hallucination claim",
+            "dev": {**metrics, "query_count": 32, "complete_required_sources_at_5": 1.0,
+                    "required_source_recall_at_5": 1.0, "image_evidence_hits": "3/4"},
+            "holdout": metrics, "bm25_dev": baseline, "bm25_holdout": baseline,
+        },
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "检索评测").click().run()
+
+    assert not app.exception
+    assert any("跨资料问题未找齐全部必需来源" in item.value for item in app.warning)
+    assert any("无答案问题仍返回了候选" in item.value for item in app.warning)
+    assert any("Autoware V3 评测与失败案例" in item.value for item in app.markdown)
 
 
 def test_benchmark_shows_v4_bm25_and_rejected_image_candidate_tradeoff(monkeypatch):

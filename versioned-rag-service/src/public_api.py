@@ -28,8 +28,8 @@ from src.rd_v2_runtime import _format_context, validate_citation_membership
 
 router = APIRouter(prefix="/public", tags=["official-public-knowledge"])
 logger = logging.getLogger(__name__)
-_AUTOWARE_EVALUATION_ROOT = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_retrieval_v1"
-_AUTOWARE_BENCHMARK_SHA256 = "f43b8ea94fa57590d74bd4d65af5a37041e515c03d1ab80f908e20d113d95efd"
+_AUTOWARE_EVALUATION_ROOT = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_retrieval_v3"
+_AUTOWARE_BENCHMARK_SHA256 = "94b5945166d290e1840b1ba93ec12d0d72231f666bbea3416e6ecd0384823078"
 _AUTOWARE_REPOSITORY = "autowarefoundation/autoware_universe"
 
 
@@ -440,7 +440,7 @@ def workspace(request: Request) -> dict:
         "base_retrieval_policy": index.policy["default_policy"],
         "approved_image_chunk_count": len(getattr(index, "_images", [])),
         "retrieval_evaluation_status": (
-            "autoware_retrieval_v1_validated" if autoware_evaluation else
+            "autoware_retrieval_v3_validated" if autoware_evaluation else
             "v4_bm25_validated" if experiment else
             "v3_validated" if release else "expanded_corpus_pending_rebenchmark"
         ),
@@ -463,14 +463,15 @@ def workspace(request: Request) -> dict:
         result["corpus_is_complete"] = False
         result["corpus_scope"] = (
             "Curated Autoware Universe Planning subset: overview, Start/Goal Planner, "
-            "planning and trajectory validation; English sources only."
+            "Freespace Planner, Intersection Velocity Planner, Planning Validator, "
+            "Trajectory Checker, and Trajectory Validator; English sources only."
         )
     if source_retrieval_times:
         result["latest_source_retrieval_timestamp"] = max(source_retrieval_times).isoformat()
     if autoware_evaluation:
         selected = _runtime_policy(index)
         result["retrieval_evaluation"] = {
-            "name": "autoware_retrieval_v1",
+            "name": "autoware_retrieval_v3",
             "policy": selected,
             "top_k": 5,
             "selection": autoware_evaluation["selection"],

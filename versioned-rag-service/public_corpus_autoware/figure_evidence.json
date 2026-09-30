@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "corpus_manifest_sha256": "f0d83d5134021abb03bdbf986462b03e6da744c037d3b9b806586471b2169cbc",
-  "source_count": 22,
+  "corpus_manifest_sha256": "339c4ea6d30b8eda94699320567d1e2faa205d3a23ec92178a63d1c1636a827a",
+  "source_count": 26,
   "current_version": "0.52.0",
-  "relative_reference_count": 74,
-  "external_reference_count": 10,
+  "relative_reference_count": 116,
+  "external_reference_count": 12,
   "unresolved_reference_count": 0,
-  "unique_figure_count": 74,
+  "unique_figure_count": 116,
   "search_policy": "OCR text is an unreviewed candidate; alt text is not image content.",
   "figures": [
     {
@@ -911,6 +911,531 @@
     },
     {
       "schema_version": 1,
+      "figure_id": "a2d275fb39ed52d2",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/data-structure.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/data-structure.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 345,
+          "alt_text": "data-structure",
+          "heading": "Intersection / Data Structure"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "dfbe553305ae41cc",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention-ll-rr.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention-ll-rr.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 69,
+          "alt_text": "attention_area_ll_rr",
+          "heading": "Intersection / Attention area / How-to/Why set RightOfWay tag"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "0d18bf6cff91221c",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention-lr-rl.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention-lr-rl.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 70,
+          "alt_text": "attention_area_lr_rl",
+          "heading": "Intersection / Attention area / How-to/Why set RightOfWay tag"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "a8a08325a394e40b",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention-straight.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention-straight.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 68,
+          "alt_text": "attention_area_straight",
+          "heading": "Intersection / Attention area / How-to/Why set RightOfWay tag"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "a4ed9f706397768c",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 29,
+          "alt_text": "attention_area",
+          "heading": "Intersection / Attention area"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "a2e125b790040175",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-stoplines.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-stoplines.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 85,
+          "alt_text": "data structure",
+          "heading": "Intersection / Possible stop lines"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "95f66370ed1dcad2",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-topology.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-topology.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 13,
+          "alt_text": "topology",
+          "heading": "Intersection / Role"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "b359965b4eef8927",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/merge_from_private.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/merge_from_private.png",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 639,
+          "alt_text": "merge-from-private",
+          "heading": "Intersection / Merge From Private / Role"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "813a994ed7e383a7",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion-with-tl.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion-with-tl.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 243,
+          "alt_text": "occlusion_detection",
+          "heading": "Intersection / Occlusion detection / Occlusion source estimation at intersection with traffic light"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "f543cf9c5a2342ac",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion-without-tl.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion-without-tl.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 253,
+          "alt_text": "occlusion_detection",
+          "heading": "Intersection / Occlusion detection / Occlusion handling at intersection without traffic light"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "50233f4c18189b31",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion-wo-tl-creeping.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion-wo-tl-creeping.png",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 259,
+          "alt_text": "occlusion-wo-tl-creeping",
+          "heading": "Intersection / Occlusion detection / Occlusion handling at intersection without traffic light"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "beec2206a5170aa1",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion_grid.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion_grid.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 235,
+          "alt_text": "occlusion_detection",
+          "heading": "Intersection / Occlusion detection"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "a4e10637e81ecbc9",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/pass-judge-line.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/pass-judge-line.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 321,
+          "alt_text": "pass-judge-line",
+          "heading": "Intersection / Pass Judge Line"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "5a79ed6858056523",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/signal-phase-group.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/signal-phase-group.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 37,
+          "alt_text": "phase signal group",
+          "heading": "Intersection / Attention area / In-phase/Anti-phase signal group"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "48590a75af5108c4",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/static-occlusion-timeout.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/static-occlusion-timeout.png",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 247,
+          "alt_text": "static-occlusion-timeout",
+          "heading": "Intersection / Occlusion detection / Occlusion source estimation at intersection with traffic light"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "3750e34da1766ade",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/stuck-vehicle.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/stuck-vehicle.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 185,
+          "alt_text": "stuck_vehicle_detection",
+          "heading": "Intersection / Stuck Vehicle Detection"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "59517b0395fa0371",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/traffic-light-specific-behavior.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/traffic-light-specific-behavior.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 300,
+          "alt_text": "traffic-light-specific-behavior",
+          "heading": "Intersection / Traffic signal specific behavior / Occlusion detection"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "1ad8c09b232034db",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/ttc.gif",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/ttc.gif",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 218,
+          "alt_text": "ego ttc profile",
+          "heading": "Intersection / Collision detection"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "e1a17557f0811392",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/ugly-intersection.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/ugly-intersection.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 74,
+          "alt_text": "bad-map",
+          "heading": "Intersection / Attention area / How-to/Why set RightOfWay tag"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "5fc07750f264ace3",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/upstream-velocity.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/upstream-velocity.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 225,
+          "alt_text": "upstream_velocity",
+          "heading": "Intersection / Collision detection / about use_upstream_velocity flag"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "eec0edf8bae9105a",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/yield-stuck.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/yield-stuck.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 191,
+          "alt_text": "yield_stuck_detection",
+          "heading": "Intersection / Yield stuck vehicle detection"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
       "figure_id": "3e133f1953e3438f",
       "repository": "autowarefoundation/autoware_universe",
       "version": "0.51.0",
@@ -1321,8 +1846,7 @@
         }
       ],
       "validation": {
-        "status": "fetch_error",
-        "error_type": "ValueError"
+        "status": "unverified"
       },
       "ocr": {
         "status": "not_run"
@@ -1939,6 +2463,531 @@
     },
     {
       "schema_version": 1,
+      "figure_id": "951383f413ead881",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/data-structure.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/data-structure.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 345,
+          "alt_text": "data-structure",
+          "heading": "Intersection / Data Structure"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "cd21beeb504c3c5e",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention-ll-rr.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention-ll-rr.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 69,
+          "alt_text": "attention_area_ll_rr",
+          "heading": "Intersection / Attention area / How-to/Why set RightOfWay tag"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "94b3a61fe05fb755",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention-lr-rl.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention-lr-rl.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 70,
+          "alt_text": "attention_area_lr_rl",
+          "heading": "Intersection / Attention area / How-to/Why set RightOfWay tag"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "e8771990083d1dd8",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention-straight.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention-straight.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 68,
+          "alt_text": "attention_area_straight",
+          "heading": "Intersection / Attention area / How-to/Why set RightOfWay tag"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "f36167eb9f50ee46",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-attention.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 29,
+          "alt_text": "attention_area",
+          "heading": "Intersection / Attention area"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "0b83807db0e61708",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-stoplines.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-stoplines.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 85,
+          "alt_text": "data structure",
+          "heading": "Intersection / Possible stop lines"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "b350825dc5d324de",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-topology.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/intersection-topology.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 13,
+          "alt_text": "topology",
+          "heading": "Intersection / Role"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "67f77d69ce043c50",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/merge_from_private.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/merge_from_private.png",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 639,
+          "alt_text": "merge-from-private",
+          "heading": "Intersection / Merge From Private / Role"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "539128bb2148b503",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion-with-tl.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion-with-tl.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 243,
+          "alt_text": "occlusion_detection",
+          "heading": "Intersection / Occlusion detection / Occlusion source estimation at intersection with traffic light"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "1f25b09dbb77c59f",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion-without-tl.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion-without-tl.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 253,
+          "alt_text": "occlusion_detection",
+          "heading": "Intersection / Occlusion detection / Occlusion handling at intersection without traffic light"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "5ceb8ba2921611ee",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion-wo-tl-creeping.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion-wo-tl-creeping.png",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 259,
+          "alt_text": "occlusion-wo-tl-creeping",
+          "heading": "Intersection / Occlusion detection / Occlusion handling at intersection without traffic light"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "c3942d13ebf3c884",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion_grid.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/occlusion_grid.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 235,
+          "alt_text": "occlusion_detection",
+          "heading": "Intersection / Occlusion detection"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "d61f935d6a45551b",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/pass-judge-line.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/pass-judge-line.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 321,
+          "alt_text": "pass-judge-line",
+          "heading": "Intersection / Pass Judge Line"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "384a2b323a63a2c8",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/signal-phase-group.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/signal-phase-group.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 37,
+          "alt_text": "phase signal group",
+          "heading": "Intersection / Attention area / In-phase/Anti-phase signal group"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "771d93762ab8d6c1",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/static-occlusion-timeout.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/static-occlusion-timeout.png",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 247,
+          "alt_text": "static-occlusion-timeout",
+          "heading": "Intersection / Occlusion detection / Occlusion source estimation at intersection with traffic light"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "27b87402ee8528b8",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/stuck-vehicle.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/stuck-vehicle.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 185,
+          "alt_text": "stuck_vehicle_detection",
+          "heading": "Intersection / Stuck Vehicle Detection"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "24e77ad6ba7236e9",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/traffic-light-specific-behavior.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/traffic-light-specific-behavior.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 300,
+          "alt_text": "traffic-light-specific-behavior",
+          "heading": "Intersection / Traffic signal specific behavior / Occlusion detection"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "ee83b04965f9b300",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/ttc.gif",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/ttc.gif",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 218,
+          "alt_text": "ego ttc profile",
+          "heading": "Intersection / Collision detection"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "6caed8126b5cb4b6",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/ugly-intersection.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/ugly-intersection.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 74,
+          "alt_text": "bad-map",
+          "heading": "Intersection / Attention area / How-to/Why set RightOfWay tag"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "23a98a8a16caf989",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/upstream-velocity.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/upstream-velocity.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 225,
+          "alt_text": "upstream_velocity",
+          "heading": "Intersection / Collision detection / about use_upstream_velocity flag"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "4ae2735e323fbd3c",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/yield-stuck.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/docs/yield-stuck.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/intersection_velocity/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md",
+          "line": 191,
+          "alt_text": "yield_stuck_detection",
+          "heading": "Intersection / Yield stuck vehicle detection"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
       "figure_id": "52ef62d2484480c0",
       "repository": "autowarefoundation/autoware_universe",
       "version": "0.52.0",
@@ -1956,8 +3005,7 @@
         }
       ],
       "validation": {
-        "status": "fetch_error",
-        "error_type": "ValueError"
+        "status": "unverified"
       },
       "ocr": {
         "status": "not_run"

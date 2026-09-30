@@ -11,10 +11,9 @@
   "max_facets": 4,
   "rrf_k": 60,
   "image_top_k": 20,
-  "selection_status": "pending_offline_benchmark",
-  "benchmark_corpus_sha256": "f0d83d5134021abb03bdbf986462b03e6da744c037d3b9b806586471b2169cbc",
+  "benchmark_corpus_sha256": "339c4ea6d30b8eda94699320567d1e2faa205d3a23ec92178a63d1c1636a827a",
   "index_artifacts_sha256": {
-    "chunks.json": "453067fec370e9a8063c5556d12c3966157e6c628d19f2cf23e61bc31dcc8262",
-    "dense_vectors.npy": "2482cdcf7157288360967233c4e7ebcfa93b47c94067ad27987edda29928525d"
+    "chunks.json": "bbb4a58ea9e8d6eb9d15175b5a5404d6a9bad6e56ab6a3d417162c6db66261f4",
+    "dense_vectors.npy": "134fad171e574f6eaff49061a6adef5f6a71e72cf3f4e632420627bb2a13d811"
   }
 }

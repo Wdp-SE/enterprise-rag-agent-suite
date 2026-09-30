@@ -179,13 +179,62 @@ def scan_inventory(root: Path = ROOT) -> dict:
     }
 
 
-def preserve_verified_figure_evidence(current: dict, previous: dict | None) -> dict:
-    """Retain approved hashes only when the pinned corpus and figure references match."""
-    if (
-        not isinstance(previous, dict)
-        or previous.get("schema_version") != 1
-        or previous.get("corpus_manifest_sha256") != current.get("corpus_manifest_sha256")
-    ):
+def _manifest_is_append_only_extension(previous_bytes: bytes, current_bytes: bytes) -> bool:
+    """Allow review reuse only when every old pinned source is byte-identical in the new manifest."""
+    try:
+        previous_manifest = json.loads(previous_bytes)
+        current_manifest = json.loads(current_bytes)
+    except (json.JSONDecodeError, TypeError):
+        return False
+    stable_fields = (
+        "repository", "workspace", "baseline_version", "current_version",
+        "available_versions", "languages", "commits",
+    )
+    if any(previous_manifest.get(key) != current_manifest.get(key) for key in stable_fields):
+        return False
+    previous_sources = previous_manifest.get("sources")
+    current_sources = current_manifest.get("sources")
+    if not isinstance(previous_sources, list) or not isinstance(current_sources, list):
+        return False
+
+    def source_map(rows):
+        result = {}
+        for row in rows:
+            if not isinstance(row, dict):
+                return None
+            identity = (row.get("version"), row.get("document_key"), row.get("language"))
+            if not all(identity) or identity in result:
+                return None
+            result[identity] = row
+        return result
+
+    old = source_map(previous_sources)
+    new = source_map(current_sources)
+    return bool(
+        old is not None and new is not None
+        and all(new.get(identity) == row for identity, row in old.items())
+    )
+
+
+def preserve_verified_figure_evidence(
+    current: dict,
+    previous: dict | None,
+    *,
+    previous_manifest_bytes: bytes | None = None,
+    current_manifest_bytes: bytes | None = None,
+) -> dict:
+    """Retain approvals for unchanged figures across identical or append-only corpora."""
+    if not isinstance(previous, dict) or previous.get("schema_version") != 1:
+        return current
+    same_manifest = previous.get("corpus_manifest_sha256") == current.get("corpus_manifest_sha256")
+    append_only = (
+        previous_manifest_bytes is not None
+        and current_manifest_bytes is not None
+        and previous.get("corpus_manifest_sha256") == hashlib.sha256(previous_manifest_bytes).hexdigest()
+        and current.get("corpus_manifest_sha256") == hashlib.sha256(current_manifest_bytes).hexdigest()
+        and _manifest_is_append_only_extension(previous_manifest_bytes, current_manifest_bytes)
+    )
+    if not same_manifest and not append_only:
         return current
     prior_rows = {
         row.get("figure_id"): row for row in previous.get("figures", [])

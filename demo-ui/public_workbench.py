@@ -551,6 +551,8 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
     if str((workspace or {}).get("repository", "")).casefold() == "autowarefoundation/autoware_universe":
         examples = [
             "How does the start planner decide when to generate a pull-out path?",
+            "Which input topics does the freespace planner use to plan a trajectory?",
+            "How do RightOfWay tags change the intersection module's attention area?",
             "Which parameters configure the planning validator?",
             "What does the trajectory checker validate before a path is published?",
         ]
@@ -1528,14 +1530,14 @@ def _benchmark(workspace: dict | None) -> None:
     st.markdown(f"**当前默认：{policy}**。Dense 是字符哈希向量基线，不是神经语义 Embedding；Hybrid 在旧语料选型中未超过 BM25。")
     release_status = workspace.get("retrieval_evaluation_status") if workspace else None
     release = workspace.get("retrieval_evaluation") if workspace and release_status in (
-        "autoware_retrieval_v1_validated", "v4_bm25_validated", "v3_validated",
+        "autoware_retrieval_v3_validated", "autoware_retrieval_v1_validated", "v4_bm25_validated", "v3_validated",
     ) else None
     experiment = workspace.get("retrieval_experiment") if workspace else None
-    if isinstance(release, dict) and release.get("name") == "autoware_retrieval_v1" and release.get("policy", "").upper() == policy:
+    if isinstance(release, dict) and release.get("name") == "autoware_retrieval_v3" and release.get("policy", "").upper() == policy:
         st.markdown("**Autoware 当前检索策略评测（冻结题集，Top-5）**")
         st.caption(
             f"{workspace.get('source_count', '—')} 份固定提交官方资料、{workspace.get('chunk_count', '—')} 个文本片段，"
-            "另含 2 条经人工复核并绑定原图 SHA 的图中文字证据；评测含 16 道手工问题，"
+            "另含 2 条经人工复核并绑定原图 SHA 的图中文字证据；评测含 43 道手工问题（DEV 32 / HOLDOUT 11），"
             "仅衡量检索，不代表答案正确率、幻觉率或公网延迟。"
         )
         fields = (
@@ -1560,8 +1562,18 @@ def _benchmark(workspace: dict | None) -> None:
         st.markdown("\n".join(rows))
         st.caption(
             "图片文字候选只在至少两个图中文字词命中且不挤掉 Top-5 内唯一来源时加入；"
-            "这批小样本中 Dev/Holdout 必需来源指标与 BM25 持平，图片证据命中从 0/2 升至 2/2。"
+            "本题集 DEV 来源指标与 BM25 持平，图片证据命中由 0/4 升至 3/4；HOLDOUT 来源指标持平，图片命中由 0/2 升至 2/2。"
         )
+        if release["holdout"].get("complete_required_sources_at_5", 1) < 1:
+            st.warning(
+                "HOLDOUT 有跨资料问题未找齐全部必需来源；这说明跨模块召回仍有缺口。"
+                "查看冻结评测说明中的失败案例，后续改进应使用新评测版本验证。"
+            )
+            st.markdown(
+                "[查看 Autoware V3 评测与失败案例]("
+                "(https://github.com/Wdp-SE/enterprise-rag-agent-suite/blob/main/"
+                "evaluation/autoware_retrieval_v3/README.md)"
+            )
         if release["holdout"]["no_answer_nonempty_candidate_rate"] > 0:
             st.warning(
                 "Holdout 无答案问题仍返回了候选（1/1）。检索命中不等于问题可回答；"

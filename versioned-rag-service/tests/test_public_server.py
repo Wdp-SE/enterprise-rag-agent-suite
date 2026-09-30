@@ -55,9 +55,11 @@ def test_autoware_workspace_profile_comes_from_manifest(tmp_path):
     assert workspace["current_version"] == "0.52.0"
     assert workspace["baseline_version"] == "0.51.0"
     assert workspace["languages"] == ["en-US"]
-    assert workspace["unique_document_count"] == 11
-    assert workspace["source_count"] == 22
+    assert workspace["unique_document_count"] == 13
+    assert workspace["source_count"] == 26
     assert workspace["corpus_is_complete"] is False
+    assert "freespace" in workspace["corpus_scope"].casefold()
+    assert "intersection" in workspace["corpus_scope"].casefold()
     assert "planning" in workspace["corpus_scope"].casefold()
     assert workspace["data_origin"] == "Autoware official public materials"
     assert health["workspace"] == "Autoware"
@@ -80,7 +82,7 @@ def test_autoware_public_deployment_uses_benchmarked_image_policy_and_current_re
 
     assert health["runtime_retrieval_policy"] == "bm25_figure_ocr"
     assert health["approved_image_chunk_count"] == 2
-    assert workspace["retrieval_evaluation_status"] == "autoware_retrieval_v1_validated"
+    assert workspace["retrieval_evaluation_status"] == "autoware_retrieval_v3_validated"
     assert workspace["current_version"] == "0.52.0"
     assert workspace["available_versions"] == ["0.52.0", "0.51.0"]
     assert workspace["retrieval_evaluation"]["holdout"]["image_evidence_hits"] == "2/2"
@@ -139,7 +141,7 @@ def test_review_advice_accepts_reviewed_image_evidence_from_rag_search():
 
 
 def test_autoware_evaluation_rejects_report_metrics_changed_after_freeze(tmp_path, monkeypatch):
-    source_path = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_retrieval_v1" / "results" / "benchmark.json"
+    source_path = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_retrieval_v3" / "results" / "benchmark.json"
     report = json.loads(source_path.read_text(encoding="utf-8"))
     frozen_sha = public_api._portable_text_sha256(source_path)
     report["splits"]["dev"]["bm25_figure_ocr"]["required_source_recall_at_5"] = 0.25
@@ -156,7 +158,7 @@ def test_autoware_evaluation_rejects_report_metrics_changed_after_freeze(tmp_pat
 
 
 def test_autoware_evaluation_rechecks_benchmark_selection_gates(tmp_path, monkeypatch):
-    source_path = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_retrieval_v1" / "results" / "benchmark.json"
+    source_path = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_retrieval_v3" / "results" / "benchmark.json"
     report = json.loads(source_path.read_text(encoding="utf-8"))
     report["splits"]["holdout"]["bm25_figure_ocr"]["image_evidence_hit_at_5"] = 0.0
     report_path = tmp_path / "benchmark.json"

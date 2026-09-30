@@ -1,0 +1,3817 @@
+{
+  "schema_version": 1,
+  "corpus": "Autoware",
+  "corpus_manifest_sha256": "339c4ea6d30b8eda94699320567d1e2faa205d3a23ec92178a63d1c1636a827a",
+  "cases_sha256": "6791148412381c56f7f4f2557f89cc6fe67bc0882cc2e3d955f1a215ec28c836",
+  "runtime_fingerprint": {
+    "corpus_manifest_sha256": "339c4ea6d30b8eda94699320567d1e2faa205d3a23ec92178a63d1c1636a827a",
+    "retrieval_policy_sha256": "3ada6c1bfe60aacb3ae9da880ac0ad2fb356a6b3a2eb4e7db61041df2ef48edd",
+    "chunks_sha256": "bbb4a58ea9e8d6eb9d15175b5a5404d6a9bad6e56ab6a3d417162c6db66261f4",
+    "dense_vectors_sha256": "134fad171e574f6eaff49061a6adef5f6a71e72cf3f4e632420627bb2a13d811",
+    "figure_inventory_sha256": "ebaad861951c25812af9b3edb34b0ca9558865f14d11151c58cb1e2679a145c4",
+    "figure_sidecar_sha256": "480b36ab9a4981729653962975ddb74f4cf50c6719d0b584279d77d5dae6d826",
+    "figure_sidecar_lock_sha256": "f6c7dc2edaf2ff4973667e062d705d787773bbf00ef1f07cfe4575ed736ed366",
+    "runtime_config_behavior_sha256": "85d5fe8aba46b1ed7b5cbc456e90c2204d272d595fdc522b030e58dce40ee706",
+    "public_knowledge_sha256": "101d16f48c96f6714ad5ca41a74759cb4b873b517eeabfef414ba08743e85733",
+    "public_retrieval_runtime_sha256": "a8d2ad752e935b1c87f6b827e918db01662a6c02126a4367048885cf1996dec7",
+    "retrieval_fusion_sha256": "da65e1d5043f7e29e76d88cf02676fda8ec9be811b6f7d5965b5cdce4120ca8f",
+    "figure_sidecar_integrity_sha256": "4f0add53f5a7a417c16d5bbd48156036ae61752608f1a463e64c520feec22894",
+    "cases_sha256": "6791148412381c56f7f4f2557f89cc6fe67bc0882cc2e3d955f1a215ec28c836",
+    "split_lock_sha256": "3c8ac6364eef3c9d421eaa5f74ef3929852d9d94abbabf34b7cad77759b0a14b",
+    "runner_sha256": "8ae85509fb94c6043e6cda7acc61c47653887a3cd368c4d5049f2cb19c46ce95"
+  },
+  "metric_scope": "retrieval only; no LLM answer quality or hallucination claim",
+  "repeats_per_case": 10,
+  "splits": {
+    "dev": {
+      "bm25": {
+        "query_count": 32,
+        "required_source_recall_at_5": 1.0,
+        "complete_required_sources_at_5": 1.0,
+        "image_evidence_hit_at_5": 0.0,
+        "image_evidence_hits": "0/4",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 4,
+        "search_p95_ms": 4.364,
+        "mean_retrieval_operations_per_query": 1,
+        "cases": [
+          {
+            "case_id": "start_shift_01",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/goal_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:50"
+            ]
+          },
+          {
+            "case_id": "start_reverse_02",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:8",
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:6"
+            ]
+          },
+          {
+            "case_id": "start_geometry_03",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:19",
+              "0.52.0:en:planning/start_planner/design:18",
+              "0.52.0:en:planning/start_planner/design:5"
+            ]
+          },
+          {
+            "case_id": "start_search_policy_04",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/design:66",
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/parameters:4"
+            ]
+          },
+          {
+            "case_id": "start_dynamic_safety_05",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:25",
+              "0.52.0:en:planning/start_planner/design:28"
+            ]
+          },
+          {
+            "case_id": "planning_validator_06",
+            "required_sources": [
+              "planning/planning_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:22",
+              "0.52.0:en:planning/overview:2"
+            ]
+          },
+          {
+            "case_id": "trajectory_checks_07",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/trajectory_checker/design:4",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:2",
+              "0.52.0:en:planning/planning_validator/design:4"
+            ]
+          },
+          {
+            "case_id": "goal_priority_08",
+            "required_sources": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:13",
+              "0.52.0:en:planning/goal_planner/parameters:1",
+              "0.52.0:en:planning/goal_planner/design:14",
+              "0.52.0:en:planning/goal_planner/design:9",
+              "0.52.0:en:planning/goal_planner/design:37"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_09",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:26",
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/goal_planner/design:24",
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/intersection_velocity/design:34"
+            ]
+          },
+          {
+            "case_id": "version_baseline_10",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.51.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.51.0:en:planning/planning_validator/design:2",
+              "0.51.0:en:planning/trajectory_checker/design:1",
+              "0.51.0:en:planning/planning_validator/design:1",
+              "0.51.0:en:planning/planning_validator/parameters:1",
+              "0.51.0:en:planning/start_planner/design:22"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_dev_10b",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/freespace_planner/design:7",
+              "0.52.0:en:planning/goal_planner/design:5",
+              "0.52.0:en:planning/overview:1",
+              "0.52.0:en:planning/overview:6"
+            ]
+          },
+          {
+            "case_id": "start_search_policy_holdout_11",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/goal_planner/design:9",
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/parameters:4",
+              "0.52.0:en:planning/start_planner/design:66"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_holdout_12",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/intersection_velocity/design:18",
+              "0.52.0:en:planning/intersection_velocity/design:60"
+            ]
+          },
+          {
+            "case_id": "trajectory_validator_plugins_13",
+            "required_sources": [
+              "planning/trajectory_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/trajectory_validator/design:3",
+              "0.52.0:en:planning/trajectory_validator/design:2",
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/goal_planner/design:40"
+            ]
+          },
+          {
+            "case_id": "cross_module_review_14",
+            "required_sources": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/goal_planner/design:20",
+              "0.52.0:en:planning/start_planner/design:17",
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/trajectory_checker/design:2"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_15",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:56",
+              "0.52.0:en:planning/intersection_velocity/design:57",
+              "0.52.0:en:planning/start_planner/design:55",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:18"
+            ]
+          },
+          {
+            "case_id": "freespace_inputs_16",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/start_planner/design:11",
+              "0.52.0:en:planning/goal_planner/design:4",
+              "0.52.0:en:planning/planning_validator/design:4",
+              "0.52.0:en:planning/goal_planner/design:20"
+            ]
+          },
+          {
+            "case_id": "intersection_right_of_way_17",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:7",
+              "0.52.0:en:planning/intersection_velocity/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:4",
+              "0.52.0:en:planning/intersection_velocity/design:8",
+              "0.52.0:en:planning/intersection_velocity/design:15"
+            ]
+          },
+          {
+            "case_id": "intersection_version_baseline_18",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.51.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.51.0:en:planning/intersection_velocity/design:21",
+              "0.51.0:en:planning/intersection_velocity/design:51",
+              "0.51.0:en:planning/intersection_velocity/design:27",
+              "0.51.0:en:planning/intersection_velocity/design:60",
+              "0.51.0:en:planning/intersection_velocity/design:36"
+            ]
+          },
+          {
+            "case_id": "freespace_replan_19",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:8",
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:15",
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/freespace_planner/design:12"
+            ]
+          },
+          {
+            "case_id": "intersection_collision_20",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:20",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:36",
+              "0.52.0:en:planning/intersection_velocity/design:27"
+            ]
+          },
+          {
+            "case_id": "intersection_cross_module_21",
+            "required_sources": [
+              "planning/intersection_velocity/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/trajectory_checker/design:4",
+              "0.52.0:en:planning/intersection_velocity/design:22"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_planning_parameter_22",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:68",
+              "0.52.0:en:planning/start_planner/design:10",
+              "0.52.0:en:planning/intersection_velocity/design:28",
+              "0.52.0:en:planning/goal_planner/design:35",
+              "0.52.0:en:planning/start_planner/design:28"
+            ]
+          },
+          {
+            "case_id": "freespace_algorithm_holdout_23",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/trajectory_validator/design:5",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/start_planner/design:24"
+            ]
+          },
+          {
+            "case_id": "freespace_direction_holdout_24",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:29",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/start_planner/design:8",
+              "0.52.0:en:planning/goal_planner/design:45",
+              "0.52.0:en:planning/planning_validator/design:1"
+            ]
+          },
+          {
+            "case_id": "freespace_stop_threshold_holdout_25",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:7",
+              "0.52.0:en:planning/trajectory_checker/design:2",
+              "0.52.0:en:planning/freespace_planner/design:12",
+              "0.52.0:en:planning/intersection_velocity/design:19",
+              "0.52.0:en:planning/trajectory_validator/parameters:2"
+            ]
+          },
+          {
+            "case_id": "intersection_attention_holdout_26",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:4",
+              "0.52.0:en:planning/intersection_velocity/design:39",
+              "0.52.0:en:planning/intersection_velocity/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:8",
+              "0.52.0:en:planning/intersection_velocity/design:50"
+            ]
+          },
+          {
+            "case_id": "intersection_margins_holdout_27",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:14",
+              "0.52.0:en:planning/intersection_velocity/design:15",
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:36"
+            ]
+          },
+          {
+            "case_id": "intersection_occlusion_holdout_28",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:27",
+              "0.52.0:en:planning/intersection_velocity/design:26",
+              "0.52.0:en:planning/intersection_velocity/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:19"
+            ]
+          },
+          {
+            "case_id": "intersection_signal_holdout_29",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:53",
+              "0.52.0:en:planning/intersection_velocity/design:29",
+              "0.52.0:en:planning/intersection_velocity/design:30",
+              "0.52.0:en:planning/intersection_velocity/design:31",
+              "0.52.0:en:planning/intersection_velocity/design:32"
+            ]
+          },
+          {
+            "case_id": "freespace_validation_holdout_30",
+            "required_sources": [
+              "planning/freespace_planner/design",
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design",
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:28",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:3",
+              "0.52.0:en:planning/intersection_velocity/design:35"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_sensor_calibration_31",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:49",
+              "0.52.0:en:planning/intersection_velocity/design:33",
+              "0.52.0:en:planning/intersection_velocity/design:54",
+              "0.52.0:en:planning/intersection_velocity/design:25",
+              "0.52.0:en:planning/intersection_velocity/design:26"
+            ]
+          }
+        ]
+      },
+      "bm25_faceted_rrf": {
+        "query_count": 32,
+        "required_source_recall_at_5": 1.0,
+        "complete_required_sources_at_5": 1.0,
+        "image_evidence_hit_at_5": 0.0,
+        "image_evidence_hits": "0/4",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 4,
+        "search_p95_ms": 4.2,
+        "mean_retrieval_operations_per_query": 1.062,
+        "cases": [
+          {
+            "case_id": "start_shift_01",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/goal_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:50"
+            ]
+          },
+          {
+            "case_id": "start_reverse_02",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:8",
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:6"
+            ]
+          },
+          {
+            "case_id": "start_geometry_03",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:19",
+              "0.52.0:en:planning/start_planner/design:18",
+              "0.52.0:en:planning/start_planner/design:5"
+            ]
+          },
+          {
+            "case_id": "start_search_policy_04",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/design:66",
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/parameters:4"
+            ]
+          },
+          {
+            "case_id": "start_dynamic_safety_05",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:25",
+              "0.52.0:en:planning/start_planner/design:28"
+            ]
+          },
+          {
+            "case_id": "planning_validator_06",
+            "required_sources": [
+              "planning/planning_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:22",
+              "0.52.0:en:planning/overview:2"
+            ]
+          },
+          {
+            "case_id": "trajectory_checks_07",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/trajectory_checker/design:4",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:2",
+              "0.52.0:en:planning/planning_validator/design:4"
+            ]
+          },
+          {
+            "case_id": "goal_priority_08",
+            "required_sources": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/goal_planner/parameters:1",
+              "0.52.0:en:planning/goal_planner/design:13",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/goal_planner/design:14"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_09",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:26",
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/goal_planner/design:24",
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/intersection_velocity/design:34"
+            ]
+          },
+          {
+            "case_id": "version_baseline_10",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.51.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.51.0:en:planning/planning_validator/design:2",
+              "0.51.0:en:planning/trajectory_checker/design:1",
+              "0.51.0:en:planning/planning_validator/design:1",
+              "0.51.0:en:planning/planning_validator/parameters:1",
+              "0.51.0:en:planning/start_planner/design:22"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_dev_10b",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/freespace_planner/design:7",
+              "0.52.0:en:planning/goal_planner/design:5",
+              "0.52.0:en:planning/overview:1",
+              "0.52.0:en:planning/overview:6"
+            ]
+          },
+          {
+            "case_id": "start_search_policy_holdout_11",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/goal_planner/design:9",
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/parameters:4",
+              "0.52.0:en:planning/start_planner/design:66"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_holdout_12",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/intersection_velocity/design:18",
+              "0.52.0:en:planning/intersection_velocity/design:60"
+            ]
+          },
+          {
+            "case_id": "trajectory_validator_plugins_13",
+            "required_sources": [
+              "planning/trajectory_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/trajectory_validator/design:3",
+              "0.52.0:en:planning/trajectory_validator/design:2",
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/goal_planner/design:40"
+            ]
+          },
+          {
+            "case_id": "cross_module_review_14",
+            "required_sources": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/goal_planner/design:20",
+              "0.52.0:en:planning/start_planner/design:17",
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/trajectory_checker/design:2"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_15",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:56",
+              "0.52.0:en:planning/intersection_velocity/design:57",
+              "0.52.0:en:planning/start_planner/design:55",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:18"
+            ]
+          },
+          {
+            "case_id": "freespace_inputs_16",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/start_planner/design:11",
+              "0.52.0:en:planning/goal_planner/design:4",
+              "0.52.0:en:planning/planning_validator/design:4",
+              "0.52.0:en:planning/goal_planner/design:20"
+            ]
+          },
+          {
+            "case_id": "intersection_right_of_way_17",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:7",
+              "0.52.0:en:planning/intersection_velocity/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:4",
+              "0.52.0:en:planning/intersection_velocity/design:8",
+              "0.52.0:en:planning/intersection_velocity/design:15"
+            ]
+          },
+          {
+            "case_id": "intersection_version_baseline_18",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.51.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.51.0:en:planning/intersection_velocity/design:21",
+              "0.51.0:en:planning/intersection_velocity/design:51",
+              "0.51.0:en:planning/intersection_velocity/design:27",
+              "0.51.0:en:planning/intersection_velocity/design:60",
+              "0.51.0:en:planning/intersection_velocity/design:36"
+            ]
+          },
+          {
+            "case_id": "freespace_replan_19",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:8",
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:15",
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/freespace_planner/design:12"
+            ]
+          },
+          {
+            "case_id": "intersection_collision_20",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:20",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:36",
+              "0.52.0:en:planning/intersection_velocity/design:27"
+            ]
+          },
+          {
+            "case_id": "intersection_cross_module_21",
+            "required_sources": [
+              "planning/intersection_velocity/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/trajectory_checker/design:4",
+              "0.52.0:en:planning/intersection_velocity/design:22"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_planning_parameter_22",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:68",
+              "0.52.0:en:planning/start_planner/design:10",
+              "0.52.0:en:planning/intersection_velocity/design:28",
+              "0.52.0:en:planning/goal_planner/design:35",
+              "0.52.0:en:planning/start_planner/design:28"
+            ]
+          },
+          {
+            "case_id": "freespace_algorithm_holdout_23",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/trajectory_validator/design:5",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/start_planner/design:24"
+            ]
+          },
+          {
+            "case_id": "freespace_direction_holdout_24",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:29",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/start_planner/design:8",
+              "0.52.0:en:planning/goal_planner/design:45",
+              "0.52.0:en:planning/planning_validator/design:1"
+            ]
+          },
+          {
+            "case_id": "freespace_stop_threshold_holdout_25",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:7",
+              "0.52.0:en:planning/trajectory_checker/design:2",
+              "0.52.0:en:planning/freespace_planner/design:12",
+              "0.52.0:en:planning/intersection_velocity/design:19",
+              "0.52.0:en:planning/trajectory_validator/parameters:2"
+            ]
+          },
+          {
+            "case_id": "intersection_attention_holdout_26",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:4",
+              "0.52.0:en:planning/intersection_velocity/design:39",
+              "0.52.0:en:planning/intersection_velocity/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:8",
+              "0.52.0:en:planning/intersection_velocity/design:50"
+            ]
+          },
+          {
+            "case_id": "intersection_margins_holdout_27",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:14",
+              "0.52.0:en:planning/intersection_velocity/design:15",
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:36"
+            ]
+          },
+          {
+            "case_id": "intersection_occlusion_holdout_28",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:27",
+              "0.52.0:en:planning/intersection_velocity/design:26",
+              "0.52.0:en:planning/intersection_velocity/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:19"
+            ]
+          },
+          {
+            "case_id": "intersection_signal_holdout_29",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:53",
+              "0.52.0:en:planning/intersection_velocity/design:29",
+              "0.52.0:en:planning/intersection_velocity/design:30",
+              "0.52.0:en:planning/intersection_velocity/design:31",
+              "0.52.0:en:planning/intersection_velocity/design:32"
+            ]
+          },
+          {
+            "case_id": "freespace_validation_holdout_30",
+            "required_sources": [
+              "planning/freespace_planner/design",
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design",
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:28",
+              "0.52.0:en:planning/trajectory_checker/design:3",
+              "0.52.0:en:planning/freespace_planner/design:3"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_sensor_calibration_31",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:49",
+              "0.52.0:en:planning/intersection_velocity/design:33",
+              "0.52.0:en:planning/intersection_velocity/design:54",
+              "0.52.0:en:planning/intersection_velocity/design:25",
+              "0.52.0:en:planning/intersection_velocity/design:26"
+            ]
+          }
+        ],
+        "noninferior_to_bm25": true
+      },
+      "bm25_figure_ocr": {
+        "query_count": 32,
+        "required_source_recall_at_5": 1.0,
+        "complete_required_sources_at_5": 1.0,
+        "image_evidence_hit_at_5": 0.75,
+        "image_evidence_hits": "3/4",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 4,
+        "search_p95_ms": 4.207,
+        "mean_retrieval_operations_per_query": 2,
+        "cases": [
+          {
+            "case_id": "start_shift_01",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/goal_planner/design:21",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "start_reverse_02",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:8",
+              "0.52.0:en:planning/start_planner/design:24",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "start_geometry_03",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:19",
+              "0.52.0:en:planning/start_planner/design:18",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "start_search_policy_04",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/design:66",
+              "0.52.0:en:planning/start_planner/design:22",
+              "114e9eb5e6ccb1b4d021d767",
+              "0.52.0:en:planning/start_planner/parameters:4"
+            ]
+          },
+          {
+            "case_id": "start_dynamic_safety_05",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:25",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "planning_validator_06",
+            "required_sources": [
+              "planning/planning_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/overview:2"
+            ]
+          },
+          {
+            "case_id": "trajectory_checks_07",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/trajectory_checker/design:4",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:2",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "goal_priority_08",
+            "required_sources": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:13",
+              "0.52.0:en:planning/goal_planner/parameters:1",
+              "0.52.0:en:planning/goal_planner/design:14",
+              "0.52.0:en:planning/goal_planner/design:9",
+              "0.52.0:en:planning/goal_planner/design:37"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_09",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [
+              "32682b345ea86e13"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:26",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:24",
+              "114e9eb5e6ccb1b4d021d767",
+              "0.52.0:en:planning/intersection_velocity/design:34"
+            ]
+          },
+          {
+            "case_id": "version_baseline_10",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.51.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.51.0:en:planning/planning_validator/design:2",
+              "0.51.0:en:planning/trajectory_checker/design:1",
+              "0.51.0:en:planning/planning_validator/design:1",
+              "0.51.0:en:planning/planning_validator/parameters:1",
+              "0.51.0:en:planning/start_planner/design:22"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_dev_10b",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/freespace_planner/design:7",
+              "0.52.0:en:planning/goal_planner/design:5",
+              "0.52.0:en:planning/overview:1",
+              "0.52.0:en:planning/overview:6"
+            ]
+          },
+          {
+            "case_id": "start_search_policy_holdout_11",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [
+              "876db03219da6219"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:21",
+              "114e9eb5e6ccb1b4d021d767",
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/parameters:4",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_holdout_12",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [
+              "32682b345ea86e13"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "114e9eb5e6ccb1b4d021d767",
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/intersection_velocity/design:18",
+              "0.52.0:en:planning/intersection_velocity/design:60"
+            ]
+          },
+          {
+            "case_id": "trajectory_validator_plugins_13",
+            "required_sources": [
+              "planning/trajectory_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/trajectory_validator/design:3",
+              "0.52.0:en:planning/trajectory_validator/design:2",
+              "0.52.0:en:planning/planning_validator/design:2",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:40"
+            ]
+          },
+          {
+            "case_id": "cross_module_review_14",
+            "required_sources": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/goal_planner/design:20",
+              "0.52.0:en:planning/start_planner/design:17",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/trajectory_checker/design:2"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_15",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:56",
+              "0.52.0:en:planning/intersection_velocity/design:57",
+              "0.52.0:en:planning/start_planner/design:55",
+              "0.52.0:en:planning/start_planner/design:21",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "freespace_inputs_16",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:4",
+              "0.52.0:en:planning/planning_validator/design:4",
+              "0.52.0:en:planning/goal_planner/design:20"
+            ]
+          },
+          {
+            "case_id": "intersection_right_of_way_17",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:7",
+              "0.52.0:en:planning/intersection_velocity/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:4",
+              "114e9eb5e6ccb1b4d021d767",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "intersection_version_baseline_18",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.51.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.51.0:en:planning/intersection_velocity/design:21",
+              "0.51.0:en:planning/intersection_velocity/design:51",
+              "0.51.0:en:planning/intersection_velocity/design:27",
+              "0.51.0:en:planning/intersection_velocity/design:60",
+              "0.51.0:en:planning/intersection_velocity/design:36"
+            ]
+          },
+          {
+            "case_id": "freespace_replan_19",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:8",
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:15",
+              "d54ca76bcdb2537a20b3efec",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "intersection_collision_20",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:20",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:36",
+              "0.52.0:en:planning/intersection_velocity/design:27"
+            ]
+          },
+          {
+            "case_id": "intersection_cross_module_21",
+            "required_sources": [
+              "planning/intersection_velocity/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/trajectory_checker/design:4",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_planning_parameter_22",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:68",
+              "0.52.0:en:planning/start_planner/design:10",
+              "0.52.0:en:planning/intersection_velocity/design:28",
+              "0.52.0:en:planning/goal_planner/design:35",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "freespace_algorithm_holdout_23",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/trajectory_validator/design:5",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/start_planner/design:69",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "freespace_direction_holdout_24",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:29",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:45",
+              "0.52.0:en:planning/planning_validator/design:1"
+            ]
+          },
+          {
+            "case_id": "freespace_stop_threshold_holdout_25",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:7",
+              "0.52.0:en:planning/trajectory_checker/design:2",
+              "0.52.0:en:planning/freespace_planner/design:12",
+              "0.52.0:en:planning/intersection_velocity/design:19",
+              "0.52.0:en:planning/trajectory_validator/parameters:2"
+            ]
+          },
+          {
+            "case_id": "intersection_attention_holdout_26",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:4",
+              "0.52.0:en:planning/intersection_velocity/design:39",
+              "0.52.0:en:planning/intersection_velocity/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:8",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "intersection_margins_holdout_27",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:14",
+              "0.52.0:en:planning/intersection_velocity/design:15",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:36"
+            ]
+          },
+          {
+            "case_id": "intersection_occlusion_holdout_28",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:27",
+              "0.52.0:en:planning/intersection_velocity/design:26",
+              "0.52.0:en:planning/intersection_velocity/design:1",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "intersection_signal_holdout_29",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:53",
+              "0.52.0:en:planning/intersection_velocity/design:29",
+              "0.52.0:en:planning/intersection_velocity/design:30",
+              "0.52.0:en:planning/intersection_velocity/design:31",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "freespace_validation_holdout_30",
+            "required_sources": [
+              "planning/freespace_planner/design",
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design",
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:28",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:3",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_sensor_calibration_31",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:49",
+              "0.52.0:en:planning/intersection_velocity/design:33",
+              "0.52.0:en:planning/intersection_velocity/design:54",
+              "0.52.0:en:planning/intersection_velocity/design:25",
+              "0.52.0:en:planning/intersection_velocity/design:26"
+            ]
+          }
+        ],
+        "noninferior_to_bm25": true
+      },
+      "bm25_faceted_figure_ocr": {
+        "query_count": 32,
+        "required_source_recall_at_5": 1.0,
+        "complete_required_sources_at_5": 1.0,
+        "image_evidence_hit_at_5": 0.75,
+        "image_evidence_hits": "3/4",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 4,
+        "search_p95_ms": 4.34,
+        "mean_retrieval_operations_per_query": 2.125,
+        "cases": [
+          {
+            "case_id": "start_shift_01",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/goal_planner/design:21",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "start_reverse_02",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:8",
+              "0.52.0:en:planning/start_planner/design:24",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "start_geometry_03",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:19",
+              "0.52.0:en:planning/start_planner/design:18",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "start_search_policy_04",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/design:66",
+              "0.52.0:en:planning/start_planner/design:22",
+              "114e9eb5e6ccb1b4d021d767",
+              "0.52.0:en:planning/start_planner/parameters:4"
+            ]
+          },
+          {
+            "case_id": "start_dynamic_safety_05",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:25",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "planning_validator_06",
+            "required_sources": [
+              "planning/planning_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/overview:2"
+            ]
+          },
+          {
+            "case_id": "trajectory_checks_07",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/trajectory_checker/design:4",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:2",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "goal_priority_08",
+            "required_sources": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/goal_planner/parameters:1",
+              "0.52.0:en:planning/goal_planner/design:13",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/goal_planner/design:14"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_09",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [
+              "32682b345ea86e13"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:26",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:24",
+              "114e9eb5e6ccb1b4d021d767",
+              "0.52.0:en:planning/intersection_velocity/design:34"
+            ]
+          },
+          {
+            "case_id": "version_baseline_10",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.51.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.51.0:en:planning/planning_validator/design:2",
+              "0.51.0:en:planning/trajectory_checker/design:1",
+              "0.51.0:en:planning/planning_validator/design:1",
+              "0.51.0:en:planning/planning_validator/parameters:1",
+              "0.51.0:en:planning/start_planner/design:22"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_dev_10b",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/freespace_planner/design:7",
+              "0.52.0:en:planning/goal_planner/design:5",
+              "0.52.0:en:planning/overview:1",
+              "0.52.0:en:planning/overview:6"
+            ]
+          },
+          {
+            "case_id": "start_search_policy_holdout_11",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [
+              "876db03219da6219"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:21",
+              "114e9eb5e6ccb1b4d021d767",
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/parameters:4",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_holdout_12",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [
+              "32682b345ea86e13"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "114e9eb5e6ccb1b4d021d767",
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/intersection_velocity/design:18",
+              "0.52.0:en:planning/intersection_velocity/design:60"
+            ]
+          },
+          {
+            "case_id": "trajectory_validator_plugins_13",
+            "required_sources": [
+              "planning/trajectory_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/trajectory_validator/design:3",
+              "0.52.0:en:planning/trajectory_validator/design:2",
+              "0.52.0:en:planning/planning_validator/design:2",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:40"
+            ]
+          },
+          {
+            "case_id": "cross_module_review_14",
+            "required_sources": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/goal_planner/design:20",
+              "0.52.0:en:planning/start_planner/design:17",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/trajectory_checker/design:2"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_15",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:56",
+              "0.52.0:en:planning/intersection_velocity/design:57",
+              "0.52.0:en:planning/start_planner/design:55",
+              "0.52.0:en:planning/start_planner/design:21",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "freespace_inputs_16",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:4",
+              "0.52.0:en:planning/planning_validator/design:4",
+              "0.52.0:en:planning/goal_planner/design:20"
+            ]
+          },
+          {
+            "case_id": "intersection_right_of_way_17",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:7",
+              "0.52.0:en:planning/intersection_velocity/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:4",
+              "114e9eb5e6ccb1b4d021d767",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "intersection_version_baseline_18",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.51.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.51.0:en:planning/intersection_velocity/design:21",
+              "0.51.0:en:planning/intersection_velocity/design:51",
+              "0.51.0:en:planning/intersection_velocity/design:27",
+              "0.51.0:en:planning/intersection_velocity/design:60",
+              "0.51.0:en:planning/intersection_velocity/design:36"
+            ]
+          },
+          {
+            "case_id": "freespace_replan_19",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:8",
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:15",
+              "d54ca76bcdb2537a20b3efec",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "intersection_collision_20",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:20",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:36",
+              "0.52.0:en:planning/intersection_velocity/design:27"
+            ]
+          },
+          {
+            "case_id": "intersection_cross_module_21",
+            "required_sources": [
+              "planning/intersection_velocity/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/trajectory_checker/design:4",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_planning_parameter_22",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:68",
+              "0.52.0:en:planning/start_planner/design:10",
+              "0.52.0:en:planning/intersection_velocity/design:28",
+              "0.52.0:en:planning/goal_planner/design:35",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "freespace_algorithm_holdout_23",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/trajectory_validator/design:5",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/start_planner/design:69",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "freespace_direction_holdout_24",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:29",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:45",
+              "0.52.0:en:planning/planning_validator/design:1"
+            ]
+          },
+          {
+            "case_id": "freespace_stop_threshold_holdout_25",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:7",
+              "0.52.0:en:planning/trajectory_checker/design:2",
+              "0.52.0:en:planning/freespace_planner/design:12",
+              "0.52.0:en:planning/intersection_velocity/design:19",
+              "0.52.0:en:planning/trajectory_validator/parameters:2"
+            ]
+          },
+          {
+            "case_id": "intersection_attention_holdout_26",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:4",
+              "0.52.0:en:planning/intersection_velocity/design:39",
+              "0.52.0:en:planning/intersection_velocity/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:8",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "intersection_margins_holdout_27",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:14",
+              "0.52.0:en:planning/intersection_velocity/design:15",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:36"
+            ]
+          },
+          {
+            "case_id": "intersection_occlusion_holdout_28",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/intersection_velocity/design:27",
+              "0.52.0:en:planning/intersection_velocity/design:26",
+              "0.52.0:en:planning/intersection_velocity/design:1",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "intersection_signal_holdout_29",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:53",
+              "0.52.0:en:planning/intersection_velocity/design:29",
+              "0.52.0:en:planning/intersection_velocity/design:30",
+              "0.52.0:en:planning/intersection_velocity/design:31",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "freespace_validation_holdout_30",
+            "required_sources": [
+              "planning/freespace_planner/design",
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design",
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/intersection_velocity/design:28",
+              "0.52.0:en:planning/trajectory_checker/design:3",
+              "0.52.0:en:planning/freespace_planner/design:3"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_sensor_calibration_31",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:49",
+              "0.52.0:en:planning/intersection_velocity/design:33",
+              "0.52.0:en:planning/intersection_velocity/design:54",
+              "0.52.0:en:planning/intersection_velocity/design:25",
+              "0.52.0:en:planning/intersection_velocity/design:26"
+            ]
+          }
+        ],
+        "noninferior_to_bm25": true
+      }
+    },
+    "holdout": {
+      "bm25": {
+        "query_count": 11,
+        "required_source_recall_at_5": 0.9167,
+        "complete_required_sources_at_5": 0.9,
+        "image_evidence_hit_at_5": 0.0,
+        "image_evidence_hits": "0/2",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 1,
+        "search_p95_ms": 3.686,
+        "mean_retrieval_operations_per_query": 1,
+        "cases": [
+          {
+            "case_id": "start_diagram_holdout_32",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/goal_planner/design:22",
+              "0.52.0:en:planning/start_planner/design:66",
+              "0.52.0:en:planning/goal_planner/design:37"
+            ]
+          },
+          {
+            "case_id": "goal_diagram_holdout_33",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/intersection_velocity/design:36",
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/intersection_velocity/design:34"
+            ]
+          },
+          {
+            "case_id": "freespace_inputs_holdout_34",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/trajectory_validator/design:5",
+              "0.52.0:en:planning/start_planner/design:17"
+            ]
+          },
+          {
+            "case_id": "freespace_direction_holdout_35",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/trajectory_validator/design:1",
+              "0.52.0:en:planning/freespace_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:29",
+              "0.52.0:en:planning/planning_validator/design:6"
+            ]
+          },
+          {
+            "case_id": "freespace_stop_holdout_36",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:26",
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/goal_planner/design:36",
+              "0.52.0:en:planning/intersection_velocity/design:19",
+              "0.52.0:en:planning/start_planner/design:13"
+            ]
+          },
+          {
+            "case_id": "intersection_rightofway_holdout_37",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:4",
+              "0.52.0:en:planning/intersection_velocity/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:7",
+              "0.52.0:en:planning/intersection_velocity/design:8",
+              "0.52.0:en:planning/intersection_velocity/design:50"
+            ]
+          },
+          {
+            "case_id": "intersection_margin_holdout_38",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:21",
+              "0.52.0:en:planning/intersection_velocity/design:22",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/start_planner/design:32",
+              "0.52.0:en:planning/start_planner/design:24"
+            ]
+          },
+          {
+            "case_id": "intersection_occlusion_holdout_39",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:14",
+              "0.52.0:en:planning/intersection_velocity/design:24",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/start_planner/design:22"
+            ]
+          },
+          {
+            "case_id": "intersection_signal_holdout_40",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:53",
+              "0.52.0:en:planning/intersection_velocity/design:29",
+              "0.52.0:en:planning/intersection_velocity/design:30",
+              "0.52.0:en:planning/intersection_velocity/design:15",
+              "0.52.0:en:planning/trajectory_validator/parameters:2"
+            ]
+          },
+          {
+            "case_id": "freespace_validation_holdout_41",
+            "required_sources": [
+              "planning/freespace_planner/design",
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/goal_planner/design:26",
+              "0.52.0:en:planning/trajectory_checker/design:20",
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/trajectory_checker/design:3"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_sensor_holdout_42",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:49",
+              "0.52.0:en:planning/intersection_velocity/design:33",
+              "0.52.0:en:planning/intersection_velocity/design:54",
+              "0.52.0:en:planning/intersection_velocity/design:25",
+              "0.52.0:en:planning/intersection_velocity/design:26"
+            ]
+          }
+        ]
+      },
+      "bm25_faceted_rrf": {
+        "query_count": 11,
+        "required_source_recall_at_5": 0.9167,
+        "complete_required_sources_at_5": 0.9,
+        "image_evidence_hit_at_5": 0.0,
+        "image_evidence_hits": "0/2",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 1,
+        "search_p95_ms": 3.569,
+        "mean_retrieval_operations_per_query": 1,
+        "cases": [
+          {
+            "case_id": "start_diagram_holdout_32",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/goal_planner/design:22",
+              "0.52.0:en:planning/start_planner/design:66",
+              "0.52.0:en:planning/goal_planner/design:37"
+            ]
+          },
+          {
+            "case_id": "goal_diagram_holdout_33",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/intersection_velocity/design:36",
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/intersection_velocity/design:34"
+            ]
+          },
+          {
+            "case_id": "freespace_inputs_holdout_34",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/trajectory_validator/design:5",
+              "0.52.0:en:planning/start_planner/design:17"
+            ]
+          },
+          {
+            "case_id": "freespace_direction_holdout_35",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/trajectory_validator/design:1",
+              "0.52.0:en:planning/freespace_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:29",
+              "0.52.0:en:planning/planning_validator/design:6"
+            ]
+          },
+          {
+            "case_id": "freespace_stop_holdout_36",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:26",
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/goal_planner/design:36",
+              "0.52.0:en:planning/intersection_velocity/design:19",
+              "0.52.0:en:planning/start_planner/design:13"
+            ]
+          },
+          {
+            "case_id": "intersection_rightofway_holdout_37",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:4",
+              "0.52.0:en:planning/intersection_velocity/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:7",
+              "0.52.0:en:planning/intersection_velocity/design:8",
+              "0.52.0:en:planning/intersection_velocity/design:50"
+            ]
+          },
+          {
+            "case_id": "intersection_margin_holdout_38",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:21",
+              "0.52.0:en:planning/intersection_velocity/design:22",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/start_planner/design:32",
+              "0.52.0:en:planning/start_planner/design:24"
+            ]
+          },
+          {
+            "case_id": "intersection_occlusion_holdout_39",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:14",
+              "0.52.0:en:planning/intersection_velocity/design:24",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/start_planner/design:22"
+            ]
+          },
+          {
+            "case_id": "intersection_signal_holdout_40",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:53",
+              "0.52.0:en:planning/intersection_velocity/design:29",
+              "0.52.0:en:planning/intersection_velocity/design:30",
+              "0.52.0:en:planning/intersection_velocity/design:15",
+              "0.52.0:en:planning/trajectory_validator/parameters:2"
+            ]
+          },
+          {
+            "case_id": "freespace_validation_holdout_41",
+            "required_sources": [
+              "planning/freespace_planner/design",
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/goal_planner/design:26",
+              "0.52.0:en:planning/trajectory_checker/design:20",
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/trajectory_checker/design:3"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_sensor_holdout_42",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:49",
+              "0.52.0:en:planning/intersection_velocity/design:33",
+              "0.52.0:en:planning/intersection_velocity/design:54",
+              "0.52.0:en:planning/intersection_velocity/design:25",
+              "0.52.0:en:planning/intersection_velocity/design:26"
+            ]
+          }
+        ],
+        "noninferior_to_bm25": true
+      },
+      "bm25_figure_ocr": {
+        "query_count": 11,
+        "required_source_recall_at_5": 0.9167,
+        "complete_required_sources_at_5": 0.9,
+        "image_evidence_hit_at_5": 1.0,
+        "image_evidence_hits": "2/2",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 1,
+        "search_p95_ms": 3.635,
+        "mean_retrieval_operations_per_query": 2,
+        "cases": [
+          {
+            "case_id": "start_diagram_holdout_32",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [
+              "876db03219da6219"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/goal_planner/design:22",
+              "d54ca76bcdb2537a20b3efec",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "goal_diagram_holdout_33",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [
+              "32682b345ea86e13"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "d54ca76bcdb2537a20b3efec",
+              "114e9eb5e6ccb1b4d021d767",
+              "0.52.0:en:planning/intersection_velocity/design:36",
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/intersection_velocity/design:34"
+            ]
+          },
+          {
+            "case_id": "freespace_inputs_holdout_34",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/trajectory_validator/design:5",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "freespace_direction_holdout_35",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/trajectory_validator/design:1",
+              "0.52.0:en:planning/freespace_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:29",
+              "0.52.0:en:planning/planning_validator/design:6"
+            ]
+          },
+          {
+            "case_id": "freespace_stop_holdout_36",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:26",
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/goal_planner/design:36",
+              "0.52.0:en:planning/intersection_velocity/design:19",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "intersection_rightofway_holdout_37",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:4",
+              "0.52.0:en:planning/intersection_velocity/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:7",
+              "0.52.0:en:planning/intersection_velocity/design:8",
+              "0.52.0:en:planning/intersection_velocity/design:50"
+            ]
+          },
+          {
+            "case_id": "intersection_margin_holdout_38",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:21",
+              "0.52.0:en:planning/intersection_velocity/design:22",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/start_planner/design:32",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "intersection_occlusion_holdout_39",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:14",
+              "0.52.0:en:planning/intersection_velocity/design:24",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/start_planner/design:22"
+            ]
+          },
+          {
+            "case_id": "intersection_signal_holdout_40",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:53",
+              "0.52.0:en:planning/intersection_velocity/design:29",
+              "0.52.0:en:planning/intersection_velocity/design:30",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/trajectory_validator/parameters:2"
+            ]
+          },
+          {
+            "case_id": "freespace_validation_holdout_41",
+            "required_sources": [
+              "planning/freespace_planner/design",
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/goal_planner/design:26",
+              "0.52.0:en:planning/trajectory_checker/design:20",
+              "0.52.0:en:planning/overview:2",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_sensor_holdout_42",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:49",
+              "0.52.0:en:planning/intersection_velocity/design:33",
+              "0.52.0:en:planning/intersection_velocity/design:54",
+              "0.52.0:en:planning/intersection_velocity/design:25",
+              "0.52.0:en:planning/intersection_velocity/design:26"
+            ]
+          }
+        ],
+        "noninferior_to_bm25": true
+      },
+      "bm25_faceted_figure_ocr": {
+        "query_count": 11,
+        "required_source_recall_at_5": 0.9167,
+        "complete_required_sources_at_5": 0.9,
+        "image_evidence_hit_at_5": 1.0,
+        "image_evidence_hits": "2/2",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 1,
+        "search_p95_ms": 3.473,
+        "mean_retrieval_operations_per_query": 2,
+        "cases": [
+          {
+            "case_id": "start_diagram_holdout_32",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [
+              "876db03219da6219"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/goal_planner/design:22",
+              "d54ca76bcdb2537a20b3efec",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "goal_diagram_holdout_33",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [
+              "32682b345ea86e13"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "d54ca76bcdb2537a20b3efec",
+              "114e9eb5e6ccb1b4d021d767",
+              "0.52.0:en:planning/intersection_velocity/design:36",
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/intersection_velocity/design:34"
+            ]
+          },
+          {
+            "case_id": "freespace_inputs_holdout_34",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/trajectory_validator/design:5",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "freespace_direction_holdout_35",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/freespace_planner/design:1",
+              "0.52.0:en:planning/trajectory_validator/design:1",
+              "0.52.0:en:planning/freespace_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:29",
+              "0.52.0:en:planning/planning_validator/design:6"
+            ]
+          },
+          {
+            "case_id": "freespace_stop_holdout_36",
+            "required_sources": [
+              "planning/freespace_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/freespace_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:26",
+              "0.52.0:en:planning/freespace_planner/design:2",
+              "0.52.0:en:planning/goal_planner/design:36",
+              "0.52.0:en:planning/intersection_velocity/design:19",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "intersection_rightofway_holdout_37",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:4",
+              "0.52.0:en:planning/intersection_velocity/design:6",
+              "0.52.0:en:planning/intersection_velocity/design:7",
+              "0.52.0:en:planning/intersection_velocity/design:8",
+              "0.52.0:en:planning/intersection_velocity/design:50"
+            ]
+          },
+          {
+            "case_id": "intersection_margin_holdout_38",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:21",
+              "0.52.0:en:planning/intersection_velocity/design:22",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/start_planner/design:32",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "intersection_occlusion_holdout_39",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:14",
+              "0.52.0:en:planning/intersection_velocity/design:24",
+              "0.52.0:en:planning/intersection_velocity/design:23",
+              "0.52.0:en:planning/intersection_velocity/design:60",
+              "0.52.0:en:planning/start_planner/design:22"
+            ]
+          },
+          {
+            "case_id": "intersection_signal_holdout_40",
+            "required_sources": [
+              "planning/intersection_velocity/design"
+            ],
+            "found_sources_at_5": [
+              "planning/intersection_velocity/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:53",
+              "0.52.0:en:planning/intersection_velocity/design:29",
+              "0.52.0:en:planning/intersection_velocity/design:30",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/trajectory_validator/parameters:2"
+            ]
+          },
+          {
+            "case_id": "freespace_validation_holdout_41",
+            "required_sources": [
+              "planning/freespace_planner/design",
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/goal_planner/design:26",
+              "0.52.0:en:planning/trajectory_checker/design:20",
+              "0.52.0:en:planning/overview:2",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_sensor_holdout_42",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/intersection_velocity/design:49",
+              "0.52.0:en:planning/intersection_velocity/design:33",
+              "0.52.0:en:planning/intersection_velocity/design:54",
+              "0.52.0:en:planning/intersection_velocity/design:25",
+              "0.52.0:en:planning/intersection_velocity/design:26"
+            ]
+          }
+        ],
+        "noninferior_to_bm25": true
+      }
+    }
+  },
+  "selection": {
+    "selected_policy": "bm25_figure_ocr",
+    "reason": "best holdout image hit among candidates that are noninferior to BM25 on required-source recall, complete required-source rate, no-answer candidates, and version correctness",
+    "eligible_candidates": [
+      "bm25_figure_ocr",
+      "bm25_faceted_figure_ocr"
+    ]
+  }
+}

@@ -20,7 +20,7 @@
     公网默认：固定版本 Autoware 资料 → FastAPI BM25 + 经审核图中文字 → 问题/变更描述 → 引用证据 → Agent 辅助分析 → 人工审核
     本地扩展演示：合成研发文件 → 结构解析与元数据 → 版本 Diff / RAG 影响发现 → PatchCandidate → 人工审核 → 安全候选版本
 
-在线工作台用于体验产品流程；API 文档用于查看公开 RAG 接口。当前 Autoware 语料是 0.51.0 与 0.52.0 两个固定提交快照，共 22 条版本化来源（11 份不同的英文文档）、410 个文字检索片段；仅覆盖规划子集，不是完整 Autoware 语料；启动时不抓取上游，也不重建索引。冻结的 16 道检索题对照了 BM25、查询分面和经审核的图片文字。当前选用 `bm25_figure_ocr`：DEV/HOLDOUT 必需来源覆盖与 BM25 持平，图片证据命中从 0/2 提升到 2/2；结果已绑定语料、代码、评测集和侧车指纹。每个切分只有一道无答案题，且仍返回候选，因此该小评测不证明回答准确率或幻觉率，相关指标会在工作台明示。
+在线工作台用于体验产品流程；API 文档用于查看公开 RAG 接口。当前 Autoware 语料是 0.51.0 与 0.52.0 两个固定提交快照，共 26 条版本化来源（13 份不同的英文文档）、562 个文字检索片段；只覆盖 Planning 精选子集，不是完整 Autoware 语料；启动时不抓取上游，也不重建索引。冻结的 43 道检索题（DEV 32 / HOLDOUT 11）对照了 BM25、查询分面和经审核的图片文字。当前选用 `bm25_figure_ocr`：来源覆盖不低于 BM25，图片证据命中 DEV 从 0/4 升到 3/4、HOLDOUT 从 0/2 升到 2/2；HOLDOUT 必需来源召回为 91.67%，完整来源率为 90%，有一道跨资料题漏掉 Freespace Planner 来源。两组无答案问题仍会召回候选，因此这轮检索评测不证明回答准确率、幻觉率或可靠拒答能力；结果绑定语料、代码、评测集和图像侧车指纹。
 
 ### 目录职责
 
@@ -30,7 +30,7 @@
 - `project_delivery/v4_change_impact_review/demo_data/`：完全合成的研发资料与结构化清单，不包含企业真实文档。
 - `evaluation/agent_query_decomposition/`：规则分类、子问题覆盖和查询预算的轻量离线评测，不等价于端到端检索或答案质量评测。
 - `evaluation/change_review_v5/`：32 条 DolphinScheduler 语料上的历史变更审查评测，仅保留为旧版 Agent 规划记录；不代表当前 Autoware 语料效果，也不调用或评分生成模型。
-- `evaluation/autoware_retrieval_v1/`：16 道 Autoware 版本化检索评测，对比 BM25、查询分面和图片文字策略；包含图中独有信息与无答案问题，不评分生成答案。
+- `evaluation/autoware_retrieval_v3/`：当前 43 道 Autoware 版本化检索评测（DEV 32 / HOLDOUT 11），对比 BM25、查询分面和图片文字策略；包含跨模块、图片独有信息与无答案问题，不评分生成答案。
 
 ### 变更规划与证据缺口
 
@@ -42,7 +42,7 @@
 python evaluation/change_review_v5/run_evaluation.py --split dev --policy bm25
 ```
 
-V5 共 32 条请求、18 个场景族，DEV 25 条、HOLDOUT 7 条；含跨资料、图片线索、无答案和私有范围请求。其规则分类和检索数据只描述旧 DolphinScheduler 版本，不是当前 Autoware 服务的指标，也不代表真实用户分布、答案准确率、幻觉率或公网延迟；越界问题拦截和公开无答案候选噪声见 [V5 历史评测说明](evaluation/change_review_v5/README.md)。当前 Autoware 检索结果以 [Autoware 检索评测 V1](evaluation/autoware_retrieval_v1/README.md) 为准。
+V5 共 32 条请求、18 个场景族，DEV 25 条、HOLDOUT 7 条；含跨资料、图片线索、无答案和私有范围请求。其规则分类和检索数据只描述旧 DolphinScheduler 版本，不是当前 Autoware 服务的指标，也不代表真实用户分布、答案准确率、幻觉率或公网延迟；越界问题拦截和公开无答案候选噪声见 [V5 历史评测说明](evaluation/change_review_v5/README.md)。当前 Autoware 检索结果以 [Autoware 检索评测 V3](evaluation/autoware_retrieval_v3/README.md) 为准。
 
 ## 检索选型：历史基线与当前复评
 
@@ -73,13 +73,13 @@ V4 冻结了 104 道单资料、跨资料、跨版本、截图 OCR、图文联�
 
 上述图片评测与 OCR 记录均属于 DolphinScheduler 历史语料。当前 Autoware 的图片索引范围、人工复核边界和在线策略见 [Autoware 图片证据说明](versioned-rag-service/public_corpus_autoware/FIGURE_EVIDENCE.md)。
 
-旧 V3/V4 发布记录与当前 Autoware 语料无关；不要用它们宣称当前服务通过 DolphinScheduler 评测校验。当前 Autoware 评测及其指纹由 `/public/workspace` 核验，复算说明见 [Autoware 评测目录](evaluation/autoware_retrieval_v1/README.md)：
+旧 V3/V4 发布记录与当前 Autoware 语料无关；不要用它们宣称当前服务通过 DolphinScheduler 评测校验。当前 Autoware 评测及其指纹由 `/public/workspace` 核验，复算说明见 [Autoware 评测目录](evaluation/autoware_retrieval_v3/README.md)：
 
 运行相关服务测试时，请在 `versioned-rag-service/` 目录执行 `python -m pytest -q`；Autoware 冻结题集与复算方式见评测说明。
 
 ### 当前 Autoware 评测
 
-当前主语料、默认版本和线上策略以 [Autoware 语料清单](versioned-rag-service/public_corpus_autoware/corpus_manifest.json)、[图片证据审核清单](versioned-rag-service/public_corpus_autoware/FIGURE_EVIDENCE.md)及 [Autoware 检索评测](evaluation/autoware_retrieval_v1/README.md)为准。16 道题按场景划分为 DEV 11 道、HOLDOUT 5 道。Top-5 上，BM25 与图片文字策略在两组的必需来源 Recall 和完整来源率均为 100%，图片证据 Hit@5 从 0/2 提升到 2/2，错版本为 0；每组仅有 1 道无答案题，且仍召回候选（1/1），不能据此评估拒答能力。报告提供可复算对照，报告只有在语料、检索代码、侧车、配置和评测题指纹全部匹配时才会被 `/public/workspace` 展示。
+当前主语料、默认版本和线上策略以 [Autoware 语料清单](versioned-rag-service/public_corpus_autoware/corpus_manifest.json)、[图片证据审核清单](versioned-rag-service/public_corpus_autoware/FIGURE_EVIDENCE.md)及 [Autoware 检索评测 V3](evaluation/autoware_retrieval_v3/README.md)为准。43 道题按场景划分为 DEV 32 道、HOLDOUT 11 道。Top-5 上，图片文字策略的必需来源 Recall、完整来源率和错版本数不劣于 BM25；图片证据命中 DEV 从 0/4 提升到 3/4，HOLDOUT 从 0/2 提升到 2/2。HOLDOUT 必需来源召回为 91.67%、完整来源率为 90%，其中一道跨资料题漏掉 Freespace Planner 来源；DEV/HOLDOUT 的无答案题仍都召回候选（4/4、1/1），不能据此评估拒答能力。报告只有在语料、检索代码、侧车、配置和评测题指纹全部匹配时才会被 `/public/workspace` 展示。
 
 不要在当前冻结目录重跑 `run_quality_v3.py --split dev`：它会覆盖 `results/dev__bm25.json`，新测得的耗时会改变已锁定的结果哈希。需要重新实验时，应使用独立工作树或新评测版本，并把结果写到独立路径，保留这份冻结记录不变。
 
@@ -100,7 +100,7 @@ python .\evaluation\real_world_retrieval\final_selection\run_selection.py chunk 
 
 ## Known Limitations
 
-- Autoware 的 22 条版本化来源对应 11 份不同的英文文档，仅覆盖规划、路径生成和部分验证模块，不覆盖整个 Autoware；目前只有两张图的可读标签经过人工复核，复杂图形关系不转成文本事实。
+- Autoware 的 26 条版本化来源对应 13 份不同的英文文档，仅覆盖 Planning 的部分模块，不覆盖整个 Autoware；目前只有两张图的可读标签经过人工复核，复杂图形关系不转成文本事实。
 - 企业工程工作台使用完全合成的小型文档集与固定案例，用于验证流程与安全边界，不能代表真实企业文档覆盖率或业务效果。
 - 历史 V1 四条跨文档题的双来源完整 Top-5 命中为 0/4。扩充语料会改变排序，现有新语料成绩必须单独复评，不能沿用历史指标。
 - V1 HOLDOUT 来自此前使用过的题集，是回顾性确定划分；V2 是旧语料的独立锁定题集；V3 是当前语料的新冻结题集，但题目及标注在仓库可见，都不能等同于真实用户开放测试。

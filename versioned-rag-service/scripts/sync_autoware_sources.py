@@ -20,7 +20,8 @@ REPOSITORY = "autowarefoundation/autoware_universe"
 BASELINE_VERSION = "0.51.0"
 CURRENT_VERSION = "0.52.0"
 DEFAULT_SELECTION = Path(__file__).resolve().parents[1] / "config" / "autoware_source_selection.json"
-DEFAULT_POLICY = Path(__file__).resolve().parents[1] / "config" / "autoware_retrieval_policy.json"
+DEFAULT_INDEX_POLICY = Path(__file__).resolve().parents[1] / "config" / "public_retrieval_runtime.json"
+DEFAULT_RUNTIME_POLICY = Path(__file__).resolve().parents[1] / "config" / "autoware_retrieval_policy.json"
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
@@ -184,6 +185,13 @@ def build_pinned_sources(checkouts: dict[str, dict], selection: list[dict], outp
     return manifest
 
 
+def _copy_retrieval_policies(output_root: Path) -> None:
+    """Keep the BM25 corpus-index integrity policy separate from the selected runtime policy."""
+    output_root = Path(output_root)
+    shutil.copyfile(DEFAULT_INDEX_POLICY, output_root / "retrieval_policy.json")
+    shutil.copyfile(DEFAULT_RUNTIME_POLICY, output_root / "public_retrieval_runtime.json")
+
+
 def _checkout_info(root: Path, expected_tag: str, *, required_files: set[str] | None = None) -> dict:
     root = Path(root).resolve()
     required = {"LICENSE"}
@@ -264,6 +272,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--rebuild", action="store_true", required=True)
     args = parser.parse_args(argv)
     selection = load_source_selection(args.selection)
+    previous_manifest_path = args.root / "corpus_manifest.json"
+    try:
+        previous_manifest_bytes = previous_manifest_path.read_bytes()
+    except OSError:
+        previous_manifest_bytes = None
     required_files = {"LICENSE", *(row["document_path"] for row in selection)}
     checkouts = {
         BASELINE_VERSION: _checkout_info(
@@ -275,15 +288,19 @@ def main(argv: list[str] | None = None) -> int:
     }
     manifest = build_pinned_sources(checkouts, selection, args.root)
     args.root.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(DEFAULT_POLICY, args.root / "retrieval_policy.json")
-    shutil.copyfile(DEFAULT_POLICY, args.root / "public_retrieval_runtime.json")
+    _copy_retrieval_policies(args.root)
     stats = build_index(args.root)
     inventory_path = args.root / "figure_evidence.json"
     try:
         previous_inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         previous_inventory = None
-    inventory = preserve_verified_figure_evidence(scan_inventory(args.root), previous_inventory)
+    current_manifest_bytes = (args.root / "corpus_manifest.json").read_bytes()
+    inventory = preserve_verified_figure_evidence(
+        scan_inventory(args.root), previous_inventory,
+        previous_manifest_bytes=previous_manifest_bytes,
+        current_manifest_bytes=current_manifest_bytes,
+    )
     inventory_path.write_text(
         json.dumps(inventory, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n",
     )

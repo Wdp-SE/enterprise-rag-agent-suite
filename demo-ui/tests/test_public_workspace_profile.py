@@ -24,9 +24,9 @@ def test_public_profile_accepts_the_pinned_autoware_english_corpus():
 
 def test_workspace_snapshot_distinguishes_documents_from_versioned_sources():
     snapshot = workspace_snapshot({
-        "unique_document_count": 11, "source_count": 22, "chunk_count": 410,
+        "unique_document_count": 13, "source_count": 26, "chunk_count": 562,
     })
 
-    assert "11 份不同资料" in snapshot
-    assert "22 条版本化来源" in snapshot
-    assert "410 个检索片段" in snapshot
+    assert "13 份不同资料" in snapshot
+    assert "26 条版本化来源" in snapshot
+    assert "562 个检索片段" in snapshot

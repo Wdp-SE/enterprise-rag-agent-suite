@@ -9,10 +9,34 @@ import pytest
 
 from scripts.fetch_autoware_sources import fetch_pinned_sources
 from scripts.figure_evidence import preserve_verified_figure_evidence
-from scripts.sync_autoware_sources import _checkout_info, build_pinned_sources, load_source_selection
+from scripts.sync_autoware_sources import (
+    _checkout_info, _copy_retrieval_policies, build_pinned_sources, load_source_selection,
+)
 
 
 REPOSITORY = "autowarefoundation/autoware_universe"
+
+
+def test_default_allowlist_covers_freespace_and_intersection_velocity_planning():
+    selection = load_source_selection()
+    by_key = {row["document_key"]: row["document_path"] for row in selection}
+
+    assert by_key["planning/freespace_planner/design"] == (
+        "planning/autoware_freespace_planner/README.md"
+    )
+    assert by_key["planning/intersection_velocity/design"] == (
+        "planning/behavior_velocity_planner/autoware_behavior_velocity_intersection_module/README.md"
+    )
+
+
+def test_sync_keeps_base_index_policy_separate_from_selected_runtime_policy(tmp_path):
+    _copy_retrieval_policies(tmp_path)
+
+    base_policy = json.loads((tmp_path / "retrieval_policy.json").read_text(encoding="utf-8"))
+    runtime_policy = json.loads((tmp_path / "public_retrieval_runtime.json").read_text(encoding="utf-8"))
+
+    assert base_policy["default_policy"] == "bm25"
+    assert runtime_policy["default_policy"] == "bm25_figure_ocr"
 
 
 def _checkout(tmp_path: Path, version: str, commit: str) -> dict:
@@ -263,3 +287,48 @@ def test_inventory_rebuild_preserves_verified_review_only_for_identical_manifest
         previous,
     )
     assert fresh["figures"][0]["validation"]["status"] == "unverified"
+
+
+def test_inventory_rebuild_preserves_reviews_for_append_only_corpus_extension():
+    source = {
+        "repository": REPOSITORY, "version": "0.52.0", "commit": "b" * 40,
+        "document_key": "planning/validator", "language": "en", "document_path": "planning/validator/README.md",
+        "source_url": f"https://github.com/{REPOSITORY}/blob/{'b' * 40}/planning/validator/README.md",
+        "sha256": "c" * 64,
+    }
+    previous_manifest = {
+        "repository": REPOSITORY, "workspace": "Autoware", "baseline_version": "0.51.0",
+        "current_version": "0.52.0", "available_versions": ["0.51.0", "0.52.0"],
+        "languages": ["en-US"], "commits": {"0.51.0": "a" * 40, "0.52.0": "b" * 40},
+        "sources": [source],
+    }
+    added_source = {**source, "document_key": "planning/freespace", "document_path": "planning/freespace/README.md"}
+    current_manifest = {**previous_manifest, "scope": "expanded planning scope", "sources": [source, added_source]}
+    previous_bytes = (json.dumps(previous_manifest, ensure_ascii=False, indent=2) + "\n").encode()
+    current_bytes = (json.dumps(current_manifest, ensure_ascii=False, indent=2) + "\n").encode()
+    figure = {
+        "figure_id": "figure-1", "repository": REPOSITORY, "version": "0.52.0", "commit": "b" * 40,
+        "asset_path": "planning/validator/figure.svg",
+        "raw_url": f"https://raw.githubusercontent.com/{REPOSITORY}/{'b' * 40}/planning/validator/figure.svg",
+        "references": [{"document_key": "planning/validator", "heading": "Validation", "language": "en"}],
+        "validation": {"status": "verified", "sha256": "d" * 64},
+        "ocr": {"status": "text_extracted", "index_review_status": "approved"},
+        "review": {"status": "approved", "reviewed_text": "verified label"},
+    }
+    previous = {
+        "schema_version": 1, "corpus_manifest_sha256": hashlib.sha256(previous_bytes).hexdigest(),
+        "figures": [figure],
+    }
+    current = {
+        "schema_version": 1, "corpus_manifest_sha256": hashlib.sha256(current_bytes).hexdigest(),
+        "figures": [{**figure, "validation": {"status": "unverified"}, "ocr": {"status": "not_run"}}],
+    }
+
+    preserved = preserve_verified_figure_evidence(
+        current, previous,
+        previous_manifest_bytes=previous_bytes,
+        current_manifest_bytes=current_bytes,
+    )
+
+    assert preserved["figures"][0]["validation"]["sha256"] == "d" * 64
+    assert preserved["figures"][0]["review"]["reviewed_text"] == "verified label"
