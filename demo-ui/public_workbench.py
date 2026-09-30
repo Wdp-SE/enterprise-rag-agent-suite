@@ -17,6 +17,7 @@ import streamlit as st
 
 from components.public_theme import PUBLIC_CSS
 from services.public_knowledge_client import PublicKnowledgeClient
+from services.review_audit import SQLiteReviewAudit
 from services.rag_client import ServiceError
 
 
@@ -37,15 +38,24 @@ def _setting(name: str, fallback: str) -> str:
         return fallback
 
 
+def _workspace_name(workspace: dict | None) -> str:
+    return str((workspace or {}).get("workspace") or "公开研发知识空间")
+
+
 def _published_versions(workspace: dict | None) -> list[str]:
     """Offer only versions the connected, published corpus declares."""
     if not workspace:
-        return ["3.4.3", "3.4.2"]
-    versions = list(dict.fromkeys(
-        str(version) for version in (workspace.get("current_version"), workspace.get("baseline_version"))
-        if version
-    ))
-    return versions or ["3.4.3", "3.4.2"]
+        return ["等待连接"]
+    declared = workspace.get("available_versions")
+    versions = list(dict.fromkeys(str(version) for version in declared or [] if version))
+    current = workspace.get("current_version")
+    if current:
+        versions = [str(current), *[version for version in versions if version != str(current)]]
+    if not versions:
+        versions = list(dict.fromkeys(
+            str(version) for version in (current, workspace.get("baseline_version")) if version
+        ))
+    return versions or ["等待连接"]
 
 
 def _confirmed_current_version(workspace: dict | None) -> str | None:
@@ -55,10 +65,60 @@ def _confirmed_current_version(workspace: dict | None) -> str | None:
     return str(version).strip() if version else None
 
 
+def _review_version_selector(workspace: dict | None) -> tuple[list[str], int]:
+    versions = _published_versions(workspace)
+    current = _confirmed_current_version(workspace)
+    if not current or current not in versions:
+        raise ValueError("知识空间当前版本不在可检索版本列表中")
+    return versions, versions.index(current)
+
+
+def _request_context_matches(
+    result: dict | None, *, summary: str, target_version: str,
+    objective: str, constraints: str, validation_plan: str,
+    selected_type_code: str | None, impact_scope: str,
+) -> bool:
+    """Avoid stale results while keeping pre-RAG scope rejections visible."""
+    if not result or result.get("request_summary") != summary.strip():
+        return False
+    plan = result.get("request_plan") or {}
+    if result.get("scope_status") == "OUT_OF_SCOPE":
+        return True
+    context = result.get("request_context") or {}
+    return (
+        (plan.get("target_version") or context.get("target_version")) == target_version
+        and context.get("objective") == (objective.strip() or None)
+        and context.get("constraints") == (constraints.strip() or None)
+        and context.get("validation_plan") == (validation_plan.strip() or None)
+        and plan.get("impact_scope", "") == impact_scope.strip()
+        and (
+            plan.get("change_type") == selected_type_code
+            and plan.get("classification_source") == "user_selected"
+            if selected_type_code else plan.get("classification_source") != "user_selected"
+        )
+    )
+
+
+def _published_language_options(workspace: dict | None) -> list[tuple[str, str]]:
+    locales = set((workspace or {}).get("languages") or [])
+    options = []
+    if "zh-CN" in locales:
+        options.extend((("zh_preferred", "中文优先"), ("zh", "中文")))
+    if "en-US" in locales:
+        options.append(("en", "English"))
+    if len(locales) > 1:
+        options.insert(0, ("all", "全部已收录语言"))
+    if not options:
+        options = [("zh_preferred", "中文优先"), ("all", "全部已收录语言")]
+    elif len(options) > 1 and not any(value == "all" for value, _ in options):
+        options.insert(0, ("all", "全部已收录语言"))
+    return options
+
+
 def _sync_workspace_version(workspace: dict | None) -> str | None:
     """Follow a newly published workspace version while preserving user scope otherwise."""
     current = _confirmed_current_version(workspace)
-    for widget_key in ("official_version", "source_version"):
+    for widget_key in ("official_version", "source_version", "agent_target_version"):
         default_key = f"{widget_key}_default"
         confirmed_key = f"{default_key}_confirmed"
         previous = st.session_state.get(default_key)
@@ -107,6 +167,18 @@ def _client() -> PublicKnowledgeClient:
     )
 
 
+def _audit_repository() -> SQLiteReviewAudit:
+    configured_path = _setting("DEMO_AUDIT_DB_PATH", "").strip()
+    if configured_path:
+        database_path = Path(configured_path).expanduser()
+    else:
+        runtime_root = Path(_setting(
+            "DEMO_RUNTIME_ROOT", str(Path(__file__).resolve().parent / "runtime")
+        )).expanduser()
+        database_path = runtime_root / "review_audit.sqlite3"
+    return SQLiteReviewAudit(database_path)
+
+
 def _request(call, *, fallback: str):
     try:
         return call()
@@ -145,11 +217,11 @@ def _rewrite_relative_source_links(content: str, source_url: str) -> str:
     """Keep Markdown navigation on the same pinned official GitHub commit."""
     source = urlsplit(source_url)
     pinned_prefix = re.match(
-        r"^/apache/dolphinscheduler/blob/[0-9a-f]{40}/", source.path
+        r"^/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/blob/([0-9a-f]{40})/", source.path
     )
     if source.scheme != "https" or source.netloc != "github.com" or not pinned_prefix:
         return content
-    pinned_root = f"https://github.com{pinned_prefix.group(0)}"
+    pinned_root = f"https://github.com{pinned_prefix.group(1)}/blob/{pinned_prefix.group(2)}/"
 
     def replace(match: re.Match[str]) -> str:
         destination = match.group(2).strip()
@@ -212,12 +284,15 @@ def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None
 def _verified_image_citation(row: dict) -> bool:
     commit = row.get("commit", "")
     sha = row.get("sha256", "")
+    repository = str(row.get("repository") or "")
     if row.get("review_status") != "approved" or not re.fullmatch(r"[0-9a-f]{40}", commit):
         return False
     if not re.fullmatch(r"[0-9a-f]{64}", sha) or not str(row.get("content", "")).strip():
         return False
-    raw_prefix = f"https://raw.githubusercontent.com/apache/dolphinscheduler/{commit}/"
-    source_prefix = f"https://github.com/apache/dolphinscheduler/blob/{commit}/"
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
+        return False
+    raw_prefix = f"https://raw.githubusercontent.com/{repository}/{commit}/"
+    source_prefix = f"https://github.com/{repository}/blob/{commit}/"
     return str(row.get("raw_url", "")).startswith(raw_prefix) and str(row.get("source_url", "")).startswith(source_prefix)
 
 
@@ -359,22 +434,25 @@ def _page_header(section: str, title: str, *, page_key: str, parent: str | None 
 
 
 def _home(ready: bool, workspace: dict | None) -> None:
-    baseline = workspace.get("baseline_version", "3.4.2") if workspace else "3.4.2"
+    baseline = workspace.get("baseline_version") if workspace else None
     current = _confirmed_current_version(workspace)
-    version_range = f"{baseline} → {current}" if current else "服务未连接，无法确认"
+    version_range = f"{baseline} → {current}" if current and baseline else (current or "服务未连接，无法确认")
+    name = _workspace_name(workspace)
+    locales = (workspace or {}).get("languages") or []
+    language_label = " / ".join("中文" if value == "zh-CN" else "English" if value == "en-US" else value for value in locales) or "服务连接后确认"
     st.markdown('<div class="masthead"><span class="kicker">公开研发资料 / 版本化知识空间</span></div>', unsafe_allow_html=True)
     st.title("研发知识版本服务与变更影响审查")
-    st.write("基于 Apache DolphinScheduler 官方公开资料，提供按版本检索与引用溯源，并协助审查资料变更的潜在影响。")
+    st.write(f"基于 {name} 官方公开资料，提供按版本检索与引用溯源，并协助审查研发资料变更的潜在影响。")
     st.markdown(
-        '<div class="public-note">独立工程演示，并非 Apache 官方产品。假设变更仅保留在当前会话，不修改上游项目或公共资料。</div>',
+        '<div class="public-note">独立工程演示，并非上游官方产品。假设变更仅保留在当前会话，不修改上游项目或公共资料。</div>',
         unsafe_allow_html=True,
     )
     state = "已连接" if ready else "等待连接"
     status = [
-        ("知识空间", "Apache DolphinScheduler"),
+        ("知识空间", name),
         ("资料性质", "官方公开资料"),
         ("历史基线 → 最新已收录", version_range),
-        ("语言", "中文优先 / English"),
+        ("语言", language_label),
         ("服务状态", state),
     ]
     cells = "".join(
@@ -424,10 +502,11 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
     st.caption("先确定资料范围，再提出问题；回答下方始终保留可核对的官方来源。")
     versions = _published_versions(workspace)
     current = _confirmed_current_version(workspace)
+    name = _workspace_name(workspace)
     default_policy = str(workspace.get("retrieval_policy", "由服务配置") if workspace else "由服务配置").upper()
     default_version_label = f"{current} · 最新已收录版本" if current else "无法确认最新已收录版本"
     st.markdown(
-        f'<div class="context-strip"><span><strong>知识空间</strong> Apache DolphinScheduler</span>'
+        f'<div class="context-strip"><span><strong>知识空间</strong> {escape(name)}</span>'
         f'<span><strong>资料</strong> 官方公开资料</span>'
         f'<span><strong>默认版本</strong> {escape(default_version_label)}</span>'
         f'<span><strong>默认检索</strong> {escape(default_policy)}</span></div>',
@@ -456,27 +535,33 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                 key="official_version",
             )
         with b:
+            language_options = _published_language_options(workspace)
+            language_values = [value for value, _label in language_options]
             language = st.selectbox(
-                "资料语言", ["zh_preferred", "all", "zh", "en"],
-                format_func=lambda x: {"zh_preferred": "中文优先", "all": "全部官方资料", "zh": "中文", "en": "English"}[x],
+                "资料语言", language_values,
+                format_func=lambda x: dict(language_options)[x],
                 key="official_language",
             )
         with c:
             st.markdown("**资料类型**")
-            st.caption("官方文档 / Release / DSIP / PR")
+            st.caption("官方文档 / 发布说明 / 配置 / 验证资料")
             st.caption("范围受已收录版本与语言限定")
-    example_version = current or versions[0]
-    examples = [
-        "DolphinScheduler 参数优先级从高到低是什么？",
-        f"{example_version} 的 missed_fire_policy 对旧 schedule 默认什么？",
-        "What is the API-Server health endpoint?",
-    ]
+    if str((workspace or {}).get("repository", "")).casefold() == "autowarefoundation/autoware_universe":
+        examples = [
+            "How does the start planner decide when to generate a pull-out path?",
+            "Which parameters configure the planning validator?",
+            "What does the trajectory checker validate before a path is published?",
+        ]
+    else:
+        examples = [
+            f"{name} 中某个功能或参数是如何设计的？",
+            "哪些公开资料描述了这个变更的相关模块与验证方式？",
+            "What does the selected version's official documentation say about this feature?",
+        ]
     with st.expander("从官方资料选择示例问题"):
         st.selectbox("示例问题", examples, key="official_example", on_change=_use_example)
     st.markdown('<div class="section-rule">提出问题</div>', unsafe_allow_html=True)
-    question = st.text_area(
-        "你的问题", value="", placeholder=examples[0], height=100, key="official_question"
-    )
+    question = st.text_area("你的问题", value="", placeholder=examples[0], height=100, key="official_question")
     submitted_question = question.strip() or examples[0]
     generate_col, search_col = st.columns([1.65, 1], gap="medium")
     with generate_col:
@@ -645,6 +730,11 @@ def _analyze_change_request(
     change_summary: str,
     change_type: str | None = None,
     impact_scope: str | None = None,
+    *,
+    target_version: str | None = None,
+    objective: str | None = None,
+    constraints: str | None = None,
+    validation_plan: str | None = None,
 ) -> dict:
     agent_root = Path(__file__).resolve().parents[1] / "change-review-agent"
     if str(agent_root) not in sys.path:
@@ -652,6 +742,8 @@ def _analyze_change_request(
     from app.public_review import PublicReviewAgent
     return PublicReviewAgent(client).analyze_request(
         change_summary, change_type=change_type, impact_scope=impact_scope,
+        target_version=target_version, objective=objective,
+        constraints=constraints, validation_plan=validation_plan,
     )
 
 
@@ -835,6 +927,12 @@ def _review_advice_panel(result: dict, *, context: str = "review") -> None:
     elif advice.get("status") == "NO_EVIDENCE":
         st.subheader("模型辅助核对建议")
         st.caption("没有找到可供模型引用的其他资料；请人工检查原文和变更草案。")
+    elif advice.get("status") == "OUT_OF_SCOPE":
+        st.subheader("当前资料范围不支持此请求")
+        st.warning(advice.get(
+            "message",
+            "当前公开知识空间中没有适用于此请求的资料；未执行检索或模型生成。",
+        ))
     else:
         st.subheader("模型辅助核对建议")
         st.caption("当前证据不足以形成带有效引用的模型建议；请按原文和候选资料人工核对。")
@@ -874,10 +972,24 @@ def _review_decision_for(result: dict) -> str | None:
     return st.session_state.get("official_review_decision")
 
 
-def _set_review_decision(decision: str, target_id: str) -> None:
+def _set_review_decision(
+    decision: str, target_id: str, result: dict, session_id: str,
+) -> None:
     st.session_state["official_review_decision"] = decision
     st.session_state["official_review_decision_target"] = target_id
-    st.session_state["official_review_decision_at"] = datetime.now(timezone.utc).isoformat()
+    decided_at = datetime.now(timezone.utc).isoformat()
+    st.session_state["official_review_decision_at"] = decided_at
+    st.session_state.pop("official_review_audit_event_id", None)
+    st.session_state.pop("official_review_audit_persisted_at", None)
+    st.session_state.pop("official_review_audit_error", None)
+    try:
+        report = _review_report(result, decision, decided_at)
+        event = _audit_repository().record(report, session_id=session_id)
+        st.session_state["official_review_audit_event_id"] = event["event_id"]
+        st.session_state["official_review_audit_persisted_at"] = event["persisted_at_utc"]
+    except Exception:
+        # Keep the exportable decision visible, but never claim it was persisted.
+        st.session_state["official_review_audit_error"] = "审核结果未能写入本地审查记录。"
 
 
 def _review_report(result: dict, decision: str, decided_at: str) -> dict:
@@ -894,8 +1006,8 @@ def _review_report(result: dict, decision: str, decided_at: str) -> dict:
         return hashlib.sha256(value.encode("utf-8")).hexdigest() if isinstance(value, str) else None
 
     return {
-        "schema_version": 2,
-        "record_scope": "session_export_only",
+        "schema_version": 3,
+        "record_scope": "review_decision_export",
         "task_id": _review_target_id(result),
         "request_fingerprint": result.get("request_fingerprint"),
         "request_mode": result.get("request_mode"),
@@ -922,6 +1034,9 @@ def _clear_stale_review() -> None:
     st.session_state.pop("official_review_decision", None)
     st.session_state.pop("official_review_decision_target", None)
     st.session_state.pop("official_review_decision_at", None)
+    st.session_state.pop("official_review_audit_event_id", None)
+    st.session_state.pop("official_review_audit_persisted_at", None)
+    st.session_state.pop("official_review_audit_error", None)
 
 
 def _save_review_draft() -> None:
@@ -933,22 +1048,40 @@ def _save_review_draft() -> None:
 
 def _review_panel(result: dict) -> None:
     st.subheader("人工审核")
-    st.caption("审核只记录本次会话的决定，不创建公开候选版本，也不修改公共资料。")
+    st.caption(
+        "审核决定会追加写入本地 SQLite，并按匿名浏览器会话隔离查询；不创建公开候选版本，也不修改公共资料。"
+    )
+    st.info(
+        "这是演示审计记录，不是企业审批系统：当前没有登录身份或权限控制；公网托管实例的临时磁盘可能在重启/重新部署后清空。"
+        "请勿输入企业机密或个人敏感信息。"
+    )
     request_only = result.get("request_mode") == "natural_language"
     review_target = "本次影响分析" if request_only else "会话草案"
     target_id = _review_target_id(result)
+    session_id = st.session_state.setdefault("official_session_id", uuid.uuid4().hex)
     approve, reject = st.columns(2)
     approve.button(f"确认已审阅{review_target}", use_container_width=True,
-                   on_click=_set_review_decision, args=("reviewed", target_id))
+                   on_click=_set_review_decision, args=("reviewed", target_id, result, session_id))
     reject.button(f"退回{review_target}", use_container_width=True,
-                  on_click=_set_review_decision, args=("rejected", target_id))
+                  on_click=_set_review_decision, args=("rejected", target_id, result, session_id))
     decision = _review_decision_for(result)
     if decision == "reviewed":
-        st.success(f"已记录本次会话对{review_target}的审核结果。未创建候选版本，公共基线未修改。")
+        if st.session_state.get("official_review_audit_event_id"):
+            st.success(f"审核结果已写入本地审查记录。未创建候选版本，公共基线未修改。")
+        else:
+            st.warning(st.session_state.get("official_review_audit_error", "审核结果尚未确认持久化。"))
     elif decision == "rejected":
-        st.info(f"{review_target}已退回。公共基线未修改。")
+        if st.session_state.get("official_review_audit_event_id"):
+            st.info(f"{review_target}已退回，决定已写入本地审查记录。公共基线未修改。")
+        else:
+            st.warning(st.session_state.get("official_review_audit_error", "退回决定尚未确认持久化。"))
     if decision:
         report = _review_report(result, decision, st.session_state.get("official_review_decision_at", ""))
+        audit_event_id = st.session_state.get("official_review_audit_event_id")
+        report["persisted_to_demo_sqlite"] = bool(audit_event_id)
+        if audit_event_id:
+            report["audit_event_id"] = audit_event_id
+            report["persisted_at_utc"] = st.session_state.get("official_review_audit_persisted_at")
         safe_id = re.sub(r"[^a-zA-Z0-9_-]", "", target_id)[:24] or "session"
         st.download_button(
             "下载本次审查记录（JSON）",
@@ -956,7 +1089,25 @@ def _review_panel(result: dict) -> None:
             file_name=f"review-{safe_id}.json", mime="application/json",
             key=f"review_export_{safe_id}",
         )
-        st.caption("审查记录只在当前会话保留；下载文件可用于人工留档，不代表已写入审批系统。")
+        st.caption("下载内容是本次决定的 JSON 副本；本地 SQLite 只用于此演示实例留存，不等于企业审批系统。")
+
+    with st.expander("本匿名会话最近的审核记录"):
+        try:
+            history = _audit_repository().list_recent(session_id=session_id, limit=10)
+            if history:
+                st.table([
+                    {
+                        "时间（UTC）": event.get("decided_at_utc", ""),
+                        "决定": "已审阅" if event.get("human_decision") == "reviewed" else "已退回",
+                        "审查内容": (event.get("request_summary") or "").replace("\n", " ")[:100],
+                        "证据数": len(event.get("evidence_sources") or []),
+                    }
+                    for event in history
+                ])
+            else:
+                st.caption("该会话还没有持久化的审核决定。")
+        except Exception:
+            st.warning("暂时无法读取本地审核记录；当前页面结果仍可下载为 JSON。")
 
 
 def _request_candidates_panel(result: dict, *, standalone: bool = False) -> None:
@@ -1038,6 +1189,9 @@ def _clear_change_request_results() -> None:
     st.session_state.pop("official_review_decision", None)
     st.session_state.pop("official_review_decision_target", None)
     st.session_state.pop("official_review_decision_at", None)
+    st.session_state.pop("official_review_audit_event_id", None)
+    st.session_state.pop("official_review_audit_persisted_at", None)
+    st.session_state.pop("official_review_audit_error", None)
 
 
 def _change_request_context_changed() -> None:
@@ -1051,12 +1205,19 @@ def _save_change_request() -> None:
     _clear_change_request_results()
 
 
-def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None:
+def _agent(
+    client: PublicKnowledgeClient, ready: bool, docs: list[dict], workspace: dict | None = None,
+) -> None:
     _page_header("变更审查", "研发资料变更影响审查", page_key="agent")
     current_version = st.session_state.get("official_current_version")
     version_scope = f"知识库最新已收录版本 {current_version}" if current_version else "当前已收录资料"
+    if workspace:
+        versions, default_version_index = _review_version_selector(workspace)
+    else:
+        versions, default_version_index = _published_versions(workspace), 0
+    name = _workspace_name(workspace)
     st.caption(f"用自然语言描述研发变更；Agent 调用 RAG 检索{version_scope}，再整理待核对的影响候选和建议。")
-    st.info("本次分析仅保留在当前会话，不自动修改 Apache DolphinScheduler 上游项目或公共资料。")
+    st.info(f"本次分析仅保留在当前会话，不自动修改 {name} 上游项目或公共资料。")
     _remember_document_titles(docs)
     if "official_change_request" not in st.session_state:
         st.session_state["official_change_request"] = st.session_state.get(
@@ -1064,7 +1225,12 @@ def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None
         )
     summary = st.text_area(
         "描述研发变更", height=120,
-        placeholder="例如：计划将全局参数优先级调整为最高，请找出需要核对的官方资料。",
+        placeholder=(
+            "例如：计划调整行为路径规划的 pull-out 判断条件，请检查相关参数、模块说明与验证资料。"
+            if str((workspace or {}).get("repository", "")).casefold()
+            == "autowarefoundation/autoware_universe"
+            else "例如：计划调整某个已收录功能的行为，请检查相关模块、参数和验证资料。"
+        ),
         key="official_change_request", on_change=_save_change_request,
     )
     type_options = {
@@ -1083,16 +1249,43 @@ def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None
         )
         impact_scope = st.text_input(
             "影响范围（模块、项目或对象）", max_chars=160,
-            placeholder="例如：DAG 调度、API 任务状态字段",
+            placeholder=(
+                "例如：行为路径规划、规划验证器"
+                if str((workspace or {}).get("repository", "")).casefold()
+                == "autowarefoundation/autoware_universe"
+                else "例如：目标模块、接口或配置项"
+            ),
             key="official_impact_scope", on_change=_change_request_context_changed,
         )
-        st.caption("留空时由规则从原始描述识别；结构化字段只辅助检索规划，不替代原始描述或人工审核。")
-    st.caption("Agent 保留原始描述，并在最多 4 次 RAG 查询内覆盖完整请求与拆分子问题；最多选取 5 条最新已收录资料供模型分析。")
+        target_version = st.selectbox(
+            "审查目标版本", versions, index=default_version_index,
+            format_func=lambda value: _version_option_label(value, workspace),
+            key="agent_target_version", on_change=_change_request_context_changed,
+        )
+        objective = st.text_input(
+            "变更目标（选填）", max_chars=800,
+            placeholder="这次变更希望解决什么问题？", key="official_change_objective",
+            on_change=_change_request_context_changed,
+        )
+        constraints = st.text_input(
+            "约束条件（选填）", max_chars=800,
+            placeholder="例如：保持现有接口兼容", key="official_change_constraints",
+            on_change=_change_request_context_changed,
+        )
+        validation_plan = st.text_input(
+            "验证计划（选填）", max_chars=800,
+            placeholder="例如：运行规划验证器回归测试", key="official_change_validation_plan",
+            on_change=_change_request_context_changed,
+        )
+        st.caption("未填写的目标、约束或验证计划会明确标为待补充；Agent 不会代替你推断事实。")
+    st.caption(f"Agent 保留原始描述，并在最多 4 次 RAG 查询内覆盖完整请求与拆分子问题；最多选取 5 条 {target_version} 版本证据供模型分析。")
     if st.button("检索资料并分析影响", type="primary", disabled=not ready or not summary.strip()):
-        with st.spinner("正在检索当前版本官方资料并整理影响建议……"):
+        with st.spinner(f"正在检索 {name} {target_version} 版本资料并整理影响建议……"):
             result = _request(
                 lambda: _analyze_change_request(
                     client, summary, type_options[selected_type], impact_scope,
+                    target_version=target_version, objective=objective,
+                    constraints=constraints, validation_plan=validation_plan,
                 ),
                 fallback="变更影响分析暂未完成。",
             )
@@ -1103,21 +1296,13 @@ def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None
             st.rerun()
 
     request_result = st.session_state.get("official_request_review")
-    request_plan = (request_result or {}).get("request_plan") or {}
     selected_type_code = type_options.get(st.session_state.get("official_change_type", "自动识别"))
-    context_matches = (
-        request_plan.get("impact_scope", "") == st.session_state.get("official_impact_scope", "").strip()
-        and (
-            request_plan.get("change_type") == selected_type_code
-            and request_plan.get("classification_source") == "user_selected"
-            if selected_type_code else request_plan.get("classification_source") != "user_selected"
-        )
-    )
-    active_request = (
-        request_result if request_result
-        and request_result.get("request_summary") == summary.strip()
-        and context_matches else None
-    )
+    active_request = request_result if _request_context_matches(
+        request_result, summary=summary, target_version=target_version,
+        objective=objective, constraints=constraints, validation_plan=validation_plan,
+        selected_type_code=selected_type_code,
+        impact_scope=st.session_state.get("official_impact_scope", ""),
+    ) else None
     if active_request:
         stage = 3 if _review_decision_for(active_request) else 2
         _review_steps(stage)
@@ -1127,6 +1312,30 @@ def _agent(client: PublicKnowledgeClient, ready: bool, docs: list[dict]) -> None
             f"识别方式：{'人工选择' if plan.get('classification_source') == 'user_selected' else '规则识别'} · "
             f"检索关注点：{plan.get('retrieval_focus', '按原始描述检索')}"
         )
+        context = active_request.get("request_context") or {}
+        context_labels = {
+            "objective": "变更目标", "constraints": "约束条件",
+            "validation_plan": "验证计划",
+        }
+        st.markdown("**提案上下文**")
+        context_cells = [
+            ("审查目标版本", context.get("target_version") or plan.get("target_version") or target_version),
+            *[
+                (label, context.get(key) or value.strip() or "待补充")
+                for key, label, value in (
+                    ("objective", context_labels["objective"], objective),
+                    ("constraints", context_labels["constraints"], constraints),
+                    ("validation_plan", context_labels["validation_plan"], validation_plan),
+                )
+            ],
+        ]
+        st.dataframe(
+            [{"字段": label, "当前内容": value} for label, value in context_cells],
+            hide_index=True, use_container_width=True,
+        )
+        if context.get("missing_fields"):
+            missing_labels = [context_labels.get(key, key) for key in context["missing_fields"]]
+            st.caption("尚待补充：" + "、".join(missing_labels) + "。这些内容不会由 Agent 推断。")
         st.markdown('<div class="section-rule">本次变更分析</div>', unsafe_allow_html=True)
         _review_advice_panel(active_request, context="变更分析")
         _request_candidates_panel(active_request)
@@ -1239,7 +1448,7 @@ def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None
         st.info("知识服务暂不可用，连接恢复后可查看各版本的真实资料。")
         return
     docs = _request(client.documents, fallback="版本资料目录暂不可用。") or []
-    baseline = workspace.get("baseline_version", "3.4.2") if workspace else "3.4.2"
+    baseline = workspace.get("baseline_version") if workspace else None
     current = _confirmed_current_version(workspace)
     latest_source_time = _format_snapshot_timestamp(
         workspace.get("latest_source_retrieval_timestamp") if workspace else None
@@ -1273,8 +1482,9 @@ def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None
 
 def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None) -> None:
     _page_header("知识服务", "资料来源", page_key="sources")
-    st.write("本工作台使用 Apache DolphinScheduler 官方公开资料；每条结果均保留版本信息与原文链接。")
-    st.caption("独立工程演示，并非 Apache 官方产品；英文官方资料不会被自动翻译成中文原文。")
+    name = _workspace_name(workspace)
+    st.write(f"本工作台使用 {name} 官方公开资料；每条结果均保留版本信息与原文链接。")
+    st.caption(f"独立工程演示，并非 {name} 官方产品；原文内容不会被自动翻译。")
     if not ready:
         st.info("知识服务暂不可用，资料目录将在连接恢复后显示。")
         return
@@ -1314,9 +1524,47 @@ def _benchmark(workspace: dict | None) -> None:
     policy = str(workspace.get("retrieval_policy", "由服务配置") if workspace else "由服务配置").upper()
     st.markdown(f"**当前默认：{policy}**。Dense 是字符哈希向量基线，不是神经语义 Embedding；Hybrid 在旧语料选型中未超过 BM25。")
     release_status = workspace.get("retrieval_evaluation_status") if workspace else None
-    release = workspace.get("retrieval_evaluation") if workspace and release_status in ("v4_bm25_validated", "v3_validated") else None
+    release = workspace.get("retrieval_evaluation") if workspace and release_status in (
+        "autoware_retrieval_v1_validated", "v4_bm25_validated", "v3_validated",
+    ) else None
     experiment = workspace.get("retrieval_experiment") if workspace else None
-    if isinstance(release, dict) and release.get("name") == "quality_v4" and release.get("policy", "").upper() == policy:
+    if isinstance(release, dict) and release.get("name") == "autoware_retrieval_v1" and release.get("policy", "").upper() == policy:
+        st.markdown("**Autoware 当前检索策略评测（冻结题集，Top-5）**")
+        st.caption(
+            f"{workspace.get('source_count', '—')} 份固定提交官方资料、{workspace.get('chunk_count', '—')} 个文本片段，"
+            "另含 2 条经人工复核并绑定原图 SHA 的图中文字证据；评测含 16 道手工问题，"
+            "仅衡量检索，不代表答案正确率、幻觉率或公网延迟。"
+        )
+        fields = (
+            ("complete_required_sources_at_5", "完整来源@5"),
+            ("required_source_recall_at_5", "来源召回@5"),
+            ("image_evidence_hit_at_5", "图片证据命中@5"),
+            ("no_answer_nonempty_candidate_rate", "无答案仍召回候选"),
+        )
+        rows = ["| 切分 / 策略 | 题数 | " + " | ".join(label for _, label in fields) + " | 错版本 | warm P95 |",
+                "| --- | ---: | " + " | ".join("---:" for _ in fields) + " | ---: | ---: |"]
+        for split_name, label, baseline_key in (
+            ("dev", "DEV", "bm25_dev"), ("holdout", "HOLDOUT", "bm25_holdout"),
+        ):
+            baseline = release[baseline_key]
+            selected = release[split_name]
+            for strategy, values in (("BM25", baseline), ("BM25 + 图片文字", selected)):
+                rows.append(
+                    f"| {label} / {strategy} | {values['query_count']} | "
+                    + " | ".join(f"{values[key] * 100:.1f}%" for key, _ in fields)
+                    + f" | {values['version_mismatch_count']} | {values['search_p95_ms']:.2f} ms |"
+                )
+        st.markdown("\n".join(rows))
+        st.caption(
+            "图片文字候选只在至少两个图中文字词命中且不挤掉 Top-5 内唯一来源时加入；"
+            "这批小样本中 Dev/Holdout 必需来源指标与 BM25 持平，图片证据命中从 0/2 升至 2/2。"
+        )
+        if release["holdout"]["no_answer_nonempty_candidate_rate"] > 0:
+            st.warning(
+                "Holdout 无答案问题仍返回了候选（1/1）。检索命中不等于问题可回答；"
+                "下一步要扩充无答案题并评估拒答阈值，不能把这个结果解释为生成准确率。"
+            )
+    elif isinstance(release, dict) and release.get("name") == "quality_v4" and release.get("policy", "").upper() == policy:
         st.markdown("**V4 当前 BM25 基线（索引与评测指纹已匹配）**")
         st.caption("132 份官方固定来源、1322 个文本片段，并使用 30 条人工复核截图 OCR 证据进行独立策略实验。当前线上仍使用 BM25；下面是冻结题集的离线结果，不是生成答案准确率、幻觉率或公网延迟。")
         fields = (
@@ -1420,7 +1668,7 @@ def _benchmark(workspace: dict | None) -> None:
 def _limits() -> None:
     _page_header("系统说明", "已知限制", page_key="limits")
     for index, (title, detail) in enumerate((
-        ("资料范围", "当前知识库是 DolphinScheduler 官方公开资料的有限子集，不能覆盖全部功能。"),
+        ("资料范围", "当前知识库只包含来源清单中登记的公开资料，不覆盖上游项目的全部功能。"),
         ("检索与回答", "检索候选不等于最终答案；无答案问题仍可能返回看似相关的片段。"),
         ("引用", "引用能帮助定位来源，不保证回答中的每句话事实必然正确。"),
         ("相关资料", "没有官方显式链接时，Agent 只列出建议人工核对的可能相关资料。"),
@@ -1436,10 +1684,20 @@ def _about(workspace: dict | None) -> None:
     _page_header("系统说明", "系统说明", page_key="about")
     st.write("版本化知识服务按版本查找资料并提供原文依据；变更审查 Agent 汇总影响候选与修改建议，由人工确认。")
     st.markdown('<div class="flow-track"><span>研发资料</span><span>版本检索</span><span>引用溯源</span><span>资料变更</span><span>影响候选</span><span>人工审核</span></div>', unsafe_allow_html=True)
-    st.info("本工作台是独立工程演示，不代表 Apache DolphinScheduler 官方或内部系统。")
+    name = _workspace_name(workspace)
+    st.info(f"本工作台是独立工程演示，不代表 {name} 官方或任何企业内部系统。")
     if workspace:
-        st.caption(f"历史基线 {workspace['baseline_version']} → 最新已收录 {workspace['current_version']}；资料 {workspace['source_count']} 份；当前默认策略 {workspace.get('retrieval_policy', '由服务配置')}。")
-    st.markdown("[Apache DolphinScheduler 官方仓库](https://github.com/apache/dolphinscheduler)　·　[官方 Releases](https://github.com/apache/dolphinscheduler/releases)")
+        baseline = workspace.get("baseline_version") or "未配置"
+        current = workspace.get("current_version") or "未配置"
+        st.caption(
+            f"历史基线 {baseline} → 最新已收录 {current}；"
+            f"资料 {workspace.get('source_count', '未知')} 份；"
+            f"当前默认策略 {workspace.get('retrieval_policy', '由服务配置')}。"
+        )
+    repository = str((workspace or {}).get("repository") or "")
+    if re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
+        st.markdown(f"[官方仓库](https://github.com/{repository})　·　[版本发布](https://github.com/{repository}/releases)")
+    st.caption("提案字段和人工审核流程参考成熟工程变更治理实践；KEP 仅作流程设计启发，不是本知识库语料或兼容性声明。")
 
 
 def render() -> None:
@@ -1459,7 +1717,7 @@ def render() -> None:
     with st.sidebar:
         st.markdown('<div class="sidebar-mark">工作台导航</div>', unsafe_allow_html=True)
         st.caption("选择要查看的功能页面")
-        st.caption("Apache DolphinScheduler 官方公开资料")
+        st.caption(f"{_workspace_name(workspace)} 官方公开资料")
         for group, pages in NAV_GROUPS:
             st.markdown(f'<div class="nav-heading">{escape(NAV_GROUP_LABELS.get(group, group))}</div>', unsafe_allow_html=True)
             for page in pages:
@@ -1467,7 +1725,7 @@ def render() -> None:
                           type="primary" if choice == page else "secondary",
                           on_click=_navigate, args=(page,), use_container_width=True)
         st.divider()
-        st.caption(f"知识空间：Apache DolphinScheduler　｜　{'已连接' if ready else '等待连接'}")
+        st.caption(f"知识空间：{_workspace_name(workspace)}　｜　{'已连接' if ready else '等待连接'}")
     if choice == "总览":
         _home(ready, workspace)
     elif choice == "版本检索与问答":
@@ -1478,7 +1736,7 @@ def render() -> None:
         _sources(client, ready, workspace)
     elif choice == "新建变更审查":
         docs = _request(client.documents, fallback="官方资料目录暂不可用。") if ready else []
-        _agent(client, ready, docs or [])
+        _agent(client, ready, docs or [], workspace)
     elif choice in ("可能相关资料", "修改前后对照", "人工审核"):
         _review_subpage(choice)
     elif choice == "检索评测":

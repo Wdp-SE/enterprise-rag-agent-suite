@@ -6,11 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from app.public_review import PublicReviewAgent
+from app.public_review import PublicReviewAgent, _official_hit, _select_request_evidence
 
 
 CORPUS = Path(__file__).resolve().parents[2] / "versioned-rag-service" / "public_corpus"
 CHUNKS = json.loads((CORPUS / "chunks.json").read_text(encoding="utf-8"))
+AUTOWARE_REPOSITORY = "autowarefoundation/autoware_universe"
 
 
 class Gateway:
@@ -18,7 +19,7 @@ class Gateway:
         self.calls = []
 
     def workspace(self):
-        return {"current_version": "3.4.3"}
+        return {"current_version": "3.4.3", "repository": "apache/dolphinscheduler"}
 
     def document(self, document_id):
         self.calls.append(("document", document_id))
@@ -96,7 +97,7 @@ def test_official_change_calls_rag_http_diff_search_impact_without_baseline_writ
 
 def test_natural_language_review_searches_current_corpus_before_grounded_advice():
     gateway = Gateway()
-    summary = "将全局参数调整为最高优先级，并检查需要同步的资料。"
+    summary = "将全局参数调整为最高优先级。"
 
     result = PublicReviewAgent(gateway).analyze_request(summary)
 
@@ -117,6 +118,110 @@ def test_natural_language_review_searches_current_corpus_before_grounded_advice(
     assert result["sandbox_only"] is True
     assert result["public_baseline_written"] is False
     assert "patch_candidate" not in result
+
+
+def test_natural_language_review_accepts_current_autoware_sources_from_manifest_repository():
+    commit = "a" * 40
+    evidence = {
+        "chunk_id": "autoware-0.52-planning-validator-1",
+        "document_id": "0.51.0:en:planning/planning_validator/design",
+        "document_key": "planning/planning_validator/design",
+        "version": "0.51.0", "language": "en", "locale": "en-US",
+        "heading": "Trajectory validation", "content": "The planning validator checks trajectory feasibility.",
+        "retrieval_score": 1.4, "repository": AUTOWARE_REPOSITORY,
+        "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+        "source_url": f"https://github.com/{AUTOWARE_REPOSITORY}/blob/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/planning_validator/README.md",
+    }
+
+    class AutowareGateway:
+        def __init__(self):
+            self.calls = []
+
+        def workspace(self):
+            return {
+                "workspace": "Autoware", "repository": AUTOWARE_REPOSITORY,
+                "current_version": "0.52.0", "available_versions": ["0.51.0", "0.52.0"],
+            }
+
+        def search(self, question, *, version, language, top_k=5):
+            self.calls.append(("search", version, language, top_k))
+            return {"retrieval_policy": "bm25", "results": [evidence]}
+
+        def review_advice(self, summary, evidence_chunk_ids):
+            self.calls.append(("review_advice", summary, evidence_chunk_ids))
+            return {
+                "status": "OK", "answer": "Review trajectory feasibility.",
+                "sources": [evidence],
+                "review": {
+                    "change_interpretation": "The change may affect trajectory validation.",
+                    "impact_candidates": [{
+                        "evidence_chunk_id": evidence["chunk_id"],
+                        "reason": "The source defines trajectory validation behavior.",
+                        "suggested_action": "Manually verify validator behavior and parameters.",
+                    }],
+                    "evidence_gaps": [], "version_ambiguities": [],
+                    "reviewer_actions": ["Compare the pinned source."],
+                    "review_status": "REQUIRES_HUMAN_REVIEW",
+                },
+            }
+
+        def review_advice_for_version(self, summary, evidence_chunk_ids, *, version):
+            self.calls.append(("review_advice_for_version", version))
+            return self.review_advice(summary, evidence_chunk_ids)
+
+    gateway = AutowareGateway()
+    result = PublicReviewAgent(gateway).analyze_request(
+        "Update the trajectory validation behavior in the planning validator.",
+        target_version="0.51.0", objective="Catch invalid trajectories before handoff",
+        constraints="Keep the planning output interface stable",
+    )
+
+    assert _official_hit(evidence, "0.51.0", AUTOWARE_REPOSITORY)
+    assert result["retrieved_results"] == [evidence]
+    assert result["review_advice"]["status"] == "OK"
+    assert result["impacts"][0]["evidence"]["repository"] == AUTOWARE_REPOSITORY
+    assert gateway.calls[0] == ("search", "0.51.0", "zh_preferred", 5)
+    assert gateway.calls[-2] == ("review_advice_for_version", "0.51.0")
+    assert result["request_context"]["objective"] == "Catch invalid trajectories before handoff"
+    assert result["request_context"]["validation_plan"] is None
+    assert "validation_plan" in result["request_context"]["missing_fields"]
+
+
+def test_private_company_request_is_stopped_before_rag_or_model_calls():
+    gateway = Gateway()
+
+    result = PublicReviewAgent(gateway).analyze_request(
+        "查询公司内部 Jira 审批人的手机号和私有工单权限"
+    )
+
+    assert gateway.calls == []
+    assert result["scope_status"] == "OUT_OF_SCOPE"
+    assert result["retrieved_results"] == []
+    assert result["review_advice"]["status"] == "OUT_OF_SCOPE"
+    assert result["retrieval_trace"]["model_status"] == "NOT_CALLED_OUT_OF_SCOPE"
+    assert result["retrieval_trace"]["queries"] == []
+    assert result["evidence_gap_details"][0]["gap_type"] == "OUT_OF_SCOPE_PUBLIC_CORPUS"
+
+
+def test_evidence_selection_diversifies_documents_across_query_clauses():
+    def row(chunk_id, document_key):
+        return {"chunk_id": chunk_id, "document_key": document_key}
+
+    searches = [
+        ({"query": "full", "search_query": "full"}, [row(f"a-{n}", "doc-a") for n in range(1, 6)]),
+        ({"query": "clause-a", "search_query": "SubWorkflow task"}, [
+            row("a-1", "guide/task/conditions"),
+            row("b-1", "guide/task/sub-workflow"),
+        ]),
+        ({"query": "clause-b", "search_query": "other"}, [row("c-1", "doc-c")]),
+    ]
+
+    selected = _select_request_evidence(searches)
+
+    assert {item["document_key"] for item in selected} >= {
+        "doc-a", "guide/task/sub-workflow", "doc-c"
+    }
+    assert len(selected) <= 5
 
 
 def test_multi_part_request_keeps_evidence_from_each_part_with_auditable_trace():

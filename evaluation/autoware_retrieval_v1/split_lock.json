@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "cases_sha256": "dae2c99e2f50ed0ee0c88ccaf1f0f08cd276936c15e5056efb3821176b289b57",
+  "case_count": 16,
+  "case_ids": [
+    "start_shift_01",
+    "start_reverse_02",
+    "start_geometry_03",
+    "start_search_policy_04",
+    "start_dynamic_safety_05",
+    "planning_validator_06",
+    "trajectory_checks_07",
+    "goal_priority_08",
+    "goal_image_labels_09",
+    "version_baseline_10",
+    "outside_corpus_dev_10b",
+    "start_search_policy_holdout_11",
+    "goal_image_labels_holdout_12",
+    "trajectory_validator_plugins_13",
+    "cross_module_review_14",
+    "outside_corpus_15"
+  ],
+  "split_counts": {
+    "dev": 11,
+    "holdout": 5
+  },
+  "freeze_note": "Hand-authored retrieval questions and gold document/image anchors; changes require a new evaluation version."
+}

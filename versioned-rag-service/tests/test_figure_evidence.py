@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 import hashlib
+import base64
+import urllib.parse
+import zlib
+import xml.etree.ElementTree as ET
 import importlib.util
 import json
 import struct
@@ -131,6 +135,52 @@ def test_inventory_groups_same_asset_and_does_not_turn_alt_into_ocr(tmp_path):
     assert "text" not in figure["ocr"]
 
 
+def test_autoware_markdown_inventory_uses_manifest_repository_and_commit(tmp_path):
+    module = _module()
+    root = tmp_path / "autoware"
+    source_path = "planning/behavior_planner/README.md"
+    local_path = "sources/0.52.0/en/planning/behavior_planner/README.md"
+    source = root / local_path
+    source.parent.mkdir(parents=True)
+    source.write_text(
+        "# Behavior Planner\n\n"
+        "![Trajectory states](images/trajectory_states.png)\n",
+        encoding="utf-8",
+    )
+    commit = "b" * 40
+    manifest = {
+        "source_count": 1,
+        "workspace": "Autoware",
+        "repository": "autowarefoundation/autoware_universe",
+        "current_version": "0.52.0",
+        "commits": {"0.52.0": commit},
+        "sources": [{
+            "document_key": "planning/behavior_planner",
+            "version": "0.52.0",
+            "commit": commit,
+            "language": "en",
+            "source_type": "official_documentation",
+            "repository": "autowarefoundation/autoware_universe",
+            "document_path": source_path,
+            "local_path": local_path,
+            "source_url": f"https://github.com/autowarefoundation/autoware_universe/blob/{commit}/{source_path}",
+            "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+        }],
+    }
+    (root / "corpus_manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    inventory = module.scan_inventory(root)
+
+    assert inventory["unique_figure_count"] == 1
+    figure = inventory["figures"][0]
+    assert figure["repository"] == "autowarefoundation/autoware_universe"
+    assert figure["asset_path"] == "planning/behavior_planner/images/trajectory_states.png"
+    assert figure["raw_url"] == (
+        f"https://raw.githubusercontent.com/autowarefoundation/autoware_universe/{commit}/"
+        "planning/behavior_planner/images/trajectory_states.png"
+    )
+
+
 def test_fetch_records_sha_and_real_ocr_only_when_returned(tmp_path):
     module = _module()
     inventory = module.scan_inventory(_corpus(tmp_path))
@@ -163,6 +213,88 @@ def test_fetch_records_sha_and_real_ocr_only_when_returned(tmp_path):
     assert (tmp_path / "review-images" / preview_name).read_bytes() == PNG
 
 
+def test_svg_diagram_text_is_extracted_as_unreviewed_candidate():
+    module = _module()
+    inventory = {
+        "current_version": "0.52.0",
+        "figures": [{
+            "version": "0.52.0", "asset_path": "planning/start_planner/flow.svg",
+            "raw_url": "https://example.test/flow.svg",
+            "references": [{"document_key": "planning/start_planner/design"}],
+            "validation": {"status": "unverified"}, "ocr": {"status": "not_run"},
+        }],
+    }
+    svg = b'<svg xmlns="http://www.w3.org/2000/svg"><text>Outside drivable area</text><text><tspan>Obstacle</tspan> stop</text></svg>'
+
+    result = module.verify_selected_images(
+        inventory, selectors=("planning/start_planner/flow.svg",),
+        fetcher=lambda _url, _cap: (svg, "image/svg+xml"),
+    )
+
+    figure = result["figures"][0]
+    assert figure["validation"]["status"] == "verified"
+    assert figure["ocr"]["status"] == "text_extracted"
+    assert figure["ocr"]["engine"] == "svg_text"
+    assert figure["ocr"]["index_review_status"] == "pending"
+    assert figure["ocr"]["text"] == "Outside drivable area Obstacle stop"
+
+
+def test_drawio_svg_embedded_compressed_labels_are_extracted_locally():
+    module = _module()
+    graph = '<mxGraphModel><root><mxCell value="planner_priority"/><mxCell value="high priority"/><mxCell value="low priority"/></root></mxGraphModel>'
+    packed = zlib.compress(urllib.parse.quote(graph, safe="").encode("utf-8"))[2:-4]
+    diagram = base64.b64encode(packed).decode("ascii")
+    nested = f'<mxfile><diagram>{diagram}</diagram></mxfile>'
+    svg = ET.tostring(ET.Element("svg", {"content": nested}), encoding="utf-8")
+
+    extracted = module._extract_svg_text(svg)
+
+    assert "planner_priority" in extracted
+    assert "high priority" in extracted
+    assert "low priority" in extracted
+
+
+def test_svg_text_extraction_rejects_dtd_and_entities():
+    module = _module()
+    payload = b'<!DOCTYPE svg [<!ENTITY x "expanded">]><svg><text>&x;</text></svg>'
+
+    try:
+        module._extract_svg_text(payload)
+    except ValueError as exc:
+        assert "DTD" in str(exc)
+    else:
+        raise AssertionError("SVG DTD must be rejected")
+
+
+def test_auto_selection_prefers_relevant_raster_figures_and_is_bounded():
+    module = _module()
+    inventory = {
+        "current_version": "0.52.0",
+        "figures": [
+            {"version": "0.52.0", "asset_path": "planning/start_planner/flow.drawio.svg",
+             "raw_url": "https://example.test/flow.svg", "references": [{"document_key": "planning/start_planner/design"}],
+             "validation": {"status": "unverified"}, "ocr": {"status": "not_run"}},
+            {"version": "0.52.0", "asset_path": "planning/start_planner/trajectory.png",
+             "raw_url": "https://example.test/trajectory.png", "references": [{"document_key": "planning/start_planner/design"}],
+             "validation": {"status": "unverified"}, "ocr": {"status": "not_run"}},
+            {"version": "0.51.0", "asset_path": "planning/start_planner/old.png",
+             "raw_url": "https://example.test/old.png", "references": [{"document_key": "planning/start_planner/design"}],
+             "validation": {"status": "unverified"}, "ocr": {"status": "not_run"}},
+        ],
+    }
+    fetched = []
+
+    result = module.verify_selected_images(
+        inventory, selectors=None, max_images=1,
+        fetcher=lambda url, _cap: (fetched.append(url) or (PNG, "image/png")),
+        ocr_runner=lambda _payload: ("planner text", 95.0),
+    )
+
+    assert fetched == ["https://example.test/trajectory.png"]
+    assert result["figures"][1]["ocr"]["status"] == "text_extracted"
+    assert result["figures"][0]["ocr"]["status"] == "not_run"
+
+
 def test_selected_figure_sample_is_stratified_and_bounded():
     module = _module()
     paths = module.SELECTED_FIGURES
@@ -192,6 +324,49 @@ def test_reviewed_builder_accepts_only_pinned_approved_ocr(tmp_path):
     assert hit["heading"] == "优先级"
     assert hit["sha256"] == "a" * 64
     assert hit["raw_url"].endswith(f"/{COMMIT}/docs/img/new_ui/dev/parameter/priority_parameter01.png")
+
+
+def test_reviewed_builder_accepts_commit_bound_autoware_figure_evidence(tmp_path):
+    module = _module()
+    root = tmp_path / "autoware"
+    repository = "autowarefoundation/autoware_universe"
+    commit = "b" * 40
+    source_path = "planning/behavior_planner/README.md"
+    local_path = "sources/0.52.0/en/planning/behavior_planner/README.md"
+    source = root / local_path
+    source.parent.mkdir(parents=True)
+    source.write_text("# Behavior Planner\n", encoding="utf-8")
+    source_url = f"https://github.com/{repository}/blob/{commit}/{source_path}"
+    manifest = {
+        "commits": {"0.52.0": commit},
+        "sources": [{
+            "repository": repository, "version": "0.52.0", "commit": commit,
+            "document_key": "planning/behavior_planner", "language": "en",
+            "source_type": "official_documentation", "document_path": source_path,
+            "local_path": local_path, "source_url": source_url,
+        }],
+    }
+    row = {
+        "schema_version": 1, "figure_id": "figure-autoware-1", "repository": repository,
+        "version": "0.52.0", "commit": commit,
+        "asset_path": "planning/behavior_planner/images/trajectory_states.png",
+        "raw_url": f"https://raw.githubusercontent.com/{repository}/{commit}/planning/behavior_planner/images/trajectory_states.png",
+        "references": [{
+            "document_key": "planning/behavior_planner", "language": "en",
+            "local_path": local_path, "line": 4, "heading": "Trajectory validation",
+        }],
+        "validation": {"status": "verified", "sha256": "c" * 64},
+        "ocr": {"status": "text_extracted", "engine": "tesseract", "index_review_status": "approved"},
+        "review": {"status": "approved", "sha256": "c" * 64,
+                   "reviewed_text": "Trajectory status: validated", "reviewed_at": "2026-09-30T00:00:00Z"},
+    }
+
+    chunks = module.build_reviewed_figure_chunks([row], manifest)
+
+    assert len(chunks) == 1
+    assert chunks[0]["repository"] == repository
+    assert chunks[0]["source_url"] == source_url
+    assert chunks[0]["modality"] == "image_ocr"
 
 
 def test_reviewed_builder_rejects_unreviewed_or_mismatched_image_rows(tmp_path):
@@ -267,6 +442,29 @@ def test_verified_image_without_ocr_engine_has_no_searchable_text(tmp_path):
     assert figure["ocr"]["status"] == "tool_unavailable"
     assert "text" not in figure["ocr"]
     assert "参数图" not in json.dumps(figure["ocr"], ensure_ascii=False)
+
+
+def test_sidecar_builder_writes_valid_empty_index_without_inventing_figure_text(tmp_path):
+    from scripts.build_reviewed_figure_sidecar import build_reviewed_figure_sidecar
+
+    root = _corpus(tmp_path)
+    inventory = _module().scan_inventory(root)
+    (root / "figure_evidence.json").write_text(
+        json.dumps(inventory, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+
+    summary = build_reviewed_figure_sidecar(root)
+
+    sidecar_path = root / "figure_evidence_reviewed.json"
+    lock_path = root / "figure_evidence_reviewed.lock.json"
+    sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    assert summary["approved_figure_chunks"] == 0
+    assert sidecar["chunks"] == []
+    assert lock["sidecar_sha256"] == hashlib.sha256(sidecar_path.read_bytes()).hexdigest()
+    assert lock["corpus_manifest_sha256"] == hashlib.sha256(
+        (root / "corpus_manifest.json").read_bytes()
+    ).hexdigest()
 
 
 def test_magic_bytes_without_decodable_image_are_not_counted_verified(tmp_path):

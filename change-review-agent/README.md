@@ -2,7 +2,7 @@
 
 > Evidence-grounded change review and document workflow
 
-本目录包含公开工作台使用的 `PublicReviewAgent`，以及可复用的变更审查、文档工作流和人工审核组件。公开审查流程通过 `versioned-rag-service` 获取当前版本官方资料，整理影响候选与修改建议；结果只进入当前会话，由人确认，不写入公共基线或 Apache 上游。
+本目录包含公开工作台使用的 `PublicReviewAgent`，以及可复用的变更审查、文档工作流和人工审核组件。公开审查流程通过 `versioned-rag-service` 获取当前版本官方资料，整理影响候选与修改建议；结果只进入当前会话，由人确认，不写入公共基线或配置的公开资料上游。
 
 下方“业务流程”说明的是可复用的结构化 Word 文档工作流子系统；它与公开工作台的假设变更审查入口相邻，但不是对外宣称的自动文档发布流程。
 

@@ -1,18 +1,26 @@
-"""Session-only review of hypothetical changes to official public knowledge.
+"""Evidence-based review of hypothetical changes to official public knowledge.
 
 The Agent orchestrates RAG HTTP search, existing engineering Diff/Impact APIs,
 and human review. It never calls candidate activation or writes upstream data.
+The public workbench persists anonymous review decisions in a local SQLite store.
 """
 
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import unicodedata
 import uuid
 from typing import Protocol
+from urllib.parse import urlsplit
 
-from app.change_request import CHANGE_TYPES, build_request_plan, request_queries
+from app.change_request import (
+    CHANGE_TYPES,
+    build_request_plan,
+    is_out_of_scope_public_request,
+    request_queries,
+)
 
 
 class PublicKnowledgeGateway(Protocol):
@@ -20,6 +28,9 @@ class PublicKnowledgeGateway(Protocol):
     def document(self, document_id: str) -> list[dict]: ...
     def search(self, question: str, *, version: str, language: str, top_k: int = 5) -> dict: ...
     def review_advice(self, change_summary: str, evidence_chunk_ids: list[str]) -> dict: ...
+    def review_advice_for_version(
+        self, change_summary: str, evidence_chunk_ids: list[str], *, version: str,
+    ) -> dict: ...
     def engineering_diff(self, old_items: list[dict], new_items: list[dict]) -> dict: ...
     def engineering_impacts(self, payload: dict) -> dict: ...
 
@@ -34,26 +45,80 @@ def _request_queries(summary: str) -> list[str]:
     return request_queries(summary)
 
 
-def _official_hit(row: dict, current_version: str) -> bool:
+def _official_hit(row: dict, current_version: str, repository: str) -> bool:
     score = row.get("retrieval_score")
+    parsed = urlsplit(str(row.get("source_url", "")))
+    repository_path = "/" + repository.strip("/") + "/"
+    commit = row.get("commit")
+    pinned_blob = (
+        not commit
+        or isinstance(commit, str) and re.fullmatch(r"[0-9a-f]{40}", commit)
+        and parsed.path.startswith(repository_path + "blob/" + commit + "/")
+    )
     return (
         row.get("version") == current_version
-        and str(row.get("source_url", "")).startswith("https://github.com/apache/dolphinscheduler/")
+        and bool(re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository))
+        and parsed.scheme == "https" and parsed.netloc == "github.com"
+        and parsed.path.startswith(repository_path)
+        and pinned_blob
         and bool(row.get("chunk_id"))
         and (score is None or isinstance(score, (int, float)) and score > 0)
     )
 
 
+_SOURCE_OVERLAP_STOP_WORDS = {
+    "guide", "task", "docs", "official", "check", "verify", "and", "the",
+    "what", "does", "how", "is", "for", "with", "parent", "child",
+}
+
+
+def _source_path_overlap(trace: dict, row: dict) -> int:
+    """Use query-specific heading/path token overlap as a tie-break among RAG hits."""
+    query = str(trace.get("search_query") or trace.get("query") or "").casefold()
+    source = " ".join((
+        str(row.get("document_key") or ""),
+        str(row.get("heading") or ""),
+    )).casefold()
+    normalized_source = re.sub(r"[^a-z0-9]+", "", source)
+    terms = {
+        term for term in re.findall(r"[a-z][a-z0-9]*", query)
+        if len(term) > 2 and term not in _SOURCE_OVERLAP_STOP_WORDS
+    }
+    return sum(
+        re.sub(r"[^a-z0-9]+", "", term) in normalized_source
+        for term in terms
+    )
+
+
 def _select_request_evidence(searches: list[tuple[dict, list[dict]]]) -> list[dict]:
-    """Reserve a citation from each subquery, then fill the model's five-item budget."""
+    """Reserve distinct, query-aligned sources across subqueries, then fill five items."""
     selected: dict[str, dict] = {}
-    for _trace, rows in searches[1:] if len(searches) > 1 else searches:
+    query_results = searches[1:] if len(searches) > 1 else searches
+    selected_documents: set[str] = set()
+    for _trace, rows in query_results:
         if len(selected) >= 5:
             break
+        eligible = [
+            row for row in rows
+            if (row.get("document_key") or row["chunk_id"]) not in selected_documents
+        ]
+        if eligible:
+            best = max(eligible, key=lambda row: _source_path_overlap(_trace, row))
+            selected[best["chunk_id"]] = best
+            selected_documents.add(best.get("document_key") or best["chunk_id"])
+    # Prefer another previously unseen document when the result pool has one.
+    for trace, rows in searches:
         for row in rows:
-            if row["chunk_id"] not in selected:
+            if len(selected) >= 5:
+                return list(selected.values())
+            document_key = row.get("document_key") or row["chunk_id"]
+            if (
+                row["chunk_id"] not in selected
+                and document_key not in selected_documents
+                and _source_path_overlap(trace, row) > 0
+            ):
                 selected[row["chunk_id"]] = row
-                break
+                selected_documents.add(document_key)
     for _trace, rows in searches:
         for row in rows:
             if len(selected) >= 5:
@@ -119,11 +184,13 @@ def _model_evidence_gap_details(advice: dict) -> list[dict]:
 
 
 def _item(source: dict, content: str) -> dict:
+    repository = str(source.get("repository") or "public-materials")
+    owner, _, repository_name = repository.partition("/")
     return {
         "item_id": source["chunk_id"],
         "item_type": "API" if "/api/" in source["document_key"] else "DESIGN",
-        "organization_id": "apache-public-materials",
-        "project_id": "Apache DolphinScheduler",
+        "organization_id": owner or "public-materials",
+        "project_id": repository_name or repository,
         "document_id": source["document_id"],
         "version_id": source["version"],
         "section_id": source["heading"] or source["chunk_id"],
@@ -223,6 +290,10 @@ class PublicReviewAgent:
         *,
         change_type: str | None = None,
         impact_scope: str | None = None,
+        target_version: str | None = None,
+        objective: str | None = None,
+        constraints: str | None = None,
+        validation_plan: str | None = None,
     ) -> dict:
         """Find current-version candidates from a natural-language change request."""
         summary = change_summary.strip()
@@ -231,15 +302,91 @@ class PublicReviewAgent:
 
         plan = build_request_plan(summary, change_type=change_type, impact_scope=impact_scope)
 
-        current_version = self.gateway.workspace()["current_version"]
+        if is_out_of_scope_public_request(summary):
+            task_id = uuid.uuid4().hex
+            fingerprint = _normalized_hash(f"out_of_scope_public:{summary}")[:20]
+            explanation = (
+                "本工作台当前只检索已配置知识空间的官方公开资料，未接入公司内部 API、"
+                "Jira、通讯录或内部制度。为避免把企业私有问题误交给公开语料或模型，已在检索前停止。"
+            )
+            gap = {
+                "gap_type": "OUT_OF_SCOPE_PUBLIC_CORPUS",
+                "message": explanation,
+                "query": summary,
+                "expected_materials": "经授权并脱敏的企业内部资料",
+                "suggested_action": "请改问公开文档可回答的问题；企业场景需先接入经授权的知识源并配置访问控制。",
+                "requires_human_review": True,
+            }
+            return {
+                "task_id": task_id,
+                "request_fingerprint": fingerprint,
+                "request_mode": "natural_language",
+                "request_summary": summary,
+                "request_plan": plan,
+                "scope_status": "OUT_OF_SCOPE",
+                "retrieval_policy": "not_run_scope_guard",
+                "retrieval_trace": {
+                    "queries": [],
+                    "uncovered_queries": [summary],
+                    "model_status": "NOT_CALLED_OUT_OF_SCOPE",
+                    "query_limit": plan["query_limit"],
+                    "scope_status": "OUT_OF_SCOPE",
+                },
+                "retrieved_results": [],
+                "impacts": [],
+                "review_advice": {
+                    "status": "OUT_OF_SCOPE",
+                    "answer": "未执行检索或模型生成。",
+                    "sources": [],
+                    "message": explanation,
+                },
+                "evidence_gaps": [explanation],
+                "evidence_gap_details": [gap],
+                "sandbox_only": True,
+                "public_baseline_written": False,
+            }
+
+        workspace = self.gateway.workspace()
+        current_version = workspace["current_version"]
+        repository = str(workspace.get("repository") or "")
+        available_versions = [
+            str(value) for value in workspace.get("available_versions", [current_version])
+        ]
+        selected_version = current_version if not target_version or target_version == "current" else target_version
+        if selected_version not in available_versions:
+            raise ValueError("目标版本不在当前知识空间的已收录版本中")
+        context_values = {}
+        for name, raw_value in (
+            ("objective", objective),
+            ("constraints", constraints),
+            ("validation_plan", validation_plan),
+        ):
+            value = (raw_value or "").strip()
+            if len(value) > 800:
+                raise ValueError("提案补充信息每项不超过 800 字")
+            context_values[name] = value or None
+        missing_fields = [name for name, value in context_values.items() if value is None]
+        request_context = {
+            **context_values,
+            "target_version": selected_version,
+            "context_status": "needs_confirmation" if missing_fields else "provided",
+            "missing_fields": missing_fields,
+        }
+        plan["target_version"] = selected_version
+        plan["proposal_context_status"] = request_context["context_status"]
         task_id = uuid.uuid4().hex
         fingerprint = _normalized_hash(
-            f"natural_language:{current_version}:{plan['change_type']}:{plan['impact_scope']}:{summary}"
+            json.dumps({
+                "version": selected_version, "change_type": plan["change_type"],
+                "impact_scope": plan["impact_scope"], "summary": summary,
+                **context_values,
+            }, ensure_ascii=False, sort_keys=True)
         )[:20]
         searches: list[tuple[dict, list[dict]]] = []
         retrieval_policy = "bm25"
         for query_step in plan["queries"]:
             query = query_step["query"]
+            search_query = query_step.get("search_query", query)
             trace = {
                 **query_step,
                 "status": "no_retrieval_match",
@@ -248,10 +395,13 @@ class PublicReviewAgent:
             }
             try:
                 search_result = self.gateway.search(
-                    query, version=current_version, language="zh_preferred", top_k=5,
+                    search_query, version=selected_version, language="zh_preferred", top_k=5,
                 )
                 retrieval_policy = search_result.get("retrieval_policy", retrieval_policy)
-                rows = [row for row in search_result.get("results", []) if _official_hit(row, current_version)]
+                rows = [
+                    row for row in search_result.get("results", [])
+                    if _official_hit(row, selected_version, repository)
+                ]
                 trace["top_chunk_ids"] = [row["chunk_id"] for row in rows]
             except Exception:
                 # A failed search is distinct from a successful search without matches.
@@ -287,6 +437,7 @@ class PublicReviewAgent:
                 "request_mode": "natural_language",
                 "request_summary": summary,
                 "request_plan": plan,
+                "request_context": request_context,
                 "retrieval_policy": retrieval_policy,
                 "retrieval_trace": retrieval_trace,
                 "retrieved_results": [],
@@ -299,13 +450,21 @@ class PublicReviewAgent:
             }
 
         try:
-            advice = self.gateway.review_advice(
-                (
-                    f"变更描述：{summary}\n变更类型：{plan['change_type_label']}"
-                    f"（{plan['classification_source']}）\n影响范围：{plan['impact_scope'] or '未指定'}"
-                    f"\n检索关注点：{plan['retrieval_focus']}"
-                ),
-                [row["chunk_id"] for row in candidates],
+            advice_summary = (
+                f"知识空间：{workspace.get('workspace', repository)}\n目标版本：{selected_version}"
+                f"\n变更描述：{summary}\n变更类型：{plan['change_type_label']}"
+                f"（{plan['classification_source']}）\n影响范围：{plan['impact_scope'] or '待补充'}"
+                f"\n变更目标：{context_values['objective'] or '待补充'}"
+                f"\n约束条件：{context_values['constraints'] or '待补充'}"
+                f"\n验证计划：{context_values['validation_plan'] or '待补充'}"
+                f"\n检索关注点：{plan['retrieval_focus']}"
+            )
+            evidence_ids = [row["chunk_id"] for row in candidates]
+            versioned_review = getattr(self.gateway, "review_advice_for_version", None)
+            advice = (
+                versioned_review(advice_summary, evidence_ids, version=selected_version)
+                if callable(versioned_review)
+                else self.gateway.review_advice(advice_summary, evidence_ids)
             )
         except Exception:
             # Model assistance is optional; the underlying RAG candidates remain visible.
@@ -323,6 +482,7 @@ class PublicReviewAgent:
             "request_mode": "natural_language",
             "request_summary": summary,
             "request_plan": plan,
+            "request_context": request_context,
             "retrieval_policy": retrieval_policy,
             "retrieval_trace": retrieval_trace,
             "retrieved_results": candidates,
@@ -335,11 +495,19 @@ class PublicReviewAgent:
         }
 
     def analyze(self, selected: dict, proposed_text: str) -> dict:
-        current_version = self.gateway.workspace()["current_version"]
+        workspace = self.gateway.workspace()
+        current_version = workspace["current_version"]
+        repository = str(workspace.get("repository") or "")
         if selected.get("version") != current_version:
-            raise ValueError("只能选择当前固定版本的官方资料")
-        if not selected.get("source_url", "").startswith("https://github.com/apache/dolphinscheduler/"):
-            raise ValueError("资料来源不是已登记的 Apache 官方地址")
+            raise ValueError("只能选择当前知识空间固定版本的官方资料")
+        source_url = urlsplit(str(selected.get("source_url") or ""))
+        expected_prefix = "/" + repository.strip("/") + "/"
+        if (
+            not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository)
+            or source_url.scheme != "https" or source_url.netloc != "github.com"
+            or not source_url.path.startswith(expected_prefix)
+        ):
+            raise ValueError("资料来源与当前知识空间的官方仓库不匹配")
         proposed = proposed_text.strip()
         if not proposed or len(proposed) > 4000:
             raise ValueError("假设性变更内容应为 1 到 4000 字")

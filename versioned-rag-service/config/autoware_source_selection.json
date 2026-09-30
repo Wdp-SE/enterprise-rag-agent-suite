@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "repository": "autowarefoundation/autoware_universe",
+  "workspace": "Autoware",
+  "scope": "Planning behavior changes and path/trajectory validation",
+  "releases": {
+    "0.51.0": {"commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94"},
+    "0.52.0": {"commit": "6e477c645efec33f7909095eea684474e97f5e3d"}
+  },
+  "sources": [
+    {
+      "document_path": "planning/README.md",
+      "document_key": "planning/overview",
+      "source_type": "official_documentation",
+      "language": "en",
+      "locale": "en-US"
+    },
+    {
+      "document_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+      "document_key": "planning/start_planner/design",
+      "source_type": "official_documentation",
+      "language": "en",
+      "locale": "en-US"
+    },
+    {
+      "document_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/config/start_planner.param.yaml",
+      "document_key": "planning/start_planner/parameters",
+      "source_type": "official_documentation",
+      "language": "en",
+      "locale": "en-US"
+    },
+    {
+      "document_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+      "document_key": "planning/goal_planner/design",
+      "source_type": "official_documentation",
+      "language": "en",
+      "locale": "en-US"
+    },
+    {
+      "document_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/config/goal_planner.param.yaml",
+      "document_key": "planning/goal_planner/parameters",
+      "source_type": "official_documentation",
+      "language": "en",
+      "locale": "en-US"
+    },
+    {
+      "document_path": "planning/planning_validator/autoware_planning_validator/README.md",
+      "document_key": "planning/planning_validator/design",
+      "source_type": "official_documentation",
+      "language": "en",
+      "locale": "en-US"
+    },
+    {
+      "document_path": "planning/planning_validator/autoware_planning_validator/config/planning_validator.param.yaml",
+      "document_key": "planning/planning_validator/parameters",
+      "source_type": "official_documentation",
+      "language": "en",
+      "locale": "en-US"
+    },
+    {
+      "document_path": "planning/planning_validator/autoware_planning_validator_trajectory_checker/README.md",
+      "document_key": "planning/trajectory_checker/design",
+      "source_type": "official_documentation",
+      "language": "en",
+      "locale": "en-US"
+    },
+    {
+      "document_path": "planning/planning_validator/autoware_planning_validator_trajectory_checker/config/trajectory_checker.param.yaml",
+      "document_key": "planning/trajectory_checker/parameters",
+      "source_type": "official_documentation",
+      "language": "en",
+      "locale": "en-US"
+    },
+    {
+      "document_path": "planning/autoware_trajectory_validator/README.md",
+      "document_key": "planning/trajectory_validator/design",
+      "source_type": "official_documentation",
+      "language": "en",
+      "locale": "en-US"
+    },
+    {
+      "document_path": "planning/autoware_trajectory_validator/config/trajectory_validator.param.yaml",
+      "document_key": "planning/trajectory_validator/parameters",
+      "source_type": "official_documentation",
+      "language": "en",
+      "locale": "en-US"
+    }
+  ]
+}

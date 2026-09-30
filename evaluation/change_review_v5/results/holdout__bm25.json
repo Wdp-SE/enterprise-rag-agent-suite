@@ -1,0 +1,258 @@
+{
+  "evaluation": "change_review_v5_offline",
+  "scope": {
+    "case_count": 7,
+    "policy": "bm25",
+    "current_version": "3.4.3",
+    "generation_api_calls": 0,
+    "measures_generated_answer_accuracy": false,
+    "uses_paid_model": false,
+    "split": "holdout",
+    "seed": "change-review-v5-2026-09-30",
+    "cases_sha256": "9e02c506ade40d750fea670777ac4cbf869ac4375fda0053b8fbd780dceb0f29",
+    "split_sha256": "6fa1a9b5972f9d7c20f00968c6662723903ffc7e135f81dbd5b01a06361870c4"
+  },
+  "metrics": {
+    "change_type_accuracy": 1.0,
+    "required_clause_coverage": 0.8571,
+    "query_budget_compliance": 1.0,
+    "scope_guard_accuracy": 1.0,
+    "out_of_scope_case_count": 2,
+    "out_of_scope_retrieval_attempt_count": 0,
+    "public_case_false_block_count": 0,
+    "required_source_recall_at_5": 0.8571,
+    "complete_required_sources_at_5": 0.75,
+    "answerable_zero_candidate_rate": 0.0,
+    "unanswerable_nonempty_candidate_rate": 1.0,
+    "image_hit_at_5": null,
+    "version_mismatch_count": 0,
+    "retrieval_call_count": 14,
+    "warm_retrieval_p95_ms": 5.53,
+    "warm_retrieval_mean_ms": 2.438
+  },
+  "details": [
+    {
+      "case_id": "health_01",
+      "category": "single_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "interface_compatibility",
+      "actual_change_type": "interface_compatibility",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "API server 的 health-check endpoint 是什么；请核对不同服务端组件对应的健康检查路径。",
+        "API server 的 health-check endpoint 是什么",
+        "请核对不同服务端组件对应的健康检查路径"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/api/healthcheck"
+      ],
+      "retrieved_sources_at_5": [
+        "contribute/api-test",
+        "guide/api/healthcheck",
+        "guide/monitor",
+        "guide/remote-logging"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 4.859
+    },
+    {
+      "case_id": "health_02",
+      "category": "single_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "interface_compatibility",
+      "actual_change_type": "interface_compatibility",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "新增服务可用性探针；同时核对 Master、Worker 服务的健康检查接口和响应说明。",
+        "新增服务可用性探针",
+        "核对 Master、Worker 服务的健康检查接口和响应说明"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/api/healthcheck"
+      ],
+      "retrieved_sources_at_5": [
+        "architecture/task-structure",
+        "guide/api/healthcheck",
+        "guide/monitor"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 3.292
+    },
+    {
+      "case_id": "upgrade_01",
+      "category": "cross_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "interface_compatibility",
+      "actual_change_type": "interface_compatibility",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "将服务升级到 3.4.3 并调整 API 字段；核对不兼容变更，同时检查升级步骤。",
+        "将服务升级到 3.4.3 并调整 API 字段",
+        "核对不兼容变更",
+        "检查升级步骤"
+      ],
+      "query_count": 4,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/upgrade/incompatible",
+        "guide/upgrade/upgrade"
+      ],
+      "retrieved_sources_at_5": [
+        "guide/api/healthcheck",
+        "guide/upgrade/incompatible",
+        "guide/upgrade/upgrade",
+        "release-notes"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 3.351
+    },
+    {
+      "case_id": "upgrade_02",
+      "category": "cross_version",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "interface_compatibility",
+      "actual_change_type": "interface_compatibility",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "核对 3.4.2 到 3.4.3 的发布变化；检查当前版本的升级说明和不兼容项。",
+        "核对 3.4.2 到 3.4.3 的发布变化",
+        "检查当前版本的升级说明和不兼容项"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/upgrade/incompatible",
+        "guide/upgrade/upgrade",
+        "release-notes"
+      ],
+      "retrieved_sources_at_5": [
+        "architecture/task-structure",
+        "guide/upgrade/incompatible",
+        "guide/upgrade/upgrade"
+      ],
+      "complete_required_sources_at_5": false,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 3.062
+    },
+    {
+      "case_id": "no_answer_01",
+      "category": "no_answer",
+      "expected_scope": "out_of_scope",
+      "scope_guard_triggered": true,
+      "scope_guard_correct": true,
+      "expected_change_type": "interface_compatibility",
+      "actual_change_type": "interface_compatibility",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "Apache DolphinScheduler 是否内置经纬恒润的内部车辆温度采集 API；请核对企业专有接口。",
+        "Apache DolphinScheduler 是否内置经纬恒润的内部车辆温度采集 API",
+        "请核对企业专有接口"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [],
+      "retrieved_sources_at_5": [],
+      "complete_required_sources_at_5": false,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 0,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 0.0
+    },
+    {
+      "case_id": "no_answer_02",
+      "category": "no_answer",
+      "expected_scope": "out_of_scope",
+      "scope_guard_triggered": true,
+      "scope_guard_correct": true,
+      "expected_change_type": "security_permission",
+      "actual_change_type": "security_permission",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "查询公司内部 Jira 审批人的手机号和私有工单权限；确认内部通讯录数据。",
+        "查询公司内部 Jira 审批人的手机号和私有工单权限",
+        "确认内部通讯录数据"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [],
+      "retrieved_sources_at_5": [],
+      "complete_required_sources_at_5": false,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 0,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 0.0
+    },
+    {
+      "case_id": "public_no_answer_03",
+      "category": "no_answer",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "workflow_behavior",
+      "actual_change_type": "workflow_behavior",
+      "type_correct": true,
+      "required_clause_coverage": "0/2",
+      "queries": [
+        "Does the 3.4.3 official documentation describe automatic SLA breach escalation to PagerDuty for failed workflow tasks?"
+      ],
+      "query_count": 1,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [],
+      "retrieved_sources_at_5": [
+        "architecture/design",
+        "guide/project/workflow-definition",
+        "guide/project/workflow-instance",
+        "guide/task/conditions",
+        "release-notes"
+      ],
+      "complete_required_sources_at_5": false,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 5.53
+    }
+  ]
+}

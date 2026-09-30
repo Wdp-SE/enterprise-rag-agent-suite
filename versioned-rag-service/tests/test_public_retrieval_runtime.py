@@ -9,6 +9,9 @@ from src.public_knowledge import PublicKnowledgeIndex
 from src.public_retrieval_runtime import PublicRetrievalRuntime
 
 
+AUTOWARE_CORPUS = Path(__file__).resolve().parents[1] / "public_corpus_autoware"
+
+
 def _config(tmp_path: Path, **overrides) -> Path:
     payload = {
         "schema_version": 1,
@@ -117,3 +120,36 @@ def test_faceted_single_fact_preserves_baseline_order(tmp_path):
 
     assert runtime.search(query, policy="bm25_faceted_rrf") == index.search(query)
     assert runtime.last_retrieval_call_count == 1
+
+
+def test_autoware_reviewed_image_search_adds_figure_without_losing_source_coverage():
+    index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
+    runtime = PublicRetrievalRuntime(
+        index,
+        config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+        sidecar_path=AUTOWARE_CORPUS / "figure_evidence_reviewed.json",
+    )
+    question = "What two readable labels appear in the Goal Planner image about the drivable area and stopping?"
+
+    baseline = index.search(question, top_k=5, version="0.52.0", language="en", policy="bm25")
+    candidate = runtime.search(question, top_k=5, version="0.52.0", language="en", policy="bm25_figure_ocr")
+
+    assert any(row.get("figure_id") == "32682b345ea86e13" for row in candidate)
+    assert {row["document_key"] for row in candidate} == {row["document_key"] for row in baseline}
+    assert all(row["version"] == "0.52.0" for row in candidate)
+
+
+def test_autoware_unrelated_query_does_not_pull_image_by_workspace_metadata():
+    index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
+    runtime = PublicRetrievalRuntime(
+        index,
+        config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+        sidecar_path=AUTOWARE_CORPUS / "figure_evidence_reviewed.json",
+    )
+    question = "How are trajectory checker steering-angle constraints configured?"
+
+    baseline = index.search(question, top_k=5, version="0.52.0", language="en", policy="bm25")
+    candidate = runtime.search(question, top_k=5, version="0.52.0", language="en", policy="bm25_figure_ocr")
+
+    assert not any(row.get("modality") == "image_ocr" for row in candidate)
+    assert [row["chunk_id"] for row in candidate] == [row["chunk_id"] for row in baseline]

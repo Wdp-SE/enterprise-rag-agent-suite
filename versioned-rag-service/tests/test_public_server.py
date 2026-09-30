@@ -14,48 +14,162 @@ from src.public_server import create_app
 
 
 QUESTION = "DolphinScheduler 参数优先级从高到低是什么？"
+AUTOWARE_CORPUS = Path(__file__).resolve().parents[1] / "public_corpus_autoware"
 
 
-def test_v3_release_is_bound_to_locked_artifacts_and_true_retrieval_counts():
+def _write_empty_figure_sidecar(root: Path, tmp_path: Path) -> tuple[Path, Path]:
+    manifest_sha = hashlib.sha256((root / "corpus_manifest.json").read_bytes()).hexdigest()
+    sidecar_path = tmp_path / "figure_evidence_reviewed.json"
+    sidecar_bytes = (json.dumps({
+        "schema_version": 1,
+        "corpus_manifest_sha256": manifest_sha,
+        "chunks": [],
+    }, separators=(",", ":")) + "\n").encode("utf-8")
+    sidecar_path.write_bytes(sidecar_bytes)
+    lock_path = tmp_path / "figure_evidence_reviewed.lock.json"
+    lock_path.write_text(json.dumps({
+        "schema_version": 1,
+        "sidecar_sha256": hashlib.sha256(sidecar_bytes).hexdigest(),
+        "corpus_manifest_sha256": manifest_sha,
+    }), encoding="utf-8")
+    return sidecar_path, lock_path
+
+
+def test_autoware_workspace_profile_comes_from_manifest(tmp_path):
+    index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
+    sidecar, lock = _write_empty_figure_sidecar(AUTOWARE_CORPUS, tmp_path)
+
+    with TestClient(create_app(
+        index=index,
+        retrieval_config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+        figure_sidecar_path=sidecar,
+        figure_sidecar_lock_path=lock,
+    )) as client:
+        workspace = client.get("/public/workspace").json()
+        health = client.get("/health").json()
+
+    assert workspace["workspace"] == "Autoware"
+    assert workspace["repository"] == "autowarefoundation/autoware_universe"
+    assert workspace["current_version"] == "0.52.0"
+    assert workspace["baseline_version"] == "0.51.0"
+    assert workspace["languages"] == ["en-US"]
+    assert workspace["data_origin"] == "Autoware official public materials"
+    assert health["workspace"] == "Autoware"
+    assert "DolphinScheduler" not in json.dumps(workspace)
+
+
+def test_autoware_public_deployment_uses_benchmarked_image_policy_and_current_release():
+    index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
+    question = "What two readable labels appear in the Goal Planner image about the drivable area and stopping?"
+
+    with TestClient(create_app(
+        index=index,
+        retrieval_config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+    )) as client:
+        health = client.get("/health").json()
+        workspace = client.get("/public/workspace").json()
+        response = client.post("/public/search", json={
+            "query": question, "version": "current", "language": "en",
+        })
+
+    assert health["runtime_retrieval_policy"] == "bm25_figure_ocr"
+    assert health["approved_image_chunk_count"] == 2
+    assert workspace["retrieval_evaluation_status"] == "autoware_retrieval_v1_validated"
+    assert workspace["current_version"] == "0.52.0"
+    assert workspace["available_versions"] == ["0.52.0", "0.51.0"]
+    assert workspace["retrieval_evaluation"]["holdout"]["image_evidence_hits"] == "2/2"
+    assert response.status_code == 200
+    assert any(row.get("figure_id") == "32682b345ea86e13" for row in response.json()["results"])
+
+
+def test_public_server_selects_manifest_corpus_and_runtime_config_from_environment(monkeypatch):
+    monkeypatch.setenv("RAG_PUBLIC_CORPUS_ROOT", str(AUTOWARE_CORPUS))
+    monkeypatch.setenv(
+        "RAG_PUBLIC_RETRIEVAL_CONFIG", str(AUTOWARE_CORPUS / "public_retrieval_runtime.json")
+    )
+
+    with TestClient(create_app()) as client:
+        health = client.get("/health").json()
+        workspace = client.get("/public/workspace").json()
+
+    assert health["workspace"] == workspace["workspace"] == "Autoware"
+    assert workspace["current_version"] == "0.52.0"
+
+
+def test_public_workspace_and_review_support_manifests_without_declared_version_list():
+    index = PublicKnowledgeIndex()
+    hit = index.search("workflow parameter priority", top_k=1, version="3.4.3", language="en")[0]
+
+    with TestClient(create_app(index=index)) as client:
+        workspace = client.get("/public/workspace").json()
+        response = client.post("/public/review-advice", json={
+            "change_summary": "Review a parameter change.",
+            "evidence_chunk_ids": [hit["chunk_id"]],
+        })
+
+    assert workspace["available_versions"][0] == "3.4.3"
+    assert "3.4.2" in workspace["available_versions"]
+    assert response.status_code == 200
+    assert response.json()["target_version"] == "3.4.3"
+
+
+def test_generation_prompts_use_active_workspace_identity_not_old_product_brand(tmp_path):
+    index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
+    sidecar, lock = _write_empty_figure_sidecar(AUTOWARE_CORPUS, tmp_path)
+    expected = index.search("planning validator trajectory", top_k=1, version="current", language="all")[0]
+    prompts = []
+
+    class Generator:
+        def generate(self, *, question, context):
+            prompts.append(context)
+            return {
+                "final_answer": "The planning validator checks a planned trajectory.",
+                "relevant_sources": [{"document_id": expected["chunk_id"], "page_number": 1}],
+            }
+
+        def generate_review(self, *, change_summary, context):
+            prompts.append(context)
+            return {
+                "change_interpretation": "Review the planning validation behavior.",
+                "impact_candidates": [{
+                    "evidence_chunk_id": expected["chunk_id"],
+                    "reason": "The selected source describes planning validation.",
+                    "suggested_action": "Manually verify the affected planner behavior.",
+                }],
+                "evidence_gaps": [], "version_ambiguities": [],
+                "reviewer_actions": ["Compare the pinned source version."],
+                "review_status": "REQUIRES_HUMAN_REVIEW",
+            }
+
+    with TestClient(create_app(
+        index=index, generator=Generator(),
+        retrieval_config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+        figure_sidecar_path=sidecar, figure_sidecar_lock_path=lock,
+    )) as client:
+        query = client.post("/public/query", json={
+            "query": "planning validator trajectory", "language": "all",
+        }).json()
+        advice = client.post("/public/review-advice", json={
+            "change_summary": "Review planner validation behavior.",
+            "evidence_chunk_ids": [expected["chunk_id"]],
+        }).json()
+
+    assert query["status"] == advice["status"] == "OK"
+    assert len(prompts) == 2
+    assert all("Autoware" in prompt for prompt in prompts)
+    assert all("DolphinScheduler" not in prompt for prompt in prompts)
+
+
+def test_stale_v3_release_is_rejected_after_retrieval_policy_changed():
     project = Path(__file__).resolve().parents[2]
-    v3 = project / "evaluation" / "real_world_retrieval" / "quality_v3"
     corpus = project / "versioned-rag-service" / "public_corpus"
     release = json.loads((corpus / "retrieval_release.json").read_text(encoding="utf-8"))
-    files = {
-        "manifest_sha256": corpus / "corpus_manifest.json",
-        "policy_sha256": corpus / "retrieval_policy.json",
-        "chunks_sha256": corpus / "chunks.json",
-        "public_knowledge_sha256": project / "versioned-rag-service" / "src" / "public_knowledge.py",
-        "selection_sha256": v3 / "candidate_selection.json",
-        "holdout_execution_sha256": v3 / "holdout_execution.json",
-    }
-    for field, path in files.items():
-        assert release[field] == hashlib.sha256(path.read_bytes()).hexdigest()
-    selection = json.loads((v3 / "candidate_selection.json").read_text(encoding="utf-8"))
-    execution = json.loads((v3 / "holdout_execution.json").read_text(encoding="utf-8"))
-    assert selection["policy"] == execution["policy"] == release["policy"] == "bm25"
-    assert selection["candidate_fingerprint"] == execution["candidate_fingerprint"]
-    assert selection["candidate_fingerprint"]["public_knowledge.py"] == release["public_knowledge_sha256"]
-    assert selection["input_sha256"]["corpus_manifest.json"] == release["manifest_sha256"]
-    assert selection["input_sha256"]["retrieval_policy.json"] == release["policy_sha256"]
-    assert selection["input_sha256"]["chunks.json"] == release["chunks_sha256"]
-    assert release["result_sha256"]["dev"] == selection["dev_result_sha256"]
-    for split in ("dev", "holdout"):
-        path = v3 / "results" / f"{split}__bm25.json"
-        assert release["result_sha256"][split] == hashlib.sha256(path.read_bytes()).hexdigest()
-        actual = json.loads(path.read_text(encoding="utf-8"))
-        overall = actual["overall"]
-        metrics = release[split]
-        assert actual["input_sha256"] == selection["input_sha256"]
-        for key in ("question_count", "answerable_count", "no_answer_count", "multi_source_question_count", "mrr", "source_hit_at_5", "source_recall_at_5_macro", "source_recall_at_5_micro", "warm_search_p50_ms", "warm_search_p95_ms"):
-            assert metrics[key] == overall[key]
-        answerable = [case for case in actual["cases"] if case["answerable"]]
-        assert metrics["complete_source_count"] == sum(case["complete_source_at_5"] for case in answerable)
-        assert metrics["complete_multi_source_count"] == sum(
-            case["complete_source_at_5"] for case in answerable if len(case["required_source_ids"]) > 1
-        )
-        assert metrics["evidence_marker_found"] == sum(case["evidence_marker_found"] for case in answerable)
-        assert metrics["evidence_marker_count"] == sum(case["evidence_marker_count"] for case in answerable)
+    actual_policy_sha = hashlib.sha256((corpus / "retrieval_policy.json").read_bytes()).hexdigest()
+    assert release["policy_sha256"] != actual_policy_sha
+    with TestClient(create_app(index=PublicKnowledgeIndex())) as client:
+        workspace = client.get("/public/workspace").json()
+    assert workspace["retrieval_evaluation_status"] == "expanded_corpus_pending_rebenchmark"
+    assert "retrieval_evaluation" not in workspace
 
 
 def test_workspace_reports_latest_source_retrieval_timestamp():
@@ -73,7 +187,7 @@ def test_workspace_reports_latest_source_retrieval_timestamp():
     assert reported_timestamp == max(timestamps)
 
 
-def test_public_deployment_exposes_only_official_corpus_and_engineering_support():
+def test_legacy_default_corpus_routes_remain_available_without_stale_eval_claims():
     index = PublicKnowledgeIndex()
     with TestClient(create_app(index=index)) as client:
         health = client.get("/health").json()
@@ -95,17 +209,9 @@ def test_public_deployment_exposes_only_official_corpus_and_engineering_support(
         assert workspace["source_count"] > 0
         assert workspace["chunk_count"] == len(index.chunks)
         assert workspace["upstream_writes_enabled"] is False
-        assert workspace["retrieval_evaluation_status"] == "v4_bm25_validated"
-        assert workspace["retrieval_evaluation"]["policy"] == "bm25"
-        assert workspace["retrieval_evaluation"]["holdout"]["question_count"] == 53
-        assert workspace["retrieval_evaluation"]["holdout"]["complete_source_at_5"] == 0.8571428571428571
-        assert workspace["retrieval_evaluation"]["holdout"]["anchor_recall_at_5"] == 0.7924528301886793
-        assert workspace["retrieval_experiment"]["status"] == "candidate_not_promoted"
-        decision_reason = workspace["retrieval_experiment"]["decision_reason"]
-        assert "applied in this comparison" in decision_reason
-        assert "predeclared" not in decision_reason
-        assert workspace["retrieval_experiment"]["promotion_comparison"]["passed"] is False
-        assert workspace["retrieval_experiment"]["promotion_comparison"]["checks"]["anchor_noninferiority"] is False
+        assert workspace["retrieval_evaluation_status"] == "expanded_corpus_pending_rebenchmark"
+        assert "retrieval_evaluation" not in workspace
+        assert "retrieval_experiment" not in workspace
         response = client.post("/public/search", json={"query": QUESTION})
         assert response.status_code == 200
         assert response.json()["results"][0]["source_url"].startswith(
@@ -114,7 +220,7 @@ def test_public_deployment_exposes_only_official_corpus_and_engineering_support(
 
 
 @pytest.mark.parametrize("newline", [b"\n", b"\r\n"], ids=["lf", "crlf"])
-def test_v4_workspace_fingerprint_is_portable_across_text_line_endings(monkeypatch, newline):
+def test_legacy_v4_metrics_are_not_claimed_after_retrieval_runtime_change(monkeypatch, newline):
     index = PublicKnowledgeIndex()
     service = Path(__file__).resolve().parents[1]
     newline_sensitive_files = {
@@ -136,8 +242,8 @@ def test_v4_workspace_fingerprint_is_portable_across_text_line_endings(monkeypat
         with TestClient(create_app(index=index)) as client:
             workspace = client.get("/public/workspace").json()
 
-    assert workspace["retrieval_evaluation_status"] == "v4_bm25_validated"
-    assert workspace["retrieval_experiment"]["status"] == "candidate_not_promoted"
+    assert workspace["retrieval_evaluation_status"] != "v4_bm25_validated"
+    assert "retrieval_experiment" not in workspace
 
 
 def test_workspace_hides_v4_release_for_mismatched_runtime_policy_or_manifest(monkeypatch):
@@ -892,6 +998,42 @@ def test_public_review_advice_rejects_unknown_or_historical_evidence():
 
     assert unknown.status_code == 422
     assert old_version.status_code == 422
+
+
+def test_public_review_advice_allows_explicit_historical_version_bound_to_evidence(tmp_path):
+    index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
+    hit = index.search("planning validator trajectory", top_k=1, version="0.51.0", language="all")[0]
+    captured = []
+    sidecar, lock = _write_empty_figure_sidecar(AUTOWARE_CORPUS, tmp_path)
+
+    class Generator:
+        def generate_review(self, *, change_summary, context):
+            captured.append(context)
+            return {
+                "change_interpretation": "Review the historical planner behavior.",
+                "impact_candidates": [{
+                    "evidence_chunk_id": hit["chunk_id"], "reason": "Historical evidence.",
+                    "suggested_action": "Compare against the current release.",
+                }],
+                "evidence_gaps": [], "version_ambiguities": [],
+                "reviewer_actions": ["Confirm the intended target version."],
+                "review_status": "REQUIRES_HUMAN_REVIEW",
+            }
+
+    with TestClient(create_app(
+        index=index, generator=Generator(),
+        retrieval_config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+        figure_sidecar_path=sidecar, figure_sidecar_lock_path=lock,
+    )) as client:
+        response = client.post("/public/review-advice", json={
+            "change_summary": "Review historical validator behavior.",
+            "evidence_chunk_ids": [hit["chunk_id"]], "version": "0.51.0",
+        })
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "OK"
+    assert response.json()["evidence"][0]["version"] == "0.51.0"
+    assert "0.51.0" in captured[0]
 
 
 def test_public_review_advice_without_generator_returns_evidence_only():

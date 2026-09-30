@@ -11,6 +11,13 @@ import re
 from typing import Any
 
 
+_CLAUSE_SPLIT = re.compile(
+    r"[。！？?；;\n]+|[,，](?=\s*(?:同时|并且|并|然后|随后|接着|核对|检查|确认|验证|评估|also\b|and\b|then\b|check\b|verify\b|confirm\b|validate\b))",
+    re.IGNORECASE,
+)
+_CLAUSE_PREFIX = re.compile(r"^(?:同时|并且|并|然后|随后|接着|also\s+|and\s+then\s+|and\s+|then\s+)", re.IGNORECASE)
+
+
 CHANGE_TYPES: dict[str, dict[str, Any]] = {
     "parameter_config": {
         "label": "参数 / 配置变更",
@@ -58,16 +65,101 @@ CHANGE_TYPES: dict[str, dict[str, Any]] = {
 
 AUTO_CHANGE_TYPE = "auto"
 
+_CLASSIFICATION_RULES: dict[str, dict[str, tuple[str, ...]]] = {
+    "parameter_config": {
+        "strong": ("参数", "并发", "容量", "超时", "阈值", "parameter", "config", "timeout", "concurrency", "default value", "setvalue"),
+        "context": ("变量", "默认值", "startup parameter", "global parameter"),
+    },
+    "interface_compatibility": {
+        "strong": ("接口", "api", "协议", "请求", "响应", "兼容", "endpoint", "health-check", "health check"),
+        "context": ("字段", "schema", "request", "response"),
+    },
+    "workflow_behavior": {
+        "strong": ("调度", "依赖", "恢复", "触发", "失败", "重试", "dag", "schedule", "dependency", "retry", "workflow", "approval"),
+        "context": ("工作流", "任务", "节点", "workflow", "task"),
+    },
+    "data_storage": {
+        "strong": ("数据库", "存储", "迁移", "表结构", "持久化", "database", "storage", "migration", "data model"),
+        "context": ("schema", "数据模型"),
+    },
+    "security_permission": {
+        "strong": ("安全", "权限", "鉴权", "认证", "授权", "密级", "加密", "security", "permission", "auth", "authentication", "authorization"),
+        "context": ("角色", "访问控制", "access control"),
+    },
+}
+
+_RETRIEVAL_ALIASES = (
+    ("条件分支", "condition branch node"),
+    ("任务依赖", "task dependency upstream task"),
+    ("项目级参数", "project parameter"),
+    ("全局参数", "global parameter"),
+    ("启动参数", "startup parameter"),
+    ("本地参数", "local parameter"),
+    ("父子工作流", "parent child workflow SubWorkflow task"),
+    ("子工作流", "SubWorkflow task parent child workflow"),
+    ("工作流定义", "workflow definition"),
+    ("DAG", "workflow definition task conditions"),
+    ("健康检查", "health check healthcheck"),
+    ("任务组", "task group"),
+    ("missed_fire_policy", "misfireThreshold"),
+)
+
+_PRIVATE_ORG_CONTEXT = re.compile(
+    r"(?:经纬恒润|本公司|公司|企业|组织|客户|本单位).{0,14}(?:内部|专属|私有|专有|自有)"
+    r"|(?:内部|专属|私有|专有|自有).{0,10}(?:公司|企业|组织|客户|jira|工单|通讯录)",
+    re.IGNORECASE,
+)
+_PRIVATE_DATA_SUBJECT = re.compile(
+    r"(?:api|接口|jira|工单|审批|流程|制度|通讯录|手机号|授权名单|权限|密级|车辆|质量|配置|映射|数据)",
+    re.IGNORECASE,
+)
+_PRIVATE_ORG_ENGLISH = re.compile(
+    r"\b(?:internal|private|proprietary|company[- ]specific|organization[- ]specific)"
+    r"\s+(?:company\s+)?(?:api|endpoint|ticket|workflow|policy|directory|phone|permission|data)\b",
+    re.IGNORECASE,
+)
+
+
+def is_out_of_scope_public_request(text: str) -> bool:
+    """Fail closed for explicitly private-company requests in the public-only demo."""
+    normalized = re.sub(r"\s+", " ", text or "").strip()
+    if not normalized:
+        return False
+    return bool(
+        (_PRIVATE_ORG_CONTEXT.search(normalized) and _PRIVATE_DATA_SUBJECT.search(normalized))
+        or _PRIVATE_ORG_ENGLISH.search(normalized)
+    )
+
+
+def _contains_term(text: str, term: str) -> bool:
+    if re.fullmatch(r"[a-z0-9][a-z0-9 _-]*", term, flags=re.IGNORECASE):
+        return re.search(
+            rf"(?<![a-z0-9_]){re.escape(term.casefold())}(?![a-z0-9_])",
+            text,
+            flags=re.IGNORECASE,
+        ) is not None
+    return term.casefold() in text
+
+
+def _expand_retrieval_query(query: str) -> str:
+    aliases = list(dict.fromkeys(
+        alias for source, alias in _RETRIEVAL_ALIASES
+        if source.casefold() in query.casefold() and alias.casefold() not in query.casefold()
+    ))
+    return f"{query} {' '.join(aliases)}" if aliases else query
+
 
 def classify_change_type(text: str) -> str:
     normalized = text.casefold()
-    ranked = [
-        (sum(keyword.casefold() in normalized for keyword in data["keywords"]), key)
-        for key, data in CHANGE_TYPES.items()
-        if key != "general"
-    ]
-    matches = [(score, key) for score, key in ranked if score]
-    return max(matches, default=(0, "general"))[1]
+    ranked = []
+    for order, (key, terms) in enumerate(_CLASSIFICATION_RULES.items()):
+        strong_hits = sum(_contains_term(normalized, term) for term in terms["strong"])
+        if strong_hits == 0:
+            continue
+        context_hits = sum(_contains_term(normalized, term) for term in terms["context"])
+        strong_weight = 4 if key in {"parameter_config", "security_permission"} else 3
+        ranked.append((strong_hits * strong_weight + min(context_hits, 2), -order, key))
+    return max(ranked, default=(0, 0, "general"))[2]
 
 
 def resolve_change_type(text: str, requested: str | None = None) -> tuple[str, str]:
@@ -87,7 +179,11 @@ def build_request_plan(
 ) -> dict[str, Any]:
     """Split a request into a stable, bounded set of searchable questions."""
     resolved_type, classification_source = resolve_change_type(summary, change_type)
-    clauses = [part.strip() for part in re.split(r"[。！？；;\n]+", summary) if part.strip()]
+    clauses = []
+    for part in _CLAUSE_SPLIT.split(summary):
+        cleaned = _CLAUSE_PREFIX.sub("", part.strip()).strip(" ,，;；")
+        if cleaned:
+            clauses.append(cleaned)
     if len(clauses) > 3:
         clauses = [*clauses[:2], " ".join(clauses[2:])]
     category = CHANGE_TYPES[resolved_type]
@@ -111,6 +207,9 @@ def build_request_plan(
         "queries": [
             {
                 "query": query,
+                # Preserve the original text for the trace, and add domain aliases
+                # only to the tool call (including the full request query).
+                "search_query": _expand_retrieval_query(query),
                 "kind": "full_request" if index == 0 else "change_clause",
                 "change_type": (
                     classify_change_type(query)

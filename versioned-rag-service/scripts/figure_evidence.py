@@ -8,7 +8,9 @@ never evidence that the words occur inside an image.
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
+import html
 import io
 import json
 import os
@@ -16,8 +18,10 @@ import posixpath
 import re
 import shutil
 import subprocess
+import xml.etree.ElementTree as ET
+import zlib
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Callable
 from urllib.error import HTTPError
 from urllib.parse import quote, unquote, urlsplit
@@ -74,12 +78,15 @@ def resolve_asset_path(document_path: str, target: str) -> str | None:
     decoded = unquote(parts.path)
     if decoded.startswith("/") or "\\" in decoded or "\x00" in decoded:
         return None
-    if not document_path.startswith("docs/docs/") or not document_path.endswith(".md"):
+    source_path = PurePosixPath(document_path)
+    if (
+        source_path.is_absolute()
+        or any(part in {"", ".", ".."} for part in source_path.parts)
+        or not document_path.lower().endswith((".md", ".markdown"))
+    ):
         return None
     result = posixpath.normpath(posixpath.join(posixpath.dirname(document_path), decoded))
     if result in {"", ".", ".."} or result.startswith("../"):
-        return None
-    if not result.startswith("docs/"):
         return None
     return result
 
@@ -108,7 +115,8 @@ def scan_inventory(root: Path = ROOT) -> dict:
     for source in manifest["sources"]:
         if source.get("source_type") != "official_documentation":
             continue
-        if source.get("repository") != "apache/dolphinscheduler":
+        repository = source.get("repository") or manifest.get("repository")
+        if not isinstance(repository, str) or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
             continue
         commit = source.get("commit", "")
         if not _COMMIT.fullmatch(commit):
@@ -133,19 +141,17 @@ def scan_inventory(root: Path = ROOT) -> dict:
                     unresolved_count += 1
                 continue
             relative_count += 1
-            key = (commit, asset_path)
+            key = (repository, commit, asset_path)
             if key not in figures:
-                figure_id = hashlib.sha256(f"{commit}:{asset_path}".encode()).hexdigest()[:16]
+                figure_id = hashlib.sha256(f"{repository}:{commit}:{asset_path}".encode()).hexdigest()[:16]
                 figures[key] = {
                     "schema_version": 1,
                     "figure_id": figure_id,
+                    "repository": repository,
                     "version": version,
                     "commit": commit,
                     "asset_path": asset_path,
-                    "raw_url": (
-                        f"https://raw.githubusercontent.com/apache/dolphinscheduler/"
-                        f"{commit}/{quote(asset_path, safe='/-._')}"
-                    ),
+                    "raw_url": f"https://raw.githubusercontent.com/{repository}/{commit}/{quote(asset_path, safe='/-._')}",
                     "references": [],
                     "validation": {"status": "unverified"},
                     "ocr": {"status": "not_run"},
@@ -171,6 +177,44 @@ def scan_inventory(root: Path = ROOT) -> dict:
         "search_policy": "OCR text is an unreviewed candidate; alt text is not image content.",
         "figures": ordered,
     }
+
+
+def preserve_verified_figure_evidence(current: dict, previous: dict | None) -> dict:
+    """Retain approved hashes only when the pinned corpus and figure references match."""
+    if (
+        not isinstance(previous, dict)
+        or previous.get("schema_version") != 1
+        or previous.get("corpus_manifest_sha256") != current.get("corpus_manifest_sha256")
+    ):
+        return current
+    prior_rows = {
+        row.get("figure_id"): row for row in previous.get("figures", [])
+        if isinstance(row, dict) and row.get("figure_id")
+    }
+    for row in current.get("figures", []):
+        prior = prior_rows.get(row.get("figure_id"))
+        if not prior or any(prior.get(key) != row.get(key) for key in (
+            "repository", "version", "commit", "asset_path", "raw_url", "references",
+        )):
+            continue
+        validation = prior.get("validation")
+        sha = validation.get("sha256") if isinstance(validation, dict) else None
+        if (
+            not isinstance(validation, dict) or validation.get("status") != "verified"
+            or not isinstance(sha, str) or not re.fullmatch(r"[0-9a-f]{64}", sha)
+        ):
+            continue
+        row["validation"] = dict(validation)
+        row["ocr"] = dict(prior.get("ocr") or {"status": "not_run"})
+        if isinstance(prior.get("review"), dict):
+            row["review"] = dict(prior["review"])
+    current["verified_count"] = sum(
+        row.get("validation", {}).get("status") == "verified" for row in current.get("figures", [])
+    )
+    current["ocr_text_count"] = sum(
+        row.get("ocr", {}).get("status") == "text_extracted" for row in current.get("figures", [])
+    )
+    return current
 
 
 def _fetch_raw_image(url: str, max_bytes: int = MAX_IMAGE_BYTES) -> tuple[bytes, str] | None:
@@ -199,15 +243,81 @@ def _image_type(payload: bytes) -> str | None:
         return "image/gif"
     if payload.startswith(b"RIFF") and payload[8:12] == b"WEBP":
         return "image/webp"
-    if payload.lstrip()[:100].startswith(b"<svg"):
+    stripped = payload.lstrip()
+    if stripped[:100].startswith(b"<svg") or stripped.startswith(b"<?xml") and b"<svg" in stripped[:512]:
         return "image/svg+xml"
     return None
+
+
+def _extract_svg_text(payload: bytes) -> str:
+    """Extract explicit SVG text nodes locally; never execute embedded markup."""
+    if len(payload) > MAX_IMAGE_BYTES:
+        raise ValueError("SVG exceeds the audit size limit")
+    upper = payload[: min(len(payload), 8192)].upper()
+    if b"<!DOCTYPE" in upper or b"<!ENTITY" in upper:
+        raise ValueError("SVG DTD and entity declarations are rejected")
+    try:
+        root = ET.fromstring(payload)
+    except ET.ParseError as exc:
+        raise ValueError("invalid SVG XML") from exc
+    if root.tag.rsplit("}", 1)[-1].casefold() != "svg":
+        raise ValueError("document root is not SVG")
+    pieces = []
+
+    def add_text(value: str) -> None:
+        value = re.sub(r"<br\s*/?>", " ", value, flags=re.I)
+        value = re.sub(r"<[^>]*>", " ", value)
+        text = re.sub(r"\s+", " ", html.unescape(value)).strip()
+        text = "".join(character for character in text if character not in "\ufe19\u200b\ufeff")
+        if text and text not in pieces:
+            pieces.append(text)
+
+    def collect_text(xml_root) -> None:
+        for element in xml_root.iter():
+            local_name = element.tag.rsplit("}", 1)[-1].casefold()
+            if local_name in {"text", "title", "desc"}:
+                add_text("".join(element.itertext()))
+            if local_name in {"mxcell", "object", "userobject"}:
+                for key in ("value", "label"):
+                    if element.attrib.get(key):
+                        add_text(element.attrib[key])
+
+    collect_text(root)
+    embedded = root.attrib.get("content", "")
+    if embedded.lstrip().startswith("<"):
+        if "<!DOCTYPE" in embedded.upper() or "<!ENTITY" in embedded.upper():
+            raise ValueError("embedded Draw.io DTD and entity declarations are rejected")
+        try:
+            mxfile = ET.fromstring(embedded)
+        except ET.ParseError:
+            mxfile = None
+        if mxfile is not None:
+            collect_text(mxfile)
+            for diagram in mxfile.iter():
+                if diagram.tag.rsplit("}", 1)[-1].casefold() != "diagram" or not diagram.text:
+                    continue
+                encoded = diagram.text.strip()
+                try:
+                    compressed = base64.b64decode(encoded, validate=True)
+                    inflater = zlib.decompressobj(-15)
+                    decoded_bytes = inflater.decompress(compressed, 2_000_001)
+                    if len(decoded_bytes) > 2_000_000 or not inflater.eof:
+                        continue
+                    decoded_xml = unquote(decoded_bytes.decode("utf-8"))
+                    if "<!DOCTYPE" in decoded_xml.upper() or "<!ENTITY" in decoded_xml.upper():
+                        continue
+                    graph = ET.fromstring(decoded_xml)
+                except (ValueError, UnicodeDecodeError, zlib.error, ET.ParseError):
+                    continue
+                collect_text(graph)
+    return " ".join(pieces)[:20_000]
 
 
 def _decode_image(payload: bytes, media_type: str) -> tuple[str, int | None, int | None]:
     """Fully decode raster content when Pillow is installed locally."""
     if media_type == "image/svg+xml":
-        return "not_checked", None, None
+        _extract_svg_text(payload)
+        return "verified", None, None
     try:
         from PIL import Image
     except ImportError:
@@ -263,15 +373,33 @@ def run_tesseract_ocr(payload: bytes) -> tuple[str, float | None]:
 def verify_selected_images(
     inventory: dict,
     *,
-    selectors: tuple[str, ...] = SELECTED_FIGURES,
+    selectors: tuple[str, ...] | None = SELECTED_FIGURES,
     fetcher: Callable[[str, int], tuple[bytes, str] | None] = _fetch_raw_image,
     ocr_runner: Callable[[bytes], tuple[str, float | None]] | None = None,
     max_images: int = 20,
     review_dir: Path | None = None,
 ) -> dict:
     """Fetch a bounded sample; no image binaries or alt-derived OCR are retained."""
+    if selectors is None:
+        relevant = re.compile(r"(?:planning|planner|validator|trajectory|behavior_path)", re.I)
+        candidates = [
+            row for row in inventory["figures"]
+            if row["version"] == inventory["current_version"]
+            and PurePosixPath(row["asset_path"]).suffix.casefold() in {".png", ".jpg", ".jpeg", ".webp", ".svg"}
+            and any(relevant.search(ref.get("document_key", "")) for ref in row.get("references", []))
+        ]
+        candidates.sort(key=lambda row: (
+            PurePosixPath(row["asset_path"]).suffix.casefold() == ".svg",
+            row["asset_path"],
+        ))
+        selectors = tuple(row["asset_path"] for row in candidates)
     count = 0
-    for figure in inventory["figures"]:
+    selector_order = {path: number for number, path in enumerate(selectors or ())}
+    ordered_figures = sorted(
+        inventory["figures"],
+        key=lambda row: selector_order.get(row.get("asset_path"), len(selector_order)),
+    )
+    for figure in ordered_figures:
         if figure["version"] != inventory["current_version"]:
             continue
         if not any(figure["asset_path"] == selector for selector in selectors):
@@ -311,6 +439,7 @@ def verify_selected_images(
                     "image/jpeg": ".jpg",
                     "image/gif": ".gif",
                     "image/webp": ".webp",
+                    "image/svg+xml": ".svg",
                 }.get(sniffed)
                 if extension:
                     preview_name = f"{figure['validation']['sha256']}{extension}"
@@ -320,14 +449,16 @@ def verify_selected_images(
             if decode_status != "verified":
                 figure["ocr"] = {"status": "not_run"}
                 continue
-            if ocr_runner is None:
+            if ocr_runner is None and sniffed != "image/svg+xml":
                 figure["ocr"] = {"status": "tool_unavailable"}
                 continue
-            if sniffed == "image/svg+xml":
-                figure["ocr"] = {"status": "unsupported_format", "engine": "tesseract"}
-                continue
             try:
-                text, confidence = ocr_runner(payload)
+                if sniffed == "image/svg+xml":
+                    text, confidence = _extract_svg_text(payload), None
+                    engine = "svg_text"
+                else:
+                    text, confidence = ocr_runner(payload)
+                    engine = "tesseract"
             except (OSError, RuntimeError, subprocess.TimeoutExpired):
                 figure["ocr"] = {"status": "ocr_error", "engine": "tesseract"}
                 continue
@@ -335,14 +466,14 @@ def verify_selected_images(
             if text:
                 figure["ocr"] = {
                     "status": "text_extracted",
-                    "engine": "tesseract",
+                    "engine": engine,
                     "quality": "unreviewed",
                     "index_review_status": "pending",
                     "mean_confidence": confidence,
                     "text": text,
                 }
             else:
-                figure["ocr"] = {"status": "no_text_detected", "engine": "tesseract"}
+                figure["ocr"] = {"status": "no_text_detected", "engine": engine}
         except ImageTooLarge:
             figure["validation"] = {"status": "too_large"}
         except Exception as exc:  # Preserve partial audit results without leaking URLs/proxies.
@@ -359,11 +490,20 @@ def verify_selected_images(
 def build_reviewed_figure_chunks(rows: list[dict], manifest: dict) -> list[dict]:
     """Build index-ready image evidence only from hash-bound human approvals."""
     commits = manifest.get("commits", {})
+    source_repositories = {
+        source.get("repository") for source in manifest.get("sources", [])
+        if isinstance(source.get("repository"), str)
+    }
+    repository = manifest.get("repository") or (
+        next(iter(source_repositories)) if len(source_repositories) == 1 else None
+    )
+    if not isinstance(repository, str) or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
+        return []
     sources = {
         (source.get("version"), source.get("commit"), source.get("document_key"), source.get("language")): source
         for source in manifest.get("sources", [])
         if source.get("source_type") == "official_documentation"
-        and source.get("repository") == "apache/dolphinscheduler"
+        and source.get("repository", repository) == repository
     }
     chunks: list[dict] = []
     seen: set[str] = set()
@@ -374,6 +514,7 @@ def build_reviewed_figure_chunks(rows: list[dict], manifest: dict) -> list[dict]
         version = row.get("version")
         commit = row.get("commit")
         asset_path = row.get("asset_path")
+        asset_repo_path = PurePosixPath(asset_path) if isinstance(asset_path, str) else None
         sha256 = validation.get("sha256")
         if (
             row.get("schema_version") != 1
@@ -384,8 +525,10 @@ def build_reviewed_figure_chunks(rows: list[dict], manifest: dict) -> list[dict]
             or review.get("sha256") != sha256
             or ocr.get("status") != "text_extracted"
             or ocr.get("index_review_status") != "approved"
-            or not isinstance(asset_path, str)
-            or not asset_path.startswith("docs/img/")
+            or row.get("repository") != repository
+            or asset_repo_path is None
+            or asset_repo_path.is_absolute()
+            or any(part in {"", ".", ".."} for part in asset_repo_path.parts)
             or not isinstance(row.get("figure_id"), str)
             or not row.get("figure_id")
             or not isinstance(commit, str)
@@ -393,10 +536,7 @@ def build_reviewed_figure_chunks(rows: list[dict], manifest: dict) -> list[dict]
             or (version in commits and commits[version] != commit)
         ):
             continue
-        expected_raw = (
-            f"https://raw.githubusercontent.com/apache/dolphinscheduler/"
-            f"{commit}/{quote(asset_path, safe='/-._')}"
-        )
+        expected_raw = f"https://raw.githubusercontent.com/{repository}/{commit}/{quote(asset_path, safe='/-._')}"
         if row.get("raw_url") != expected_raw:
             continue
         reviewed_by_language = review.get("reviewed_text_by_language") or {}
@@ -409,16 +549,13 @@ def build_reviewed_figure_chunks(rows: list[dict], manifest: dict) -> list[dict]
             source = sources.get((version, commit, document_key, language))
             if not source:
                 continue
-            expected_source = (
-                f"https://github.com/apache/dolphinscheduler/blob/{commit}/"
-                f"{quote(source['document_path'], safe='/-._')}"
-            )
+            expected_source = f"https://github.com/{repository}/blob/{commit}/{quote(source['document_path'], safe='/-._')}"
             if source.get("source_url") != expected_source:
                 continue
             chunk_id = hashlib.sha256(
                 (
                     f"{version}:{language}:{document_key}:{row.get('figure_id')}:{sha256}:"
-                    f"{reference.get('local_path')}:{reference.get('heading', '')}"
+                    f"{repository}:{reference.get('local_path')}:{reference.get('heading', '')}"
                 ).encode()
             ).hexdigest()[:24]
             if chunk_id in seen:
@@ -427,6 +564,7 @@ def build_reviewed_figure_chunks(rows: list[dict], manifest: dict) -> list[dict]
             chunks.append({
                 "schema_version": 1,
                 "chunk_id": chunk_id,
+                "repository": repository,
                 "figure_id": row.get("figure_id"),
                 "version": version,
                 "commit": commit,
@@ -452,6 +590,7 @@ def main() -> None:
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--fetch-selected", action="store_true")
+    parser.add_argument("--asset-path", action="append", help="fetch an exact repository-relative figure path; repeatable")
     parser.add_argument("--max-images", type=int, default=20)
     parser.add_argument("--review-dir", type=Path, help="save verified sample images here for manual review")
     args = parser.parse_args()
@@ -461,7 +600,8 @@ def main() -> None:
     if args.fetch_selected:
         runner = run_tesseract_ocr if _tesseract_path() else None
         verify_selected_images(
-            inventory, ocr_runner=runner, max_images=args.max_images,
+            inventory, selectors=tuple(args.asset_path) if args.asset_path else None,
+            ocr_runner=runner, max_images=args.max_images,
             review_dir=args.review_dir,
         )
     output = args.output or args.root / "figure_evidence.json"

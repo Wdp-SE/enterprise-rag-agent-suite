@@ -27,11 +27,22 @@ class PublicKnowledgeClient(RAGClient):
             json={"query": question, "version": version, "language": language},
         )
 
-    def review_advice(self, change_summary: str, evidence_chunk_ids: list[str]) -> dict:
+    def review_advice(
+        self, change_summary: str, evidence_chunk_ids: list[str], *, version: str = "current",
+    ) -> dict:
         return self._request(
             "POST", "/public/review-advice", retry_limit=0, request_timeout=max(60.0, self.timeout),
-            json={"change_summary": change_summary, "evidence_chunk_ids": evidence_chunk_ids},
+            json={
+                "change_summary": change_summary,
+                "evidence_chunk_ids": evidence_chunk_ids,
+                "version": version,
+            },
         )
+
+    def review_advice_for_version(
+        self, change_summary: str, evidence_chunk_ids: list[str], *, version: str,
+    ) -> dict:
+        return self.review_advice(change_summary, evidence_chunk_ids, version=version)
 
     def engineering_diff(self, old_items: list[dict], new_items: list[dict]) -> dict:
         return self._request(

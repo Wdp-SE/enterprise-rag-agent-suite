@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "default_policy": "bm25_figure_ocr",
+  "allowed_policies": [
+    "bm25",
+    "bm25_faceted_rrf",
+    "bm25_figure_ocr",
+    "bm25_faceted_figure_ocr",
+    "hybrid"
+  ],
+  "max_facets": 4,
+  "rrf_k": 60,
+  "image_top_k": 20,
+  "selection_status": "selected_from_frozen_autoware_retrieval_v1_dev_and_holdout",
+  "selection_evaluation": "evaluation/autoware_retrieval_v1/results/benchmark.json",
+  "selection_note": "Same required-source coverage as BM25 at Top-5 on both splits; image evidence 2/2 on each split. No-answer candidate rate did not improve."
+}

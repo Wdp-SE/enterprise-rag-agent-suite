@@ -18,5 +18,9 @@ services:
         value: deepseek
       - key: RD_V2_GENERATION_MODEL
         value: deepseek-v4-flash
+      - key: RAG_PUBLIC_CORPUS_ROOT
+        value: public_corpus_autoware
+      - key: RAG_PUBLIC_RETRIEVAL_CONFIG
+        value: public_corpus_autoware/public_retrieval_runtime.json
       - key: DEEPSEEK_API_KEY
         sync: false

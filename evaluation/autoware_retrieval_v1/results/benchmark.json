@@ -1,0 +1,1541 @@
+{
+  "schema_version": 1,
+  "corpus": "Autoware",
+  "corpus_manifest_sha256": "f0d83d5134021abb03bdbf986462b03e6da744c037d3b9b806586471b2169cbc",
+  "cases_sha256": "dae2c99e2f50ed0ee0c88ccaf1f0f08cd276936c15e5056efb3821176b289b57",
+  "runtime_fingerprint": {
+    "corpus_manifest_sha256": "f0d83d5134021abb03bdbf986462b03e6da744c037d3b9b806586471b2169cbc",
+    "retrieval_policy_sha256": "0ffdb6f5afaaa5caa1294105e2f247bf138da9929aa7941b744e0a397b7c7948",
+    "chunks_sha256": "453067fec370e9a8063c5556d12c3966157e6c628d19f2cf23e61bc31dcc8262",
+    "dense_vectors_sha256": "2482cdcf7157288360967233c4e7ebcfa93b47c94067ad27987edda29928525d",
+    "figure_inventory_sha256": "8a7233d0d55982a0b1da416722a54b268dc1350d7986c153d13296b36e1910df",
+    "figure_sidecar_sha256": "2d591d5c5263af1ca019b1b2434dd7ae9e8a490e347cdc671fcdc15c26875d60",
+    "figure_sidecar_lock_sha256": "b388033d10bc9640d9e197e8373c949f2e2774da0ecf2af0d2cce70ac43d46aa",
+    "runtime_config_behavior_sha256": "b8d3bbad840abfe2223f24d01d6bbdaa788832cad62ac4d98ec6539d263e5765",
+    "public_knowledge_sha256": "101d16f48c96f6714ad5ca41a74759cb4b873b517eeabfef414ba08743e85733",
+    "public_retrieval_runtime_sha256": "60098a7bbc9b082e89e9cfd19a96072f3deda122f731beba4ebcac13b1465b11",
+    "retrieval_fusion_sha256": "da65e1d5043f7e29e76d88cf02676fda8ec9be811b6f7d5965b5cdce4120ca8f",
+    "figure_sidecar_integrity_sha256": "4f0add53f5a7a417c16d5bbd48156036ae61752608f1a463e64c520feec22894",
+    "cases_sha256": "dae2c99e2f50ed0ee0c88ccaf1f0f08cd276936c15e5056efb3821176b289b57",
+    "split_lock_sha256": "400d56d20e6d2d9aec621886d4d580b96bff4aa7a44cfcde4f03132e3694d5e9",
+    "runner_sha256": "8ae85509fb94c6043e6cda7acc61c47653887a3cd368c4d5049f2cb19c46ce95"
+  },
+  "metric_scope": "retrieval only; no LLM answer quality or hallucination claim",
+  "repeats_per_case": 10,
+  "splits": {
+    "dev": {
+      "bm25": {
+        "query_count": 11,
+        "required_source_recall_at_5": 1.0,
+        "complete_required_sources_at_5": 1.0,
+        "image_evidence_hit_at_5": 0.0,
+        "image_evidence_hits": "0/2",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 1,
+        "search_p95_ms": 2.514,
+        "mean_retrieval_operations_per_query": 1,
+        "cases": [
+          {
+            "case_id": "start_shift_01",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/goal_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:50"
+            ]
+          },
+          {
+            "case_id": "start_reverse_02",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:8",
+              "0.52.0:en:planning/start_planner/design:6"
+            ]
+          },
+          {
+            "case_id": "start_geometry_03",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:6",
+              "0.52.0:en:planning/start_planner/design:18",
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:9"
+            ]
+          },
+          {
+            "case_id": "start_search_policy_04",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/design:66",
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/goal_planner/design:37"
+            ]
+          },
+          {
+            "case_id": "start_dynamic_safety_05",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:25",
+              "0.52.0:en:planning/start_planner/design:28"
+            ]
+          },
+          {
+            "case_id": "planning_validator_06",
+            "required_sources": [
+              "planning/planning_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/planning_validator/parameters:1",
+              "0.52.0:en:planning/goal_planner/design:22"
+            ]
+          },
+          {
+            "case_id": "trajectory_checks_07",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/trajectory_checker/design:4",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:2",
+              "0.52.0:en:planning/trajectory_validator/design:5"
+            ]
+          },
+          {
+            "case_id": "goal_priority_08",
+            "required_sources": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:13",
+              "0.52.0:en:planning/goal_planner/parameters:1",
+              "0.52.0:en:planning/goal_planner/design:14",
+              "0.52.0:en:planning/goal_planner/design:9",
+              "0.52.0:en:planning/goal_planner/design:37"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_09",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/goal_planner/design:24",
+              "0.52.0:en:planning/goal_planner/design:26",
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/overview:5"
+            ]
+          },
+          {
+            "case_id": "version_baseline_10",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.51.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.51.0:en:planning/planning_validator/design:2",
+              "0.51.0:en:planning/trajectory_checker/design:1",
+              "0.51.0:en:planning/planning_validator/design:1",
+              "0.51.0:en:planning/start_planner/design:22",
+              "0.51.0:en:planning/planning_validator/parameters:1"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_dev_10b",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/goal_planner/design:5",
+              "0.52.0:en:planning/overview:1",
+              "0.52.0:en:planning/start_planner/design:11",
+              "0.52.0:en:planning/goal_planner/design:36"
+            ]
+          }
+        ]
+      },
+      "bm25_faceted_rrf": {
+        "query_count": 11,
+        "required_source_recall_at_5": 1.0,
+        "complete_required_sources_at_5": 1.0,
+        "image_evidence_hit_at_5": 0.0,
+        "image_evidence_hits": "0/2",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 1,
+        "search_p95_ms": 2.44,
+        "mean_retrieval_operations_per_query": 1.091,
+        "cases": [
+          {
+            "case_id": "start_shift_01",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/goal_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:50"
+            ]
+          },
+          {
+            "case_id": "start_reverse_02",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:8",
+              "0.52.0:en:planning/start_planner/design:6"
+            ]
+          },
+          {
+            "case_id": "start_geometry_03",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:6",
+              "0.52.0:en:planning/start_planner/design:18",
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:9"
+            ]
+          },
+          {
+            "case_id": "start_search_policy_04",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/design:66",
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/goal_planner/design:37"
+            ]
+          },
+          {
+            "case_id": "start_dynamic_safety_05",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:25",
+              "0.52.0:en:planning/start_planner/design:28"
+            ]
+          },
+          {
+            "case_id": "planning_validator_06",
+            "required_sources": [
+              "planning/planning_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/planning_validator/parameters:1",
+              "0.52.0:en:planning/goal_planner/design:22"
+            ]
+          },
+          {
+            "case_id": "trajectory_checks_07",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/trajectory_checker/design:4",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:2",
+              "0.52.0:en:planning/trajectory_validator/design:5"
+            ]
+          },
+          {
+            "case_id": "goal_priority_08",
+            "required_sources": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/goal_planner/parameters:1",
+              "0.52.0:en:planning/goal_planner/design:13",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/goal_planner/design:14"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_09",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/goal_planner/design:24",
+              "0.52.0:en:planning/goal_planner/design:26",
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/overview:5"
+            ]
+          },
+          {
+            "case_id": "version_baseline_10",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.51.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.51.0:en:planning/planning_validator/design:2",
+              "0.51.0:en:planning/trajectory_checker/design:1",
+              "0.51.0:en:planning/planning_validator/design:1",
+              "0.51.0:en:planning/start_planner/design:22",
+              "0.51.0:en:planning/planning_validator/parameters:1"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_dev_10b",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/goal_planner/design:5",
+              "0.52.0:en:planning/overview:1",
+              "0.52.0:en:planning/start_planner/design:11",
+              "0.52.0:en:planning/goal_planner/design:36"
+            ]
+          }
+        ],
+        "noninferior_to_bm25": true
+      },
+      "bm25_figure_ocr": {
+        "query_count": 11,
+        "required_source_recall_at_5": 1.0,
+        "complete_required_sources_at_5": 1.0,
+        "image_evidence_hit_at_5": 1.0,
+        "image_evidence_hits": "2/2",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 1,
+        "search_p95_ms": 2.552,
+        "mean_retrieval_operations_per_query": 2,
+        "cases": [
+          {
+            "case_id": "start_shift_01",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/goal_planner/design:21",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "start_reverse_02",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:8",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "start_geometry_03",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:6",
+              "0.52.0:en:planning/start_planner/design:18",
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/start_planner/design:3",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "start_search_policy_04",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [
+              "876db03219da6219"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/design:66",
+              "0.52.0:en:planning/start_planner/design:22",
+              "d54ca76bcdb2537a20b3efec",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "start_dynamic_safety_05",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:25",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "planning_validator_06",
+            "required_sources": [
+              "planning/planning_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/planning_validator/parameters:1",
+              "0.52.0:en:planning/goal_planner/design:22"
+            ]
+          },
+          {
+            "case_id": "trajectory_checks_07",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/trajectory_checker/design:4",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/trajectory_validator/design:5"
+            ]
+          },
+          {
+            "case_id": "goal_priority_08",
+            "required_sources": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:13",
+              "0.52.0:en:planning/goal_planner/parameters:1",
+              "0.52.0:en:planning/goal_planner/design:14",
+              "0.52.0:en:planning/goal_planner/design:9",
+              "0.52.0:en:planning/goal_planner/design:37"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_09",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [
+              "32682b345ea86e13"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:24",
+              "0.52.0:en:planning/goal_planner/design:26",
+              "114e9eb5e6ccb1b4d021d767",
+              "0.52.0:en:planning/overview:5"
+            ]
+          },
+          {
+            "case_id": "version_baseline_10",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.51.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.51.0:en:planning/planning_validator/design:2",
+              "0.51.0:en:planning/trajectory_checker/design:1",
+              "0.51.0:en:planning/planning_validator/design:1",
+              "0.51.0:en:planning/start_planner/design:22",
+              "0.51.0:en:planning/planning_validator/parameters:1"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_dev_10b",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/goal_planner/design:5",
+              "0.52.0:en:planning/overview:1",
+              "0.52.0:en:planning/start_planner/design:11",
+              "0.52.0:en:planning/goal_planner/design:36"
+            ]
+          }
+        ],
+        "noninferior_to_bm25": true
+      },
+      "bm25_faceted_figure_ocr": {
+        "query_count": 11,
+        "required_source_recall_at_5": 1.0,
+        "complete_required_sources_at_5": 1.0,
+        "image_evidence_hit_at_5": 1.0,
+        "image_evidence_hits": "2/2",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 1,
+        "search_p95_ms": 2.753,
+        "mean_retrieval_operations_per_query": 2.182,
+        "cases": [
+          {
+            "case_id": "start_shift_01",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/goal_planner/design:21",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "start_reverse_02",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/start_planner/design:3",
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:8",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "start_geometry_03",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:6",
+              "0.52.0:en:planning/start_planner/design:18",
+              "0.52.0:en:planning/start_planner/design:5",
+              "0.52.0:en:planning/start_planner/design:3",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "start_search_policy_04",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [
+              "876db03219da6219"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/design:66",
+              "0.52.0:en:planning/start_planner/design:22",
+              "d54ca76bcdb2537a20b3efec",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "start_dynamic_safety_05",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:24",
+              "0.52.0:en:planning/start_planner/design:16",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:25",
+              "d54ca76bcdb2537a20b3efec"
+            ]
+          },
+          {
+            "case_id": "planning_validator_06",
+            "required_sources": [
+              "planning/planning_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/planning_validator/parameters:1",
+              "0.52.0:en:planning/goal_planner/design:22"
+            ]
+          },
+          {
+            "case_id": "trajectory_checks_07",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/trajectory_checker/design:4",
+              "0.52.0:en:planning/trajectory_checker/design:1",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/trajectory_validator/design:5"
+            ]
+          },
+          {
+            "case_id": "goal_priority_08",
+            "required_sources": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design",
+              "planning/goal_planner/parameters"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/goal_planner/parameters:1",
+              "0.52.0:en:planning/goal_planner/design:13",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/goal_planner/design:14"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_09",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [
+              "32682b345ea86e13"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:24",
+              "0.52.0:en:planning/goal_planner/design:26",
+              "114e9eb5e6ccb1b4d021d767",
+              "0.52.0:en:planning/overview:5"
+            ]
+          },
+          {
+            "case_id": "version_baseline_10",
+            "required_sources": [
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.51.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.51.0:en:planning/planning_validator/design:2",
+              "0.51.0:en:planning/trajectory_checker/design:1",
+              "0.51.0:en:planning/planning_validator/design:1",
+              "0.51.0:en:planning/start_planner/design:22",
+              "0.51.0:en:planning/planning_validator/parameters:1"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_dev_10b",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/overview:2",
+              "0.52.0:en:planning/goal_planner/design:5",
+              "0.52.0:en:planning/overview:1",
+              "0.52.0:en:planning/start_planner/design:11",
+              "0.52.0:en:planning/goal_planner/design:36"
+            ]
+          }
+        ],
+        "noninferior_to_bm25": true
+      }
+    },
+    "holdout": {
+      "bm25": {
+        "query_count": 5,
+        "required_source_recall_at_5": 1.0,
+        "complete_required_sources_at_5": 1.0,
+        "image_evidence_hit_at_5": 0.0,
+        "image_evidence_hits": "0/2",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 1,
+        "search_p95_ms": 3.315,
+        "mean_retrieval_operations_per_query": 1,
+        "cases": [
+          {
+            "case_id": "start_search_policy_holdout_11",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/goal_planner/design:9",
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/design:17",
+              "0.52.0:en:planning/goal_planner/design:8"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_holdout_12",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/goal_planner/design:24",
+              "0.52.0:en:planning/goal_planner/design:48",
+              "0.52.0:en:planning/goal_planner/design:57"
+            ]
+          },
+          {
+            "case_id": "trajectory_validator_plugins_13",
+            "required_sources": [
+              "planning/trajectory_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/trajectory_validator/design:3",
+              "0.52.0:en:planning/trajectory_validator/design:2",
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/goal_planner/design:40"
+            ]
+          },
+          {
+            "case_id": "cross_module_review_14",
+            "required_sources": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/goal_planner/design:20",
+              "0.52.0:en:planning/start_planner/design:17",
+              "0.52.0:en:planning/trajectory_checker/design:3"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_15",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:55",
+              "0.52.0:en:planning/start_planner/design:18",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:19",
+              "0.52.0:en:planning/trajectory_checker/design:1"
+            ]
+          }
+        ]
+      },
+      "bm25_faceted_rrf": {
+        "query_count": 5,
+        "required_source_recall_at_5": 1.0,
+        "complete_required_sources_at_5": 1.0,
+        "image_evidence_hit_at_5": 0.0,
+        "image_evidence_hits": "0/2",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 1,
+        "search_p95_ms": 2.888,
+        "mean_retrieval_operations_per_query": 1,
+        "cases": [
+          {
+            "case_id": "start_search_policy_holdout_11",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/goal_planner/design:9",
+              "0.52.0:en:planning/start_planner/design:23",
+              "0.52.0:en:planning/start_planner/design:17",
+              "0.52.0:en:planning/goal_planner/design:8"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_holdout_12",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "0.52.0:en:planning/start_planner/design:69",
+              "0.52.0:en:planning/goal_planner/design:24",
+              "0.52.0:en:planning/goal_planner/design:48",
+              "0.52.0:en:planning/goal_planner/design:57"
+            ]
+          },
+          {
+            "case_id": "trajectory_validator_plugins_13",
+            "required_sources": [
+              "planning/trajectory_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/trajectory_validator/design:3",
+              "0.52.0:en:planning/trajectory_validator/design:2",
+              "0.52.0:en:planning/planning_validator/design:2",
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/goal_planner/design:40"
+            ]
+          },
+          {
+            "case_id": "cross_module_review_14",
+            "required_sources": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/goal_planner/design:20",
+              "0.52.0:en:planning/start_planner/design:17",
+              "0.52.0:en:planning/trajectory_checker/design:3"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_15",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:55",
+              "0.52.0:en:planning/start_planner/design:18",
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/start_planner/design:19",
+              "0.52.0:en:planning/trajectory_checker/design:1"
+            ]
+          }
+        ],
+        "noninferior_to_bm25": true
+      },
+      "bm25_figure_ocr": {
+        "query_count": 5,
+        "required_source_recall_at_5": 1.0,
+        "complete_required_sources_at_5": 1.0,
+        "image_evidence_hit_at_5": 1.0,
+        "image_evidence_hits": "2/2",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 1,
+        "search_p95_ms": 3.33,
+        "mean_retrieval_operations_per_query": 2,
+        "cases": [
+          {
+            "case_id": "start_search_policy_holdout_11",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [
+              "876db03219da6219"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/goal_planner/design:9",
+              "0.52.0:en:planning/start_planner/design:23",
+              "d54ca76bcdb2537a20b3efec",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_holdout_12",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [
+              "32682b345ea86e13"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:24",
+              "0.52.0:en:planning/goal_planner/design:48",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "trajectory_validator_plugins_13",
+            "required_sources": [
+              "planning/trajectory_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/trajectory_validator/design:3",
+              "0.52.0:en:planning/trajectory_validator/design:2",
+              "0.52.0:en:planning/planning_validator/design:2",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:40"
+            ]
+          },
+          {
+            "case_id": "cross_module_review_14",
+            "required_sources": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/goal_planner/design:20",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/trajectory_checker/design:3"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_15",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:55",
+              "0.52.0:en:planning/start_planner/design:18",
+              "0.52.0:en:planning/start_planner/design:21",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/trajectory_checker/design:1"
+            ]
+          }
+        ],
+        "noninferior_to_bm25": true
+      },
+      "bm25_faceted_figure_ocr": {
+        "query_count": 5,
+        "required_source_recall_at_5": 1.0,
+        "complete_required_sources_at_5": 1.0,
+        "image_evidence_hit_at_5": 1.0,
+        "image_evidence_hits": "2/2",
+        "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_cases": 1,
+        "search_p95_ms": 3.129,
+        "mean_retrieval_operations_per_query": 2,
+        "cases": [
+          {
+            "case_id": "start_search_policy_holdout_11",
+            "required_sources": [
+              "planning/start_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/start_planner/design"
+            ],
+            "expected_image_ids": [
+              "876db03219da6219"
+            ],
+            "found_image_ids_at_5": [
+              "876db03219da6219"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:21",
+              "0.52.0:en:planning/goal_planner/design:9",
+              "0.52.0:en:planning/start_planner/design:23",
+              "d54ca76bcdb2537a20b3efec",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "goal_image_labels_holdout_12",
+            "required_sources": [
+              "planning/goal_planner/design"
+            ],
+            "found_sources_at_5": [
+              "planning/goal_planner/design"
+            ],
+            "expected_image_ids": [
+              "32682b345ea86e13"
+            ],
+            "found_image_ids_at_5": [
+              "32682b345ea86e13"
+            ],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/goal_planner/design:37",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:24",
+              "0.52.0:en:planning/goal_planner/design:48",
+              "114e9eb5e6ccb1b4d021d767"
+            ]
+          },
+          {
+            "case_id": "trajectory_validator_plugins_13",
+            "required_sources": [
+              "planning/trajectory_validator/design"
+            ],
+            "found_sources_at_5": [
+              "planning/trajectory_validator/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/trajectory_validator/design:3",
+              "0.52.0:en:planning/trajectory_validator/design:2",
+              "0.52.0:en:planning/planning_validator/design:2",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/goal_planner/design:40"
+            ]
+          },
+          {
+            "case_id": "cross_module_review_14",
+            "required_sources": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "found_sources_at_5": [
+              "planning/planning_validator/design",
+              "planning/start_planner/design",
+              "planning/trajectory_checker/design"
+            ],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/planning_validator/design:1",
+              "0.52.0:en:planning/start_planner/design:22",
+              "0.52.0:en:planning/goal_planner/design:20",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/trajectory_checker/design:3"
+            ]
+          },
+          {
+            "case_id": "outside_corpus_15",
+            "required_sources": [],
+            "found_sources_at_5": [],
+            "expected_image_ids": [],
+            "found_image_ids_at_5": [],
+            "hit_versions_at_5": [
+              "0.52.0"
+            ],
+            "retrieved_chunk_ids_at_5": [
+              "0.52.0:en:planning/start_planner/design:55",
+              "0.52.0:en:planning/start_planner/design:18",
+              "0.52.0:en:planning/start_planner/design:21",
+              "d54ca76bcdb2537a20b3efec",
+              "0.52.0:en:planning/trajectory_checker/design:1"
+            ]
+          }
+        ],
+        "noninferior_to_bm25": true
+      }
+    }
+  },
+  "selection": {
+    "selected_policy": "bm25_figure_ocr",
+    "reason": "best holdout image hit among candidates that are noninferior to BM25 on required-source recall, complete required-source rate, no-answer candidates, and version correctness",
+    "eligible_candidates": [
+      "bm25_figure_ocr",
+      "bm25_faceted_figure_ocr"
+    ]
+  }
+}

@@ -156,9 +156,15 @@ class PublicRetrievalRuntime:
         lengths = [sum(terms.values()) for terms in term_rows]
         average_length = max(sum(lengths) / len(lengths), 1.0)
         query_freq = Counter(query_terms)
+        content_term_rows = [set(tokens(row["content"])) for row in rows]
         scored = []
         total = len(rows)
-        for row, freqs, length in zip(rows, term_rows, lengths):
+        for row, freqs, length, content_terms in zip(rows, term_rows, lengths, content_term_rows):
+            # Require two distinct matches in reviewed image text itself. Headings and
+            # document keys alone are too broad and caused unrelated diagrams to rank.
+            content_overlap = set(query_freq) & content_terms
+            if len(content_overlap) < 2:
+                continue
             score = 0.0
             for term, qf in query_freq.items():
                 tf = freqs.get(term, 0)
@@ -173,6 +179,37 @@ class PublicRetrievalRuntime:
             {**row, "rank": rank, "retrieval_score": score, "retrieval_policy": "bm25_figure_ocr"}
             for rank, (score, row) in enumerate(scored[:min(top_k, self.config["image_top_k"])], 1)
         ]
+
+    @staticmethod
+    def _add_image_evidence(document_hits: list[dict], image_hits: list[dict], *, top_k: int) -> list[dict]:
+        """Add relevant image evidence while preserving source-document coverage."""
+        merged = [dict(row) for row in document_hits[:top_k]]
+        seen = {row.get("chunk_id") for row in merged}
+        for image in image_hits:
+            if image.get("chunk_id") in seen:
+                continue
+            same_source = next((
+                index for index in range(len(merged) - 1, -1, -1)
+                if merged[index].get("document_id") == image.get("document_id")
+            ), None)
+            if same_source is None:
+                source_counts = Counter(row.get("document_id") for row in merged)
+                same_source = next((
+                    index for index in range(len(merged) - 1, -1, -1)
+                    if source_counts.get(merged[index].get("document_id"), 0) > 1
+                ), None)
+            if same_source is not None:
+                # Replace a duplicate chunk from the same source, or any duplicate
+                # source when it is already overrepresented in Top-K. Unique-source
+                # coverage is retained even when the Top-K budget is full.
+                merged[same_source] = dict(image)
+                seen.add(image.get("chunk_id"))
+            elif len(merged) < top_k:
+                merged.append(dict(image))
+                seen.add(image.get("chunk_id"))
+            # If adding the image would evict a distinct source, omit it. Evidence
+            # coverage takes precedence over image coverage under a strict Top-K cap.
+        return merged
 
     def search(self, query: str, *, top_k: int = 5, version: str = "current",
                language: str = "zh_preferred", policy: str | None = None) -> list[dict]:
@@ -193,19 +230,26 @@ class PublicRetrievalRuntime:
         # Validate the result size before performing any ranking calls.
         if not 1 <= top_k <= 20:
             raise ValueError("invalid search request")
-        rankings = []
+        document_rankings = []
+        image_hits = []
         self.last_retrieval_call_count = 0
         for facet in facets:
-            rankings.append(self.base_index.search(
+            document_rankings.append(self.base_index.search(
                 facet, top_k=top_k, version=version, language=language, policy="bm25",
             ))
             self.last_retrieval_call_count += 1
             if use_images:
-                rankings.append(self._search_images(facet, top_k=top_k, version=version, language=language))
+                image_hits.extend(self._search_images(facet, top_k=top_k, version=version, language=language))
                 self.last_retrieval_call_count += 1
-        if len(rankings) == 1:
-            return rankings[0]
-        result = fuse_ranked_hits(rankings, top_k=top_k, rrf_k=self.config["rrf_k"])
+        if len(document_rankings) == 1:
+            result = document_rankings[0]
+        else:
+            result = fuse_ranked_hits(document_rankings, top_k=top_k, rrf_k=self.config["rrf_k"])
+        if len(document_rankings) == 1 and not use_images:
+            return result
+        if use_images:
+            image_hits.sort(key=lambda row: (-row.get("retrieval_score", 0.0), row.get("chunk_id", "")))
+            result = self._add_image_evidence(result, image_hits, top_k=top_k)
         for row in result:
             row["retrieval_policy"] = selected
         return result

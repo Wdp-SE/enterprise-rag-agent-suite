@@ -1,0 +1,896 @@
+{
+  "evaluation": "change_review_v5_offline",
+  "scope": {
+    "case_count": 25,
+    "policy": "bm25_figure_ocr",
+    "current_version": "3.4.3",
+    "generation_api_calls": 0,
+    "measures_generated_answer_accuracy": false,
+    "uses_paid_model": false,
+    "split": "dev",
+    "seed": "change-review-v5-2026-09-30",
+    "cases_sha256": "9e02c506ade40d750fea670777ac4cbf869ac4375fda0053b8fbd780dceb0f29",
+    "split_sha256": "6fa1a9b5972f9d7c20f00968c6662723903ffc7e135f81dbd5b01a06361870c4"
+  },
+  "metrics": {
+    "change_type_accuracy": 1.0,
+    "required_clause_coverage": 1.0,
+    "query_budget_compliance": 1.0,
+    "scope_guard_accuracy": 1.0,
+    "out_of_scope_case_count": 2,
+    "out_of_scope_retrieval_attempt_count": 0,
+    "public_case_false_block_count": 0,
+    "required_source_recall_at_5": 0.96,
+    "complete_required_sources_at_5": 0.95,
+    "answerable_zero_candidate_rate": 0.0,
+    "unanswerable_nonempty_candidate_rate": 1.0,
+    "image_hit_at_5": 0.8571,
+    "version_mismatch_count": 0,
+    "retrieval_call_count": 76,
+    "warm_retrieval_p95_ms": 6.727,
+    "warm_retrieval_mean_ms": 3.534
+  },
+  "details": [
+    {
+      "case_id": "priority_01",
+      "category": "single_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "parameter_config",
+      "actual_change_type": "parameter_config",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "工作流里全局参数与本地参数同名时，核对最终取值优先级，同时检查示例是否说明该规则。",
+        "工作流里全局参数与本地参数同名时",
+        "核对最终取值优先级",
+        "检查示例是否说明该规则"
+      ],
+      "query_count": 4,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/parameter/priority"
+      ],
+      "retrieved_sources_at_5": [
+        "architecture/design",
+        "guide/parameter/context",
+        "guide/parameter/global",
+        "guide/parameter/priority",
+        "guide/task/dependent"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 6.727
+    },
+    {
+      "case_id": "priority_02",
+      "category": "cross_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "parameter_config",
+      "actual_change_type": "parameter_config",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "调整启动参数和项目级参数的配置方式；核对参数优先级，并同步检查上下文示例。",
+        "调整启动参数和项目级参数的配置方式",
+        "核对参数优先级",
+        "同步检查上下文示例"
+      ],
+      "query_count": 4,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/parameter/context",
+        "guide/parameter/priority"
+      ],
+      "retrieved_sources_at_5": [
+        "guide/parameter/context",
+        "guide/parameter/priority",
+        "guide/parameter/startup-parameter",
+        "guide/project/workflow-definition",
+        "guide/project/workflow-instance"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 6.557
+    },
+    {
+      "case_id": "context_01",
+      "category": "cross_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "parameter_config",
+      "actual_change_type": "parameter_config",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "子工作流向下游任务传递 var1 和 var2；核对参数传递方式，同时确认运行结果示例。",
+        "子工作流向下游任务传递 var1 和 var2",
+        "核对参数传递方式",
+        "确认运行结果示例"
+      ],
+      "query_count": 4,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/parameter/context"
+      ],
+      "retrieved_sources_at_5": [
+        "guide/parameter/context",
+        "guide/parameter/local",
+        "guide/upgrade/upgrade"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 8.415
+    },
+    {
+      "case_id": "context_02",
+      "category": "single_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "parameter_config",
+      "actual_change_type": "parameter_config",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "变更本地参数的默认值，并检查自定义参数定义和工作流运行时的取值说明。",
+        "变更本地参数的默认值",
+        "检查自定义参数定义和工作流运行时的取值说明"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/parameter/local"
+      ],
+      "retrieved_sources_at_5": [
+        "guide/parameter/context",
+        "guide/parameter/local",
+        "guide/project/workflow-instance"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 5.995
+    },
+    {
+      "case_id": "api_01",
+      "category": "single_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "interface_compatibility",
+      "actual_change_type": "interface_compatibility",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "API 文档的 basePath 和 Group URL 有哪些值；核对调用示例及接口路径。",
+        "API 文档的 basePath 和 Group URL 有哪些值",
+        "核对调用示例及接口路径"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/api/open-api"
+      ],
+      "retrieved_sources_at_5": [
+        "contribute/api-test",
+        "guide/api/open-api",
+        "guide/monitor"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 3.986
+    },
+    {
+      "case_id": "api_02",
+      "category": "cross_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "interface_compatibility",
+      "actual_change_type": "interface_compatibility",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "响应字段发生变化，核对 Open API 契约，同时检查升级兼容性说明。",
+        "响应字段发生变化",
+        "核对 Open API 契约",
+        "检查升级兼容性说明"
+      ],
+      "query_count": 4,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/api/open-api",
+        "guide/upgrade/incompatible"
+      ],
+      "retrieved_sources_at_5": [
+        "guide/api/open-api",
+        "guide/installation/general-setting",
+        "guide/upgrade/incompatible",
+        "guide/upgrade/upgrade"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 2.926
+    },
+    {
+      "case_id": "workflow_01",
+      "category": "cross_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "workflow_behavior",
+      "actual_change_type": "workflow_behavior",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "调整工作流失败后的节点恢复策略；核对失败恢复机制，同时检查工作流实例运行行为。",
+        "调整工作流失败后的节点恢复策略",
+        "核对失败恢复机制",
+        "检查工作流实例运行行为"
+      ],
+      "query_count": 4,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "architecture/design",
+        "guide/project/workflow-instance"
+      ],
+      "retrieved_sources_at_5": [
+        "architecture/design",
+        "guide/project/workflow-instance",
+        "guide/task/dependent"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 5.565
+    },
+    {
+      "case_id": "workflow_02",
+      "category": "single_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "workflow_behavior",
+      "actual_change_type": "workflow_behavior",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "missed_fire_policy 对 schedule 的默认行为是什么；核对 Quartz 配置和默认值。",
+        "missed_fire_policy 对 schedule 的默认行为是什么",
+        "核对 Quartz 配置和默认值"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "architecture/configuration"
+      ],
+      "retrieved_sources_at_5": [
+        "architecture/configuration",
+        "guide/monitor",
+        "guide/task/dependent",
+        "proposals/dsip-107-implementation"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 3.595
+    },
+    {
+      "case_id": "dependency_01",
+      "category": "single_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "workflow_behavior",
+      "actual_change_type": "workflow_behavior",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "修改任务依赖关系后如何判断上游任务完成；请检查依赖任务的状态条件。",
+        "修改任务依赖关系后如何判断上游任务完成",
+        "请检查依赖任务的状态条件"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/task/dependent"
+      ],
+      "retrieved_sources_at_5": [
+        "guide/parameter/context",
+        "guide/task/conditions",
+        "guide/task/dependent"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 5.702
+    },
+    {
+      "case_id": "dependency_02",
+      "category": "cross_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "workflow_behavior",
+      "actual_change_type": "workflow_behavior",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "新增条件分支并调整任务依赖；核对条件任务配置，同时检查 DAG 运行顺序。",
+        "新增条件分支并调整任务依赖",
+        "核对条件任务配置",
+        "检查 DAG 运行顺序"
+      ],
+      "query_count": 4,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/project/workflow-definition",
+        "guide/task/conditions"
+      ],
+      "retrieved_sources_at_5": [
+        "architecture/task-structure",
+        "guide/project/workflow-definition",
+        "guide/task/conditions",
+        "guide/task/dependent",
+        "guide/task/switch"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 6.898
+    },
+    {
+      "case_id": "subworkflow_01",
+      "category": "cross_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "parameter_config",
+      "actual_change_type": "parameter_config",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "子工作流 Shell 节点通过 setValue 传递参数；核对下游参数内容，并检查执行日志结果。",
+        "子工作流 Shell 节点通过 setValue 传递参数",
+        "核对下游参数内容",
+        "检查执行日志结果"
+      ],
+      "query_count": 4,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/parameter/context",
+        "guide/task/sub-workflow"
+      ],
+      "retrieved_sources_at_5": [
+        "guide/parameter/context",
+        "guide/parameter/local",
+        "guide/resource/file-manage"
+      ],
+      "complete_required_sources_at_5": false,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 6.775
+    },
+    {
+      "case_id": "subworkflow_02",
+      "category": "single_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "parameter_config",
+      "actual_change_type": "parameter_config",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "调整子工作流任务的输入输出参数；同时核对父子工作流之间的传参行为。",
+        "调整子工作流任务的输入输出参数",
+        "核对父子工作流之间的传参行为"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/task/sub-workflow"
+      ],
+      "retrieved_sources_at_5": [
+        "guide/parameter/context",
+        "guide/parameter/global",
+        "guide/project/workflow-definition",
+        "guide/task/dependent",
+        "guide/task/sub-workflow"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 5.705
+    },
+    {
+      "case_id": "resource_01",
+      "category": "single_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "parameter_config",
+      "actual_change_type": "parameter_config",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "调整任务组并发容量；核对任务组资源控制行为和配置限制。",
+        "调整任务组并发容量",
+        "核对任务组资源控制行为和配置限制"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/resource/task-group"
+      ],
+      "retrieved_sources_at_5": [
+        "guide/monitor",
+        "guide/resource/task-group",
+        "guide/task/dependent"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 3.919
+    },
+    {
+      "case_id": "resource_02",
+      "category": "single_source",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "general",
+      "actual_change_type": "general",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "修改工作流引用的文件资源；检查资源文件管理和任务侧引用方式。",
+        "修改工作流引用的文件资源",
+        "检查资源文件管理和任务侧引用方式"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/resource/file-manage"
+      ],
+      "retrieved_sources_at_5": [
+        "guide/parameter/context",
+        "guide/parameter/file-parameter",
+        "guide/project/workflow-definition",
+        "guide/resource/file-manage"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 5.714
+    },
+    {
+      "case_id": "image_api_01",
+      "category": "image_only",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "interface_compatibility",
+      "actual_change_type": "interface_compatibility",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "Open API 截图中显示的 basePath 和 Group URL 分别是什么；按截图核对接口入口。",
+        "Open API 截图中显示的 basePath 和 Group URL 分别是什么",
+        "按截图核对接口入口"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/api/open-api"
+      ],
+      "retrieved_sources_at_5": [
+        "guide/api/open-api",
+        "guide/monitor",
+        "guide/parameter/file-parameter",
+        "guide/task/dependent"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [
+        "4d27a5915ee12893"
+      ],
+      "retrieved_image_ids_at_5": [
+        "4d27a5915ee12893"
+      ],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 3.019
+    },
+    {
+      "case_id": "image_api_02",
+      "category": "text_plus_image",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "interface_compatibility",
+      "actual_change_type": "interface_compatibility",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "API 首页写明了什么 basePath；同时核对文档截图中的请求路径示例。",
+        "API 首页写明了什么 basePath",
+        "核对文档截图中的请求路径示例"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/api/open-api"
+      ],
+      "retrieved_sources_at_5": [
+        "architecture/configuration",
+        "architecture/design",
+        "guide/api/open-api",
+        "guide/monitor"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [
+        "4d27a5915ee12893"
+      ],
+      "retrieved_image_ids_at_5": [
+        "4d27a5915ee12893"
+      ],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 3.059
+    },
+    {
+      "case_id": "image_context_01",
+      "category": "image_only",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "parameter_config",
+      "actual_change_type": "parameter_config",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "子工作流参数传递截图中的 var1 和 var2 分别是什么值；核对 setValue 示例。",
+        "子工作流参数传递截图中的 var1 和 var2 分别是什么值",
+        "核对 setValue 示例"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/parameter/context"
+      ],
+      "retrieved_sources_at_5": [
+        "guide/parameter/context",
+        "guide/parameter/local",
+        "guide/project/workflow-definition"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [
+        "34b0865eacfba652"
+      ],
+      "retrieved_image_ids_at_5": [
+        "34b0865eacfba652"
+      ],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 5.555
+    },
+    {
+      "case_id": "image_context_02",
+      "category": "text_plus_image",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "parameter_config",
+      "actual_change_type": "parameter_config",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "调整子工作流的参数传递方式；检查截图中的变量值和运行输出是否一致。",
+        "调整子工作流的参数传递方式",
+        "检查截图中的变量值和运行输出是否一致"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/parameter/context"
+      ],
+      "retrieved_sources_at_5": [
+        "guide/parameter/context",
+        "guide/parameter/global",
+        "guide/project/workflow-definition"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [
+        "34b0865eacfba652",
+        "db6baeb0b9b5364a"
+      ],
+      "retrieved_image_ids_at_5": [
+        "db6baeb0b9b5364a"
+      ],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 6.342
+    },
+    {
+      "case_id": "image_monitor_01",
+      "category": "image_only",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "general",
+      "actual_change_type": "general",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "监控审计日志截图包含哪些表格列；核对用户名、操作类型和延迟字段。",
+        "监控审计日志截图包含哪些表格列",
+        "核对用户名、操作类型和延迟字段"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/monitor"
+      ],
+      "retrieved_sources_at_5": [
+        "architecture/configuration",
+        "architecture/design",
+        "guide/monitor"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [
+        "de332d40ef6ae6d5"
+      ],
+      "retrieved_image_ids_at_5": [
+        "de332d40ef6ae6d5"
+      ],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 3.148
+    },
+    {
+      "case_id": "image_monitor_02",
+      "category": "text_plus_image",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "general",
+      "actual_change_type": "general",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "新增审计日志展示；检查监控文档截图中的用户、操作类型和耗时信息。",
+        "新增审计日志展示",
+        "检查监控文档截图中的用户、操作类型和耗时信息"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [
+        "guide/monitor"
+      ],
+      "retrieved_sources_at_5": [
+        "architecture/task-structure",
+        "guide/api/open-api",
+        "guide/monitor"
+      ],
+      "complete_required_sources_at_5": true,
+      "expected_image_ids": [
+        "de332d40ef6ae6d5"
+      ],
+      "retrieved_image_ids_at_5": [
+        "de332d40ef6ae6d5"
+      ],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 3.694
+    },
+    {
+      "case_id": "no_answer_03",
+      "category": "no_answer",
+      "expected_scope": "out_of_scope",
+      "scope_guard_triggered": true,
+      "scope_guard_correct": true,
+      "expected_change_type": "general",
+      "actual_change_type": "general",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "DolphinScheduler 是否内置公司专属的车辆故障分级审批流程；确认内部质量制度。",
+        "DolphinScheduler 是否内置公司专属的车辆故障分级审批流程",
+        "确认内部质量制度"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [],
+      "retrieved_sources_at_5": [],
+      "complete_required_sources_at_5": false,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 0,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 0.0
+    },
+    {
+      "case_id": "no_answer_04",
+      "category": "no_answer",
+      "expected_scope": "out_of_scope",
+      "scope_guard_triggered": true,
+      "scope_guard_correct": true,
+      "expected_change_type": "security_permission",
+      "actual_change_type": "security_permission",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "查询企业内部安全密级映射和用户授权名单；确认公司身份目录策略。",
+        "查询企业内部安全密级映射和用户授权名单",
+        "确认公司身份目录策略"
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [],
+      "retrieved_sources_at_5": [],
+      "complete_required_sources_at_5": false,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 0,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 0.0
+    },
+    {
+      "case_id": "public_no_answer_01",
+      "category": "no_answer",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "interface_compatibility",
+      "actual_change_type": "interface_compatibility",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "Does DolphinScheduler 3.4.3 include a built-in OIDC group-to-role synchronization endpoint? Check the official API and security docs.",
+        "Does DolphinScheduler 3.4.3 include a built-in OIDC group-to-role synchronization endpoint",
+        "Check the official API and security docs."
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [],
+      "retrieved_sources_at_5": [
+        "guide/api/healthcheck",
+        "guide/api/open-api",
+        "guide/monitor",
+        "release-notes"
+      ],
+      "complete_required_sources_at_5": false,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 5.171
+    },
+    {
+      "case_id": "public_no_answer_02",
+      "category": "no_answer",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "workflow_behavior",
+      "actual_change_type": "workflow_behavior",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "Does Apache DolphinScheduler natively enforce a two-person approval rule before a workflow definition is published? Check the official workflow docs.",
+        "Does Apache DolphinScheduler natively enforce a two-person approval rule before a workflow definition is published",
+        "Check the official workflow docs."
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [],
+      "retrieved_sources_at_5": [
+        "about/introduction",
+        "guide/project/project-list",
+        "guide/project/workflow-definition",
+        "guide/project/workflow-instance",
+        "proposals/dsip-107-proposal"
+      ],
+      "complete_required_sources_at_5": false,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 4.964
+    },
+    {
+      "case_id": "public_no_answer_04",
+      "category": "no_answer",
+      "expected_scope": "public",
+      "scope_guard_triggered": false,
+      "scope_guard_correct": true,
+      "expected_change_type": "interface_compatibility",
+      "actual_change_type": "interface_compatibility",
+      "type_correct": true,
+      "required_clause_coverage": "2/2",
+      "queries": [
+        "Does the official REST API return a signed tamper-evident audit record for each user operation? Check the API contract.",
+        "Does the official REST API return a signed tamper-evident audit record for each user operation",
+        "Check the API contract."
+      ],
+      "query_count": 3,
+      "query_budget": 4,
+      "within_budget": true,
+      "required_sources": [],
+      "retrieved_sources_at_5": [
+        "contribute/api-test",
+        "guide/api/healthcheck",
+        "guide/api/open-api",
+        "guide/monitor"
+      ],
+      "complete_required_sources_at_5": false,
+      "expected_image_ids": [],
+      "retrieved_image_ids_at_5": [],
+      "candidate_count": 5,
+      "version_mismatch_count": 0,
+      "warm_retrieval_p95_ms": 4.802
+    }
+  ]
+}

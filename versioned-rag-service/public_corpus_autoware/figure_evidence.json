@@ -1,0 +1,1969 @@
+{
+  "schema_version": 1,
+  "corpus_manifest_sha256": "f0d83d5134021abb03bdbf986462b03e6da744c037d3b9b806586471b2169cbc",
+  "source_count": 22,
+  "current_version": "0.52.0",
+  "relative_reference_count": 74,
+  "external_reference_count": 10,
+  "unresolved_reference_count": 0,
+  "unique_figure_count": 74,
+  "search_policy": "OCR text is an unreviewed candidate; alt text is not image content.",
+  "figures": [
+    {
+      "schema_version": 1,
+      "figure_id": "e37be9361fe73168",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/arc_backward_parking.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/arc_backward_parking.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 300,
+          "alt_text": "arc_backward_parking",
+          "heading": "Goal Planner design / **Pull Over** / **geometric parallel parking** / arc backward parking"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "109bb28ceafd2d61",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/arc_forward_parking.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/arc_forward_parking.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 283,
+          "alt_text": "arc_forward_parking",
+          "heading": "Goal Planner design / **Pull Over** / **geometric parallel parking** / arc forward parking"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "df039dd9daf970ff",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/bad_shift_path.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/bad_shift_path.png",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 337,
+          "alt_text": "",
+          "heading": "Goal Planner design / **Pull Over** / bezier parking"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "a83d3f808ad5ac3f",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/bezier_path.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/bezier_path.png",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 341,
+          "alt_text": "",
+          "heading": "Goal Planner design / **Pull Over** / bezier parking"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "9c6b379f21d5cd06",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-collision_check_margin.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-collision_check_margin.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 384,
+          "alt_text": "collision_check_margin",
+          "heading": "Goal Planner design / **collision check for path generation** / **object recognition based collision check**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "7216192f68158a4d",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-goal-pose-correct.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-goal-pose-correct.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 152,
+          "alt_text": "goal_pose_align",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "b620d7f7aa8608d2",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-goal_candidates.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-goal_candidates.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 136,
+          "alt_text": "goal_candidates",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "d18a6d22b70af455",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-goal_distance.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-goal_distance.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 144,
+          "alt_text": "goal_distance",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "c0d1ef1514f1dc0f",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-is_safe.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-is_safe.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 160,
+          "alt_text": "is_safe",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "bc9eb6792adb1264",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-longitudinal_margin.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-longitudinal_margin.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 158,
+          "alt_text": "longitudinal_margin",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "2e3875dc2887a2c8",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-object-road-border.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-object-road-border.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 382,
+          "alt_text": "road_border_filter",
+          "heading": "Goal Planner design / **collision check for path generation** / **object recognition based collision check**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "7f53f8321a19e528",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-object_to_avoid.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-object_to_avoid.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 166,
+          "alt_text": "object_to_avoid",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "874ea60183db6b1d",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-refined_goal.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-refined_goal.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 132,
+          "alt_text": "refined_goal",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "d92d610900968088",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-safety_check.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-safety_check.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 412,
+          "alt_text": "safety_check",
+          "heading": "Goal Planner design / **safety check**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "37e947c0e0764ee9",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-state-transition.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-state-transition.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 464,
+          "alt_text": "state_transition",
+          "heading": "Goal Planner design / **path deciding**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "5419a71a9bba8630",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-threads.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-threads.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 213,
+          "alt_text": "threads.png",
+          "heading": "Goal Planner design / **Pull Over**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "f8f75760f0dc7658",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_priority_object_to_avoid_rviz.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_priority_object_to_avoid_rviz.png",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 170,
+          "alt_text": "goal_priority_object_to_avoid_rviz.png",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "7dd5595a892fd8ce",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_priority_with_goal.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_priority_with_goal.png",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 148,
+          "alt_text": "goal_priority_rviz_with_goal",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "95f6a661d2cef6f7",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/path_goal_refinement.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/path_goal_refinement.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 90,
+          "alt_text": "path_goal_refinement",
+          "heading": "Goal Planner design / trigger condition / fixed_goal_planner"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "3ff2de5d11b7a072",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/pull_over_freespace_parking_flowchart.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/pull_over_freespace_parking_flowchart.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 319,
+          "alt_text": "pull_over_freespace_parking_flowchart",
+          "heading": "Goal Planner design / **Pull Over** / freespace parking"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "27a86885154b61c0",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/shift_parking.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/shift_parking.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 251,
+          "alt_text": "shift_parking",
+          "heading": "Goal Planner design / **Pull Over** / **shift parking**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "541512ffeb9b10e9",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/clothoid_flow.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/clothoid_flow.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 548,
+          "alt_text": "clothoid_pullout_path_generation_flow",
+          "heading": "Start Planner design / **Path Generation** / **clothoid pull out** / Path Generation Flow"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "953a774c4c2b89bb",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/clothoid_pullout.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/clothoid_pullout.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 519,
+          "alt_text": "clothoid_pull_out",
+          "heading": "Start Planner design / **Path Generation** / **clothoid pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "d829dcfc17d32dda",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/collision_check_range_shift_pull_out.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/collision_check_range_shift_pull_out.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 285,
+          "alt_text": "safety check performed range for shift pull out",
+          "heading": "Start Planner design / Concept of safety assurance / 2. Collision detection with dynamic obstacles / **example of safety check performed range for shift pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "5f1709ee6d985fc4",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/freespace_pull_out.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/freespace_pull_out.png",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 66,
+          "alt_text": "freespace_path",
+          "heading": "Start Planner design / Use Cases / **Use Case 6: Freespace pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "44c5819a252d2c46",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/geometric_pull_out.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/geometric_pull_out.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 501,
+          "alt_text": "geometric_pull_out",
+          "heading": "Start Planner design / **Path Generation** / **geometric pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "b10896c25250e920",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/geometric_pull_out_path.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/geometric_pull_out_path.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 38,
+          "alt_text": "geometric_pull_out",
+          "heading": "Start Planner design / Use Cases / **Use Case 2: Geometric pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "60e2b2fc7ecb96a5",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/geometric_pull_out_path_with_back.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/geometric_pull_out_path_with_back.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 54,
+          "alt_text": "geometric_pull_out_with_back",
+          "heading": "Start Planner design / Use Cases / **Use Case 4: Backward and geometric pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "876f7565c020a54a",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/priority_order.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/priority_order.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 213,
+          "alt_text": "priority_order",
+          "heading": "Start Planner design / Concept of safety assurance / 1. Generating path with static information / **search priority**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "3d63614a7eb87858",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/pull_out_after_back.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/pull_out_after_back.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 588,
+          "alt_text": "pull_out_after_back",
+          "heading": "Start Planner design / **backward pull out start point search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "7081da688c8c735c",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 478,
+          "alt_text": "shift_pull_out",
+          "heading": "Start Planner design / **Path Generation** / **shift pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "2c7be759767a89ca",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out_path.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out_path.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 30,
+          "alt_text": "shift_pull_out",
+          "heading": "Start Planner design / Use Cases / **Use Case 1: Shift pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "1fa75b5a95f4fe3e",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out_path_from_road_lane.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out_path_from_road_lane.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 22,
+          "alt_text": "shift_pull_out_from_road_lane",
+          "heading": "Start Planner design / Use Cases"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "1b49871d1a248f08",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out_path_with_back.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out_path_with_back.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 46,
+          "alt_text": "shift_pull_out_with_back",
+          "heading": "Start Planner design / Use Cases / **Use Case 3: Backward and shift pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "82b204db905e2df8",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/start_planner_example.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/start_planner_example.png",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 14,
+          "alt_text": "start_planner_module",
+          "heading": "Start Planner design / Purpose / Role"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "6577f7c65facace2",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/start_pose_candidate.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/start_pose_candidate.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 186,
+          "alt_text": "start pose candidate",
+          "heading": "Start Planner design / Concept of safety assurance / 1. Generating path with static information"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "3e133f1953e3438f",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.51.0",
+      "commit": "d4d260983d357e1b2b34291d91933f9f4b53bf94",
+      "asset_path": "planning/planning_validator/autoware_planning_validator/image/planning_validator.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/d4d260983d357e1b2b34291d91933f9f4b53bf94/planning/planning_validator/autoware_planning_validator/image/planning_validator.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/planning_validator/design",
+          "language": "en",
+          "local_path": "sources/0.51.0/en/planning/planning_validator/autoware_planning_validator/README.md",
+          "line": 14,
+          "alt_text": "autoware_planning_validator",
+          "heading": "Planning Validator"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "0358c3586ca49c4c",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/arc_backward_parking.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/arc_backward_parking.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 300,
+          "alt_text": "arc_backward_parking",
+          "heading": "Goal Planner design / **Pull Over** / **geometric parallel parking** / arc backward parking"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "5a8874e070d6cce1",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/arc_forward_parking.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/arc_forward_parking.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 283,
+          "alt_text": "arc_forward_parking",
+          "heading": "Goal Planner design / **Pull Over** / **geometric parallel parking** / arc forward parking"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "259fc1e9e91ee269",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/bad_shift_path.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/bad_shift_path.png",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 337,
+          "alt_text": "",
+          "heading": "Goal Planner design / **Pull Over** / bezier parking"
+        }
+      ],
+      "validation": {
+        "status": "verified",
+        "sha256": "365e50560d713bf5ede215103be62aa89c34ac70c8e75e6a1dfd9ebb6bc8effc",
+        "bytes": 394477,
+        "media_type": "image/png",
+        "decode_status": "verified",
+        "width": 1096,
+        "height": 777,
+        "checked_at": "2026-09-30T04:57:10.745334+00:00",
+        "review_preview": "365e50560d713bf5ede215103be62aa89c34ac70c8e75e6a1dfd9ebb6bc8effc.png"
+      },
+      "ocr": {
+        "status": "no_text_detected",
+        "engine": "tesseract"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "f39ddf422b485e95",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/bezier_path.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/bezier_path.png",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 341,
+          "alt_text": "",
+          "heading": "Goal Planner design / **Pull Over** / bezier parking"
+        }
+      ],
+      "validation": {
+        "status": "verified",
+        "sha256": "c3c644ebbe95abb0b9e34419838315ff32ecd95997c1705d6d4187195b857f87",
+        "bytes": 575972,
+        "media_type": "image/png",
+        "decode_status": "verified",
+        "width": 1096,
+        "height": 777,
+        "checked_at": "2026-09-30T04:57:13.655411+00:00",
+        "review_preview": "c3c644ebbe95abb0b9e34419838315ff32ecd95997c1705d6d4187195b857f87.png"
+      },
+      "ocr": {
+        "status": "no_text_detected",
+        "engine": "tesseract"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "c2217f267198a59f",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-collision_check_margin.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-collision_check_margin.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 384,
+          "alt_text": "collision_check_margin",
+          "heading": "Goal Planner design / **collision check for path generation** / **object recognition based collision check**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "30217fee4e36f08d",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-goal-pose-correct.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-goal-pose-correct.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 152,
+          "alt_text": "goal_pose_align",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "f763f254ed85c024",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-goal_candidates.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-goal_candidates.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 136,
+          "alt_text": "goal_candidates",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "bd9320e2a95f2ffa",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-goal_distance.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-goal_distance.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 144,
+          "alt_text": "goal_distance",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "824a8fd9c4537b70",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-is_safe.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-is_safe.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 160,
+          "alt_text": "is_safe",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "6e11a00f399d62cb",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-longitudinal_margin.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-longitudinal_margin.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 158,
+          "alt_text": "longitudinal_margin",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "e671e3c6688b8ea2",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-object-road-border.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-object-road-border.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 382,
+          "alt_text": "road_border_filter",
+          "heading": "Goal Planner design / **collision check for path generation** / **object recognition based collision check**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "89cc892513dffe41",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-object_to_avoid.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-object_to_avoid.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 166,
+          "alt_text": "object_to_avoid",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "3547eae978ebeb1f",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-refined_goal.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-refined_goal.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 132,
+          "alt_text": "refined_goal",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "d08f4441a4846f50",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-safety_check.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-safety_check.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 412,
+          "alt_text": "safety_check",
+          "heading": "Goal Planner design / **safety check**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "9da48994faf4c27d",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-state-transition.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-state-transition.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 464,
+          "alt_text": "state_transition",
+          "heading": "Goal Planner design / **path deciding**"
+        }
+      ],
+      "validation": {
+        "status": "fetch_error",
+        "error_type": "ValueError"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "0db3c7134c2ca5dd",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-threads.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_planner-threads.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 213,
+          "alt_text": "threads.png",
+          "heading": "Goal Planner design / **Pull Over**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "32682b345ea86e13",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_priority_object_to_avoid_rviz.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_priority_object_to_avoid_rviz.png",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 170,
+          "alt_text": "goal_priority_object_to_avoid_rviz.png",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "verified",
+        "sha256": "f196a0d87c1954bf2712fb3f0f22abbc37e10bc5f784ec0c3db6253666bef5a7",
+        "bytes": 145022,
+        "media_type": "image/png",
+        "decode_status": "verified",
+        "width": 2934,
+        "height": 1552,
+        "checked_at": "2026-09-30T04:57:16.177210+00:00",
+        "review_preview": "f196a0d87c1954bf2712fb3f0f22abbc37e10bc5f784ec0c3db6253666bef5a7.png"
+      },
+      "ocr": {
+        "status": "text_extracted",
+        "engine": "human_visual_review",
+        "quality": "human-reviewed",
+        "index_review_status": "approved",
+        "mean_confidence": null,
+        "text": "Visible labels in the image: outside drivable area; obstacle stop."
+      },
+      "review": {
+        "status": "approved",
+        "sha256": "f196a0d87c1954bf2712fb3f0f22abbc37e10bc5f784ec0c3db6253666bef5a7",
+        "reviewed_at": "2026-09-30T00:00:00Z",
+        "note": "Manually transcribed only the two clearly legible labels from the hash-verified image. No interpretation of colored geometry or obstacle semantics is inferred.",
+        "reviewed_text_by_language": {
+          "en": "Visible labels in the image: outside drivable area; obstacle stop."
+        }
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "9033bc8a1113c243",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_priority_with_goal.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_priority_with_goal.png",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 148,
+          "alt_text": "goal_priority_rviz_with_goal",
+          "heading": "Goal Planner design / **Goal Search**"
+        }
+      ],
+      "validation": {
+        "status": "verified",
+        "sha256": "94e996a232e3d04c0455326d182f836c0fb9ab1a7da0889a43eb341d6ef238f5",
+        "bytes": 123601,
+        "media_type": "image/png",
+        "decode_status": "verified",
+        "width": 2536,
+        "height": 1294,
+        "checked_at": "2026-09-30T04:57:18.667651+00:00",
+        "review_preview": "94e996a232e3d04c0455326d182f836c0fb9ab1a7da0889a43eb341d6ef238f5.png"
+      },
+      "ocr": {
+        "status": "no_text_detected",
+        "engine": "tesseract"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "8b4bb842ef16bc1e",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/path_goal_refinement.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/path_goal_refinement.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 90,
+          "alt_text": "path_goal_refinement",
+          "heading": "Goal Planner design / trigger condition / fixed_goal_planner"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "93f49e9e2338b21d",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/pull_over_freespace_parking_flowchart.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/pull_over_freespace_parking_flowchart.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 319,
+          "alt_text": "pull_over_freespace_parking_flowchart",
+          "heading": "Goal Planner design / **Pull Over** / freespace parking"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "1b0c7f583fa91446",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/shift_parking.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/shift_parking.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/goal_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
+          "line": 251,
+          "alt_text": "shift_parking",
+          "heading": "Goal Planner design / **Pull Over** / **shift parking**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "a3067058e386dfe6",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/clothoid_flow.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/clothoid_flow.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 548,
+          "alt_text": "clothoid_pullout_path_generation_flow",
+          "heading": "Start Planner design / **Path Generation** / **clothoid pull out** / Path Generation Flow"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "21422aa4bd40bc26",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/clothoid_pullout.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/clothoid_pullout.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 519,
+          "alt_text": "clothoid_pull_out",
+          "heading": "Start Planner design / **Path Generation** / **clothoid pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "97a2d62e03b1b257",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/collision_check_range_shift_pull_out.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/collision_check_range_shift_pull_out.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 285,
+          "alt_text": "safety check performed range for shift pull out",
+          "heading": "Start Planner design / Concept of safety assurance / 2. Collision detection with dynamic obstacles / **example of safety check performed range for shift pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "ba809df6807b7316",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/freespace_pull_out.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/freespace_pull_out.png",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 66,
+          "alt_text": "freespace_path",
+          "heading": "Start Planner design / Use Cases / **Use Case 6: Freespace pull out**"
+        }
+      ],
+      "validation": {
+        "status": "verified",
+        "sha256": "c2dcbcc937e4cb99130d831c3bbd0ac12b7d106716320c67d96be558a87de139",
+        "bytes": 533509,
+        "media_type": "image/png",
+        "decode_status": "verified",
+        "width": 2383,
+        "height": 1799,
+        "checked_at": "2026-09-30T04:57:21.687671+00:00",
+        "review_preview": "c2dcbcc937e4cb99130d831c3bbd0ac12b7d106716320c67d96be558a87de139.png"
+      },
+      "ocr": {
+        "status": "text_extracted",
+        "engine": "tesseract",
+        "quality": "unreviewed",
+        "index_review_status": "pending",
+        "mean_confidence": 91.18,
+        "text": "190609"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "a53d8fbdb91ff16a",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/geometric_pull_out.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/geometric_pull_out.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 501,
+          "alt_text": "geometric_pull_out",
+          "heading": "Start Planner design / **Path Generation** / **geometric pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "b96d72a90962fd51",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/geometric_pull_out_path.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/geometric_pull_out_path.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 38,
+          "alt_text": "geometric_pull_out",
+          "heading": "Start Planner design / Use Cases / **Use Case 2: Geometric pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "2bb1f50109caeedd",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/geometric_pull_out_path_with_back.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/geometric_pull_out_path_with_back.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 54,
+          "alt_text": "geometric_pull_out_with_back",
+          "heading": "Start Planner design / Use Cases / **Use Case 4: Backward and geometric pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "876db03219da6219",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/priority_order.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/priority_order.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 213,
+          "alt_text": "priority_order",
+          "heading": "Start Planner design / Concept of safety assurance / 1. Generating path with static information / **search priority**"
+        }
+      ],
+      "validation": {
+        "status": "verified",
+        "sha256": "b32a65495249827b66d41acb69bb4547b9b81ad567217793368dc9d489460955",
+        "bytes": 72778,
+        "media_type": "image/svg+xml",
+        "decode_status": "verified",
+        "width": null,
+        "height": null,
+        "checked_at": "2026-09-30T04:57:26.760210+00:00",
+        "review_preview": "b32a65495249827b66d41acb69bb4547b9b81ad567217793368dc9d489460955.svg"
+      },
+      "ocr": {
+        "status": "text_extracted",
+        "engine": "svg_text",
+        "quality": "human-reviewed",
+        "index_review_status": "approved",
+        "mean_confidence": null,
+        "text": "Figure context: Start Planner search priority. Visible diagram labels: planner_priority (planner priority); distance_priority (distance priority); high priority; low priority. Candidate planner types shown: shift_pull_out (shift pull out) and geometric_pull_out (geometric pull out). Example candidate labels shown: (3, geometric_pull_out) and (3, shift_pull_out). The extracted diagram contains repeated indexed candidates; no unstated ordering or safety behavior is inferred."
+      },
+      "review": {
+        "status": "approved",
+        "sha256": "b32a65495249827b66d41acb69bb4547b9b81ad567217793368dc9d489460955",
+        "reviewed_at": "2026-09-30T00:00:00Z",
+        "note": "Reviewed text extracted from the embedded Draw.io diagram payload at the pinned source hash. Kept explicit labels and examples only; did not infer arrow semantics or planner behavior.",
+        "reviewed_text_by_language": {
+          "en": "Figure context: Start Planner search priority. Visible diagram labels: planner_priority (planner priority); distance_priority (distance priority); high priority; low priority. Candidate planner types shown: shift_pull_out (shift pull out) and geometric_pull_out (geometric pull out). Example candidate labels shown: (3, geometric_pull_out) and (3, shift_pull_out). The extracted diagram contains repeated indexed candidates; no unstated ordering or safety behavior is inferred."
+        }
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "5d204d837598d7ce",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/pull_out_after_back.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/pull_out_after_back.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 588,
+          "alt_text": "pull_out_after_back",
+          "heading": "Start Planner design / **backward pull out start point search**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "8be05fc12823f1b9",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 478,
+          "alt_text": "shift_pull_out",
+          "heading": "Start Planner design / **Path Generation** / **shift pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "15cabd96b6994d12",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out_path.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out_path.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 30,
+          "alt_text": "shift_pull_out",
+          "heading": "Start Planner design / Use Cases / **Use Case 1: Shift pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "5b061df627f1ee7c",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out_path_from_road_lane.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out_path_from_road_lane.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 22,
+          "alt_text": "shift_pull_out_from_road_lane",
+          "heading": "Start Planner design / Use Cases"
+        }
+      ],
+      "validation": {
+        "status": "verified",
+        "sha256": "1689b2c306b625b60af152d0377ece99b1b2f67528354075d0966c35be3794e0",
+        "bytes": 23697,
+        "media_type": "image/svg+xml",
+        "decode_status": "verified",
+        "width": null,
+        "height": null,
+        "checked_at": "2026-09-30T04:57:28.215095+00:00",
+        "review_preview": "1689b2c306b625b60af152d0377ece99b1b2f67528354075d0966c35be3794e0.svg"
+      },
+      "ocr": {
+        "status": "no_text_detected",
+        "engine": "svg_text"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "d6ff20f8fa19ba97",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out_path_with_back.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/shift_pull_out_path_with_back.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 46,
+          "alt_text": "shift_pull_out_with_back",
+          "heading": "Start Planner design / Use Cases / **Use Case 3: Backward and shift pull out**"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "cdf3c02c7b862e7b",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/start_planner_example.png",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/start_planner_example.png",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 14,
+          "alt_text": "start_planner_module",
+          "heading": "Start Planner design / Purpose / Role"
+        }
+      ],
+      "validation": {
+        "status": "verified",
+        "sha256": "6c1ca46e7a2e16ff2b4cd8464c74ee9a064a7983f310090328c1c38215e9dffb",
+        "bytes": 247330,
+        "media_type": "image/png",
+        "decode_status": "verified",
+        "width": 1929,
+        "height": 1391,
+        "checked_at": "2026-09-30T04:57:24.401652+00:00",
+        "review_preview": "6c1ca46e7a2e16ff2b4cd8464c74ee9a064a7983f310090328c1c38215e9dffb.png"
+      },
+      "ocr": {
+        "status": "no_text_detected",
+        "engine": "tesseract"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "3a296767f0dae50f",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/start_pose_candidate.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/start_pose_candidate.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/start_planner/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
+          "line": 186,
+          "alt_text": "start pose candidate",
+          "heading": "Start Planner design / Concept of safety assurance / 1. Generating path with static information"
+        }
+      ],
+      "validation": {
+        "status": "unverified"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "figure_id": "52ef62d2484480c0",
+      "repository": "autowarefoundation/autoware_universe",
+      "version": "0.52.0",
+      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
+      "asset_path": "planning/planning_validator/autoware_planning_validator/image/planning_validator.drawio.svg",
+      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/planning_validator/autoware_planning_validator/image/planning_validator.drawio.svg",
+      "references": [
+        {
+          "document_key": "planning/planning_validator/design",
+          "language": "en",
+          "local_path": "sources/0.52.0/en/planning/planning_validator/autoware_planning_validator/README.md",
+          "line": 14,
+          "alt_text": "autoware_planning_validator",
+          "heading": "Planning Validator"
+        }
+      ],
+      "validation": {
+        "status": "fetch_error",
+        "error_type": "ValueError"
+      },
+      "ocr": {
+        "status": "not_run"
+      }
+    }
+  ],
+  "verified_count": 8,
+  "ocr_text_count": 3
+}

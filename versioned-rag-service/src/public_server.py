@@ -21,6 +21,26 @@ from src.figure_sidecar_integrity import validate_reviewed_sidecar
 from src.public_api import router as public_router
 from src.public_knowledge import PublicKnowledgeIndex
 from src.public_retrieval_runtime import PublicRetrievalRuntime
+from src.public_retrieval_runtime import DEFAULT_CONFIG as DEFAULT_PUBLIC_RETRIEVAL_CONFIG
+
+
+SERVICE_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _configured_public_corpus_root() -> Path:
+    configured = os.environ.get("RAG_PUBLIC_CORPUS_ROOT", "").strip()
+    if not configured:
+        return Path(__file__).resolve().parents[1] / "public_corpus"
+    path = Path(configured).expanduser()
+    return path if path.is_absolute() else (SERVICE_ROOT / path).resolve()
+
+
+def _configured_public_retrieval_config() -> Path:
+    configured = os.environ.get("RAG_PUBLIC_RETRIEVAL_CONFIG", "").strip()
+    if not configured:
+        return DEFAULT_PUBLIC_RETRIEVAL_CONFIG
+    path = Path(configured).expanduser()
+    return path if path.is_absolute() else (SERVICE_ROOT / path).resolve()
 
 
 class DiffRequest(BaseModel):
@@ -43,7 +63,7 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None,
                figure_sidecar_lock_path=None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        base_index = index or PublicKnowledgeIndex()
+        base_index = index or PublicKnowledgeIndex(root=_configured_public_corpus_root())
         sidecar_path = Path(figure_sidecar_path or base_index.root / "figure_evidence_reviewed.json")
         lock_path = Path(figure_sidecar_lock_path or base_index.root / "figure_evidence_reviewed.lock.json")
         validate_reviewed_sidecar(
@@ -53,7 +73,9 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None,
         )
         app.state.public_base_knowledge_index = base_index
         app.state.public_knowledge_index = PublicRetrievalRuntime(
-            base_index, config_path=retrieval_config_path, sidecar_path=sidecar_path,
+            base_index,
+            config_path=retrieval_config_path or _configured_public_retrieval_config(),
+            sidecar_path=sidecar_path,
         )
         app.state.public_generator = generator
         generation_allowed = os.environ.get(
@@ -95,8 +117,8 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None,
         yield
 
     app = FastAPI(
-        title="Apache DolphinScheduler Public Engineering Knowledge",
-        version="official-corpus-3.4.3",
+        title="Versioned Public Engineering Knowledge",
+        version="0.1.0",
         lifespan=lifespan,
     )
     app.include_router(public_router)
@@ -105,7 +127,7 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None,
     def health() -> dict:
         return {
             "alive": True, "rag_ready": bool(app.state.public_knowledge_index),
-            "workspace": "Apache DolphinScheduler",
+            "workspace": app.state.public_base_knowledge_index.manifest["workspace"],
             "retrieval_policy": app.state.public_knowledge_index.policy["default_policy"],
             "runtime_retrieval_policy": app.state.public_knowledge_index.runtime_policy,
             "approved_image_chunk_count": len(app.state.public_knowledge_index._images),

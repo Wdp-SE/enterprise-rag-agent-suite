@@ -38,6 +38,8 @@ def _mock_client(monkeypatch):
         "query": question, "results": [dict(CHUNK)], "retrieval_policy": "bm25",
         "consistency_notes": [],
     })
+
+
     monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: {
         "answer": "上游参数优先于启动参数。", "sources": [dict(CHUNK)],
         "evidence": [dict(CHUNK)], "status": "OK", "consistency_notes": [],
@@ -83,6 +85,53 @@ def _mock_client(monkeypatch):
             },
         },
     })
+
+
+def test_workspace_scoped_selectors_follow_the_latest_manifest_version():
+    import public_workbench
+
+    workspace = {
+        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
+        "baseline_version": "0.51.0", "current_version": "0.52.0",
+        "available_versions": ["0.51.0", "0.52.0"], "languages": ["en-US"],
+    }
+
+    assert public_workbench._published_versions(workspace) == ["0.52.0", "0.51.0"]
+    assert public_workbench._review_version_selector(workspace) == (["0.52.0", "0.51.0"], 0)
+    assert public_workbench._published_language_options(workspace) == [("en", "English")]
+
+
+def test_agent_context_filter_keeps_scope_guard_and_rejects_stale_results():
+    import public_workbench
+
+    args = {
+        "summary": "change the planner behavior",
+        "target_version": "0.52.0",
+        "objective": "reduce false pull-out",
+        "constraints": "keep interface stable",
+        "validation_plan": "run planner tests",
+        "selected_type_code": "workflow_behavior",
+        "impact_scope": "behavior path planner",
+    }
+    assert public_workbench._request_context_matches({
+        "request_summary": args["summary"], "scope_status": "OUT_OF_SCOPE",
+    }, **args)
+
+    valid = {
+        "request_summary": args["summary"],
+        "request_plan": {
+            "target_version": "0.52.0", "impact_scope": "behavior path planner",
+            "change_type": "workflow_behavior", "classification_source": "user_selected",
+        },
+        "request_context": {
+            "target_version": "0.52.0", "objective": args["objective"],
+            "constraints": args["constraints"], "validation_plan": args["validation_plan"],
+        },
+    }
+    assert public_workbench._request_context_matches(valid, **args)
+    assert not public_workbench._request_context_matches(
+        valid, **{**args, "target_version": "0.51.0"}
+    )
 
 
 def _state_get(session_state, key, default=None):

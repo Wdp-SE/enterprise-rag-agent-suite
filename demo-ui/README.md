@@ -3,7 +3,7 @@
 - [GitHub 源码仓库](https://github.com/Wdp-SE/enterprise-rag-agent-suite)
 - [在线工作台](https://enterprise-rag-agent-suite-bfmkgsimdisxcewgco7ydk.streamlit.app/)
 
-默认公网入口 [app.py](app.py) 加载 **Apache DolphinScheduler 官方公开资料工作台**。知识服务从 RAG 后端的固定语料清单读取当前版本与历史版本，默认选择清单声明的当前已收录版本；它不会实时追踪 Apache 上游。工作台提供中文优先/中英双语检索、官方原文引用和可核验的资料差异提醒。变更审查 Agent 保留自然语言原文，可选补充变更类型与影响范围；未填写类型时用确定性规则归类，无法识别时回退到通用检索。Agent 最多发起 4 次 RAG 查询、选取最多 5 条证据，并显示检索轨迹与结构化证据缺口。人工审核决定和可下载记录只留在当前 Streamlit 会话，不写公共基线。
+默认公网入口 [app.py](app.py) 加载 **Autoware 规划研发知识工作台**。RAG 后端固定收录 Autoware Universe 0.51.0 与 0.52.0 的公开资料，默认选择清单声明的当前已收录版本 0.52.0；它不会实时追踪 Autoware 上游。工作台提供版本检索、来源引用与带版本依据的变更影响审查；两条人工复核图中文字作为派生证据，保留原图 SHA 和固定提交链接。KEP 只用于启发变更提案和审核流程，不进入 RAG 语料。变更审查 Agent 保留自然语言原文，可选补充变更类型与影响范围；未填写类型时用确定性规则归类，无法识别时回退到通用检索。Agent 最多发起 4 次 RAG 查询、选取最多 5 条证据，并显示检索轨迹与结构化证据缺口。人工审核决定会追加写入匿名会话对应的本地 SQLite，并保留 JSON 下载；公网托管临时磁盘可能清空，且未实现登录身份、权限或集中审批。记录不写公共基线。
 
 本仓库还包含本地合成研发资料工作台，用于演示文档版本 Diff、追踪关系、PatchCandidate、审核、冲突检测和候选版本安全激活。它使用完全合成资料，不是第二个项目，也不默认加载在公网入口；仅在本机设置 `DEMO_LEGACY_FIXTURES=true` 后重启进入。
 
@@ -15,27 +15,25 @@
 .\start_prototype.ps1
 ```
 
-访问 <http://127.0.0.1:8502/>。脚本使用仓库内固定的官方资料和轻量索引，不需要历史 runtime 或私有文件；没有模型密钥仍可检索和审查。默认生成服务为 DashScope/Qwen，需在本机**环境变量**配置 `DASHSCOPE_API_KEY`。也可使用 DeepSeek：配置 `DEEPSEEK_API_KEY`，并在启动前设置 `RD_V2_GENERATION_PROVIDER=deepseek`（可选设置 `RD_V2_GENERATION_MODEL=deepseek-v4-flash`）。然后运行 `./start_prototype.ps1 -EnableGeneration`。不要把实际值写进仓库或日志。
+访问 <http://127.0.0.1:8502/>。脚本使用仓库内固定 Autoware 资料和轻量索引，不需要历史 runtime 或私有文件；没有模型密钥仍可检索，模型未启用时会明确说明生成未配置。默认生成服务为 DashScope/Qwen，需在本机**环境变量**配置 `DASHSCOPE_API_KEY`。也可使用 DeepSeek：配置 `DEEPSEEK_API_KEY`，并在启动前设置 `RD_V2_GENERATION_PROVIDER=deepseek`（可选设置 `RD_V2_GENERATION_MODEL=deepseek-v4-flash`）。然后运行 `./start_prototype.ps1 -EnableGeneration`。不要把实际值写进仓库或日志。
 
 手动启动时：在 `versioned-rag-service` 目录运行 `uvicorn src.public_server:app --host 127.0.0.1 --port 8765`，在 `demo-ui` 目录设置 `RAG_API_BASE_URL=http://127.0.0.1:8765` 后运行 `streamlit run app.py --server.port 8502`；使用仓库相应的虚拟环境解释器。
 
 ## 操作路径
 
-1. “可信检索问答”：选版本和语言，输入问题，先查看答案，再核对引用依据 Top 3；其余结果折叠。“技术详情”才显示检索得分，该分数不是事实可信度。
-2. “发起变更审查”：用自然语言描述假设变更；需要时展开可选字段补充变更类型与影响范围。系统拆分检索子问题并在当前版本资料中寻找证据，展示规则分类、检索轨迹、影响候选和结构化证据缺口；可选片段做修改前后对照，最后由人审核。人工决定绑定当前任务编号，可下载包含请求指纹、证据 ID、决定和时间的会话 JSON，但不会自动进入审批系统。仅官方 PR 明确引用 DSIP 的关系会标记为已确认；语义检索只标记建议。
-3. “检索评测”页面保留早期字符哈希 Dense 的历史对照，不代表真实 multilingual E5 选型结果，也不是当前扩充语料的质量指标。当前默认为 Chunk A（1250 chars、无 overlap）+ BM25 + Top-5；V4 在当前语料上重新核验 BM25，并独立比较了经审核截图 OCR 候选。候选虽改善图片与跨资料召回，但因原文锚点召回下降 9.4 个百分点未晋级，线上继续使用 BM25。服务未配置在线模型或生成未通过引用校验时，问答页只展示待核对的检索候选。
+1. “可信检索问答”：默认 0.52.0，可切换到 0.51.0；输入关于 Start/Goal Planner、planning validator 或 trajectory checker 的问题，再核对带版本固定来源的引用。可问搜索优先级图有哪些标签，或 Goal Planner 图片中的 drivable area / obstacle stop 标记。“技术详情”才显示检索得分，该分数不是事实可信度。
+2. “发起变更审查”：用自然语言描述假设变更；需要时展开可选字段补充变更类型与影响范围。系统拆分检索子问题并在当前版本资料中寻找证据，展示规则分类、检索轨迹、影响候选和结构化证据缺口；可选片段做修改前后对照，最后由人审核。人工决定绑定当前任务编号，可下载包含请求指纹、证据 ID、决定和时间的会话 JSON，但不会自动进入审批系统。仅有来源原文明确支持的文档关联才会标为已确认；主题相似或模型判断只作为待核对建议。
+3. “检索评测”页按当前 Autoware 语料与实现指纹展示 16 道冻结检索题的对照。`bm25_figure_ocr` 在 Top-5 必需来源指标不低于 BM25 的同时命中 2/2 图中文字证据；Dev 与 Holdout 各只有一道无答案题，仍均召回候选（1/1），所以不能声称具备可靠拒答或高答案准确率。旧 Apache DolphinScheduler 的 V1-V4 结果仅作历史工程记录，不能套用到 Autoware。服务未配置在线模型或生成未通过引用校验时，问答页保留可核对的检索候选与明确状态。
 
 查询拆解评测使用 8 条手工样例测类型分类、子问题覆盖及 4 次查询上限：`python evaluation/agent_query_decomposition/run_evaluation.py`。这是规则规划契约的轻量离线评测，不代表端到端检索准确率、回答正确率或线上延迟。
 
 ## 检索结论与已知限制
 
-当前运行默认仍为 BM25 + Top-5、Chunk A 为 1250 chars 且无 overlap，不设置文档数上限。旧版 52 份来源上的 multilingual E5 与 Hybrid 仅用于同条件选型比较，不进入正式链路；当时 Hybrid 的 MRR 仅小幅增加，Hit@1、Hit@5、双来源完整命中没有改善，P95 明显高于 BM25。V1 的四条跨文档题双来源完整命中为 0/4；其 HOLDOUT 是既有 46 条题目的回顾性确定划分，不是独立真实用户测试。
+当前公网服务使用 `bm25_figure_ocr` 与 Top-5；文字检索仍以 BM25 为基础，只把命中至少两个图中文字词且不挤掉 Top-5 唯一来源的审核图中文字加入证据。Autoware 0.51/0.52 语料为固定快照，不设置来源上限。旧 DolphinScheduler 语料上的 multilingual E5、Hybrid 及 V1-V4 数字都不代表当前 Autoware 检索表现；新的小型 HOLDOUT 也不是独立真实用户测试。题集和对照见[Autoware 检索评测说明](../evaluation/autoware_retrieval_v1/README.md)。
 
-历史 V2 检索质量实验在扩充之前的 52 份来源和 659 个 chunk 上比较了 BM25 与实验性字段加权候选。候选只在 DEV 上提升跨文档完整命中，未通过一次性 HOLDOUT 门槛，因此工作台没有切换默认策略。当前语料已扩至 132 份来源和 1322 个 chunk，并已通过下面的 V3 独立评测；不能把 V2 历史成绩当作当前成绩。结果和指标定义见[V2 检索质量实验报告](../evaluation/real_world_retrieval/quality_v2/report.md)。
+旧 DolphinScheduler 语料上的 V2-V4 检索实验、指标与图片清单保留在 `evaluation/real_world_retrieval/`，作为历史工程记录；它们不能说明当前 Autoware 语料的检索效果。当前策略与冻结题集结果以 [Autoware 检索评测说明](../evaluation/autoware_retrieval_v1/README.md)为准。
 
-针对当前语料，V3 冻结 72 道新业务题并锁定 BM25；结果现作为历史复评记录。V4 冻结 104 道跨资料、跨版本、截图 OCR、图文联合和无答案问题。53 道 HOLDOUT 上，BM25 完整来源@5 为 85.7%、原文锚点召回为 79.2%；OCR 融合候选分别为 91.8% 和 69.8%，跨资料完整命中从 37.5% 提升至 75%，图片 Hit@5 为 100%。锚点下降 9.4 个百分点超过 5 点门槛，所以候选未晋级；无答案题仍全部召回候选（4/4），这不等于回答幻觉。nDCG 存在重复计数缺陷，不纳入决策。题库、锁文件、基线与候选结果见[V4 评测说明](../evaluation/real_world_retrieval/quality_v4/README.md)和[V4 报告](../evaluation/real_world_retrieval/quality_v4/report.md)；已开封的 HOLDOUT 不得用于继续调参。
-
-132 份语料仍是官方资料的有限子集。15 张固定提交截图的人工复核 OCR 已进入实验侧车，但融合排序因原文锚点回退未进入公共服务默认链路；复杂流程图关系仍无法由 OCR 表示。规则分类使用小型关键词表，遇到领域新词时可能回退为通用类别；审查状态保存在当前 Session，下载审查 JSON 需要用户自行保存，不修改公共语料或 Apache 上游。系统不实现 locale sibling consistency；影响候选需要人工复核，审查结果不会写回公共资料。历史选型详见[最终选型报告](../evaluation/real_world_retrieval/final_selection/final_selection.md)。
+当前 22 份 Autoware 来源只覆盖规划、路径生成和验证相关模块，不覆盖整个 Autoware；目前只有两张图的清晰标签经过人工复核，复杂图形关系不转成文本事实。Dev/Holdout 各只有一道无答案题，且都返回了候选；拒答阈值仍需扩大题集后再评估。规则分类使用小型关键词表，遇到领域新词时可能回退为通用类别；审查状态保存在当前 Session，下载审查 JSON 需要用户自行保存，不修改公共语料或 Autoware 上游。系统不实现 locale sibling consistency；影响候选需要人工复核，审查结果不会写回公共资料。
 
 ## 云端配置
 
