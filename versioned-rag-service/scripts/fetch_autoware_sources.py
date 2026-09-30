@@ -50,6 +50,7 @@ def fetch_pinned_sources(selection_path: Path, destination: Path, *, fetcher=_fe
             content = fetcher(url)
             if not isinstance(content, bytes) or len(content) > MAX_SOURCE_BYTES:
                 raise ValueError(f"invalid pinned source response: {relative}")
+            content = content.replace(b"\r\n", b"\n")
             if relative != "LICENSE":
                 content.decode("utf-8")
             target = root.joinpath(*PurePosixPath(relative).parts)

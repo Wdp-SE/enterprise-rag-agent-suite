@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -150,6 +151,8 @@ def test_checkout_info_rejects_tampered_source_snapshot(tmp_path):
         fetcher=lambda url: b"Apache License Version 2.0" if url.endswith("/LICENSE") else b"# original\n",
     )
     source = snapshots["0.51.0"]["root"] / "planning/validator/README.md"
+    source.write_bytes(b"# original\r\n")
+    assert _checkout_info(snapshots["0.51.0"]["root"], "0.51.0")["commit"] == "a" * 40
     source.write_text("# tampered\n", encoding="utf-8")
 
     with pytest.raises(ValueError, match="hash mismatch"):
@@ -182,6 +185,38 @@ def test_checkout_info_rejects_missing_hash_for_allowlisted_source(tmp_path):
             root,
             "0.51.0",
             required_files={"LICENSE", "planning/validator/README.md"},
+        )
+
+
+def test_checkout_info_hash_verifies_allowlisted_files_in_exact_tag_worktree(tmp_path):
+    root = tmp_path / "tag-checkout"
+    (root / "planning" / "validator").mkdir(parents=True)
+    (root / "LICENSE").write_text("Apache License\nVersion 2.0\n", encoding="utf-8")
+    source_path = root / "planning" / "validator" / "README.md"
+    source_path.write_text("# pinned content\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(root), "init", "-q"], check=True)
+    subprocess.run(["git", "-C", str(root), "add", "LICENSE", "planning/validator/README.md"], check=True)
+    subprocess.run([
+        "git", "-C", str(root), "-c", "user.name=Test", "-c", "user.email=test@example.invalid",
+        "commit", "-qm", "pinned",
+    ], check=True)
+    subprocess.run(["git", "-C", str(root), "tag", "0.51.0"], check=True)
+    expected_sha256 = hashlib.sha256(b"# pinned content\n").hexdigest()
+    source_path.write_bytes(b"# pinned content\r\n")
+    pinned = _checkout_info(
+        root,
+        "0.51.0",
+        required_files={"planning/validator/README.md"},
+    )
+    assert pinned["files_sha256"]["planning/validator/README.md"] == expected_sha256
+    assert "LICENSE" in pinned["files_sha256"]
+    source_path.write_text("# modified after tag\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="sha256 mismatch"):
+        _checkout_info(
+            root,
+            "0.51.0",
+            required_files={"planning/validator/README.md"},
         )
 
 

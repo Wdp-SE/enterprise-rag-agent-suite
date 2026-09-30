@@ -6,6 +6,13 @@ versioned-rag-service/public_demo_artifacts/rd-v2-public-demo-v1/*.faiss binary
 versioned-rag-service/public_corpus/sources/** -text whitespace=cr-at-eol,-blank-at-eof
 versioned-rag-service/public_corpus/corpus_manifest.json -text whitespace=cr-at-eol
 versioned-rag-service/public_corpus/chunks.json text eol=lf
+# Keep the new Autoware corpus reproducible across Windows and Linux. Upstream
+# snapshots and their manifest are byte-pinned Git content; generated JSON uses LF.
+versioned-rag-service/public_corpus_autoware/sources/** -text whitespace=cr-at-eol,-blank-at-eof
+versioned-rag-service/public_corpus_autoware/corpus_manifest.json -text whitespace=cr-at-eol
+versioned-rag-service/public_corpus_autoware/LICENSE -text whitespace=cr-at-eol
+versioned-rag-service/public_corpus_autoware/*.json text eol=lf
+versioned-rag-service/public_corpus_autoware/NOTICE text eol=lf
 # The frozen V3 retrieval candidate hashes the exact code bytes. Preserve its
 # mixed historical line endings so Linux deployments match the evaluation lock.
 versioned-rag-service/src/public_knowledge.py -text whitespace=cr-at-eol

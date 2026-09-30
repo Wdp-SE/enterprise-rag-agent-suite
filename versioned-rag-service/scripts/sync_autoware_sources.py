@@ -24,6 +24,11 @@ DEFAULT_POLICY = Path(__file__).resolve().parents[1] / "config" / "autoware_retr
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
+def _canonical_text_bytes(content: bytes) -> bytes:
+    """Treat Windows checkout CRLF as equivalent to the pinned Git text blob."""
+    return content.replace(b"\r\n", b"\n")
+
+
 def _normalized_repo_path(value: str) -> str:
     if not isinstance(value, str) or not value or "\\" in value or "\x00" in value:
         raise ValueError("invalid allowlisted source path")
@@ -77,6 +82,7 @@ def load_source_selection(path: Path = DEFAULT_SELECTION) -> list[dict]:
 
 
 def _write_manifest_source(output_root: Path, version: str, commit: str, item: dict, content: bytes) -> dict:
+    content = _canonical_text_bytes(content)
     local_path = PurePosixPath("sources") / version / item["language"] / PurePosixPath(item["document_path"])
     destination = output_root.joinpath(*local_path.parts)
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -158,7 +164,9 @@ def build_pinned_sources(checkouts: dict[str, dict], selection: list[dict], outp
 
     output_root = Path(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(roots[CURRENT_VERSION] / "LICENSE", output_root / "LICENSE")
+    (output_root / "LICENSE").write_bytes(
+        _canonical_text_bytes((roots[CURRENT_VERSION] / "LICENSE").read_bytes())
+    )
     notice = (
         "This corpus contains selected documentation files from Autoware Universe.\n"
         f"Repository: https://github.com/{REPOSITORY}\n"
@@ -207,8 +215,12 @@ def _checkout_info(root: Path, expected_tag: str, *, required_files: set[str] | 
             path = root.joinpath(*PurePosixPath(relative).parts).resolve()
             if not path.is_relative_to(root):
                 raise ValueError(f"source snapshot path escapes checkout: {relative}")
-            if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+            actual_sha256 = hashlib.sha256(_canonical_text_bytes(path.read_bytes())).hexdigest() if path.is_file() else None
+            if actual_sha256 != digest:
                 raise ValueError(f"source snapshot hash mismatch: {relative}")
+        license_text = (root / "LICENSE").read_text(encoding="utf-8", errors="replace")
+        if "Apache License" not in license_text or "Version 2.0" not in license_text:
+            raise ValueError("repository license is not verified as Apache-2.0")
         return {"root": root, "commit": commit}
     actual_tag = subprocess.run(
         ["git", "-C", str(root), "describe", "--exact-match", "--tags", "HEAD"],
@@ -216,18 +228,31 @@ def _checkout_info(root: Path, expected_tag: str, *, required_files: set[str] | 
     ).stdout.strip()
     if actual_tag != expected_tag:
         raise ValueError(f"checkout must be the exact official tag {expected_tag}")
-    for relative in required:
-        path = root.joinpath(*PurePosixPath(relative).parts).resolve()
-        if not path.is_relative_to(root) or not path.is_file():
-            raise ValueError(f"allowlisted source is missing from pinned checkout: {relative}")
-    license_text = (root / "LICENSE").read_text(encoding="utf-8", errors="replace")
-    if "Apache License" not in license_text or "Version 2.0" not in license_text:
-        raise ValueError("repository license is not verified as Apache-2.0")
     commit = subprocess.run(
         ["git", "-C", str(root), "rev-parse", "HEAD"],
         capture_output=True, text=True, check=True,
     ).stdout.strip()
-    return {"root": root, "commit": commit}
+    file_hashes = {}
+    for relative in required:
+        path = root.joinpath(*PurePosixPath(relative).parts).resolve()
+        if not path.is_relative_to(root) or not path.is_file():
+            raise ValueError(f"allowlisted source is missing from pinned checkout: {relative}")
+        try:
+            pinned_content = subprocess.run(
+                ["git", "-C", str(root), "show", f"{commit}:{relative}"],
+                capture_output=True, check=True,
+            ).stdout
+        except subprocess.CalledProcessError as exc:
+            raise ValueError(f"allowlisted source is missing from pinned commit: {relative}") from exc
+        pinned_sha256 = hashlib.sha256(_canonical_text_bytes(pinned_content)).hexdigest()
+        actual_sha256 = hashlib.sha256(_canonical_text_bytes(path.read_bytes())).hexdigest()
+        if actual_sha256 != pinned_sha256:
+            raise ValueError(f"source snapshot sha256 mismatch: {relative}")
+        file_hashes[relative] = pinned_sha256
+    license_text = (root / "LICENSE").read_text(encoding="utf-8", errors="replace")
+    if "Apache License" not in license_text or "Version 2.0" not in license_text:
+        raise ValueError("repository license is not verified as Apache-2.0")
+    return {"root": root, "commit": commit, "files_sha256": file_hashes}
 
 
 def main(argv: list[str] | None = None) -> int:
