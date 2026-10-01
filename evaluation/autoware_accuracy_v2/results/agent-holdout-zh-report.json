@@ -1,0 +1,4218 @@
+{
+  "schema_version": 1,
+  "evaluation": "autoware_accuracy_v2_agent",
+  "split": "holdout",
+  "missing_result_count": 0,
+  "results": {
+    "case_count": 28,
+    "metrics": {
+      "evidence_source_recall": 0.2727272727272727,
+      "complete_evidence_source_rate": 0.2608695652173913,
+      "model_evaluated_case_count": 0,
+      "impact_source_recall": null,
+      "complete_impact_source_rate": null,
+      "critical_impact_miss_count": null,
+      "critical_impact_miss_rate": null,
+      "false_no_impact_count": null,
+      "false_impact_candidate_count": null,
+      "checklist_item_coverage": null,
+      "relation_state_accuracy": 0.2727272727272727,
+      "expected_gap_recall": 0.84,
+      "abstention_evaluated_case_count": 1,
+      "retrieval_check_coverage_rate": 0.8620689655172413,
+      "retrieval_language_coverage_rate": 0.8571428571428571,
+      "complete_retrieval_case_rate": 0.8571428571428571,
+      "abstention_precision": 1.0,
+      "abstention_recall": 1.0,
+      "search_calls_mean": 3,
+      "selected_evidence_mean": 6.857142857142857,
+      "latency_p50_ms": 123.383,
+      "latency_p95_ms": 171.422
+    },
+    "cases": [
+      {
+        "case_id": "holdout-review-anchor-01",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:en:autoware-documentation/datasets",
+          "docs-main:en:autoware-documentation/installation/autoware/source-installation"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/datasets",
+          "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+          "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation",
+          "docs-main:zh:autoware-documentation/tutorials/scenario-simulation/planning-simulation/installation"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 4,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 4,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:en:autoware-documentation/datasets": {
+            "expected": "candidate",
+            "actual": null
+          },
+          "docs-main:en:autoware-documentation/installation/autoware/source-installation": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-02",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+          "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+          "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+          "docs-main:zh:autoware-documentation/installation/autoware/source-installation"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings": {
+            "expected": "candidate",
+            "actual": null
+          },
+          "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-03",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:en:autoware-documentation/contributing/documentation-guidelines",
+          "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+          "docs-main:zh:autoware-documentation/datasets",
+          "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fd-slam",
+          "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/enable-multicast-for-lo"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 4,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 4,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:en:autoware-documentation/contributing/documentation-guidelines": {
+            "expected": "candidate",
+            "actual": null
+          },
+          "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-04",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:en:autoware-documentation/installation/autoware/docker-installation",
+          "docs-main:en:autoware-documentation/installation/autoware/source-installation"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/contributing/discussion-guidelines",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/calibrating-sensors/lidar-imu-calibration",
+          "docs-main:zh:autoware-documentation/installation",
+          "docs-main:zh:autoware-documentation/installation/autoware/docker-installation",
+          "docs-main:zh:autoware-documentation/support/troubleshooting"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:en:autoware-documentation/installation/autoware/docker-installation": {
+            "expected": "candidate",
+            "actual": null
+          },
+          "docs-main:en:autoware-documentation/installation/autoware/source-installation": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-05",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+          "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/review-tips"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-tips",
+          "docs-main:zh:autoware-documentation/datasets",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fd-slam",
+          "docs-main:zh:autoware-documentation/how-to-guides/others/debug-autoware",
+          "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 4,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 4,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners": {
+            "expected": "candidate",
+            "actual": null
+          },
+          "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/review-tips": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-06",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:zh:autoware-documentation/contributing/documentation-guidelines"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/datasets",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:zh:autoware-documentation/contributing/documentation-guidelines": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-07",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:zh:autoware-documentation/contributing/license"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/contributing/license",
+          "docs-main:zh:autoware-documentation/datasets",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/enable-multicast-for-lo",
+          "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {}
+      },
+      {
+        "case_id": "holdout-review-anchor-08",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:zh:autoware-documentation/datasets"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/datasets",
+          "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {}
+      },
+      {
+        "case_id": "holdout-review-anchor-09",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/tuning-parameters-and-performance/evaluating-controller-performance",
+          "docs-main:zh:autoware-documentation/installation/autoware/docker-installation",
+          "docs-main:zh:autoware-documentation/support/troubleshooting"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {}
+      },
+      {
+        "case_id": "holdout-review-anchor-10",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:zh:autoware-documentation/installation/autoware/source-installation"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/sc-a-loam",
+          "docs-main:zh:autoware-documentation/tutorials/scenario-simulation/planning-simulation/installation"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:zh:autoware-documentation/installation/autoware/source-installation": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-11",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/console-settings"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+          "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/console-settings": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-12",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+          "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {}
+      },
+      {
+        "case_id": "holdout-review-anchor-13",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/code-owners"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {}
+      },
+      {
+        "case_id": "holdout-review-anchor-14",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-tips"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/ai-pr-review",
+          "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-guidelines",
+          "docs-main:zh:autoware-documentation/datasets",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fast-lio-slam"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-tips": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-15",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:zh:autoware-documentation/design/autoware-concepts/difference-from-ai-and-auto"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/design",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/node-diagram",
+          "docs-main:zh:autoware-documentation/design/autoware-concepts",
+          "docs-main:zh:autoware-documentation/design/autoware-concepts/difference-from-ai-and-auto",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces/components/vehicle-interface"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {}
+      },
+      {
+        "case_id": "holdout-review-anchor-16",
+        "severity": "low",
+        "required_impact_sources": [
+          "1.9.0:en:autoware-documentation/community/support/troubleshooting/performance-troubleshooting"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": false,
+          "covered_check_count": 0,
+          "covered_languages": [],
+          "evidence_budget": 8,
+          "incomplete_reason": "未召回中文证据；3 项变更检查未同时覆盖所有指定语种；没有可供审查的有效证据",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 0
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "1.9.0:en:autoware-documentation/community/support/troubleshooting/performance-troubleshooting": {
+            "expected": "none",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-17",
+        "severity": "low",
+        "required_impact_sources": [
+          "1.9.0:en:autoware-documentation/community/support/troubleshooting/runtime-troubleshooting"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": false,
+          "covered_check_count": 0,
+          "covered_languages": [],
+          "evidence_budget": 8,
+          "incomplete_reason": "未召回中文证据；3 项变更检查未同时覆盖所有指定语种；没有可供审查的有效证据",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 0
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "1.9.0:en:autoware-documentation/community/support/troubleshooting/runtime-troubleshooting": {
+            "expected": "none",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-18",
+        "severity": "low",
+        "required_impact_sources": [
+          "1.9.0:en:autoware-documentation/demos/planning-sim/crosswalk"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": false,
+          "covered_check_count": 0,
+          "covered_languages": [],
+          "evidence_budget": 8,
+          "incomplete_reason": "未召回中文证据；3 项变更检查未同时覆盖所有指定语种；没有可供审查的有效证据",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 0
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "1.9.0:en:autoware-documentation/demos/planning-sim/crosswalk": {
+            "expected": "none",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-19",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:en:autoware-documentation/contributing/documentation-guidelines",
+          "docs-main:zh:autoware-documentation/contributing/documentation-guidelines"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/contributing/documentation-guidelines",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:en:autoware-documentation/contributing/documentation-guidelines": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-20",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:en:autoware-documentation/contributing/license",
+          "docs-main:zh:autoware-documentation/contributing/license"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:en:autoware-documentation/contributing/license": {
+            "expected": "candidate",
+            "actual": null
+          },
+          "docs-main:zh:autoware-documentation/contributing/license": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-21",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:en:autoware-documentation/datasets",
+          "docs-main:zh:autoware-documentation/datasets"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/datasets",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:en:autoware-documentation/datasets": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-22",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:en:autoware-documentation/installation/autoware/docker-installation",
+          "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model",
+          "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:en:autoware-documentation/installation/autoware/docker-installation": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-anchor-23",
+        "severity": "low",
+        "required_impact_sources": [
+          "docs-main:en:autoware-documentation/installation/autoware/source-installation",
+          "docs-main:zh:autoware-documentation/installation/autoware/source-installation"
+        ],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {
+          "docs-main:en:autoware-documentation/installation/autoware/source-installation": {
+            "expected": "candidate",
+            "actual": null
+          },
+          "docs-main:zh:autoware-documentation/installation/autoware/source-installation": {
+            "expected": "candidate",
+            "actual": null
+          }
+        }
+      },
+      {
+        "case_id": "holdout-review-no-answer-01",
+        "severity": "high",
+        "required_impact_sources": [],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/contributing",
+          "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+          "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/directory-structure",
+          "docs-main:zh:autoware-documentation/design/autoware-architecture/map/map-requirements/vector-map-requirements-overview/category_intersection",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/how-to-guides/others/an-example-procedure-for-adding-and-evaluating-a-new-node",
+          "docs-main:zh:autoware-documentation/support/support-guidelines",
+          "docs-main:zh:autoware-documentation/support/troubleshooting"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {}
+      },
+      {
+        "case_id": "holdout-review-no-answer-02",
+        "severity": "high",
+        "required_impact_sources": [],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/contributing",
+          "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/support/support-guidelines",
+          "docs-main:zh:autoware-documentation/support/troubleshooting"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {}
+      },
+      {
+        "case_id": "holdout-review-no-answer-03",
+        "severity": "high",
+        "required_impact_sources": [],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/contributing",
+          "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+          "docs-main:zh:autoware-documentation/support/support-guidelines",
+          "docs-main:zh:autoware-documentation/support/troubleshooting"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {}
+      },
+      {
+        "case_id": "holdout-review-no-answer-04",
+        "severity": "high",
+        "required_impact_sources": [],
+        "impact_candidates": [],
+        "retrieved_source_ids": [
+          "docs-main:zh:autoware-documentation/contributing",
+          "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fast-lio-slam",
+          "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model",
+          "docs-main:zh:autoware-documentation/support/support-guidelines",
+          "docs-main:zh:autoware-documentation/support/troubleshooting"
+        ],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": true,
+          "covered_check_count": 3,
+          "covered_languages": [
+            "zh"
+          ],
+          "evidence_budget": 8,
+          "incomplete_reason": "",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 8
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {}
+      },
+      {
+        "case_id": "holdout-review-no-answer-05",
+        "severity": "high",
+        "required_impact_sources": [],
+        "impact_candidates": [],
+        "retrieved_source_ids": [],
+        "coverage": {
+          "attempted_languages": [
+            "zh"
+          ],
+          "complete": false,
+          "covered_check_count": 0,
+          "covered_languages": [],
+          "evidence_budget": 8,
+          "incomplete_reason": "本工作台当前只检索已配置知识空间的官方公开资料，未接入公司内部 API、Jira、通讯录或内部制度。为避免把企业私有问题误交给公开语料或模型，已在检索前停止。",
+          "required_check_count": 3,
+          "search_failure_count": 0,
+          "selected_evidence_count": 0
+        },
+        "critical_misses": null,
+        "missing_checklist_items": null,
+        "relation_mismatches": {}
+      }
+    ],
+    "by_severity": {
+      "high": {
+        "case_count": 5,
+        "metrics": {
+          "evidence_source_recall": null,
+          "complete_evidence_source_rate": null,
+          "model_evaluated_case_count": 0,
+          "impact_source_recall": null,
+          "complete_impact_source_rate": null,
+          "critical_impact_miss_count": null,
+          "critical_impact_miss_rate": null,
+          "false_no_impact_count": null,
+          "false_impact_candidate_count": null,
+          "checklist_item_coverage": null,
+          "relation_state_accuracy": null,
+          "expected_gap_recall": 0.2,
+          "abstention_evaluated_case_count": 1,
+          "retrieval_check_coverage_rate": 0.8,
+          "retrieval_language_coverage_rate": 0.8,
+          "complete_retrieval_case_rate": 0.8,
+          "abstention_precision": 1.0,
+          "abstention_recall": 1.0,
+          "search_calls_mean": 2.4,
+          "selected_evidence_mean": 6.4,
+          "latency_p50_ms": 85.439,
+          "latency_p95_ms": 93.111
+        },
+        "cases": [
+          {
+            "case_id": "holdout-review-no-answer-01",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing",
+              "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+              "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/directory-structure",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/map/map-requirements/vector-map-requirements-overview/category_intersection",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/others/an-example-procedure-for-adding-and-evaluating-a-new-node",
+              "docs-main:zh:autoware-documentation/support/support-guidelines",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-no-answer-02",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/support/support-guidelines",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-no-answer-03",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/support/support-guidelines",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-no-answer-04",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fast-lio-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model",
+              "docs-main:zh:autoware-documentation/support/support-guidelines",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-no-answer-05",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": false,
+              "covered_check_count": 0,
+              "covered_languages": [],
+              "evidence_budget": 8,
+              "incomplete_reason": "本工作台当前只检索已配置知识空间的官方公开资料，未接入公司内部 API、Jira、通讯录或内部制度。为避免把企业私有问题误交给公开语料或模型，已在检索前停止。",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 0
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          }
+        ]
+      },
+      "low": {
+        "case_count": 23,
+        "metrics": {
+          "evidence_source_recall": 0.2727272727272727,
+          "complete_evidence_source_rate": 0.2608695652173913,
+          "model_evaluated_case_count": 0,
+          "impact_source_recall": null,
+          "complete_impact_source_rate": null,
+          "critical_impact_miss_count": null,
+          "critical_impact_miss_rate": null,
+          "false_no_impact_count": null,
+          "false_impact_candidate_count": null,
+          "checklist_item_coverage": null,
+          "relation_state_accuracy": 0.2727272727272727,
+          "expected_gap_recall": 1.0,
+          "abstention_evaluated_case_count": 0,
+          "retrieval_check_coverage_rate": 0.875,
+          "retrieval_language_coverage_rate": 0.8695652173913043,
+          "complete_retrieval_case_rate": 0.8695652173913043,
+          "abstention_precision": null,
+          "abstention_recall": null,
+          "search_calls_mean": 3.130434782608696,
+          "selected_evidence_mean": 6.956521739130435,
+          "latency_p50_ms": 128.276,
+          "latency_p95_ms": 171.422
+        },
+        "cases": [
+          {
+            "case_id": "holdout-review-anchor-01",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/datasets",
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation",
+              "docs-main:zh:autoware-documentation/tutorials/scenario-simulation/planning-simulation/installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 4,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 4,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/datasets": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-02",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+              "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-03",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/contributing/documentation-guidelines",
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fd-slam",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/enable-multicast-for-lo"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 4,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 4,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/contributing/documentation-guidelines": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-04",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/installation/autoware/docker-installation",
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/discussion-guidelines",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/calibrating-sensors/lidar-imu-calibration",
+              "docs-main:zh:autoware-documentation/installation",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/installation/autoware/docker-installation": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-05",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/review-tips"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-tips",
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fd-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/others/debug-autoware",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 4,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 4,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/review-tips": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-06",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/contributing/documentation-guidelines"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:zh:autoware-documentation/contributing/documentation-guidelines": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-07",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/contributing/license"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/license",
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/enable-multicast-for-lo",
+              "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-08",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/datasets"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-09",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/tuning-parameters-and-performance/evaluating-controller-performance",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-10",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/sc-a-loam",
+              "docs-main:zh:autoware-documentation/tutorials/scenario-simulation/planning-simulation/installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-11",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/console-settings"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/console-settings": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-12",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-13",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/code-owners"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-14",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-tips"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/ai-pr-review",
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-guidelines",
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fast-lio-slam"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-tips": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-15",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/design/autoware-concepts/difference-from-ai-and-auto"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/node-diagram",
+              "docs-main:zh:autoware-documentation/design/autoware-concepts",
+              "docs-main:zh:autoware-documentation/design/autoware-concepts/difference-from-ai-and-auto",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces/components/vehicle-interface"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-16",
+            "severity": "low",
+            "required_impact_sources": [
+              "1.9.0:en:autoware-documentation/community/support/troubleshooting/performance-troubleshooting"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": false,
+              "covered_check_count": 0,
+              "covered_languages": [],
+              "evidence_budget": 8,
+              "incomplete_reason": "未召回中文证据；3 项变更检查未同时覆盖所有指定语种；没有可供审查的有效证据",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 0
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "1.9.0:en:autoware-documentation/community/support/troubleshooting/performance-troubleshooting": {
+                "expected": "none",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-17",
+            "severity": "low",
+            "required_impact_sources": [
+              "1.9.0:en:autoware-documentation/community/support/troubleshooting/runtime-troubleshooting"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": false,
+              "covered_check_count": 0,
+              "covered_languages": [],
+              "evidence_budget": 8,
+              "incomplete_reason": "未召回中文证据；3 项变更检查未同时覆盖所有指定语种；没有可供审查的有效证据",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 0
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "1.9.0:en:autoware-documentation/community/support/troubleshooting/runtime-troubleshooting": {
+                "expected": "none",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-18",
+            "severity": "low",
+            "required_impact_sources": [
+              "1.9.0:en:autoware-documentation/demos/planning-sim/crosswalk"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": false,
+              "covered_check_count": 0,
+              "covered_languages": [],
+              "evidence_budget": 8,
+              "incomplete_reason": "未召回中文证据；3 项变更检查未同时覆盖所有指定语种；没有可供审查的有效证据",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 0
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "1.9.0:en:autoware-documentation/demos/planning-sim/crosswalk": {
+                "expected": "none",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-19",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/contributing/documentation-guidelines",
+              "docs-main:zh:autoware-documentation/contributing/documentation-guidelines"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/documentation-guidelines",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/contributing/documentation-guidelines": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-20",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/contributing/license",
+              "docs-main:zh:autoware-documentation/contributing/license"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/contributing/license": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:zh:autoware-documentation/contributing/license": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-21",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/datasets"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/datasets": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-22",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/installation/autoware/docker-installation",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/installation/autoware/docker-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-23",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation",
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          }
+        ]
+      }
+    },
+    "by_change_type": {
+      "general": {
+        "case_count": 28,
+        "metrics": {
+          "evidence_source_recall": 0.2727272727272727,
+          "complete_evidence_source_rate": 0.2608695652173913,
+          "model_evaluated_case_count": 0,
+          "impact_source_recall": null,
+          "complete_impact_source_rate": null,
+          "critical_impact_miss_count": null,
+          "critical_impact_miss_rate": null,
+          "false_no_impact_count": null,
+          "false_impact_candidate_count": null,
+          "checklist_item_coverage": null,
+          "relation_state_accuracy": 0.2727272727272727,
+          "expected_gap_recall": 0.84,
+          "abstention_evaluated_case_count": 1,
+          "retrieval_check_coverage_rate": 0.8620689655172413,
+          "retrieval_language_coverage_rate": 0.8571428571428571,
+          "complete_retrieval_case_rate": 0.8571428571428571,
+          "abstention_precision": 1.0,
+          "abstention_recall": 1.0,
+          "search_calls_mean": 3,
+          "selected_evidence_mean": 6.857142857142857,
+          "latency_p50_ms": 123.383,
+          "latency_p95_ms": 171.422
+        },
+        "cases": [
+          {
+            "case_id": "holdout-review-anchor-01",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/datasets",
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation",
+              "docs-main:zh:autoware-documentation/tutorials/scenario-simulation/planning-simulation/installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 4,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 4,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/datasets": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-02",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+              "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-03",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/contributing/documentation-guidelines",
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fd-slam",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/enable-multicast-for-lo"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 4,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 4,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/contributing/documentation-guidelines": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-04",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/installation/autoware/docker-installation",
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/discussion-guidelines",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/calibrating-sensors/lidar-imu-calibration",
+              "docs-main:zh:autoware-documentation/installation",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/installation/autoware/docker-installation": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-05",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/review-tips"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-tips",
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fd-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/others/debug-autoware",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 4,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 4,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/review-tips": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-06",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/contributing/documentation-guidelines"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:zh:autoware-documentation/contributing/documentation-guidelines": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-07",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/contributing/license"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/license",
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/enable-multicast-for-lo",
+              "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-08",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/datasets"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-09",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/tuning-parameters-and-performance/evaluating-controller-performance",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-10",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/sc-a-loam",
+              "docs-main:zh:autoware-documentation/tutorials/scenario-simulation/planning-simulation/installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-11",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/console-settings"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/console-settings": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-12",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-13",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/code-owners"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-14",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-tips"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/ai-pr-review",
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-guidelines",
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fast-lio-slam"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-tips": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-15",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/design/autoware-concepts/difference-from-ai-and-auto"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/node-diagram",
+              "docs-main:zh:autoware-documentation/design/autoware-concepts",
+              "docs-main:zh:autoware-documentation/design/autoware-concepts/difference-from-ai-and-auto",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces/components/vehicle-interface"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-16",
+            "severity": "low",
+            "required_impact_sources": [
+              "1.9.0:en:autoware-documentation/community/support/troubleshooting/performance-troubleshooting"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": false,
+              "covered_check_count": 0,
+              "covered_languages": [],
+              "evidence_budget": 8,
+              "incomplete_reason": "未召回中文证据；3 项变更检查未同时覆盖所有指定语种；没有可供审查的有效证据",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 0
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "1.9.0:en:autoware-documentation/community/support/troubleshooting/performance-troubleshooting": {
+                "expected": "none",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-17",
+            "severity": "low",
+            "required_impact_sources": [
+              "1.9.0:en:autoware-documentation/community/support/troubleshooting/runtime-troubleshooting"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": false,
+              "covered_check_count": 0,
+              "covered_languages": [],
+              "evidence_budget": 8,
+              "incomplete_reason": "未召回中文证据；3 项变更检查未同时覆盖所有指定语种；没有可供审查的有效证据",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 0
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "1.9.0:en:autoware-documentation/community/support/troubleshooting/runtime-troubleshooting": {
+                "expected": "none",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-18",
+            "severity": "low",
+            "required_impact_sources": [
+              "1.9.0:en:autoware-documentation/demos/planning-sim/crosswalk"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": false,
+              "covered_check_count": 0,
+              "covered_languages": [],
+              "evidence_budget": 8,
+              "incomplete_reason": "未召回中文证据；3 项变更检查未同时覆盖所有指定语种；没有可供审查的有效证据",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 0
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "1.9.0:en:autoware-documentation/demos/planning-sim/crosswalk": {
+                "expected": "none",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-19",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/contributing/documentation-guidelines",
+              "docs-main:zh:autoware-documentation/contributing/documentation-guidelines"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/documentation-guidelines",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/contributing/documentation-guidelines": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-20",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/contributing/license",
+              "docs-main:zh:autoware-documentation/contributing/license"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/contributing/license": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:zh:autoware-documentation/contributing/license": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-21",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/datasets"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/datasets": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-22",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/installation/autoware/docker-installation",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/installation/autoware/docker-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-23",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation",
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-no-answer-01",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing",
+              "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+              "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/directory-structure",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/map/map-requirements/vector-map-requirements-overview/category_intersection",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/others/an-example-procedure-for-adding-and-evaluating-a-new-node",
+              "docs-main:zh:autoware-documentation/support/support-guidelines",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-no-answer-02",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/support/support-guidelines",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-no-answer-03",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/support/support-guidelines",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-no-answer-04",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fast-lio-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model",
+              "docs-main:zh:autoware-documentation/support/support-guidelines",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-no-answer-05",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": false,
+              "covered_check_count": 0,
+              "covered_languages": [],
+              "evidence_budget": 8,
+              "incomplete_reason": "本工作台当前只检索已配置知识空间的官方公开资料，未接入公司内部 API、Jira、通讯录或内部制度。为避免把企业私有问题误交给公开语料或模型，已在检索前停止。",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 0
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          }
+        ]
+      }
+    },
+    "by_language": {
+      "bilingual": {
+        "case_count": 28,
+        "metrics": {
+          "evidence_source_recall": 0.2727272727272727,
+          "complete_evidence_source_rate": 0.2608695652173913,
+          "model_evaluated_case_count": 0,
+          "impact_source_recall": null,
+          "complete_impact_source_rate": null,
+          "critical_impact_miss_count": null,
+          "critical_impact_miss_rate": null,
+          "false_no_impact_count": null,
+          "false_impact_candidate_count": null,
+          "checklist_item_coverage": null,
+          "relation_state_accuracy": 0.2727272727272727,
+          "expected_gap_recall": 0.84,
+          "abstention_evaluated_case_count": 1,
+          "retrieval_check_coverage_rate": 0.8620689655172413,
+          "retrieval_language_coverage_rate": 0.8571428571428571,
+          "complete_retrieval_case_rate": 0.8571428571428571,
+          "abstention_precision": 1.0,
+          "abstention_recall": 1.0,
+          "search_calls_mean": 3,
+          "selected_evidence_mean": 6.857142857142857,
+          "latency_p50_ms": 123.383,
+          "latency_p95_ms": 171.422
+        },
+        "cases": [
+          {
+            "case_id": "holdout-review-anchor-01",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/datasets",
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation",
+              "docs-main:zh:autoware-documentation/tutorials/scenario-simulation/planning-simulation/installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 4,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 4,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/datasets": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-02",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+              "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-03",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/contributing/documentation-guidelines",
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fd-slam",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/enable-multicast-for-lo"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 4,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 4,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/contributing/documentation-guidelines": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-04",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/installation/autoware/docker-installation",
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/discussion-guidelines",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/calibrating-sensors/lidar-imu-calibration",
+              "docs-main:zh:autoware-documentation/installation",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/installation/autoware/docker-installation": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-05",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/review-tips"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-tips",
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fd-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/others/debug-autoware",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 4,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 4,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/code-owners": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/review-tips": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-06",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/contributing/documentation-guidelines"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:zh:autoware-documentation/contributing/documentation-guidelines": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-07",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/contributing/license"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/license",
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/enable-multicast-for-lo",
+              "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-08",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/datasets"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/tutorials/components_evaluation/localization_evaluation/urban-environment-evaluation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-09",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/tuning-parameters-and-performance/evaluating-controller-performance",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-10",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/sc-a-loam",
+              "docs-main:zh:autoware-documentation/tutorials/scenario-simulation/planning-simulation/installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-11",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/console-settings"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/console-settings": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-12",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/dds-settings",
+              "docs-main:zh:autoware-documentation/installation/additional-settings-for-developers/network-configuration/multiple-computers"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-13",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/code-owners"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/code-owners",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-14",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-tips"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/ai-pr-review",
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-guidelines",
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fast-lio-slam"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/review-tips": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-15",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:zh:autoware-documentation/design/autoware-concepts/difference-from-ai-and-auto"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/node-diagram",
+              "docs-main:zh:autoware-documentation/design/autoware-concepts",
+              "docs-main:zh:autoware-documentation/design/autoware-concepts/difference-from-ai-and-auto",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces/components/vehicle-interface"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-anchor-16",
+            "severity": "low",
+            "required_impact_sources": [
+              "1.9.0:en:autoware-documentation/community/support/troubleshooting/performance-troubleshooting"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": false,
+              "covered_check_count": 0,
+              "covered_languages": [],
+              "evidence_budget": 8,
+              "incomplete_reason": "未召回中文证据；3 项变更检查未同时覆盖所有指定语种；没有可供审查的有效证据",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 0
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "1.9.0:en:autoware-documentation/community/support/troubleshooting/performance-troubleshooting": {
+                "expected": "none",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-17",
+            "severity": "low",
+            "required_impact_sources": [
+              "1.9.0:en:autoware-documentation/community/support/troubleshooting/runtime-troubleshooting"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": false,
+              "covered_check_count": 0,
+              "covered_languages": [],
+              "evidence_budget": 8,
+              "incomplete_reason": "未召回中文证据；3 项变更检查未同时覆盖所有指定语种；没有可供审查的有效证据",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 0
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "1.9.0:en:autoware-documentation/community/support/troubleshooting/runtime-troubleshooting": {
+                "expected": "none",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-18",
+            "severity": "low",
+            "required_impact_sources": [
+              "1.9.0:en:autoware-documentation/demos/planning-sim/crosswalk"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": false,
+              "covered_check_count": 0,
+              "covered_languages": [],
+              "evidence_budget": 8,
+              "incomplete_reason": "未召回中文证据；3 项变更检查未同时覆盖所有指定语种；没有可供审查的有效证据",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 0
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "1.9.0:en:autoware-documentation/demos/planning-sim/crosswalk": {
+                "expected": "none",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-19",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/contributing/documentation-guidelines",
+              "docs-main:zh:autoware-documentation/contributing/documentation-guidelines"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing/documentation-guidelines",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/contributing/documentation-guidelines": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-20",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/contributing/license",
+              "docs-main:zh:autoware-documentation/contributing/license"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/contributing/license": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:zh:autoware-documentation/contributing/license": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-21",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/datasets"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/datasets",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/datasets": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-22",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/installation/autoware/docker-installation",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model",
+              "docs-main:zh:autoware-documentation/installation/autoware/docker-installation"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/installation/autoware/docker-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-anchor-23",
+            "severity": "low",
+            "required_impact_sources": [
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation",
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation"
+            ],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/control",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {
+              "docs-main:en:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              },
+              "docs-main:zh:autoware-documentation/installation/autoware/source-installation": {
+                "expected": "candidate",
+                "actual": null
+              }
+            }
+          },
+          {
+            "case_id": "holdout-review-no-answer-01",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing",
+              "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+              "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/directory-structure",
+              "docs-main:zh:autoware-documentation/design/autoware-architecture/map/map-requirements/vector-map-requirements-overview/category_intersection",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/how-to-guides/others/an-example-procedure-for-adding-and-evaluating-a-new-node",
+              "docs-main:zh:autoware-documentation/support/support-guidelines",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-no-answer-02",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/support/support-guidelines",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-no-answer-03",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing",
+              "docs-main:zh:autoware-documentation/design/autoware-interfaces",
+              "docs-main:zh:autoware-documentation/support/support-guidelines",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-no-answer-04",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [
+              "docs-main:zh:autoware-documentation/contributing",
+              "docs-main:zh:autoware-documentation/datasets/data-anonymization",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/fast-lio-slam",
+              "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-vehicle-and-sensor-model/creating-sensor-model",
+              "docs-main:zh:autoware-documentation/support/support-guidelines",
+              "docs-main:zh:autoware-documentation/support/troubleshooting"
+            ],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": true,
+              "covered_check_count": 3,
+              "covered_languages": [
+                "zh"
+              ],
+              "evidence_budget": 8,
+              "incomplete_reason": "",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 8
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          },
+          {
+            "case_id": "holdout-review-no-answer-05",
+            "severity": "high",
+            "required_impact_sources": [],
+            "impact_candidates": [],
+            "retrieved_source_ids": [],
+            "coverage": {
+              "attempted_languages": [
+                "zh"
+              ],
+              "complete": false,
+              "covered_check_count": 0,
+              "covered_languages": [],
+              "evidence_budget": 8,
+              "incomplete_reason": "本工作台当前只检索已配置知识空间的官方公开资料，未接入公司内部 API、Jira、通讯录或内部制度。为避免把企业私有问题误交给公开语料或模型，已在检索前停止。",
+              "required_check_count": 3,
+              "search_failure_count": 0,
+              "selected_evidence_count": 0
+            },
+            "critical_misses": null,
+            "missing_checklist_items": null,
+            "relation_mismatches": {}
+          }
+        ]
+      }
+    },
+    "metric_scope": "change-review candidate and workflow coverage; an impact candidate is not a confirmed impact or final approval",
+    "label_scope_counts": {
+      "public_scope_guard_probe_not_impact_truth": 5,
+      "retrieval_scope_anchor_only_not_confirmed_impact": 23
+    }
+  }
+}

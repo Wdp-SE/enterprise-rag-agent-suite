@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "created_by": "curate_cases.py",
+  "rag_cases_sha256": "cf8ad38279d67eaf4c379192dc1d35a7b2744dbdce9fb290bf9db3ed1b624726",
+  "image_regression_cases_sha256": "27393f69056f139cea08fd8a1f4cb2868cba6350f9316d83f33c09d6c6d3ee21",
+  "corpus_manifest_sha256": "ab00dfd18c11c0de4511729f9612d3176c8fe95dd390e0bc7ba2a337ff72a0fa",
+  "relation_registry_sha256": "7737393c6c7839e904cc62e8e8900a8af5277a8b438a6233aecaea48f56a3655",
+  "reviewed_figure_sidecar_sha256": "9da8b3b99f7bd65418a3ea4467c5f498d5123962b2aba29031e673e8fad19b28",
+  "reviewed_figure_lock_sha256": "908d28a6925a025c1fd5c15b0f42d97831a61feeccd33437cac6d6e010810e95",
+  "rag_case_count": 90,
+  "image_case_count": 6,
+  "rag_split_counts": {
+    "dev": 45,
+    "holdout": 45
+  },
+  "rag_category_counts": {
+    "cross_source": 10,
+    "en_query_zh_evidence": 20,
+    "explicit_version": 10,
+    "single_fact": 10,
+    "translation_relation_state": 10,
+    "unanswerable_scope": 10,
+    "zh_query_en_evidence": 20
+  },
+  "image_probe_scope": "two manually reviewed figure IDs; regression only, excluded from promotion split",
+  "agent_cases_sha256": "4279695f2b14cac2e6fd6a3cae93631f55146774f5825d7e069e5073d36379b5",
+  "agent_case_count": 57,
+  "agent_split_counts": {
+    "dev": 29,
+    "holdout": 28
+  },
+  "agent_label_scope": "source anchors transferred from RAG cases; not independently confirmed true impact; model impact metrics unavailable until human-reviewed saved answers"
+}

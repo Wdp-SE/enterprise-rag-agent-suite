@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "split": "dev",
+  "language_mode": "bilingual",
+  "case_count": 29,
+  "cases_sha256": "4279695f2b14cac2e6fd6a3cae93631f55146774f5825d7e069e5073d36379b5",
+  "corpus_manifest_sha256": "ab00dfd18c11c0de4511729f9612d3176c8fe95dd390e0bc7ba2a337ff72a0fa",
+  "retrieval_policy": "bm25_figure_ocr",
+  "llm_calls": 0,
+  "model_impact_metrics": "NOT_EVALUATED",
+  "label_scope": "source anchors and deterministic public-scope probes; not confirmed impacts",
+  "timing_scope": "local planner plus bilingual RAG retrieval; excludes model generation and network latency"
+}

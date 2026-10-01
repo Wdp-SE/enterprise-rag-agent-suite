@@ -25,6 +25,7 @@ CHANGE_TYPES: dict[str, dict[str, Any]] = {
         "focus": "参数定义、默认值、配置示例与兼容性",
         "materials": "参数说明、配置参考、版本说明",
         "action": "核对参数定义、默认值、配置示例及版本差异；未命中的资料类型需人工补查。",
+        "checklist": ["参数定义与默认值", "配置示例与适用范围", "兼容性与回归验证"],
     },
     "interface_compatibility": {
         "label": "接口 / 兼容性变更",
@@ -32,6 +33,7 @@ CHANGE_TYPES: dict[str, dict[str, Any]] = {
         "focus": "API 契约、字段、调用方与兼容性",
         "materials": "API 文档、兼容性或升级说明",
         "action": "核对接口契约、上下游调用方、兼容性说明与示例；未命中的资料类型需人工补查。",
+        "checklist": ["接口契约与字段", "上下游调用方", "兼容性与接口测试"],
     },
     "workflow_behavior": {
         "label": "工作流 / 行为变更",
@@ -39,6 +41,7 @@ CHANGE_TYPES: dict[str, dict[str, Any]] = {
         "focus": "工作流执行、节点状态、依赖与恢复行为",
         "materials": "用户指南、运行行为说明、升级说明",
         "action": "核对执行行为、节点依赖、失败恢复与操作说明；未命中的资料类型需人工补查。",
+        "checklist": ["状态转换与执行顺序", "依赖、重试与恢复", "操作说明与回归场景"],
     },
     "planning_behavior": {
         "label": "规划 / 轨迹行为变更",
@@ -50,6 +53,7 @@ CHANGE_TYPES: dict[str, dict[str, Any]] = {
         "focus": "规划模块职责、轨迹生成与校验、障碍物处理和车辆行为边界",
         "materials": "规划模块设计说明、参数配置、轨迹验证与版本差异",
         "action": "核对相关规划模块、轨迹校验、参数配置及版本差异；未命中的验证资料需人工补查。",
+        "checklist": ["模块职责与调用关系", "参数及输入输出边界", "场景验证与安全边界"],
     },
     "data_storage": {
         "label": "数据 / 存储变更",
@@ -57,6 +61,7 @@ CHANGE_TYPES: dict[str, dict[str, Any]] = {
         "focus": "数据模型、持久化与迁移兼容性",
         "materials": "数据模型、部署配置、迁移或升级说明",
         "action": "核对数据结构、持久化行为、迁移步骤与回滚影响；未命中的资料类型需人工补查。",
+        "checklist": ["数据模型与持久化行为", "迁移及回滚步骤", "兼容性与数据验证"],
     },
     "security_permission": {
         "label": "安全 / 权限变更",
@@ -64,6 +69,7 @@ CHANGE_TYPES: dict[str, dict[str, Any]] = {
         "focus": "身份认证、授权边界与安全配置",
         "materials": "安全指南、权限说明、配置参考",
         "action": "核对身份认证、授权边界、安全配置及受影响角色；未命中的资料类型需人工补查。",
+        "checklist": ["身份认证与授权边界", "受影响角色与最小权限", "安全配置与审计验证"],
     },
     "general": {
         "label": "其他 / 待识别",
@@ -71,6 +77,7 @@ CHANGE_TYPES: dict[str, dict[str, Any]] = {
         "focus": "按原始变更描述进行版本化检索",
         "materials": "当前版本相关官方资料",
         "action": "当前规则无法归类变更；请人工确认检索范围和需要补查的资料类型。",
+        "checklist": ["变更对象与适用版本", "相关设计和配置资料", "验证方案及回滚影响"],
     },
 }
 
@@ -252,6 +259,9 @@ def build_request_plan(
         "retrieval_focus": category["focus"],
         "expected_materials": category["materials"],
         "gap_action": category["action"],
+        "checklist_items": list(category["checklist"]),
+        "manual_review_required": resolved_type == "general",
+        "planning_gap": category["action"] if resolved_type == "general" else None,
         "query_limit": 4,
         "queries": [
             {

@@ -673,12 +673,15 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
             sources = payload.get("sources") or []
             if payload.get("status") == "OK" and sources:
                 with st.container(border=True, key="generated_answer"):
-                    st.write(payload["answer"])
-                    support = payload.get("evidence_support")
-                    if isinstance(support, dict) and support.get("label") and support.get("summary"):
-                        st.caption(f"证据支撑度：{support['label']} · {support['summary']}")
-                    citation_numbers = "　".join(f"[{index}]" for index in range(1, len(sources) + 1))
-                    st.markdown(f'<span class="citation-index">引用编号：{citation_numbers}</span>', unsafe_allow_html=True)
+                    claims = payload.get("claims") or []
+                    if claims:
+                        for claim_index, claim in enumerate(claims, 1):
+                            source_indexes = claim.get("source_indexes") or []
+                            citations = "　".join(f"[{index}]" for index in source_indexes)
+                            st.markdown(f"**{claim_index}.** {claim.get('text', '')}　{citations}")
+                    else:
+                        st.write(payload["answer"])
+                    st.caption("引用编号对应本次检索片段；系统已核对引用归属，仍需对照原文确认语义。")
             else:
                 if payload.get("status") == "OUT_OF_SCOPE":
                     st.caption("问题涉及当前公开语料无法提供的企业内部信息；系统已停止检索与模型生成。")
@@ -798,6 +801,7 @@ def _analyze_change_request(
     objective: str | None = None,
     constraints: str | None = None,
     validation_plan: str | None = None,
+    language_mode: str = "bilingual",
 ) -> dict:
     agent_root = Path(__file__).resolve().parents[1] / "change-review-agent"
     if str(agent_root) not in sys.path:
@@ -807,6 +811,7 @@ def _analyze_change_request(
         change_summary, change_type=change_type, impact_scope=impact_scope,
         target_version=target_version, objective=objective,
         constraints=constraints, validation_plan=validation_plan,
+        language_mode=language_mode,
     )
 
 
@@ -869,6 +874,10 @@ def _review_advice_panel(result: dict, *, context: str = "review") -> None:
     if advice.get("status") == "OK" and advice.get("sources"):
         review = advice.get("review") or {}
         interpretation = review.get("change_interpretation") or advice.get("answer", "N/A")
+        coverage = result.get("coverage") or {}
+        coverage_complete = coverage.get("complete", True)
+        if context == "变更分析" and not coverage_complete:
+            interpretation = "本次只整理已命中的证据；检索覆盖不完整，不能据此判定无影响。请先补齐语言和检查项缺口。"
         candidates = review.get("impact_candidates", [])
         source_numbers = {
             row.get("chunk_id"): number
@@ -876,6 +885,10 @@ def _review_advice_panel(result: dict, *, context: str = "review") -> None:
         }
         if context == "变更分析":
             st.subheader("模型辅助核对建议")
+            if not coverage_complete:
+                st.warning(
+                    "检索覆盖不完整：当前结果只能作为已命中资料的核对线索，不能据此得出无影响结论。"
+                )
             st.markdown(
                 '<div class="agent-review-summary">'
                 '<div class="agent-review-summary-heading"><strong>本次分析结论</strong>'
@@ -1221,6 +1234,16 @@ def _retrieval_trace_panel(result: dict) -> None:
     if not isinstance(trace, dict):
         return
     stage_status = result.get("stage_status") or {}
+    coverage = result.get("coverage") or {}
+    if coverage:
+        language_names = {"zh": "中文", "en": "英文"}
+        attempted = "、".join(language_names.get(value, value) for value in coverage.get("attempted_languages", []))
+        covered = "、".join(language_names.get(value, value) for value in coverage.get("covered_languages", [])) or "无"
+        st.caption(
+            f"检查项覆盖 {coverage.get('covered_check_count', 0)}/{coverage.get('required_check_count', 0)}"
+            f" · 语言分支：{attempted or '未执行'} · 有命中：{covered} · "
+            f"纳入证据 {coverage.get('selected_evidence_count', 0)}/{coverage.get('evidence_budget', 8)}"
+        )
     if stage_status:
         stage_labels = {"planning": "问题拆解", "retrieval": "资料检索", "generation": "建议整理"}
         status_labels = {
@@ -1274,7 +1297,9 @@ def _retrieval_trace_panel(result: dict) -> None:
             "search_unavailable": "检索服务未完成",
         }
         for index, row in enumerate(trace.get("queries", []), 1):
-            st.markdown(f"{index}. **{labels.get(row.get('status'), '待核对')}** · {row.get('query', '')}")
+            language_name = {"zh": "中文", "en": "英文"}.get(row.get("language"), row.get("language", ""))
+            language_suffix = f" [{language_name}]" if language_name else ""
+            st.markdown(f"{index}. **{labels.get(row.get('status'), '待核对')}**{language_suffix} · {row.get('query', '')}")
             st.caption(f"命中 {len(row.get('top_chunk_ids', []))} 条；纳入模型证据 {len(row.get('selected_chunk_ids', []))} 条。")
 
 
@@ -1377,7 +1402,17 @@ def _agent(
             on_change=_change_request_context_changed,
         )
         st.caption("未填写的目标、约束或验证计划会明确标为待补充；Agent 不会代替你推断事实。")
-    st.caption(f"Agent 保留原始描述，并在最多 4 次 RAG 查询内覆盖完整请求与拆分子问题；最多选取 5 条 {target_version} 版本证据供模型分析。")
+    language_options = {"中英双语（推荐）": "bilingual", "仅中文": "zh", "仅英文": "en"}
+    language_label = st.selectbox(
+        "审查语种范围", list(language_options), index=0, key="official_review_language_mode",
+        on_change=_change_request_context_changed,
+    )
+    language_mode = language_options[language_label]
+    language_count = 2 if language_mode == "bilingual" else 1
+    st.caption(
+        f"Agent 保留原始描述，最多拆分 4 项检查；每项按所选语种独立检索，最多 {4 * language_count} 次 RAG 查询，"
+        f"最多选取 8 条 {target_version} 版本证据供模型分析。"
+    )
     if st.button("检索资料并分析影响", type="primary", disabled=not ready or not summary.strip()):
         with st.spinner(f"正在检索 {name} {target_version} 版本资料并整理影响建议……"):
             result = _request(
@@ -1385,6 +1420,7 @@ def _agent(
                     client, summary, type_options[selected_type], impact_scope,
                     target_version=target_version, objective=objective,
                     constraints=constraints, validation_plan=validation_plan,
+                    language_mode=language_mode,
                 ),
                 fallback="变更影响分析暂未完成。",
             )
@@ -1640,11 +1676,97 @@ def _benchmark(workspace: dict | None) -> None:
     st.markdown(f"**当前默认：{policy}**。Dense 是字符哈希向量基线，不是神经语义 Embedding；Hybrid 在旧语料选型中未超过 BM25。")
     release_status = workspace.get("retrieval_evaluation_status") if workspace else None
     release = workspace.get("retrieval_evaluation") if workspace and release_status in (
-        "autoware_quality_v1_validated", "autoware_retrieval_v3_validated",
+        "autoware_accuracy_v2_validated", "autoware_quality_v1_validated", "autoware_retrieval_v3_validated",
         "autoware_retrieval_v1_validated", "v4_bm25_validated", "v3_validated",
     ) else None
     experiment = workspace.get("retrieval_experiment") if workspace else None
-    if isinstance(release, dict) and release.get("name") == "autoware_quality_v1" and release.get("policy", "").upper() == policy:
+    if isinstance(release, dict) and release.get("name") == "autoware_accuracy_v2" and release.get("policy", "").upper() == policy:
+        st.markdown("**Autoware 当前 RAG 检索策略评测（冻结双语题集，Top-5）**")
+        counts = release.get("case_split_counts", {})
+        st.caption(
+            f"{release.get('case_count', '—')} 道按文档族隔离的问题（DEV {counts.get('dev', '—')} / HOLDOUT {counts.get('holdout', '—')}）；"
+            "覆盖跨资料、中英跨语、版本、关系状态、无答案范围与图片文字。只衡量证据来源召回和排序，"
+            "不代表生成答案准确率、幻觉率或公网延迟。"
+        )
+        fields = (
+            ("complete_required_sources_at_5", "完整来源@5"),
+            ("required_source_recall_at_5", "来源召回@5"),
+            ("mrr_at_5", "MRR@5"),
+            ("ndcg_at_5", "nDCG@5"),
+        )
+        rows = [
+            "| 切分 / 策略 | 题数 | " + " | ".join(label for _, label in fields) + " | 错版本 | 本机检索 P95 |",
+            "| --- | ---: | " + " | ".join("---:" for _ in fields) + " | ---: | ---: |",
+        ]
+        for split_name, label, baseline_key in (
+            ("dev", "DEV", "bm25_dev"), ("holdout", "HOLDOUT", "bm25_holdout"),
+        ):
+            for strategy, values in (("BM25", release[baseline_key]), ("BM25 + 已校对图片文字", release[split_name])):
+                rows.append(
+                    f"| {label} / {strategy} | {values['query_count']} | "
+                    + " | ".join(f"{values[key] * 100:.1f}%" for key, _ in fields)
+                    + f" | {values['explicit_version_mismatch_count']} | {values['search_p95_ms']:.2f} ms |"
+                )
+        st.markdown("\n".join(rows))
+        holdout = release["holdout"]
+        st.caption(
+            f"HOLDOUT 图片探针 {holdout['image_hit_count']}/{holdout['image_case_count']} 命中；"
+            "仅覆盖两张人工复核过的图，不代表一般图片理解能力。无答案问题的候选召回率 "
+            f"{holdout['unanswerable_candidate_rate'] * 100:.1f}% 是检索噪声诊断，不等同模型误答或幻觉。"
+        )
+        candidate = release.get("candidate")
+        if isinstance(candidate, dict) and candidate.get("decision") == "not_promoted":
+            trial = candidate["holdout"]
+            comparison = [
+                "| HOLDOUT 策略 | 完整来源@5 | 来源召回@5 | 来源召回@20 | 图片探针 | 本机检索 P95 |",
+                "| --- | ---: | ---: | ---: | ---: | ---: |",
+                f"| 当前 BM25 + OCR | {holdout['complete_required_sources_at_5'] * 100:.1f}% | "
+                f"{holdout['required_source_recall_at_5'] * 100:.1f}% | {holdout['required_source_recall_at_20'] * 100:.1f}% | "
+                f"{holdout['image_hit_count']}/{holdout['image_case_count']} | {holdout['search_p95_ms']:.2f} ms |",
+                f"| Hybrid + 图片 OCR 候选 | {trial['complete_required_sources_at_5'] * 100:.1f}% | "
+                f"{trial['required_source_recall_at_5'] * 100:.1f}% | {trial['required_source_recall_at_20'] * 100:.1f}% | "
+                f"{trial['image_hit_count']}/{trial['image_case_count']} | {trial['search_p95_ms']:.2f} ms |",
+            ]
+            st.markdown("**Hybrid + 图片 OCR 候选未晋级**")
+            st.markdown("\n".join(comparison))
+            st.caption(candidate.get("decision_reason", "候选未通过预先设定的 HOLDOUT 门槛。"))
+        review = workspace.get("change_review_evaluation")
+        if isinstance(review, dict) and review.get("name") == "autoware_accuracy_v2_agent":
+            st.markdown("**Agent 变更审查检索策略对比（HOLDOUT）**")
+            st.caption(
+                f"{review['case_count']} 道固定变更任务；本次工作流未调用 LLM。来源标签是从 RAG 题集转移的检索锚点，"
+                "不是经人工确认的真实影响范围，因此这里只比较检索覆盖和流程耗时，不报告 Agent 影响准确率。"
+            )
+            bilingual = review["holdout"]["bilingual"]
+            chinese_only = review["holdout"]["zh"]
+            agent_fields = (
+                ("evidence_source_recall", "来源锚点召回"),
+                ("complete_evidence_source_rate", "完整锚点率"),
+                ("retrieval_check_coverage_rate", "检查项覆盖"),
+                ("retrieval_language_coverage_rate", "语言覆盖"),
+                ("complete_retrieval_case_rate", "完整检索审查率"),
+            )
+            agent_rows = [
+                "| HOLDOUT 模式 | 任务数 | " + " | ".join(label for _, label in agent_fields) + " | 平均检索调用 | 本机 P95 |",
+                "| --- | ---: | " + " | ".join("---:" for _ in agent_fields) + " | ---: | ---: |",
+            ]
+            for label, values in (("中英双语", bilingual), ("中文单语", chinese_only)):
+                agent_rows.append(
+                    f"| {label} | {values['case_count']} | "
+                    + " | ".join(f"{values[key] * 100:.1f}%" for key, _ in agent_fields)
+                    + f" | {values['search_calls_mean']:.1f} | {values['latency_p95_ms']:.0f} ms |"
+                )
+            st.markdown("\n".join(agent_rows))
+            st.caption(
+                "双语检索提升跨语言来源锚点召回，但检索调用和本机耗时约翻倍；严格的双语覆盖门禁会把更多任务标为需补查。"
+                "这组结果不含公网网络与模型生成时间，也不能外推成最终审查质量。"
+            )
+        st.markdown(
+            "[查看 V2 冻结题集、DEV/HOLDOUT 结果和评测边界]("
+            "https://github.com/Wdp-SE/enterprise-rag-agent-suite/blob/main/"
+            "evaluation/autoware_accuracy_v2/README.md)"
+        )
+    elif isinstance(release, dict) and release.get("name") == "autoware_quality_v1" and release.get("policy", "").upper() == policy:
         st.markdown("**Autoware 当前检索策略评测（冻结双语题集，Top-5）**")
         counts = release.get("case_split_counts", {})
         st.caption(

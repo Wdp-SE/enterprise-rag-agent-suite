@@ -43,6 +43,7 @@ def _mock_client(monkeypatch):
 
     monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: {
         "answer": "上游参数优先于启动参数。", "sources": [dict(CHUNK)],
+        "claims": [{"text": "上游参数优先于启动参数。", "source_indexes": [1]}],
         "evidence": [dict(CHUNK)], "status": "OK", "consistency_notes": [],
         "evidence_support": {
             "level": "partial", "label": "一般",
@@ -321,8 +322,8 @@ def test_public_rag_keeps_answer_before_real_cited_source(monkeypatch):
     assert {item.value for item in app.subheader} >= {"回答", "引用依据"}
     assert "查看固定提交来源" in text
     assert "[1] 参数优先级" in text
-    assert "引用编号：[1]" in text
-    assert "证据支撑度：一般" in text
+    assert "引用编号对应本次检索片段" in text
+    assert "证据支撑度：一般" not in text
     assert "不代表答案正确率" in text
     assert "证据可信度" not in text
 
@@ -666,6 +667,26 @@ def test_generated_answer_shows_cited_evidence_first_and_collapses_other_hits(mo
     assert "只想核对原文？" in {item.label for item in app.expander}
 
 
+def test_generated_answer_renders_claim_level_references_without_confidence_grade(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: {
+        "answer": "当前片段记录上游参数优先。", "sources": [dict(CHUNK)],
+        "claims": [{"text": "当前片段记录上游参数优先。", "source_indexes": [1]}],
+        "evidence": [dict(CHUNK)], "status": "OK", "consistency_notes": [],
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+    next(button for button in app.button if button.label == "生成带引用回答").click().run()
+
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
+    assert "当前片段记录上游参数优先" in visible
+    assert "[1]" in visible
+    assert "引用编号对应本次检索片段" in visible
+    assert "证据支撑度：" not in visible
+
+
 def test_agent_starts_with_natural_language_and_uses_rag_to_find_candidates(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
@@ -686,13 +707,18 @@ def test_agent_starts_with_natural_language_and_uses_rag_to_find_candidates(monk
     next(button for button in app.button if button.label == "检索资料并分析影响").click().run()
 
     assert not app.exception
-    assert calls == [(change_request, "3.4.3", "zh_preferred", 5)]
+    assert calls == [
+        (f"{change_request} global parameter", "3.4.3", "zh", 5),
+        (f"{change_request} global parameter", "3.4.3", "en", 5),
+    ]
     assert app.session_state["official_request_review"]["request_summary"] == change_request
     assert app.session_state["official_request_review"]["impacts"][0]["evidence"]["chunk_id"] == CHUNK["chunk_id"]
     headings = [item.value for item in app.subheader]
     assert headings.index("模型辅助核对建议") < headings.index("优先核对的影响候选")
     assert "建议引用的官方片段（变更分析）" not in headings
-    assert any("同一片段只展示一次" in item.value for item in app.caption)
+    evidence_ids = [item["chunk_id"] for item in app.session_state["official_request_review"]["retrieved_results"]]
+    assert len(evidence_ids) == len(set(evidence_ids))
+    assert "检索覆盖不完整" in "\n".join(item.value for item in app.warning)
 
 
 def test_rag_suggested_question_is_muted_placeholder_and_used_when_submitted_blank(monkeypatch):
@@ -967,7 +993,7 @@ def test_generated_answer_typography_is_large_and_readable():
 
     assert '.st-key-generated_answer [data-testid="stMarkdownContainer"] p {' in PUBLIC_CSS
     assert "font-size:1.3rem!important;line-height:1.75!important;" in PUBLIC_CSS
-    assert ".st-key-generated_answer .citation-index {font-size:1.08rem!important;" in PUBLIC_CSS
+    assert "font-size:1.3rem!important;line-height:1.75!important;" in PUBLIC_CSS
 
 
 def test_breadcrumbs_are_clickable_and_back_returns_to_previous_module(monkeypatch):
@@ -1416,6 +1442,81 @@ def test_quality_v1_benchmark_displays_current_bilingual_and_image_limits(monkey
     assert "不是模型误答率" in visible
     assert "不代表答案准确率" in visible
     assert "autoware_retrieval_v3_validated" not in visible
+
+
+def test_accuracy_v2_benchmark_shows_current_strategy_and_rejected_candidate(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    current = {
+        "required_source_recall_at_5": 0.4,
+        "complete_required_sources_at_5": 0.3,
+        "required_source_recall_at_20": 0.58,
+        "mrr_at_5": 0.2596,
+        "ndcg_at_5": 0.3079,
+        "explicit_version_mismatch_count": 0,
+        "search_p95_ms": 52.779,
+        "query_count": 45,
+        "image_hit_count": 6,
+        "image_case_count": 6,
+        "answer_accuracy": None,
+        "unanswerable_candidate_rate": 1.0,
+    }
+    candidate = {
+        **current,
+        "required_source_recall_at_5": 0.38,
+        "required_source_recall_at_20": 0.5,
+        "mrr_at_5": 0.2196,
+        "ndcg_at_5": 0.2737,
+        "search_p95_ms": 55.852,
+    }
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
+        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
+        "current_version": "latest", "source_count": 1148, "chunk_count": 7927,
+        "retrieval_policy": "bm25_figure_ocr",
+        "retrieval_evaluation_status": "autoware_accuracy_v2_validated",
+        "retrieval_evaluation": {
+            "name": "autoware_accuracy_v2", "policy": "bm25_figure_ocr", "top_k": 5,
+            "case_count": 90, "case_split_counts": {"dev": 45, "holdout": 45},
+            "metric_scope": "retrieval source recall and ranking only",
+            "dev": current, "holdout": current, "bm25_dev": current, "bm25_holdout": current,
+            "candidate": {"policy": "hybrid_figure_ocr", "dev": candidate,
+                          "holdout": candidate, "decision": "not_promoted",
+                          "decision_reason": "候选跨语方向回退。"},
+            "candidate_decision": "not_promoted",
+            "interpretation": "not answer accuracy or production latency",
+        },
+        "change_review_evaluation": {
+            "name": "autoware_accuracy_v2_agent", "case_count": 57,
+            "holdout": {
+                "bilingual": {"case_count": 28, "evidence_source_recall": 0.6364,
+                              "complete_evidence_source_rate": 0.5652,
+                              "retrieval_check_coverage_rate": 0.8161,
+                              "retrieval_language_coverage_rate": 0.9107,
+                              "complete_retrieval_case_rate": 0.7143,
+                              "search_calls_mean": 6.0, "latency_p95_ms": 341.352},
+                "zh": {"case_count": 28, "evidence_source_recall": 0.2727,
+                       "complete_evidence_source_rate": 0.2609,
+                       "retrieval_check_coverage_rate": 0.8621,
+                       "retrieval_language_coverage_rate": 0.8571,
+                       "complete_retrieval_case_rate": 0.8571,
+                       "search_calls_mean": 3.0, "latency_p95_ms": 171.422},
+            },
+        },
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "检索评测").click().run()
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader))
+
+    assert not app.exception
+    assert "当前 RAG 检索策略评测" in visible
+    assert "BM25 + 已校对图片文字" in visible
+    assert "Hybrid + 图片 OCR 候选未晋级" in visible
+    assert "Agent 变更审查检索策略对比" in visible
+    assert "来源标签是从 RAG 题集转移的检索锚点" in visible
+    assert "约翻倍" in visible
+    assert "不代表生成答案准确率" in visible
+    assert "52.78 ms" in visible
 
 
 def test_benchmark_shows_v4_bm25_and_rejected_image_candidate_tradeoff(monkeypatch):

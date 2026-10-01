@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "status": "holdout_locked",
+  "agent_cases_sha256": "4279695f2b14cac2e6fd6a3cae93631f55146774f5825d7e069e5073d36379b5",
+  "comparison": "bilingual versus zh-only, same frozen Agent cases and current bm25_figure_ocr retrieval runtime",
+  "dev_reports": {
+    "bilingual": "evaluation/autoware_accuracy_v2/results/agent-dev-bilingual-report.json",
+    "zh": "evaluation/autoware_accuracy_v2/results/agent-dev-zh-report.json"
+  },
+  "dev_metrics": {
+    "bilingual": {
+      "evidence_source_recall": 0.35294117647058826,
+      "complete_evidence_source_rate": 0.20833333333333334,
+      "model_evaluated_case_count": 0,
+      "impact_source_recall": null,
+      "complete_impact_source_rate": null,
+      "critical_impact_miss_count": null,
+      "critical_impact_miss_rate": null,
+      "false_no_impact_count": null,
+      "false_impact_candidate_count": null,
+      "checklist_item_coverage": null,
+      "relation_state_accuracy": 0.35294117647058826,
+      "expected_gap_recall": 0.8461538461538461,
+      "abstention_evaluated_case_count": 1,
+      "retrieval_check_coverage_rate": 0.8863636363636364,
+      "retrieval_language_coverage_rate": 0.9482758620689655,
+      "complete_retrieval_case_rate": 0.7931034482758621,
+      "abstention_precision": 1.0,
+      "abstention_recall": 1.0,
+      "search_calls_mean": 5.862068965517241,
+      "selected_evidence_mean": 7.724137931034483,
+      "latency_p50_ms": 255.227,
+      "latency_p95_ms": 297.053
+    },
+    "zh": {
+      "evidence_source_recall": 0.14705882352941177,
+      "complete_evidence_source_rate": 0.08333333333333333,
+      "model_evaluated_case_count": 0,
+      "impact_source_recall": null,
+      "complete_impact_source_rate": null,
+      "critical_impact_miss_count": null,
+      "critical_impact_miss_rate": null,
+      "false_no_impact_count": null,
+      "false_impact_candidate_count": null,
+      "checklist_item_coverage": null,
+      "relation_state_accuracy": 0.14705882352941177,
+      "expected_gap_recall": 0.8461538461538461,
+      "abstention_evaluated_case_count": 1,
+      "retrieval_check_coverage_rate": 0.9318181818181818,
+      "retrieval_language_coverage_rate": 0.9310344827586207,
+      "complete_retrieval_case_rate": 0.9310344827586207,
+      "abstention_precision": 1.0,
+      "abstention_recall": 1.0,
+      "search_calls_mean": 2.9310344827586206,
+      "selected_evidence_mean": 7.448275862068965,
+      "latency_p50_ms": 125.035,
+      "latency_p95_ms": 145.456
+    }
+  },
+  "promotion_rule": "Compare frozen HOLDOUT source-anchor evidence recall and workflow coverage. No result may be called impact accuracy; bilingual adds cost and should only be preferred if retrieval coverage gain holds on HOLDOUT.",
+  "label_scope": "RAG-origin source anchors and public-scope probes; not independently confirmed change-impact truth"
+}
