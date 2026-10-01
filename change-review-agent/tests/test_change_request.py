@@ -89,6 +89,20 @@ def test_autoware_right_of_way_and_ros_topic_are_classified_by_domain():
     assert classify_change_type("Change a ROS topic name and message type.") == "interface_compatibility"
 
 
+def test_every_change_type_has_a_bounded_review_checklist_and_general_has_manual_gap():
+    from app.change_request import CHANGE_TYPES
+
+    for type_id, category in CHANGE_TYPES.items():
+        plan = build_request_plan("Review the change.", change_type=type_id)
+        assert plan["checklist_items"]
+        assert len(plan["checklist_items"]) <= 5
+        if type_id == "general":
+            assert plan["manual_review_required"] is True
+            assert "人工" in plan["planning_gap"]
+        else:
+            assert plan["manual_review_required"] is False
+
+
 def test_subworkflow_query_keeps_user_text_and_adds_search_only_alias():
     summary = "子工作流参数如何传递；核对下游 Shell 节点的 setValue 示例。"
 

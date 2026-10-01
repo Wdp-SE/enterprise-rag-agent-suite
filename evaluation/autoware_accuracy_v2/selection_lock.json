@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "status": "holdout_locked",
+  "rag_cases_sha256": "cf8ad38279d67eaf4c379192dc1d35a7b2744dbdce9fb290bf9db3ed1b624726",
+  "selected_candidate": "hybrid_figure_ocr",
+  "candidate_scope": "offline-only composition: existing hashed-dense+BM25 hybrid documents plus independently reviewed OCR; not enabled in public service",
+  "dev_report": "evaluation/autoware_accuracy_v2/results/dev-policy-comparison.json",
+  "dev_runtime_fingerprint": {
+    "corpus_manifest_sha256": "ab00dfd18c11c0de4511729f9612d3176c8fe95dd390e0bc7ba2a337ff72a0fa",
+    "relation_registry_sha256": "7737393c6c7839e904cc62e8e8900a8af5277a8b438a6233aecaea48f56a3655",
+    "chunks_sha256": "930d36eb10958b2c9a81482a2cb1a22c7bd9bc6da072921116cc4c0294444876",
+    "runtime_config_sha256": "8cb1ce2f93dac667d803b766d63209926ac26e4b4e7204dfedff97647e4472d0",
+    "policy_sha256": "5ee1f7a8c09433989cdc5e83b03ce20ec90161f7142279e12edc53ab86ad084c",
+    "figure_sidecar_sha256": "9da8b3b99f7bd65418a3ea4467c5f498d5123962b2aba29031e673e8fad19b28",
+    "figure_lock_sha256": "908d28a6925a025c1fd5c15b0f42d97831a61feeccd33437cac6d6e010810e95",
+    "runner_sha256": "8cfc1adefe1458e7022fb4a3e59b2faf3c7d10f054287926bd071db1f18e5e8d",
+    "public_knowledge_sha256": "9901f074f188a615d4b3de7ccdee95b31afa23aa2bc6f08f63cc6ec450c350dd",
+    "retrieval_runtime_sha256": "9952fd2ee5442f94e85e3a5d65a7291d2a28fc18141dbd8e23139ac399828045",
+    "dense_vectors_sha256": "5bfa9073987ce34a245562cd3b8b4d3ba7ec5a17ac1bb298c4641a87891cb888"
+  },
+  "dev_gate_checks": {
+    "required_source_recall_non_inferior": true,
+    "complete_source_rate_non_inferior": true,
+    "top20_source_recall_non_inferior": true,
+    "zero_version_mismatch": true,
+    "reviewed_image_regression_preserved": true,
+    "latency_within_120_percent": true,
+    "aggregate_bilingual_recall_improved": true
+  },
+  "dev_known_directional_tradeoff": {
+    "en_query_zh_evidence_recall_at_5": {
+      "baseline": 0.2,
+      "candidate": 0.1
+    },
+    "zh_query_en_evidence_recall_at_5": {
+      "baseline": 0.0,
+      "candidate": 0.1
+    },
+    "promotion_rule": "HOLDOUT must show no per-direction regression as well as aggregate gates; if either direction regresses, retain current BM25+OCR default."
+  },
+  "status_note": "Single frozen HOLDOUT comparison authorized by DEV selection; no further HOLDOUT tuning after this run."
+}

@@ -33,32 +33,43 @@ def test_formal_retrieval_policy_is_fixed() -> None:
 
 def test_structured_answer_schema_is_strict() -> None:
     value = StructuredAnswerGenerator._decode(
-        '{"final_answer":"应执行降级流程","relevant_sources":'
+        '{"claims":[{"text":"应执行降级流程","evidence_ids":["chunk-1"]}],"relevant_sources":'
         '[{"document_id":"DESIGN-001","page_number":3}]}'
     )
-    assert value["final_answer"] == "应执行降级流程"
+    assert value["claims"] == [{"text": "应执行降级流程", "evidence_ids": ["chunk-1"]}]
     with pytest.raises(ValueError):
         StructuredAnswerGenerator._decode(
             {
-                "final_answer": "未经约束的答案",
+                "claims": [{"text": "未经约束的答案", "evidence_ids": []}],
                 "relevant_sources": [],
-                "confidence": 0.9,
             }
         )
+
+
+def test_answer_schema_requires_each_claim_to_cite_a_non_empty_chunk_id() -> None:
+    for claim in (
+        {"text": "未引用的结论", "evidence_ids": []},
+        {"text": "空 ID", "evidence_ids": [""]},
+        {"text": "错误类型", "evidence_ids": [123]},
+    ):
+        with pytest.raises(ValueError):
+            StructuredAnswerGenerator._decode({"claims": [claim], "relevant_sources": []})
 
 
 def test_answer_prompt_requires_concise_direct_and_scope_bound_responses() -> None:
     from src.answer_generation import SYSTEM_PROMPT
 
     assert "先直接回答问题" in SYSTEM_PROMPT
-    assert "1 到 3 个简短要点" in SYSTEM_PROMPT
+    assert "默认 1 到 3 条" in SYSTEM_PROMPT
     assert "不得拼接重复的启动命令" in SYSTEM_PROMPT
     assert "最多给一个禁用参数和一个启用参数" in SYSTEM_PROMPT
     assert "只引用直接支撑回答所需的最少来源" in SYSTEM_PROMPT
     assert "启动命令只写一次" in SYSTEM_PROMPT
     assert "开关参数单独列出，不要重复启动命令" in SYSTEM_PROMPT
     assert "不列控制器模式等无关参数" in SYSTEM_PROMPT
-    assert "不要在 final_answer 中自行编写 [1] 形式的引用编号" in SYSTEM_PROMPT
+    assert "每条主张必须在 evidence_ids 中列出" in SYSTEM_PROMPT
+    assert '"claims"' in SYSTEM_PROMPT
+    assert "final_answer" not in SYSTEM_PROMPT
     assert "不得补充证据未明确支持的参数" in SYSTEM_PROMPT
 
 
@@ -124,7 +135,7 @@ def test_deepseek_generator_uses_its_key_and_non_thinking_json_mode(monkeypatch)
                 "choices": [{
                     "message": {
                         "content": json.dumps({
-                            "final_answer": "由检索证据支持的回答。",
+                            "claims": [{"text": "由检索证据支持的回答。", "evidence_ids": ["chunk-1"]}],
                             "relevant_sources": [
                                 {"document_id": "chunk-1", "page_number": 2}
                             ],
@@ -148,12 +159,13 @@ def test_deepseek_generator_uses_its_key_and_non_thinking_json_mode(monkeypatch)
     )
     result = generator.generate(question="问题", context="chunk-1: 内容")
 
+    assert result["claims"] == [{"text": "由检索证据支持的回答。", "evidence_ids": ["chunk-1"]}]
     assert result["final_answer"] == "由检索证据支持的回答。"
     assert captured["url"] == "https://api.deepseek.com/chat/completions"
     assert captured["authorization_present"] is True
     assert captured["body"]["thinking"] == {"type": "disabled"}
     assert captured["body"]["response_format"] == {"type": "json_object"}
-    assert "1 到 3 个简短要点" in captured["body"]["messages"][0]["content"]
+    assert "默认 1 到 3 条" in captured["body"]["messages"][0]["content"]
     assert captured["body"]["max_tokens"] >= 256
     assert "test-secret-value" not in json.dumps(captured["body"])
     assert captured["timeout"] > 0
@@ -241,7 +253,7 @@ def test_deepseek_diagnostics_report_returned_model_usage_and_finish_reason(monk
 
         def read(self):
             answer = {
-                "final_answer": "证据支持的回答。",
+                "claims": [{"text": "证据支持的回答。", "evidence_ids": ["chunk-1"]}],
                 "relevant_sources": [{"document_id": "chunk-1", "page_number": 1}],
             }
             return json.dumps({
@@ -314,7 +326,7 @@ def test_dashscope_diagnostics_and_rate_limit_use_safe_response_fields(monkeypat
     from types import SimpleNamespace
 
     monkeypatch.setenv("DASHSCOPE_API_KEY", "test-secret-value")
-    answer = '{"final_answer":"supported","relevant_sources":[]}'
+    answer = '{"claims":[{"text":"supported","evidence_ids":["chunk-1"]}],"relevant_sources":[]}'
     response = SimpleNamespace(
         status_code=200,
         model="qwen-turbo",

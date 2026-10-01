@@ -89,12 +89,17 @@ def test_autoware_public_deployment_uses_benchmarked_image_policy_and_current_re
 
     assert health["runtime_retrieval_policy"] == "bm25_figure_ocr"
     assert health["approved_image_chunk_count"] == 2
-    assert workspace["retrieval_evaluation_status"] == "autoware_quality_v1_validated"
+    assert workspace["retrieval_evaluation_status"] == "autoware_accuracy_v2_validated"
     assert workspace["current_version"] == "latest"
     assert workspace["available_versions"] == ["latest", "docs-main", "1.9.0", "0.52.0", "0.51.0"]
-    assert workspace["retrieval_evaluation"]["name"] == "autoware_quality_v1"
-    assert workspace["retrieval_evaluation"]["holdout"]["image_evidence_hits"] == "2/3"
+    assert workspace["retrieval_evaluation"]["name"] == "autoware_accuracy_v2"
+    assert workspace["retrieval_evaluation"]["holdout"]["required_source_recall_at_5"] == 0.4
+    assert workspace["retrieval_evaluation"]["holdout"]["image_hit_count"] == 6
     assert 0 <= workspace["retrieval_evaluation"]["holdout"]["mrr_at_5"] <= 1
+    assert workspace["retrieval_evaluation"]["candidate_decision"] == "not_promoted"
+    assert workspace["change_review_evaluation"]["holdout"]["bilingual"]["evidence_source_recall"] == pytest.approx(7 / 11)
+    assert workspace["change_review_evaluation"]["holdout"]["zh"]["evidence_source_recall"] == pytest.approx(3 / 11)
+    assert workspace["change_review_evaluation"]["holdout"]["bilingual"]["model_evaluated_case_count"] == 0
     assert response.status_code == 200
     assert any(row.get("figure_id") == "32682b345ea86e13" for row in response.json()["results"])
 
@@ -267,6 +272,37 @@ def test_autoware_quality_v1_workspace_uses_current_frozen_report():
     assert report["selection"]["selected_policy"] == "bm25_figure_ocr"
 
 
+def test_autoware_accuracy_v2_matches_current_strategy_and_rejects_hybrid_promotion():
+    runtime = PublicRetrievalRuntime(
+        PublicKnowledgeIndex(root=AUTOWARE_CORPUS),
+        config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+    )
+
+    report = public_api._validated_autoware_accuracy_v2(runtime)
+
+    assert report is not None
+    assert report["name"] == "autoware_accuracy_v2"
+    assert report["policy"] == "bm25_figure_ocr"
+    assert report["holdout"]["required_source_recall_at_5"] == 0.4
+    assert report["candidate_decision"] == "not_promoted"
+    assert report["candidate"]["policy"] == "hybrid_figure_ocr"
+
+
+def test_autoware_accuracy_v2_rejects_report_modified_after_freeze(tmp_path, monkeypatch):
+    results = tmp_path / "results"
+    results.mkdir()
+    report = json.loads((public_api._AUTOWARE_ACCURACY_V2_ROOT / "results" / "holdout-selected.json").read_text(encoding="utf-8"))
+    report["policies"]["bm25_figure_ocr"]["metrics"]["required_source_recall_at_5"] = 1.0
+    (results / "holdout-selected.json").write_text(json.dumps(report), encoding="utf-8")
+    monkeypatch.setattr(public_api, "_AUTOWARE_ACCURACY_V2_ROOT", tmp_path)
+    runtime = PublicRetrievalRuntime(
+        PublicKnowledgeIndex(root=AUTOWARE_CORPUS),
+        config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+    )
+
+    assert public_api._validated_autoware_accuracy_v2(runtime) is None
+
+
 def test_autoware_quality_v1_rejects_report_that_fails_holdout_gate(tmp_path, monkeypatch):
     source_path = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_quality_v1" / "results" / "benchmark.json"
     report = json.loads(source_path.read_text(encoding="utf-8"))
@@ -328,7 +364,7 @@ def test_generation_prompts_use_active_workspace_identity_not_old_product_brand(
         def generate(self, *, question, context):
             prompts.append(context)
             return {
-                "final_answer": "The planning validator checks a planned trajectory.",
+                "claims": [{"text": "The planning validator checks a planned trajectory.", "evidence_ids": [expected["chunk_id"]]}],
                 "relevant_sources": [{"document_id": expected["chunk_id"], "page_number": 1}],
             }
 
@@ -585,7 +621,7 @@ def test_abstention_reports_missing_question_terms_instead_of_infrastructure_fai
         model = "test-model"
 
         def generate(self, *, question, context):
-            return {"final_answer": "N/A", "relevant_sources": []}
+            return {"claims": [], "relevant_sources": []}
 
     query = "What is the API server health-check endpoint?"
     with TestClient(create_app(index=PublicKnowledgeIndex(), generator=AbstainingGenerator())) as client:
@@ -608,7 +644,7 @@ def test_answer_with_no_valid_evidence_citation_reports_citation_failure():
 
         def generate(self, *, question, context):
             return {
-                "final_answer": "The endpoint is /example.",
+                "claims": [{"text": "The endpoint is /example.", "evidence_ids": ["not-in-evidence"]}],
                 "relevant_sources": [{"document_id": "not-in-evidence", "page_number": 1}],
             }
 
@@ -787,7 +823,7 @@ def test_public_query_returns_provider_diagnostics_without_changing_answer_contr
 
         def generate_with_diagnostics(self, *, question, context):
             return ({
-                "final_answer": "证据支持的回答。",
+                "claims": [{"text": "证据支持的回答。", "evidence_ids": [cited_chunk]}],
                 "relevant_sources": [{"document_id": cited_chunk, "page_number": 1}],
             }, {
                 "provider": "deepseek", "requested_model": "deepseek-v4-flash",
@@ -909,7 +945,7 @@ def test_generation_enabled_with_api_key_wires_qwen_provider(monkeypatch):
 
         def generate(self, *, question: str, context: str) -> dict:
             return {
-                "final_answer": "由检索证据支持的测试回答。",
+                "claims": [{"text": "由检索证据支持的测试回答。", "evidence_ids": [cited_chunk]}],
                 "relevant_sources": [{"document_id": cited_chunk, "page_number": 1}],
             }
 
@@ -945,7 +981,7 @@ def test_generation_enabled_with_deepseek_key_wires_deepseek_provider(monkeypatc
 
         def generate(self, *, question: str, context: str) -> dict:
             return {
-                "final_answer": "由检索证据支持的 DeepSeek 测试回答。",
+                "claims": [{"text": "由检索证据支持的 DeepSeek 测试回答。", "evidence_ids": [cited_chunk]}],
                 "relevant_sources": [{"document_id": cited_chunk, "page_number": 1}],
             }
 
@@ -971,7 +1007,7 @@ def test_public_query_checks_citation_membership_without_call_budget(monkeypatch
 
         def generate(self, *, question, context):
             return {
-                "final_answer": "上游传递参数优先。",
+                "claims": [{"text": "上游传递参数优先。", "evidence_ids": [self.citation_id]}],
                 "relevant_sources": [{"document_id": self.citation_id, "page_number": 1}],
             }
 
@@ -1003,7 +1039,7 @@ def test_public_generation_has_no_application_call_limit(monkeypatch):
 
         def generate(self, *, question, context):
             return {
-                "final_answer": "supported answer",
+                "claims": [{"text": "supported answer", "evidence_ids": [self.citation_id]}],
                 "relevant_sources": [{"document_id": self.citation_id, "page_number": 1}],
             }
 
@@ -1030,7 +1066,7 @@ def test_public_query_does_not_enforce_a_process_budget(monkeypatch):
         def generate(self, *, question, context):
             self.calls += 1
             return {
-                "final_answer": "supported answer",
+                "claims": [{"text": "supported answer", "evidence_ids": [self.citation_id]}],
                 "relevant_sources": [{"document_id": self.citation_id, "page_number": 1}],
             }
 

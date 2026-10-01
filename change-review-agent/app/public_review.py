@@ -125,28 +125,33 @@ def _source_path_overlap(trace: dict, row: dict) -> int:
     )
 
 
-def _select_request_evidence(searches: list[tuple[dict, list[dict]]]) -> list[dict]:
-    """Reserve distinct, query-aligned sources across subqueries, then fill five items."""
+def _select_request_evidence(
+    searches: list[tuple[dict, list[dict]]], *, max_items: int = 8,
+) -> list[dict]:
+    """Reserve query- and language-aligned sources, then fill a bounded evidence set."""
     selected: dict[str, dict] = {}
-    query_results = searches[1:] if len(searches) > 1 else searches
-    selected_documents: set[str] = set()
-    for _trace, rows in query_results:
-        if len(selected) >= 5:
+    selected_documents: set[tuple[str, str]] = set()
+    for trace, rows in searches:
+        if len(selected) >= max_items:
             break
         eligible = [
             row for row in rows
-            if (row.get("document_key") or row["chunk_id"]) not in selected_documents
+            if (
+                str(trace.get("language") or "all"),
+                row.get("document_key") or row["chunk_id"],
+            ) not in selected_documents
         ]
         if eligible:
-            best = max(eligible, key=lambda row: _source_path_overlap(_trace, row))
+            best = max(eligible, key=lambda row: _source_path_overlap(trace, row))
             selected[best["chunk_id"]] = best
-            selected_documents.add(best.get("document_key") or best["chunk_id"])
-    # Prefer another previously unseen document when the result pool has one.
+            selected_documents.add((str(trace.get("language") or "all"), best.get("document_key") or best["chunk_id"]))
+    # Prefer another previously unseen document within each language branch.
     for trace, rows in searches:
         for row in rows:
-            if len(selected) >= 5:
+            if len(selected) >= max_items:
                 return list(selected.values())
-            document_key = row.get("document_key") or row["chunk_id"]
+            language = str(trace.get("language") or "all")
+            document_key = (language, row.get("document_key") or row["chunk_id"])
             if (
                 row["chunk_id"] not in selected
                 and document_key not in selected_documents
@@ -156,7 +161,7 @@ def _select_request_evidence(searches: list[tuple[dict, list[dict]]]) -> list[di
                 selected_documents.add(document_key)
     for _trace, rows in searches:
         for row in rows:
-            if len(selected) >= 5:
+            if len(selected) >= max_items:
                 return list(selected.values())
             selected.setdefault(row["chunk_id"], row)
     return list(selected.values())
@@ -166,10 +171,59 @@ def _retrieval_gaps(searches: list[tuple[dict, list[dict]]]) -> list[str]:
     return [row["message"] for row in _retrieval_gap_details(searches)]
 
 
+def _review_coverage(
+    plan: dict, searches: list[tuple[dict, list[dict]]], candidates: list[dict],
+    languages: list[str], *, evidence_budget: int = 8,
+) -> dict:
+    checks = list(range(len(plan.get("queries", []))))
+    by_check_language = {
+        (trace.get("check_index"), trace.get("language")): rows
+        for trace, rows in searches
+    }
+    covered_checks = sum(
+        all(by_check_language.get((check_index, language)) for language in languages)
+        for check_index in checks
+    )
+    covered_languages = sorted({
+        trace.get("language") for trace, rows in searches
+        if rows and trace.get("language") in {"zh", "en"}
+    })
+    search_failure_count = sum(
+        trace.get("status") == "search_unavailable" for trace, _rows in searches
+    )
+    complete = (
+        bool(checks) and covered_checks == len(checks)
+        and set(covered_languages) == set(languages)
+        and search_failure_count == 0
+        and 0 < len(candidates) <= evidence_budget
+    )
+    reasons = []
+    if search_failure_count:
+        reasons.append(f"{search_failure_count} 次语言检索未完成，不能据此判定无影响")
+    missing_languages = sorted(set(languages) - set(covered_languages))
+    if missing_languages:
+        labels = {"zh": "中文", "en": "英文"}
+        reasons.append("未召回" + "、".join(labels.get(item, item) for item in missing_languages) + "证据")
+    if covered_checks < len(checks):
+        reasons.append(f"{len(checks) - covered_checks} 项变更检查未同时覆盖所有指定语种")
+    if not candidates:
+        reasons.append("没有可供审查的有效证据")
+    return {
+        "required_check_count": len(checks),
+        "covered_check_count": covered_checks,
+        "attempted_languages": list(languages),
+        "covered_languages": covered_languages,
+        "search_failure_count": search_failure_count,
+        "evidence_budget": evidence_budget,
+        "selected_evidence_count": len(candidates),
+        "complete": complete,
+        "incomplete_reason": "；".join(dict.fromkeys(reasons)),
+    }
+
+
 def _retrieval_gap_details(
     searches: list[tuple[dict, list[dict]]], plan: dict | None = None,
 ) -> list[dict]:
-    scope = searches[1:] if len(searches) > 1 else searches
     labels = {
         "no_retrieval_match": ("NO_REQUIRED_SOURCE", "NO_MATCH", "当前版本未检索到匹配资料"),
         "candidate_outside_evidence_budget": (
@@ -182,17 +236,24 @@ def _retrieval_gap_details(
     )
     action = (plan or {}).get("gap_action", CHANGE_TYPES["general"]["action"])
     details = []
-    for trace, _rows in scope:
+    seen = set()
+    for trace, _rows in searches:
         definition = labels.get(trace["status"])
         if definition is None:
             continue
+        key = (trace.get("check_index"), trace.get("language"), trace.get("query"))
+        if key in seen:
+            continue
+        seen.add(key)
         gap_type, legacy_gap_code, label = definition
         suggested_query = trace["query"]
+        language_label = {"zh": "中文", "en": "英文"}.get(trace.get("language"), "")
+        suffix = f"（{language_label}检索）" if language_label else ""
         details.append({
             "gap_type": gap_type,
             "legacy_gap_code": legacy_gap_code,
-            "message": f"{label}：{trace['query']}",
-            "description": f"{label}：{trace['query']}",
+            "message": f"{label}{suffix}：{trace['query']}",
+            "description": f"{label}{suffix}：{trace['query']}",
             "query": trace["query"],
             "suggested_query": suggested_query,
             "missing_source_type": material,
@@ -471,13 +532,18 @@ class PublicReviewAgent:
         objective: str | None = None,
         constraints: str | None = None,
         validation_plan: str | None = None,
+        language_mode: str = "bilingual",
     ) -> dict:
         """Find current-version candidates from a natural-language change request."""
         summary = change_summary.strip()
         if not summary or len(summary) > 4000:
             raise ValueError("变更描述应为 1 到 4000 字")
+        if language_mode not in {"bilingual", "zh", "en"}:
+            raise ValueError("审查语言范围仅支持 bilingual、zh 或 en")
+        languages = ["zh", "en"] if language_mode == "bilingual" else [language_mode]
 
         plan = build_request_plan(summary, change_type=change_type, impact_scope=impact_scope)
+        plan["language_mode"] = language_mode
 
         if is_out_of_scope_public_request(summary):
             task_id = uuid.uuid4().hex
@@ -514,7 +580,20 @@ class PublicReviewAgent:
                     "uncovered_queries": [summary],
                     "model_status": "NOT_CALLED_OUT_OF_SCOPE",
                     "query_limit": plan["query_limit"],
+                    "languages_per_check": list(languages),
+                    "search_call_limit": plan["query_limit"] * len(languages),
                     "scope_status": "OUT_OF_SCOPE",
+                },
+                "coverage": {
+                    "required_check_count": len(plan["queries"]),
+                    "covered_check_count": 0,
+                    "attempted_languages": list(languages),
+                    "covered_languages": [],
+                    "search_failure_count": 0,
+                    "evidence_budget": 8,
+                    "selected_evidence_count": 0,
+                    "complete": False,
+                    "incomplete_reason": explanation,
                 },
                 "retrieved_results": [],
                 "impacts": [],
@@ -564,54 +643,61 @@ class PublicReviewAgent:
             json.dumps({
                 "version": selected_version, "change_type": plan["change_type"],
                 "impact_scope": plan["impact_scope"], "summary": summary,
+                "language_mode": language_mode,
                 **context_values,
             }, ensure_ascii=False, sort_keys=True)
         )[:20]
         searches: list[tuple[dict, list[dict]]] = []
         retrieval_policy = "bm25"
-        for query_step in plan["queries"]:
+        for check_index, query_step in enumerate(plan["queries"]):
             query = query_step["query"]
             search_query = query_step.get("search_query", query)
-            trace = {
-                **query_step,
-                "status": "no_retrieval_match",
-                "top_chunk_ids": [],
-                "selected_chunk_ids": [],
-            }
-            try:
-                search_result = self.gateway.search(
-                    search_query, version=selected_version, language="zh_preferred", top_k=5,
-                )
-                retrieval_policy = search_result.get("retrieval_policy", retrieval_policy)
-                rows = [
-                    row for row in search_result.get("results", [])
-                    if _official_hit(
-                        row, selected_version, repositories, allowed_versions=allowed_versions,
+            for language in languages:
+                trace = {
+                    **query_step,
+                    "check_index": check_index,
+                    "language": language,
+                    "status": "no_retrieval_match",
+                    "top_chunk_ids": [],
+                    "selected_chunk_ids": [],
+                }
+                try:
+                    search_result = self.gateway.search(
+                        search_query, version=selected_version, language=language, top_k=5,
                     )
-                ]
-                trace["top_chunk_ids"] = [row["chunk_id"] for row in rows]
-            except Exception:
-                # A failed search is distinct from a successful search without matches.
-                rows = []
-                trace["status"] = "search_unavailable"
-            searches.append((trace, rows))
+                    retrieval_policy = search_result.get("retrieval_policy", retrieval_policy)
+                    rows = [
+                        row for row in search_result.get("results", [])
+                        if _official_hit(
+                            row, selected_version, repositories, allowed_versions=allowed_versions,
+                        )
+                        and str(row.get("language") or row.get("locale") or "").casefold().startswith(language)
+                    ]
+                    trace["top_chunk_ids"] = [row["chunk_id"] for row in rows]
+                except Exception:
+                    # A failed search is distinct from a successful search without matches.
+                    rows = []
+                    trace["status"] = "search_unavailable"
+                searches.append((trace, rows))
 
-        candidates = _select_request_evidence(searches)
+        candidates = _select_request_evidence(searches, max_items=8)
         candidate_ids = {row["chunk_id"] for row in candidates}
         for trace, rows in searches:
             trace["selected_chunk_ids"] = [row["chunk_id"] for row in rows if row["chunk_id"] in candidate_ids]
             if trace["status"] != "search_unavailable" and rows:
                 trace["status"] = "candidate_found" if trace["selected_chunk_ids"] else "candidate_outside_evidence_budget"
-        scope_traces = searches[1:] if len(searches) > 1 else searches
         retrieval_trace = {
             "queries": [trace for trace, _rows in searches],
-            "uncovered_queries": [
-                trace["query"] for trace, _rows in scope_traces
+            "uncovered_queries": list(dict.fromkeys(
+                trace["query"] for trace, _rows in searches
                 if trace["status"] != "candidate_found"
-            ],
+            )),
             "model_status": "NOT_CALLED",
             "query_limit": plan["query_limit"],
+            "languages_per_check": list(languages),
+            "search_call_limit": plan["query_limit"] * len(languages),
         }
+        coverage = _review_coverage(plan, searches, candidates, languages, evidence_budget=8)
         evidence_gap_details = _retrieval_gap_details(searches, plan)
         evidence_gaps = [row["message"] for row in evidence_gap_details]
         base_advice = {"status": "NO_EVIDENCE", "answer": "N/A", "sources": []}
@@ -634,6 +720,7 @@ class PublicReviewAgent:
                 },
                 "retrieval_policy": retrieval_policy,
                 "retrieval_trace": retrieval_trace,
+                "coverage": coverage,
                 "retrieved_results": [],
                 "impacts": [],
                 "review_advice": base_advice,
@@ -652,6 +739,9 @@ class PublicReviewAgent:
                 f"\n约束条件：{context_values['constraints'] or '待补充'}"
                 f"\n验证计划：{context_values['validation_plan'] or '待补充'}"
                 f"\n检索关注点：{plan['retrieval_focus']}"
+                f"\n必须核对的检查项：{'；'.join(plan['checklist_items'])}"
+                f"\n检索覆盖状态：{'完整' if coverage['complete'] else '不完整'}"
+                f"\n审查边界：{coverage['incomplete_reason'] or '仅把引用资料列为待核对候选，最终由人工确认'}"
             )
             evidence_ids = [row["chunk_id"] for row in candidates]
             versioned_review = getattr(self.gateway, "review_advice_for_version", None)
@@ -693,6 +783,7 @@ class PublicReviewAgent:
             },
             "retrieval_policy": retrieval_policy,
             "retrieval_trace": retrieval_trace,
+            "coverage": coverage,
             "retrieved_results": candidates,
             "impacts": grounded_impacts,
             "review_advice": advice,

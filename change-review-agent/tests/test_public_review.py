@@ -99,10 +99,10 @@ def test_natural_language_review_searches_current_corpus_before_grounded_advice(
     gateway = Gateway()
     summary = "将全局参数调整为最高优先级。"
 
-    result = PublicReviewAgent(gateway).analyze_request(summary)
+    result = PublicReviewAgent(gateway).analyze_request(summary, language_mode="en")
 
     assert [row[0] for row in gateway.calls] == ["search", "review_advice"]
-    assert gateway.calls[0] == ("search", "3.4.3", "zh_preferred", 5)
+    assert gateway.calls[0] == ("search", "3.4.3", "en", 5)
     assert result["request_mode"] == "natural_language"
     assert result["request_summary"] == summary
     assert result["request_plan"]["change_type"] == "parameter_config"
@@ -121,6 +121,51 @@ def test_natural_language_review_searches_current_corpus_before_grounded_advice(
     assert result["sandbox_only"] is True
     assert result["public_baseline_written"] is False
     assert "patch_candidate" not in result
+
+
+def test_natural_language_review_searches_both_languages_and_reports_clause_coverage():
+    chinese = next(row for row in CHUNKS if row["document_key"] == "guide/parameter/priority" and row["language"] == "zh" and row["version"] == "3.4.3")
+    english = next(row for row in CHUNKS if row["document_key"] == "guide/parameter/priority" and row["language"] == "en" and row["version"] == "3.4.3")
+
+    class BilingualGateway(Gateway):
+        def search(self, question, *, version, language, top_k=5):
+            self.calls.append(("search", question, version, language, top_k))
+            return {"results": [chinese if language == "zh" else english]}
+
+    gateway = BilingualGateway()
+    result = PublicReviewAgent(gateway).analyze_request("调整参数优先级。", language_mode="bilingual")
+
+    traces = result["retrieval_trace"]["queries"]
+    assert {(row["language"], row["status"]) for row in traces} == {
+        ("zh", "candidate_found"), ("en", "candidate_found"),
+    }
+    assert {call[3] for call in gateway.calls if call[0] == "search"} == {"zh", "en"}
+    assert {key: value for key, value in result["coverage"].items() if key != "incomplete_reason"} == {
+        "required_check_count": 1, "covered_check_count": 1,
+        "attempted_languages": ["zh", "en"], "covered_languages": ["en", "zh"],
+        "search_failure_count": 0, "evidence_budget": 8, "selected_evidence_count": 2,
+        "complete": True,
+    }
+    assert result["request_plan"]["checklist_items"]
+
+
+def test_partial_bilingual_review_surfaces_search_failure_and_is_not_complete():
+    chinese = next(row for row in CHUNKS if row["document_key"] == "guide/parameter/priority" and row["language"] == "zh" and row["version"] == "3.4.3")
+
+    class OneLanguageUnavailable(Gateway):
+        def search(self, question, *, version, language, top_k=5):
+            self.calls.append(("search", question, version, language, top_k))
+            if language == "en":
+                raise ConnectionError("temporary retrieval failure")
+            return {"results": [chinese]}
+
+    result = PublicReviewAgent(OneLanguageUnavailable()).analyze_request("调整参数优先级。", language_mode="bilingual")
+
+    assert result["coverage"]["complete"] is False
+    assert result["coverage"]["search_failure_count"] == 1
+    assert result["retrieved_results"]
+    assert "不能据此判定无影响" in result["coverage"]["incomplete_reason"]
+    assert any("检索服务未完成" in gap for gap in result["evidence_gaps"])
 
 
 def test_natural_language_review_accepts_current_autoware_sources_from_manifest_repository():
@@ -176,14 +221,14 @@ def test_natural_language_review_accepts_current_autoware_sources_from_manifest_
     result = PublicReviewAgent(gateway).analyze_request(
         "Update the trajectory validation behavior in the planning validator.",
         target_version="0.51.0", objective="Catch invalid trajectories before handoff",
-        constraints="Keep the planning output interface stable",
+        constraints="Keep the planning output interface stable", language_mode="en",
     )
 
     assert _official_hit(evidence, "0.51.0", AUTOWARE_REPOSITORY)
     assert result["retrieved_results"] == [evidence]
     assert result["review_advice"]["status"] == "OK"
     assert result["impacts"][0]["evidence"]["repository"] == AUTOWARE_REPOSITORY
-    assert gateway.calls[0] == ("search", "0.51.0", "zh_preferred", 5)
+    assert gateway.calls[0] == ("search", "0.51.0", "en", 5)
     assert gateway.calls[-2] == ("review_advice_for_version", "0.51.0")
     assert result["request_context"]["objective"] == "Catch invalid trajectories before handoff"
     assert result["request_context"]["validation_plan"] is None
@@ -224,7 +269,7 @@ def test_evidence_selection_diversifies_documents_across_query_clauses():
     assert {item["document_key"] for item in selected} >= {
         "doc-a", "guide/task/sub-workflow", "doc-c"
     }
-    assert len(selected) <= 5
+    assert len(selected) <= 8
 
 
 def test_multi_part_request_keeps_evidence_from_each_part_with_auditable_trace():
@@ -255,8 +300,8 @@ def test_multi_part_request_keeps_evidence_from_each_part_with_auditable_trace()
         },
     }
 
-    first = PublicReviewAgent(gateway).analyze_request(summary)
-    second = PublicReviewAgent(gateway).analyze_request(summary)
+    first = PublicReviewAgent(gateway).analyze_request(summary, language_mode="zh")
+    second = PublicReviewAgent(gateway).analyze_request(summary, language_mode="zh")
 
     assert {row["chunk_id"] for row in first["retrieved_results"]} == {parameter["chunk_id"], upgrade["chunk_id"]}
     assert [row[0] for row in gateway.calls[:3]] == ["search", "search", "search"]
@@ -279,7 +324,7 @@ def test_no_retrieval_match_reports_gap_and_skips_model():
         return {"results": [{**CHUNKS[0], "retrieval_score": 0.0}]}
 
     gateway.search = search
-    result = PublicReviewAgent(gateway).analyze_request("核对未收录的恢复策略")
+    result = PublicReviewAgent(gateway).analyze_request("核对未收录的恢复策略", language_mode="zh")
 
     assert result["retrieved_results"] == []
     assert result["review_advice"]["status"] == "NO_EVIDENCE"
@@ -305,7 +350,7 @@ def test_missing_subquery_keeps_other_candidates_and_reports_partial_coverage():
         return {"results": [] if "不存在" in question and question != summary else [{**parameter, "retrieval_score": 2.0}]}
 
     gateway.search = search
-    result = PublicReviewAgent(gateway).analyze_request(summary)
+    result = PublicReviewAgent(gateway).analyze_request(summary, language_mode="zh")
 
     assert result["retrieved_results"][0]["chunk_id"] == parameter["chunk_id"]
     assert result["retrieval_trace"]["uncovered_queries"] == ["核对不存在的自动恢复功能"]
@@ -317,7 +362,7 @@ def test_unavailable_search_is_reported_separately_from_missing_evidence():
     gateway = Gateway()
     gateway.search = lambda *_args, **_kwargs: (_ for _ in ()).throw(ConnectionError("backend unavailable"))
 
-    result = PublicReviewAgent(gateway).analyze_request("核对恢复策略")
+    result = PublicReviewAgent(gateway).analyze_request("核对恢复策略", language_mode="zh")
 
     assert result["review_advice"]["status"] == "RETRIEVAL_UNAVAILABLE"
     assert result["retrieval_trace"]["queries"][0]["status"] == "search_unavailable"
@@ -393,7 +438,7 @@ def test_natural_language_review_keeps_model_gaps_when_it_abstains():
         },
     }
 
-    result = PublicReviewAgent(gateway).analyze_request("调整故障恢复策略")
+    result = PublicReviewAgent(gateway).analyze_request("调整故障恢复策略", language_mode="en")
 
     assert result["review_advice"]["status"] == "ABSTAINED"
     assert result["review_advice"]["sources"] == []
@@ -414,7 +459,7 @@ def test_natural_language_review_abstains_when_rag_has_no_current_evidence():
 
     gateway.search = no_hits
 
-    result = PublicReviewAgent(gateway).analyze_request("核对一个未收录的假设变更")
+    result = PublicReviewAgent(gateway).analyze_request("核对一个未收录的假设变更", language_mode="zh")
 
     assert result["review_advice"]["status"] == "NO_EVIDENCE"
     assert result["impacts"] == []
@@ -428,7 +473,7 @@ def test_natural_language_review_keeps_candidates_when_model_is_unavailable():
         "status": "GENERATION_PROVIDER_UNAVAILABLE", "answer": "N/A", "sources": [],
     }
 
-    result = PublicReviewAgent(gateway).analyze_request("核对全局参数变化的影响")
+    result = PublicReviewAgent(gateway).analyze_request("核对全局参数变化的影响", language_mode="en")
 
     assert result["retrieved_results"]
     assert result["review_advice"]["status"] == "GENERATION_PROVIDER_UNAVAILABLE"
@@ -459,6 +504,7 @@ def test_structured_change_context_is_searchable_and_kept_in_the_plan():
         "增加任务状态响应字段；核对工作流调用方。",
         change_type="interface_compatibility",
         impact_scope="任务状态 API",
+        language_mode="zh",
     )
 
     assert result["request_plan"]["change_type"] == "interface_compatibility"

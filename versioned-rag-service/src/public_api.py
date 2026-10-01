@@ -34,6 +34,35 @@ _AUTOWARE_EVALUATION_ROOT = Path(__file__).resolve().parents[2] / "evaluation" /
 _AUTOWARE_BENCHMARK_SHA256 = "94b5945166d290e1840b1ba93ec12d0d72231f666bbea3416e6ecd0384823078"
 _AUTOWARE_QUALITY_V1_ROOT = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_quality_v1"
 _AUTOWARE_QUALITY_V1_BENCHMARK_SHA256 = "11c048eb76a225afbdcd40022b6eb8f324ba072f3c469a4140e224a8405de9be"
+_AUTOWARE_ACCURACY_V2_ROOT = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_accuracy_v2"
+_AUTOWARE_ACCURACY_V2_REPORT_SHA256 = {
+    "dev": "1a4bf2749f39c42b1a5402284a73ed50efcac34f8025b7e4c18b5bdb0978a132",
+    "holdout": "8cdc5a786d4c2d1e5bf6619fdf927fc33e760d61dbd7fb9d25914084362870df",
+}
+_AUTOWARE_AGENT_V2_SHA256 = {
+    "evaluation/autoware_accuracy_v2/agent_cases.jsonl": "4279695f2b14cac2e6fd6a3cae93631f55146774f5825d7e069e5073d36379b5",
+    "evaluation/autoware_accuracy_v2/agent_selection_lock.json": "c5908b45d162922e6237590580de178c2adecb8a56e8bfa00fdc206a3af9fac7",
+    "evaluation/autoware_accuracy_v2/run_agent_workflow.py": "a4b952d4a0412a066fb971e2e99580c1ef6ca7c6bbaf74134401a324060fca37",
+    "evaluation/autoware_accuracy_v2/run_agent_evaluation.py": "e38fc613698a985bf91b4524dc2ef069a003f8aadecbaa892db798f231b0ef55",
+    "change-review-agent/app/public_review.py": "e9282ba9ce69f43be8ced51451dc5b3365e4de27d934099641924c836b594856",
+    "versioned-rag-service/src/public_knowledge.py": "9901f074f188a615d4b3de7ccdee95b31afa23aa2bc6f08f63cc6ec450c350dd",
+    "versioned-rag-service/src/public_retrieval_runtime.py": "9952fd2ee5442f94e85e3a5d65a7291d2a28fc18141dbd8e23139ac399828045",
+    "versioned-rag-service/public_corpus_autoware/corpus_manifest.json": "ab00dfd18c11c0de4511729f9612d3176c8fe95dd390e0bc7ba2a337ff72a0fa",
+    "versioned-rag-service/public_corpus_autoware/document_relations.json": "7737393c6c7839e904cc62e8e8900a8af5277a8b438a6233aecaea48f56a3655",
+    "versioned-rag-service/public_corpus_autoware/chunks.json": "930d36eb10958b2c9a81482a2cb1a22c7bd9bc6da072921116cc4c0294444876",
+    "versioned-rag-service/public_corpus_autoware/retrieval_policy.json": "5ee1f7a8c09433989cdc5e83b03ce20ec90161f7142279e12edc53ab86ad084c",
+    "versioned-rag-service/public_corpus_autoware/public_retrieval_runtime.json": "8cb1ce2f93dac667d803b766d63209926ac26e4b4e7204dfedff97647e4472d0",
+    "versioned-rag-service/public_corpus_autoware/figure_evidence_reviewed.json": "9da8b3b99f7bd65418a3ea4467c5f498d5123962b2aba29031e673e8fad19b28",
+    "versioned-rag-service/public_corpus_autoware/figure_evidence_reviewed.lock.json": "908d28a6925a025c1fd5c15b0f42d97831a61feeccd33437cac6d6e010810e95",
+    "evaluation/autoware_accuracy_v2/results/agent-dev-bilingual-report.json": "62d79980213aaa4c70c70a4b1ae39855f1adea661548be5df45ac696fc1fa692",
+    "evaluation/autoware_accuracy_v2/results/agent-dev-bilingual-run.json": "5177abcc2a864c16868acbb84999bd4f628bac4911a78c3d3545e251ffd440a3",
+    "evaluation/autoware_accuracy_v2/results/agent-dev-zh-report.json": "e44dfc9afc4106a8e855bded7daf8e35297ebe323ce925e3bfd8b3f5bdaaaa9f",
+    "evaluation/autoware_accuracy_v2/results/agent-dev-zh-run.json": "b50289d8e550dcd29af0719cd6c437e8590ae20bee59919b8b8614212767c6f3",
+    "evaluation/autoware_accuracy_v2/results/agent-holdout-bilingual-report.json": "8d3106d147de4c2c7cd69f8e45df90b1bc07c7218cd5070ed16044da971e36aa",
+    "evaluation/autoware_accuracy_v2/results/agent-holdout-bilingual-run.json": "204018baa34e04ebaf12fae6a56655dc04a0d282d852627819ccf6ac22bd8bae",
+    "evaluation/autoware_accuracy_v2/results/agent-holdout-zh-report.json": "864d2c1e758ace410173abae873421cf98832e5bc1437838d5bf53a03fbfc3b9",
+    "evaluation/autoware_accuracy_v2/results/agent-holdout-zh-run.json": "06a005c2bbf2444848aeadca2825fda4cb54ab570614b95b03f0c673b7bd9117",
+}
 _AUTOWARE_REPOSITORY = "autowarefoundation/autoware_universe"
 
 
@@ -240,7 +269,7 @@ class DocumentRequest(BaseModel):
 class ReviewAdviceRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     change_summary: str = Field(min_length=1, max_length=4000)
-    evidence_chunk_ids: list[str] = Field(min_length=1, max_length=5)
+    evidence_chunk_ids: list[str] = Field(min_length=1, max_length=8)
     version: str = Field(default="current", min_length=1, max_length=32)
 
 
@@ -470,6 +499,274 @@ def _validated_autoware_quality_v1(index) -> dict | None:
     return report
 
 
+def _validated_autoware_accuracy_v2(index) -> dict | None:
+    """Expose V2 only when its frozen cases, runtime fingerprint, and served policy match."""
+    if (
+        index.manifest.get("workspace") != "Autoware"
+        or index.manifest.get("repository") != _AUTOWARE_REPOSITORY
+    ):
+        return None
+    root = Path(index.root)
+    evaluation_root = _AUTOWARE_ACCURACY_V2_ROOT
+    dev_report_path = evaluation_root / "results" / "dev-policy-comparison.json"
+    holdout_report_path = evaluation_root / "results" / "holdout-selected.json"
+    cases_path = evaluation_root / "rag_cases.jsonl"
+    lock_path = evaluation_root / "split_lock.json"
+    selection_path = evaluation_root / "selection_lock.json"
+    try:
+        if (
+            _portable_text_sha256(dev_report_path) != _AUTOWARE_ACCURACY_V2_REPORT_SHA256["dev"]
+            or _portable_text_sha256(holdout_report_path) != _AUTOWARE_ACCURACY_V2_REPORT_SHA256["holdout"]
+        ):
+            return None
+        dev_report = json.loads(dev_report_path.read_text(encoding="utf-8"))
+        holdout_report = json.loads(holdout_report_path.read_text(encoding="utf-8"))
+        split_lock = json.loads(lock_path.read_text(encoding="utf-8"))
+        selection = json.loads(selection_path.read_text(encoding="utf-8"))
+        corpus_runtime_config = json.loads((root / "public_retrieval_runtime.json").read_text(encoding="utf-8"))
+        served_config = dict(getattr(index, "config", {}))
+        corpus_behavior = dict(corpus_runtime_config)
+        served_behavior = dict(served_config)
+        corpus_behavior.pop("default_policy", None)
+        served_behavior.pop("default_policy", None)
+        service = Path(__file__).resolve().parents[1]
+        paths = {
+            "corpus_manifest_sha256": root / "corpus_manifest.json",
+            "relation_registry_sha256": root / "document_relations.json",
+            "chunks_sha256": root / "chunks.json",
+            "runtime_config_sha256": root / "public_retrieval_runtime.json",
+            "policy_sha256": root / "retrieval_policy.json",
+            "figure_sidecar_sha256": root / "figure_evidence_reviewed.json",
+            "figure_lock_sha256": root / "figure_evidence_reviewed.lock.json",
+            "runner_sha256": evaluation_root / "run_rag_benchmark.py",
+            "public_knowledge_sha256": service / "src" / "public_knowledge.py",
+            "retrieval_runtime_sha256": service / "src" / "public_retrieval_runtime.py",
+        }
+        actual = {key: _portable_text_sha256(path) for key, path in paths.items()}
+        actual["dense_vectors_sha256"] = hashlib.sha256((root / "dense_vectors.npy").read_bytes()).hexdigest()
+    except (OSError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+
+    live_policy = _runtime_policy(index)
+    cases_sha = _portable_text_sha256(cases_path)
+    reports = {"dev": dev_report, "holdout": holdout_report}
+    if (
+        any(
+            not isinstance(report, dict)
+            or report.get("schema_version") != 2
+            or report.get("evaluation") != "autoware_accuracy_v2"
+            or report.get("split") != split
+            or report.get("runtime_fingerprint") != actual
+            or report.get("cases_sha256") != cases_sha
+            or report.get("split_lock_sha256") != _portable_text_sha256(lock_path)
+            or report.get("selection_lock") != (None if split == "dev" else selection)
+            or not isinstance(report.get("policies"), dict)
+            for split, report in reports.items()
+        )
+        or split_lock.get("rag_cases_sha256") != cases_sha
+        or split_lock.get("rag_split_counts") != {"dev": 45, "holdout": 45}
+        or selection.get("rag_cases_sha256") != cases_sha
+        or selection.get("status") != "holdout_locked"
+        or selection.get("dev_runtime_fingerprint") != actual
+        or served_behavior != corpus_behavior
+        or live_policy != "bm25_figure_ocr"
+        or any(live_policy not in report["policies"] or "bm25" not in report["policies"] for report in reports.values())
+    ):
+        return None
+
+    try:
+        candidate_policy = str(selection["selected_candidate"])
+        if any(candidate_policy not in report["policies"] for report in reports.values()):
+            return None
+        required_metrics = (
+            "required_source_recall_at_5", "complete_required_sources_at_5",
+            "required_source_recall_at_20", "mrr_at_5", "ndcg_at_5",
+            "explicit_version_mismatch_count", "search_p50_ms", "search_p95_ms",
+        )
+        for split in ("dev", "holdout"):
+            report = reports[split]
+            values = report["policies"][live_policy]["metrics"]
+            if any(
+                not isinstance(values.get(key), (int, float))
+                or isinstance(values.get(key), bool)
+                or not math.isfinite(values[key])
+                for key in required_metrics
+            ):
+                return None
+            if values["explicit_version_mismatch_count"] != 0:
+                return None
+
+        dev = reports["dev"]
+        holdout_report = reports["holdout"]
+        current_dev = dev["policies"][live_policy]
+        current_holdout = holdout_report["policies"][live_policy]
+        baseline_dev = dev["policies"]["bm25"]
+        baseline_holdout = holdout_report["policies"]["bm25"]
+        candidate_dev = dev["policies"][candidate_policy]
+        candidate_holdout = holdout_report["policies"][candidate_policy]
+        current_images = holdout_report["image_regression"][live_policy]
+        candidate_images = holdout_report["image_regression"][candidate_policy]
+        baseline_images = holdout_report["image_regression"]["bm25"]
+        current_metrics = current_holdout["metrics"]
+        candidate_metrics = candidate_holdout["metrics"]
+        direction_keys = ("en_query_zh_evidence", "zh_query_en_evidence")
+        direction_checks = {
+            key: candidate_holdout["by_category"][key]["metrics"]["required_source_recall_at_5"]
+            >= current_holdout["by_category"][key]["metrics"]["required_source_recall_at_5"]
+            for key in direction_keys
+        }
+        promotion_checks = {
+            "source_recall_noninferior": candidate_metrics["required_source_recall_at_5"] >= current_metrics["required_source_recall_at_5"],
+            "complete_source_noninferior": candidate_metrics["complete_required_sources_at_5"] >= current_metrics["complete_required_sources_at_5"],
+            "top20_source_recall_noninferior": candidate_metrics["required_source_recall_at_20"] >= current_metrics["required_source_recall_at_20"],
+            "zero_version_mismatch": candidate_metrics["explicit_version_mismatch_count"] == 0,
+            "reviewed_image_probe_noninferior": candidate_images["hit_count"] >= current_images["hit_count"],
+            "latency_within_120_percent": candidate_metrics["search_p95_ms"] <= max(current_metrics["search_p95_ms"] * 1.2, 1.0),
+            "no_bilingual_direction_regression": all(direction_checks.values()),
+            "measurable_holdout_improvement": (
+                candidate_metrics["required_source_recall_at_5"] > current_metrics["required_source_recall_at_5"]
+                or candidate_metrics["complete_required_sources_at_5"] > current_metrics["complete_required_sources_at_5"]
+            ),
+        }
+        candidate_decision = "promoted_candidate" if all(promotion_checks.values()) else "not_promoted"
+        def summarize(report: dict, policy: str, values: dict) -> dict:
+            policy_report = report["policies"][policy]
+            metrics = {key: values["metrics"][key] for key in required_metrics}
+            metrics.update({
+                "translation_relation_state_accuracy": values["metrics"]["translation_relation_state_accuracy"],
+                "unanswerable_candidate_rate": values["metrics"]["unanswerable_candidate_rate"],
+                "image_hit_count": report["image_regression"][policy]["hit_count"],
+                "image_case_count": report["image_regression"][policy]["case_count"],
+                "query_count": policy_report["case_count"],
+                "answer_accuracy": values["metrics"].get("answer_accuracy"),
+            })
+            return metrics
+        return {
+            "name": "autoware_accuracy_v2",
+            "policy": live_policy,
+            "top_k": 5,
+            "case_count": split_lock["rag_case_count"],
+            "case_split_counts": split_lock["rag_split_counts"],
+            "metric_scope": holdout_report["metric_scope"],
+            "cases_sha256": cases_sha,
+            "runtime_fingerprint": actual,
+            "dev": summarize(dev, live_policy, current_dev),
+            "holdout": summarize(holdout_report, live_policy, current_holdout),
+            "bm25_dev": summarize(dev, "bm25", baseline_dev),
+            "bm25_holdout": summarize(holdout_report, "bm25", baseline_holdout),
+            "candidate": {
+                "policy": candidate_policy,
+                "dev": summarize(dev, candidate_policy, candidate_dev),
+                "holdout": summarize(holdout_report, candidate_policy, candidate_holdout),
+                "directional_holdout_noninferiority": direction_checks,
+                "promotion_checks": promotion_checks,
+                "decision": candidate_decision,
+                "decision_reason": (
+                    "保留 BM25+OCR：候选策略未通过冻结 HOLDOUT 的必需来源召回/跨语言方向门槛。"
+                    if candidate_decision == "not_promoted" else "候选通过离线门槛，仍需独立资源与发布审阅。"
+                ),
+            },
+            "candidate_decision": candidate_decision,
+            "image_regression": {
+                "case_count": baseline_images["case_count"],
+                "bm25_hits": baseline_images["hit_count"],
+                "current_hits": current_images["hit_count"],
+                "candidate_hits": candidate_images["hit_count"],
+                "scope": current_images["interpretation"],
+            },
+            "interpretation": "current-strategy offline retrieval report; not generated-answer accuracy, hallucination rate, or public-service latency",
+        }
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def _validated_autoware_agent_v2(index) -> dict | None:
+    """Expose only the frozen no-LLM Agent workflow comparison for exact code and data."""
+    if (
+        index.manifest.get("workspace") != "Autoware"
+        or index.manifest.get("repository") != _AUTOWARE_REPOSITORY
+        or _runtime_policy(index) != "bm25_figure_ocr"
+    ):
+        return None
+    project_root = Path(__file__).resolve().parents[2]
+    try:
+        if any(
+            _portable_text_sha256(project_root / relative_path) != expected_sha
+            for relative_path, expected_sha in _AUTOWARE_AGENT_V2_SHA256.items()
+        ):
+            return None
+        evaluation_root = project_root / "evaluation" / "autoware_accuracy_v2"
+        selection = json.loads((evaluation_root / "agent_selection_lock.json").read_text(encoding="utf-8"))
+        reports = {}
+        runs = {}
+        for split in ("dev", "holdout"):
+            for language in ("bilingual", "zh"):
+                key = (split, language)
+                reports[key] = json.loads((evaluation_root / "results" / f"agent-{split}-{language}-report.json").read_text(encoding="utf-8"))
+                runs[key] = json.loads((evaluation_root / "results" / f"agent-{split}-{language}-run.json").read_text(encoding="utf-8"))
+    except (OSError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+
+    cases_sha = _portable_text_sha256(evaluation_root / "agent_cases.jsonl")
+    corpus_sha = _portable_text_sha256(Path(index.root) / "corpus_manifest.json")
+    if (
+        selection.get("status") != "holdout_locked"
+        or selection.get("agent_cases_sha256") != cases_sha
+        or selection.get("label_scope") != "RAG-origin source anchors and public-scope probes; not independently confirmed change-impact truth"
+    ):
+        return None
+
+    required_metrics = (
+        "evidence_source_recall", "complete_evidence_source_rate",
+        "retrieval_check_coverage_rate", "retrieval_language_coverage_rate",
+        "complete_retrieval_case_rate", "expected_gap_recall", "search_calls_mean",
+        "selected_evidence_mean", "latency_p50_ms", "latency_p95_ms",
+    )
+    summaries = {"dev": {}, "holdout": {}}
+    try:
+        for (split, language), report in reports.items():
+            run = runs[(split, language)]
+            metrics = report["results"]["metrics"]
+            if (
+                report.get("schema_version") != 1
+                or report.get("evaluation") != "autoware_accuracy_v2_agent"
+                or report.get("split") != split
+                or report.get("missing_result_count") != 0
+                or run.get("split") != split
+                or run.get("language_mode") != language
+                or run.get("cases_sha256") != cases_sha
+                or run.get("corpus_manifest_sha256") != corpus_sha
+                or run.get("retrieval_policy") != "bm25_figure_ocr"
+                or run.get("llm_calls") != 0
+                or run.get("model_impact_metrics") != "NOT_EVALUATED"
+                or metrics.get("model_evaluated_case_count") != 0
+                or any(not isinstance(metrics.get(key), (int, float)) for key in required_metrics)
+            ):
+                return None
+            summaries[split][language] = {key: metrics[key] for key in required_metrics}
+            summaries[split][language]["case_count"] = report["results"]["case_count"]
+            summaries[split][language]["model_evaluated_case_count"] = 0
+
+        for language in ("bilingual", "zh"):
+            locked_metrics = selection["dev_metrics"][language]
+            if locked_metrics != reports[("dev", language)]["results"]["metrics"]:
+                return None
+    except (KeyError, TypeError):
+        return None
+
+    return {
+        "name": "autoware_accuracy_v2_agent",
+        "case_count": 57,
+        "case_split_counts": {"dev": 29, "holdout": 28},
+        "language_modes": ["bilingual", "zh"],
+        "dev": summaries["dev"],
+        "holdout": summaries["holdout"],
+        "llm_calls": 0,
+        "label_scope": selection["label_scope"],
+        "interpretation": "Agent planner plus RAG source-anchor coverage; not true change-impact accuracy or answer quality",
+    }
+
+
 def _validated_retrieval_release(index: PublicKnowledgeIndex) -> dict | None:
     """Publish offline V3 numbers only for the exact index and policy now serving requests."""
     if getattr(index, "runtime_policy", index.policy.get("default_policy")) != index.policy.get("default_policy"):
@@ -600,12 +897,51 @@ def _positive_retrieval_hits(hits: list[dict]) -> list[dict]:
     ]
 
 
+def _validate_claim_evidence(claims: object, evidence_hits: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Map answer claims to exact chunks from this retrieval response only."""
+    if not isinstance(claims, list):
+        raise ValueError("claims must be a list")
+    if not claims:
+        return [], []
+    allowed = {row.get("chunk_id"): row for row in evidence_hits if isinstance(row.get("chunk_id"), str)}
+    normalized_claims = []
+    used_chunk_ids: list[str] = []
+    seen_claims = set()
+    for claim in claims:
+        if not isinstance(claim, dict) or set(claim) != {"text", "evidence_ids"}:
+            return [], []
+        text = claim.get("text")
+        evidence_ids = claim.get("evidence_ids")
+        if (
+            not isinstance(text, str) or not text.strip()
+            or not isinstance(evidence_ids, list) or not evidence_ids
+            or any(not isinstance(chunk_id, str) or not chunk_id.strip() for chunk_id in evidence_ids)
+            or len(evidence_ids) != len(set(evidence_ids))
+            or any(chunk_id not in allowed for chunk_id in evidence_ids)
+            or text.strip() in seen_claims
+        ):
+            raise ValueError("claim does not cite current retrieval evidence")
+        seen_claims.add(text.strip())
+        for chunk_id in evidence_ids:
+            if chunk_id not in used_chunk_ids:
+                used_chunk_ids.append(chunk_id)
+        normalized_claims.append({
+            "text": text.strip(), "evidence_ids": list(evidence_ids),
+        })
+    source_indexes = {chunk_id: index + 1 for index, chunk_id in enumerate(used_chunk_ids)}
+    for claim in normalized_claims:
+        claim["source_indexes"] = list(dict.fromkeys(source_indexes[item] for item in claim["evidence_ids"]))
+    return normalized_claims, [allowed[chunk_id] for chunk_id in used_chunk_ids]
+
+
 @router.get("/workspace")
 def workspace(request: Request) -> dict:
     index = _index(request)
     manifest = index.manifest
     release = _validated_retrieval_release(index)
     experiment = _validated_v4_experiment(index)
+    autoware_accuracy_v2 = _validated_autoware_accuracy_v2(index)
+    autoware_agent_v2 = _validated_autoware_agent_v2(index)
     autoware_quality_v1 = _validated_autoware_quality_v1(index)
     autoware_evaluation = (
         _validated_autoware_evaluation(index) if autoware_quality_v1 is None else None
@@ -650,12 +986,14 @@ def workspace(request: Request) -> dict:
         "base_retrieval_policy": index.policy["default_policy"],
         "approved_image_chunk_count": len(getattr(index, "_images", [])),
         "retrieval_evaluation_status": (
+            "autoware_accuracy_v2_validated" if autoware_accuracy_v2 else
             "autoware_quality_v1_validated" if autoware_quality_v1 else
             "autoware_retrieval_v3_validated" if autoware_evaluation else
             "v4_bm25_validated" if experiment else
             "v3_validated" if release else "expanded_corpus_pending_rebenchmark"
         ),
         "frozen_benchmark_query_count": (
+            autoware_accuracy_v2["case_count"] if autoware_accuracy_v2 else
             autoware_quality_v1["case_count"] if autoware_quality_v1 else
             sum(autoware_evaluation["splits"][split][_runtime_policy(index)]["query_count"] for split in ("dev", "holdout"))
             if autoware_evaluation else
@@ -686,9 +1024,13 @@ def workspace(request: Request) -> dict:
         result["corpus_scope"] = str(manifest.get("corpus_scope") or (
             "Curated Autoware Universe Planning subset: overview, planners and validators."
         ))
+    if autoware_agent_v2:
+        result["change_review_evaluation"] = autoware_agent_v2
     if source_retrieval_times:
         result["latest_source_retrieval_timestamp"] = max(source_retrieval_times).isoformat()
-    if autoware_quality_v1:
+    if autoware_accuracy_v2:
+        result["retrieval_evaluation"] = autoware_accuracy_v2
+    elif autoware_quality_v1:
         selected = _runtime_policy(index)
         result["retrieval_evaluation"] = {
             "name": "autoware_quality_v1",
@@ -894,10 +1236,23 @@ async def query(payload: SearchRequest, request: Request) -> dict:
         else:
             generated = await asyncio.to_thread(generator.generate, question=payload.query, context=context)
         diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
-        answer = generated["final_answer"]
-        citations = validate_citation_membership(generated["relevant_sources"], generator_hits)
         diagnostics["candidate_count"] = len(hits)
-        if not isinstance(answer, str) or not answer.strip() or answer == "N/A":
+        try:
+            claims, cited_hits = _validate_claim_evidence(generated.get("claims"), hits)
+        except (ValueError, TypeError, KeyError) as exc:
+            diagnostics["failure_reason"] = "NO_VALID_EVIDENCE_CITATIONS"
+            raw_claims = generated.get("claims")
+            diagnostics["claimed_citation_count"] = sum(
+                len(item.get("evidence_ids", [])) for item in raw_claims
+                if isinstance(item, dict) and isinstance(item.get("evidence_ids"), list)
+            ) if isinstance(raw_claims, list) else 0
+            diagnostics["valid_citation_count"] = 0
+            logger.info(
+                "Public generation request_id=%s status=ABSTAINED reason=%s candidate_count=%s",
+                diagnostics["request_id"], diagnostics["failure_reason"], diagnostics["candidate_count"],
+            )
+            return {**base, "status": "ABSTAINED"}
+        if not claims:
             diagnostics["failure_reason"] = "MODEL_NO_SUPPORTED_ANSWER"
             diagnostics["evidence_coverage"] = _evidence_query_coverage(payload.query, hits)
             logger.info(
@@ -905,20 +1260,27 @@ async def query(payload: SearchRequest, request: Request) -> dict:
                 diagnostics["request_id"], diagnostics["failure_reason"], diagnostics["candidate_count"],
             )
             return {**base, "status": "ABSTAINED"}
-        if not citations:
-            claimed_sources = generated.get("relevant_sources")
+        claimed_sources = generated.get("relevant_sources")
+        citations = validate_citation_membership(claimed_sources, generator_hits) if isinstance(claimed_sources, list) else []
+        claim_chunk_ids = {chunk_id for claim in claims for chunk_id in claim["evidence_ids"]}
+        source_chunk_ids = {row["document_id"] for row in citations}
+        if (
+            not isinstance(claimed_sources, list)
+            or len(citations) != len(claimed_sources)
+            or not claim_chunk_ids.issubset(source_chunk_ids)
+        ):
             diagnostics["failure_reason"] = "NO_VALID_EVIDENCE_CITATIONS"
             diagnostics["claimed_citation_count"] = len(claimed_sources) if isinstance(claimed_sources, list) else 0
-            diagnostics["valid_citation_count"] = 0
+            diagnostics["valid_citation_count"] = len(citations)
             logger.info(
                 "Public generation request_id=%s status=ABSTAINED reason=%s candidate_count=%s claimed_citations=%s",
                 diagnostics["request_id"], diagnostics["failure_reason"], diagnostics["candidate_count"],
                 diagnostics["claimed_citation_count"],
             )
             return {**base, "status": "ABSTAINED"}
-        diagnostics["claimed_citation_count"] = len(generated["relevant_sources"])
-        diagnostics["valid_citation_count"] = len(citations)
-        cited_ids = {row["document_id"] for row in citations}
+        diagnostics["claimed_citation_count"] = sum(len(claim["evidence_ids"]) for claim in claims)
+        diagnostics["valid_citation_count"] = diagnostics["claimed_citation_count"]
+        answer = "\n".join(claim["text"] for claim in claims)
         logger.info(
             "Public generation request_id=%s status=OK provider=%s requested_model=%s returned_model=%s "
             "finish_reason=%s usage=%s latency_ms=%s",
@@ -927,10 +1289,10 @@ async def query(payload: SearchRequest, request: Request) -> dict:
             diagnostics["usage"], diagnostics["latency_ms"],
         )
         return {
-            **base, "answer": answer, "sources": [hit for hit in hits if hit["chunk_id"] in cited_ids],
+            **base, "answer": answer, "claims": claims, "sources": cited_hits,
             "evidence_support": _answer_evidence_support(
                 payload.query,
-                [hit for hit in hits if hit["chunk_id"] in cited_ids],
+                cited_hits,
                 notes,
             ),
             "status": "OK",
