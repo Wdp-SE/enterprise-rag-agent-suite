@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "evaluation": "autoware_agent_query_planning_v1",
+  "cases_sha256": "5160fd6893253f6f3014ce9085956cfa952527d20d29d5ea3d1cc35be1950476",
+  "corpus_manifest_sha256": "ab00dfd18c11c0de4511729f9612d3176c8fe95dd390e0bc7ba2a337ff72a0fa",
+  "split_case_ids": {
+    "dev": [
+      "explicit_version_en",
+      "explicit_version_zh",
+      "freespace_en",
+      "freespace_zh",
+      "image_evidence_en",
+      "image_evidence_zh",
+      "interface_en",
+      "interface_zh",
+      "intersection_en",
+      "intersection_zh",
+      "parameters_en",
+      "parameters_zh",
+      "planner_threshold_en",
+      "planner_threshold_zh",
+      "planning_design_en",
+      "planning_design_zh",
+      "start_en",
+      "start_zh",
+      "topic_en",
+      "topic_zh",
+      "trajectory_en",
+      "trajectory_zh"
+    ],
+    "holdout": [
+      "docs_translation_en",
+      "docs_translation_zh",
+      "docs_unknown_en",
+      "docs_unknown_zh",
+      "no_answer_en",
+      "no_answer_zh"
+    ]
+  },
+  "split_family_ids": {
+    "dev": [
+      "explicit_version",
+      "figure_review",
+      "freespace_planner",
+      "intersection_planner",
+      "planner_threshold",
+      "planning_architecture",
+      "ros_interface",
+      "ros_parameters",
+      "start_planner",
+      "topic_contract",
+      "trajectory_validation"
+    ],
+    "holdout": [
+      "translation_sync",
+      "translation_unknown",
+      "unsupported_change"
+    ]
+  }
+}

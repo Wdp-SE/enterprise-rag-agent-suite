@@ -45,10 +45,44 @@ def _request_queries(summary: str) -> list[str]:
     return request_queries(summary)
 
 
-def _official_hit(row: dict, current_version: str, repository: str) -> bool:
+def _scope_versions(workspace: dict, selected_version: str) -> set[str]:
+    scopes = workspace.get("version_scopes")
+    definition = scopes.get(selected_version) if isinstance(scopes, dict) else None
+    members = definition.get("versions") if isinstance(definition, dict) else None
+    if isinstance(members, list) and members and all(isinstance(item, str) for item in members):
+        return set(members)
+    return {selected_version}
+
+
+def _workspace_repositories(workspace: dict) -> set[str]:
+    values = workspace.get("repositories")
+    if isinstance(values, list):
+        repositories = {
+            value.strip() for value in values
+            if isinstance(value, str) and re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", value.strip())
+        }
+    else:
+        repositories = set()
+    repository = workspace.get("repository")
+    if isinstance(repository, str) and re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
+        repositories.add(repository)
+    return repositories
+
+
+def _official_hit(
+    row: dict, current_version: str, repository: str | set[str], *, allowed_versions: set[str] | None = None,
+) -> bool:
     score = row.get("retrieval_score")
     parsed = urlsplit(str(row.get("source_url", "")))
-    repository_path = "/" + repository.strip("/") + "/"
+    repositories = {repository} if isinstance(repository, str) else set(repository)
+    row_repository = row.get("repository")
+    if isinstance(row_repository, str) and row_repository.strip():
+        matched_repository = row_repository.strip()
+    elif len(repositories) == 1:
+        matched_repository = next(iter(repositories))
+    else:
+        matched_repository = ""
+    repository_path = "/" + matched_repository.strip("/") + "/"
     commit = row.get("commit")
     pinned_blob = (
         not commit
@@ -56,8 +90,9 @@ def _official_hit(row: dict, current_version: str, repository: str) -> bool:
         and parsed.path.startswith(repository_path + "blob/" + commit + "/")
     )
     return (
-        row.get("version") == current_version
-        and bool(re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository))
+        row.get("version") in (allowed_versions or {current_version})
+        and matched_repository in repositories
+        and bool(re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", matched_repository))
         and parsed.scheme == "https" and parsed.netloc == "github.com"
         and parsed.path.startswith(repository_path)
         and pinned_blob
@@ -136,9 +171,11 @@ def _retrieval_gap_details(
 ) -> list[dict]:
     scope = searches[1:] if len(searches) > 1 else searches
     labels = {
-        "no_retrieval_match": ("NO_MATCH", "当前版本未检索到匹配资料"),
-        "candidate_outside_evidence_budget": ("EVIDENCE_BUDGET", "检索命中未纳入本次模型证据上限"),
-        "search_unavailable": ("SEARCH_UNAVAILABLE", "检索服务未完成"),
+        "no_retrieval_match": ("NO_REQUIRED_SOURCE", "NO_MATCH", "当前版本未检索到匹配资料"),
+        "candidate_outside_evidence_budget": (
+            "NO_REQUIRED_SOURCE", "EVIDENCE_BUDGET", "检索命中未纳入本次模型证据上限",
+        ),
+        "search_unavailable": ("RETRIEVAL_FAILED", "SEARCH_UNAVAILABLE", "检索服务未完成"),
     }
     material = (CHANGE_TYPES.get((plan or {}).get("change_type"), CHANGE_TYPES["general"]) or {}).get(
         "materials", CHANGE_TYPES["general"]["materials"]
@@ -149,11 +186,17 @@ def _retrieval_gap_details(
         definition = labels.get(trace["status"])
         if definition is None:
             continue
-        gap_type, label = definition
+        gap_type, legacy_gap_code, label = definition
+        suggested_query = trace["query"]
         details.append({
             "gap_type": gap_type,
+            "legacy_gap_code": legacy_gap_code,
             "message": f"{label}：{trace['query']}",
+            "description": f"{label}：{trace['query']}",
             "query": trace["query"],
+            "suggested_query": suggested_query,
+            "missing_source_type": material,
+            "expected_version": (plan or {}).get("target_version"),
             "expected_materials": material,
             "suggested_action": action,
             "requires_human_review": True,
@@ -169,18 +212,115 @@ def _model_evidence_gaps(advice: dict) -> list[str]:
     return [gap.strip() for gap in gaps if isinstance(gap, str) and gap.strip()] if isinstance(gaps, list) else []
 
 
-def _model_evidence_gap_details(advice: dict) -> list[dict]:
-    return [
-        {
-            "gap_type": "MODEL_REPORTED",
+def _model_evidence_gap_details(advice: dict, *, expected_version: str | None = None) -> list[dict]:
+    review = advice.get("review")
+    if not isinstance(review, dict):
+        return []
+    details = []
+    for gap in _model_evidence_gaps(advice):
+        details.append({
+            "gap_type": "NO_REQUIRED_SOURCE",
             "message": gap,
+            "description": gap,
             "query": None,
+            "suggested_query": None,
+            "missing_source_type": None,
+            "expected_version": expected_version,
             "expected_materials": None,
             "suggested_action": "模型提示尚未核验；请审核人根据原文确认是否确实缺少该资料。",
             "requires_human_review": True,
-        }
-        for gap in _model_evidence_gaps(advice)
-    ]
+        })
+    for ambiguity in review.get("version_ambiguities", []) or []:
+        if not isinstance(ambiguity, str) or not ambiguity.strip():
+            continue
+        details.append({
+            "gap_type": "VERSION_AMBIGUITY",
+            "message": ambiguity.strip(),
+            "description": ambiguity.strip(),
+            "query": None,
+            "suggested_query": None,
+            "missing_source_type": "版本依据或版本间差异",
+            "expected_version": expected_version,
+            "expected_materials": "适用版本的官方资料及必要的历史版本",
+            "suggested_action": "请人工逐版本对照原文，确认当前适用版本及差异原因。",
+            "requires_human_review": True,
+        })
+    return details
+
+
+def _unverified_translation_gap_details(
+    sources: list[dict], *, expected_version: str | None = None,
+) -> list[dict]:
+    """Surface unverified bilingual relationships without inferring translation drift."""
+    details = []
+    seen: set[tuple[str, str]] = set()
+    for source in sources:
+        source_id = str(source.get("document_id") or "")
+        source_relations = source.get("document_relationships", []) or []
+        translation_relations = [
+            relation for relation in source_relations
+            if isinstance(relation, dict)
+            if relation.get("relation_type") == "translation_of"
+            and relation.get("verification_status") in {"candidate", "unknown"}
+        ]
+        # Community translations are useful searchable material, but their
+        # existence alone does not prove page-by-page or paragraph alignment.
+        if source.get("source_type") == "community_translation" and not translation_relations:
+            translation_relations = [{
+                "relation_type": "translation_of", "verification_status": "unknown",
+            }]
+        for relation in translation_relations:
+            left = str(relation.get("source_document_id") or "")
+            right = str(relation.get("target_document_id") or "")
+            counterpart = right if source_id == left else left if source_id == right else right or left
+            pair = tuple(sorted((source_id, counterpart or "unknown-counterpart")))
+            if pair in seen:
+                continue
+            seen.add(pair)
+            heading = source.get("heading") or source.get("document_key") or source_id
+            if counterpart:
+                description = (
+                    f"{heading} 的中英文对应关系待核验；当前只能提示可能存在对应页面，"
+                    "不能据此判定翻译漂移或内容不一致。"
+                )
+                suggested_query = f"核验对应语种资料：{counterpart}"
+            else:
+                description = (
+                    f"{heading} 来自社区中文译本，尚无经人工核实的英文对应关系；"
+                    "不能据此判定内容同步或漂移。"
+                )
+                suggested_query = f"按主题检索对应英文官方资料：{heading}"
+            details.append({
+                "gap_type": "UNVERIFIED_TRANSLATION",
+                "message": description,
+                "description": description,
+                "query": None,
+                "suggested_query": suggested_query,
+                "missing_source_type": "经人工确认的中英文对应关系",
+                "expected_version": source.get("version") or expected_version,
+                "expected_materials": "对应语种的同范围官方资料",
+                "suggested_action": "先人工确认两份资料确为同一内容范围，再检查版本和更新时间；未确认前不标记为同步遗漏。",
+                "requires_human_review": True,
+            })
+    return details
+
+
+def _invalid_citation_gap_details(count: int, *, expected_version: str | None = None) -> list[dict]:
+    if not count:
+        return []
+    description = f"模型建议中有 {count} 项引用未出现在本次检索证据中，已移除这些候选。"
+    return [{
+        "gap_type": "INVALID_CITATION",
+        "message": description,
+        "description": description,
+        "query": None,
+        "suggested_query": None,
+        "missing_source_type": "本次检索证据中的有效引用 ID",
+        "expected_version": expected_version,
+        "expected_materials": None,
+        "suggested_action": "只审核仍绑定本次检索证据的候选；如需补充依据，请重新检索并核对原文。",
+        "requires_human_review": True,
+    }]
 
 
 def _item(source: dict, content: str) -> dict:
@@ -202,7 +342,9 @@ def _item(source: dict, content: str) -> dict:
     }
 
 
-def _normalize_review_advice(advice: dict, allowed_sources: dict[str, dict]) -> tuple[dict, list[dict]]:
+def _normalize_review_advice(
+    advice: dict, allowed_sources: dict[str, dict], *, expected_version: str | None = None,
+) -> tuple[dict, list[dict], list[dict]]:
     """Keep only structured model suggestions tied to this request's RAG evidence."""
     review = advice.get("review")
     if (
@@ -211,9 +353,9 @@ def _normalize_review_advice(advice: dict, allowed_sources: dict[str, dict]) -> 
         and review.get("review_status") == "REQUIRES_HUMAN_REVIEW"
         and review.get("impact_candidates") == []
     ):
-        return {**advice, "answer": "N/A", "sources": [], "review": review}, []
+        return {**advice, "answer": "N/A", "sources": [], "review": review}, [], []
     if advice.get("status") != "OK":
-        return {**advice, "sources": [], "review": None}, []
+        return {**advice, "sources": [], "review": None}, [], []
     candidates = review.get("impact_candidates") if isinstance(review, dict) else None
     if (
         not isinstance(candidates, list)
@@ -223,31 +365,66 @@ def _normalize_review_advice(advice: dict, allowed_sources: dict[str, dict]) -> 
         return {
             **advice, "status": "ABSTAINED", "answer": "N/A",
             "sources": [], "review": None,
-        }, []
+        }, [], []
 
     impacts = []
     sources = []
+    valid_candidates = []
     seen = set()
+    invalid_citation_count = 0
     for candidate in candidates:
         if not isinstance(candidate, dict):
-            return {**advice, "status": "ABSTAINED", "answer": "N/A", "sources": [], "review": None}, []
+            invalid_citation_count += 1
+            continue
         chunk_id = candidate.get("evidence_chunk_id")
         reason = candidate.get("reason")
         action = candidate.get("suggested_action")
         if (
-            not isinstance(chunk_id, str) or chunk_id not in allowed_sources or chunk_id in seen
+            not isinstance(chunk_id, str) or chunk_id not in allowed_sources
             or not isinstance(reason, str) or not reason.strip()
             or not isinstance(action, str) or not action.strip()
         ):
-            return {**advice, "status": "ABSTAINED", "answer": "N/A", "sources": [], "review": None}, []
+            invalid_citation_count += 1
+            continue
+        if chunk_id in seen:
+            continue
         seen.add(chunk_id)
         source = allowed_sources[chunk_id]
         sources.append(source)
+        valid_candidates.append(candidate)
         impacts.append({
             "status": "SUGGESTED", "relation": "suggested", "reason": reason,
             "suggested_action": action, "evidence": source,
         })
-    return {**advice, "sources": sources, "review": review}, impacts
+    validation_gaps = _invalid_citation_gap_details(
+        invalid_citation_count, expected_version=expected_version,
+    )
+    if not valid_candidates:
+        safe_review = dict(review) if isinstance(review, dict) else {}
+        safe_review["impact_candidates"] = []
+        safe_review.pop("change_interpretation", None)
+        return {
+            **advice, "status": "ABSTAINED", "answer": "N/A", "sources": [], "review": safe_review,
+        }, [], validation_gaps
+    safe_review = dict(review)
+    safe_review["impact_candidates"] = valid_candidates
+    if invalid_citation_count:
+        # Do not present a free-form summary that may have relied on a rejected citation.
+        safe_review.pop("change_interpretation", None)
+        advice = {**advice, "answer": "N/A"}
+    return {**advice, "sources": sources, "review": safe_review}, impacts, validation_gaps
+
+
+def _generation_stage_status(advice_status: str) -> str:
+    if advice_status == "OK":
+        return "OK"
+    if advice_status in {"ABSTAINED", "NO_EVIDENCE"}:
+        return "EMPTY"
+    if advice_status == "OUT_OF_SCOPE":
+        return "OUT_OF_SCOPE"
+    if advice_status in {"NOT_CALLED", "NOT_CALLED_OUT_OF_SCOPE"}:
+        return "SKIPPED"
+    return "FAILED"
 
 
 def _confirmed_dsip_document_reference(
@@ -312,7 +489,11 @@ class PublicReviewAgent:
             gap = {
                 "gap_type": "OUT_OF_SCOPE_PUBLIC_CORPUS",
                 "message": explanation,
+                "description": explanation,
                 "query": summary,
+                "suggested_query": None,
+                "missing_source_type": "经授权并脱敏的企业内部资料",
+                "expected_version": None,
                 "expected_materials": "经授权并脱敏的企业内部资料",
                 "suggested_action": "请改问公开文档可回答的问题；企业场景需先接入经授权的知识源并配置访问控制。",
                 "requires_human_review": True,
@@ -323,6 +504,9 @@ class PublicReviewAgent:
                 "request_mode": "natural_language",
                 "request_summary": summary,
                 "request_plan": plan,
+                "stage_status": {
+                    "planning": "OK", "retrieval": "OUT_OF_SCOPE", "generation": "OUT_OF_SCOPE",
+                },
                 "scope_status": "OUT_OF_SCOPE",
                 "retrieval_policy": "not_run_scope_guard",
                 "retrieval_trace": {
@@ -348,13 +532,14 @@ class PublicReviewAgent:
 
         workspace = self.gateway.workspace()
         current_version = workspace["current_version"]
-        repository = str(workspace.get("repository") or "")
+        repositories = _workspace_repositories(workspace)
         available_versions = [
             str(value) for value in workspace.get("available_versions", [current_version])
         ]
         selected_version = current_version if not target_version or target_version == "current" else target_version
         if selected_version not in available_versions:
             raise ValueError("目标版本不在当前知识空间的已收录版本中")
+        allowed_versions = _scope_versions(workspace, selected_version)
         context_values = {}
         for name, raw_value in (
             ("objective", objective),
@@ -400,7 +585,9 @@ class PublicReviewAgent:
                 retrieval_policy = search_result.get("retrieval_policy", retrieval_policy)
                 rows = [
                     row for row in search_result.get("results", [])
-                    if _official_hit(row, selected_version, repository)
+                    if _official_hit(
+                        row, selected_version, repositories, allowed_versions=allowed_versions,
+                    )
                 ]
                 trace["top_chunk_ids"] = [row["chunk_id"] for row in rows]
             except Exception:
@@ -438,6 +625,13 @@ class PublicReviewAgent:
                 "request_summary": summary,
                 "request_plan": plan,
                 "request_context": request_context,
+                "stage_status": {
+                    "planning": "OK",
+                "retrieval": "FAILED" if any(
+                    trace["status"] == "search_unavailable" for trace, _rows in searches
+                ) else "EMPTY",
+                    "generation": "SKIPPED",
+                },
                 "retrieval_policy": retrieval_policy,
                 "retrieval_trace": retrieval_trace,
                 "retrieved_results": [],
@@ -451,7 +645,7 @@ class PublicReviewAgent:
 
         try:
             advice_summary = (
-                f"知识空间：{workspace.get('workspace', repository)}\n目标版本：{selected_version}"
+                f"知识空间：{workspace.get('workspace', next(iter(repositories), '公开知识空间'))}\n目标版本：{selected_version}"
                 f"\n变更描述：{summary}\n变更类型：{plan['change_type_label']}"
                 f"（{plan['classification_source']}）\n影响范围：{plan['impact_scope'] or '待补充'}"
                 f"\n变更目标：{context_values['objective'] or '待补充'}"
@@ -470,11 +664,18 @@ class PublicReviewAgent:
             # Model assistance is optional; the underlying RAG candidates remain visible.
             advice = {"status": "GENERATION_PROVIDER_UNAVAILABLE", "answer": "N/A", "sources": []}
         allowed = {row["chunk_id"]: row for row in candidates}
-        advice, grounded_impacts = _normalize_review_advice(advice, allowed)
+        advice, grounded_impacts, validation_gap_details = _normalize_review_advice(
+            advice, allowed, expected_version=selected_version,
+        )
         retrieval_trace["model_status"] = advice.get("status", "UNKNOWN")
-        model_gap_details = _model_evidence_gap_details(advice)
+        model_gap_details = _model_evidence_gap_details(advice, expected_version=selected_version)
+        translation_gap_details = _unverified_translation_gap_details(
+            candidates, expected_version=selected_version,
+        )
         evidence_gap_details.extend(model_gap_details)
-        evidence_gaps.extend(row["message"] for row in model_gap_details)
+        evidence_gap_details.extend(translation_gap_details)
+        evidence_gap_details.extend(validation_gap_details)
+        evidence_gaps.extend(row["message"] for row in [*model_gap_details, *translation_gap_details, *validation_gap_details])
 
         return {
             "task_id": task_id,
@@ -483,6 +684,13 @@ class PublicReviewAgent:
             "request_summary": summary,
             "request_plan": plan,
             "request_context": request_context,
+            "stage_status": {
+                "planning": "OK",
+                "retrieval": "FAILED" if any(
+                    trace["status"] == "search_unavailable" for trace, _rows in searches
+                ) else "OK",
+                "generation": _generation_stage_status(str(advice.get("status", "UNKNOWN"))),
+            },
             "retrieval_policy": retrieval_policy,
             "retrieval_trace": retrieval_trace,
             "retrieved_results": candidates,
@@ -497,13 +705,16 @@ class PublicReviewAgent:
     def analyze(self, selected: dict, proposed_text: str) -> dict:
         workspace = self.gateway.workspace()
         current_version = workspace["current_version"]
-        repository = str(workspace.get("repository") or "")
-        if selected.get("version") != current_version:
-            raise ValueError("只能选择当前知识空间固定版本的官方资料")
+        repositories = _workspace_repositories(workspace)
+        allowed_versions = _scope_versions(workspace, current_version)
+        if selected.get("version") not in allowed_versions:
+            raise ValueError("只能选择当前知识空间最新已收录范围内的资料")
         source_url = urlsplit(str(selected.get("source_url") or ""))
-        expected_prefix = "/" + repository.strip("/") + "/"
+        selected_repository = str(selected.get("repository") or "")
+        expected_prefix = "/" + selected_repository.strip("/") + "/"
         if (
-            not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository)
+            selected_repository not in repositories
+            or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", selected_repository)
             or source_url.scheme != "https" or source_url.netloc != "github.com"
             or not source_url.path.startswith(expected_prefix)
         ):
@@ -523,13 +734,21 @@ class PublicReviewAgent:
             f"exact:{current_version}:{selected['chunk_id']}:{old_item['content_hash']}:{new_item['content_hash']}"
         )[:20]
         related_query = (selected["heading"] + " " + proposed)[:1000]
-        retrieved = self.gateway.search(
-            related_query,
-            version=current_version, language="all", top_k=12,
-        )["results"]
+        retrieval_failed = False
+        try:
+            retrieved = self.gateway.search(
+                related_query,
+                version=current_version, language="all", top_k=12,
+            )["results"]
+        except Exception:
+            retrieved = []
+            retrieval_failed = True
         related = [
             row for row in retrieved
             if row["chunk_id"] != selected["chunk_id"]
+            and _official_hit(
+                row, current_version, repositories, allowed_versions=allowed_versions,
+            )
         ][:5]
         document_reference = _confirmed_dsip_document_reference(
             self.gateway, selected, current_version
@@ -558,7 +777,11 @@ class PublicReviewAgent:
             except Exception:
                 # Optional model advice must never block the deterministic review flow.
                 review_advice = {"status": "GENERATION_PROVIDER_UNAVAILABLE", "answer": "N/A", "sources": []}
-            review_advice, _grounded_impacts = _normalize_review_advice(review_advice, by_id)
+            review_advice, _grounded_impacts, invalid_citation_gaps = _normalize_review_advice(
+                review_advice, by_id, expected_version=current_version,
+            )
+        else:
+            invalid_citation_gaps = []
         model_candidates = {
             row["evidence"]["chunk_id"]: row
             for row in _grounded_impacts
@@ -566,16 +789,52 @@ class PublicReviewAgent:
         retrieval_trace = {
             "queries": [{
                 "query": related_query,
-                "status": "candidate_found" if related else "no_retrieval_match",
+                "status": (
+                    "search_unavailable" if retrieval_failed else
+                    "candidate_found" if related else "no_retrieval_match"
+                ),
                 "top_chunk_ids": [row["chunk_id"] for row in related],
                 "selected_chunk_ids": [row["chunk_id"] for row in related],
             }],
             "uncovered_queries": [] if related else [related_query],
             "model_status": review_advice.get("status", "NOT_CALLED") if related else "NOT_CALLED",
         }
+        model_gap_details = _model_evidence_gap_details(
+            review_advice, expected_version=current_version,
+        )
+        translation_gap_details = _unverified_translation_gap_details(
+            related, expected_version=current_version,
+        )
+        exact_retrieval_gap_details = [] if related else [{
+            "gap_type": "RETRIEVAL_FAILED" if retrieval_failed else "NO_REQUIRED_SOURCE",
+            "legacy_gap_code": "SEARCH_UNAVAILABLE" if retrieval_failed else "NO_RELATED_MATERIAL",
+            "message": "关联资料检索服务未完成。" if retrieval_failed else "当前版本未检索到其他需要核对的资料。",
+            "description": "关联资料检索服务未完成。" if retrieval_failed else "当前版本未检索到其他需要核对的资料。",
+            "query": related_query,
+            "suggested_query": related_query,
+            "missing_source_type": "当前版本相关官方资料",
+            "expected_version": current_version,
+            "expected_materials": "当前版本相关官方资料",
+            "suggested_action": (
+                "请检查知识服务连接后重试；当前仅保留所选原文，不把未完成的检索当作无命中。"
+                if retrieval_failed else "请人工确认是否需要扩大检索范围或补充资料。"
+            ),
+            "requires_human_review": True,
+        }]
+        all_gap_details = [
+            *exact_retrieval_gap_details, *model_gap_details, *translation_gap_details,
+            *invalid_citation_gaps,
+        ]
         return {
             "task_id": task_id,
             "request_fingerprint": fingerprint,
+            "stage_status": {
+                "planning": "SKIPPED",
+                "retrieval": "FAILED" if retrieval_failed else "OK" if related else "EMPTY",
+                "generation": _generation_stage_status(
+                    str(review_advice.get("status", "NOT_CALLED")) if related else "NOT_CALLED",
+                ),
+            },
             "retrieval_trace": retrieval_trace,
             "change": change,
             "selected_source": selected,
@@ -597,21 +856,8 @@ class PublicReviewAgent:
                 "status": "REQUIRES_HUMAN_REVIEW",
             },
             "review_advice": review_advice,
-            "evidence_gaps": (
-                ([] if related else ["当前版本未检索到其他需要核对的资料。"])
-                + _model_evidence_gaps(review_advice)
-            ),
-            "evidence_gap_details": (
-                ([] if related else [{
-                    "gap_type": "NO_RELATED_MATERIAL",
-                    "message": "当前版本未检索到其他需要核对的资料。",
-                    "query": related_query,
-                    "expected_materials": "当前版本相关官方资料",
-                    "suggested_action": "请人工确认是否需要扩大检索范围或补充资料。",
-                    "requires_human_review": True,
-                }])
-                + _model_evidence_gap_details(review_advice)
-            ),
+            "evidence_gaps": [row["message"] for row in all_gap_details],
+            "evidence_gap_details": all_gap_details,
             "sandbox_only": True,
             "public_baseline_written": False,
         }

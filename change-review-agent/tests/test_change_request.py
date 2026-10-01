@@ -78,6 +78,17 @@ def test_quartz_schedule_default_is_not_misclassified_as_parameter_configuration
     assert classify_change_type(summary) == "workflow_behavior"
 
 
+def test_primary_planning_change_is_not_overridden_by_a_secondary_threshold_check():
+    summary = "变更轨迹校验器对不可行驶区域的判定；核对校验阈值和规划器调用链。"
+
+    assert classify_change_type(summary) == "planning_behavior"
+
+
+def test_autoware_right_of_way_and_ros_topic_are_classified_by_domain():
+    assert classify_change_type("调整 Intersection 模块的路权判断逻辑。") == "planning_behavior"
+    assert classify_change_type("Change a ROS topic name and message type.") == "interface_compatibility"
+
+
 def test_subworkflow_query_keeps_user_text_and_adds_search_only_alias():
     summary = "子工作流参数如何传递；核对下游 Shell 节点的 setValue 示例。"
 
@@ -107,6 +118,12 @@ def test_scope_guard_detects_private_company_data_without_blocking_public_docs()
     assert is_out_of_scope_public_request("查询公司内部 Jira 审批人的手机号和私有工单权限")
     assert not is_out_of_scope_public_request("DolphinScheduler 的内部工作流状态如何恢复？")
     assert not is_out_of_scope_public_request("What is the API server health-check endpoint?")
+    assert is_out_of_scope_public_request(
+        "Check whether Autoware contains our internal company Jira approver list."
+    )
+    assert is_out_of_scope_public_request(
+        "Can this public corpus show our company's Jira access-approval audit trail?"
+    )
 
 
 def test_english_question_and_follow_up_check_become_separate_agent_queries():

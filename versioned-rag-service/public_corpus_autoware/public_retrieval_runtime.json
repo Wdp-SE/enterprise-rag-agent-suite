@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "default_policy": "bm25",
+  "default_policy": "bm25_figure_ocr",
   "allowed_policies": [
     "bm25",
     "bm25_faceted_rrf",
@@ -11,12 +11,12 @@
   "max_facets": 4,
   "rrf_k": 60,
   "image_top_k": 20,
-  "selection_status": "pending_bilingual_rebenchmark",
-  "selection_evaluation": "evaluation/autoware_bilingual_v1/README.md",
-  "selection_note": "The previous bm25_figure_ocr selection was validated only on the 26-source Autoware Universe Planning corpus. This expanded multilingual documentation corpus retains BM25 as a baseline; no candidate is presented as the best-performing policy until the bilingual benchmark is run.",
-  "benchmark_corpus_sha256": "339c4ea6d30b8eda94699320567d1e2faa205d3a23ec92178a63d1c1636a827a",
+  "selection_status": "selected_on_autoware_quality_v1_dev_holdout",
+  "selection_evaluation": "evaluation/autoware_quality_v1/results/benchmark.json",
+  "selection_note": "Selected bm25_figure_ocr from the frozen 82-case multilingual quality-v1 DEV/HOLDOUT comparison. It preserves BM25 text ranking, improves reviewed-image evidence on HOLDOUT from 0/3 to 2/3, keeps required-source recall and completeness non-inferior, returns zero wrong-version hits, and stays within the provisional latency gate. This is retrieval evidence coverage, not generated-answer accuracy or production latency.",
+  "benchmark_corpus_sha256": "ab00dfd18c11c0de4511729f9612d3176c8fe95dd390e0bc7ba2a337ff72a0fa",
   "index_artifacts_sha256": {
-    "chunks.json": "bbb4a58ea9e8d6eb9d15175b5a5404d6a9bad6e56ab6a3d417162c6db66261f4",
-    "dense_vectors.npy": "134fad171e574f6eaff49061a6adef5f6a71e72cf3f4e632420627bb2a13d811"
+    "chunks.json": "930d36eb10958b2c9a81482a2cb1a22c7bd9bc6da072921116cc4c0294444876",
+    "dense_vectors.npy": "5bfa9073987ce34a245562cd3b8b4d3ba7ec5a17ac1bb298c4641a87891cb888"
   }
 }

@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import os
+import logging
+import re
+import time
+import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.answer_generation import (
@@ -14,6 +18,7 @@ from src.answer_generation import (
     default_generation_model,
     generation_api_key_env,
 )
+from src.build_identity import public_build_identity
 from src.engineering_change import (
     EngineeringImpactService, EngineeringItem, TraceLink, compare_engineering_items,
 )
@@ -25,6 +30,8 @@ from src.public_retrieval_runtime import DEFAULT_CONFIG as DEFAULT_PUBLIC_RETRIE
 
 
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
+logger = logging.getLogger(__name__)
+_REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 
 
 def _configured_public_corpus_root() -> Path:
@@ -71,11 +78,19 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None,
             lock_path=lock_path,
             manifest_path=base_index.root / "corpus_manifest.json",
         )
+        active_retrieval_config_path = Path(
+            retrieval_config_path or _configured_public_retrieval_config()
+        ).resolve()
         app.state.public_base_knowledge_index = base_index
         app.state.public_knowledge_index = PublicRetrievalRuntime(
             base_index,
-            config_path=retrieval_config_path or _configured_public_retrieval_config(),
+            config_path=active_retrieval_config_path,
             sidecar_path=sidecar_path,
+        )
+        app.state.public_build_identity = public_build_identity(
+            repo_root=SERVICE_ROOT.parent,
+            corpus_root=base_index.root,
+            retrieval_config_path=active_retrieval_config_path,
         )
         app.state.public_generator = generator
         generation_allowed = os.environ.get(
@@ -123,8 +138,35 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None,
     )
     app.include_router(public_router)
 
+    @app.middleware("http")
+    async def request_observability(request: Request, call_next):
+        incoming = request.headers.get("X-Request-ID", "")
+        request_id = incoming if _REQUEST_ID_PATTERN.fullmatch(incoming) else uuid.uuid4().hex
+        request.state.request_id = request_id
+        started = time.perf_counter()
+        try:
+            response = await call_next(request)
+        except Exception as exc:
+            duration_ms = round((time.perf_counter() - started) * 1000)
+            route = getattr(request.scope.get("route"), "path", "unmatched")
+            logger.error(
+                "api_request request_id=%s method=%s route=%s status=500 duration_ms=%s "
+                "stage=request safe_error_code=UNHANDLED_EXCEPTION exception_type=%s",
+                request_id, request.method, route, duration_ms, type(exc).__name__,
+            )
+            raise
+        duration_ms = round((time.perf_counter() - started) * 1000)
+        route = getattr(request.scope.get("route"), "path", "unmatched")
+        response.headers["X-Request-ID"] = request_id
+        logger.info(
+            "api_request request_id=%s method=%s route=%s status=%s duration_ms=%s stage=request",
+            request_id, request.method, route, response.status_code, duration_ms,
+        )
+        return response
+
     @app.get("/health")
     def health() -> dict:
+        identity = app.state.public_build_identity
         return {
             "alive": True, "rag_ready": bool(app.state.public_knowledge_index),
             "workspace": app.state.public_base_knowledge_index.manifest["workspace"],
@@ -132,6 +174,7 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None,
             "runtime_retrieval_policy": app.state.public_knowledge_index.runtime_policy,
             "approved_image_chunk_count": len(app.state.public_knowledge_index._images),
             "generation": app.state.public_generation_config,
+            **identity,
         }
 
     @app.post("/engineering/items/diff")

@@ -5,6 +5,7 @@ import tarfile
 
 from scripts.import_autoware_documentation import (
     _archive_files_from_tar,
+    _pending_retrieval_selection,
     canonical_source_path,
     html_page_to_markdown,
 )
@@ -65,3 +66,18 @@ def test_archive_reader_selects_pinned_files_without_extracting_paths():
         archive.addfile(outside, BytesIO(outside_data))
 
     assert _archive_files_from_tar(buffer.getvalue(), "docs", ".md") == [("docs/guide.md", b"# Guide\n")]
+
+
+def test_corpus_rebuild_resets_to_bm25_and_invalidates_quality_v1_selection():
+    runtime = {"default_policy": "bm25_figure_ocr", "allowed_policies": ["bm25", "bm25_figure_ocr"]}
+    policy = {"default_policy": "bm25_figure_ocr", "benchmark_query_count": 82}
+
+    runtime, policy = _pending_retrieval_selection(runtime, policy, "a" * 64)
+
+    assert runtime["default_policy"] == policy["default_policy"] == "bm25"
+    assert runtime["selection_status"] == "pending_quality_v1_after_corpus_change"
+    assert runtime["selection_evaluation"] == "evaluation/autoware_quality_v1/README.md"
+    assert policy["selection_status"] == "bm25_baseline_pending_quality_v1"
+    assert policy["benchmark_query_count"] == 0
+    assert runtime["benchmark_corpus_sha256"] == "a" * 64
+    assert runtime["allowed_policies"] == ["bm25", "bm25_figure_ocr"]

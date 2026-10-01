@@ -24,6 +24,7 @@ from src.answer_generation import (
 from src.public_knowledge import (
     PublicKnowledgeIndex, tokens, verified_consistency_notes,
 )
+from src.public_scope import is_out_of_scope_public_request
 from src.rd_v2_runtime import _format_context, validate_citation_membership
 
 
@@ -31,6 +32,8 @@ router = APIRouter(prefix="/public", tags=["official-public-knowledge"])
 logger = logging.getLogger(__name__)
 _AUTOWARE_EVALUATION_ROOT = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_retrieval_v3"
 _AUTOWARE_BENCHMARK_SHA256 = "94b5945166d290e1840b1ba93ec12d0d72231f666bbea3416e6ecd0384823078"
+_AUTOWARE_QUALITY_V1_ROOT = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_quality_v1"
+_AUTOWARE_QUALITY_V1_BENCHMARK_SHA256 = "11c048eb76a225afbdcd40022b6eb8f324ba072f3c469a4140e224a8405de9be"
 _AUTOWARE_REPOSITORY = "autowarefoundation/autoware_universe"
 
 
@@ -41,9 +44,9 @@ def _safe_diagnostic_label(value, *, max_length: int = 128) -> str | None:
     return value if all(char in allowed for char in value) else None
 
 
-def _generation_diagnostics(generator) -> dict:
+def _generation_diagnostics(generator, *, request_id: str | None = None) -> dict:
     return {
-        "request_id": uuid.uuid4().hex,
+        "request_id": request_id or uuid.uuid4().hex,
         "provider": _safe_diagnostic_label(getattr(generator, "provider", None)),
         "requested_model": _safe_diagnostic_label(getattr(generator, "model", None)),
         "returned_model": None,
@@ -81,6 +84,22 @@ def _log_generation_failure(*, operation: str, status: str, diagnostics: dict, e
         "%s request_id=%s status=%s provider=%s model=%s exception_type=%s",
         operation, diagnostics["request_id"], status, diagnostics["provider"],
         diagnostics["requested_model"], type(exc).__name__,
+    )
+
+
+def _log_public_stage(
+    request: Request, *, operation: str, stage: str, status: str,
+    started: float, hit_count: int | None = None,
+) -> None:
+    identity = getattr(request.app.state, "public_build_identity", {})
+    logger.info(
+        "public_stage request_id=%s build_revision=%s operation=%s retrieval_policy=%s "
+        "hit_count=%s stage=%s duration_ms=%s status=%s",
+        getattr(request.state, "request_id", "unknown"),
+        identity.get("build_revision", "unknown"), operation,
+        getattr(request.app.state.public_knowledge_index, "runtime_policy", "unknown"),
+        hit_count if hit_count is not None else "unknown", stage,
+        round((time.perf_counter() - started) * 1000), status,
     )
 
 
@@ -355,6 +374,102 @@ def _validated_autoware_evaluation(index) -> dict | None:
     return report
 
 
+def _validated_autoware_quality_v1(index) -> dict | None:
+    """Expose the current multilingual Autoware report only for its exact inputs."""
+    if (
+        index.manifest.get("workspace") != "Autoware"
+        or index.manifest.get("repository") != _AUTOWARE_REPOSITORY
+        or Path(index.sidecar_path) != Path(index.root) / "figure_evidence_reviewed.json"
+    ):
+        return None
+    evaluation_root = _AUTOWARE_QUALITY_V1_ROOT
+    benchmark_path = evaluation_root / "results" / "benchmark.json"
+    try:
+        if _portable_text_sha256(benchmark_path) != _AUTOWARE_QUALITY_V1_BENCHMARK_SHA256:
+            return None
+        report = json.loads(benchmark_path.read_text(encoding="utf-8"))
+        config = json.loads(index.config_path.read_text(encoding="utf-8"))
+        behavior = dict(config)
+        behavior.pop("default_policy", None)
+        config_sha = hashlib.sha256(json.dumps(
+            behavior, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+        ).encode("utf-8")).hexdigest()
+        root = Path(index.root)
+        service = Path(__file__).resolve().parents[1]
+        paths = {
+            "corpus_manifest": root / "corpus_manifest.json",
+            "relation_registry": root / "document_relations.json",
+            "retrieval_policy": root / "retrieval_policy.json",
+            "chunks": root / "chunks.json",
+            "figure_inventory": root / "figure_evidence.json",
+            "reviewed_figure_sidecar": root / "figure_evidence_reviewed.json",
+            "reviewed_figure_lock": root / "figure_evidence_reviewed.lock.json",
+            "public_knowledge": service / "src" / "public_knowledge.py",
+            "public_retrieval_runtime": service / "src" / "public_retrieval_runtime.py",
+            "retrieval_fusion": service / "src" / "retrieval_fusion.py",
+            "document_relations": service / "src" / "document_relations.py",
+            "case_curator": evaluation_root / "curate_cases.py",
+            "cases": evaluation_root / "cases.jsonl",
+            "split_lock": evaluation_root / "split_lock.json",
+            "runner": evaluation_root / "run_benchmark.py",
+        }
+        actual = {key: _portable_text_sha256(path) for key, path in paths.items()}
+        actual["dense_vectors"] = hashlib.sha256((root / "dense_vectors.npy").read_bytes()).hexdigest()
+        actual["runtime_config_behavior"] = config_sha
+    except (OSError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+    selection = report.get("selection") if isinstance(report, dict) else None
+    selected_policy = _runtime_policy(index)
+    decisions = selection.get("candidate_decisions") if isinstance(selection, dict) else None
+    selected_decision = decisions.get(selected_policy) if isinstance(decisions, dict) else None
+    if (
+        not isinstance(report, dict)
+        or report.get("schema_version") != 1
+        or report.get("name") != "autoware_quality_v1"
+        or report.get("runtime_fingerprint") != actual
+        or not isinstance(selection, dict)
+        or selection.get("selected_policy") != selected_policy
+        or selected_policy not in selection.get("eligible_candidates", [])
+        or not isinstance(selected_decision, dict)
+        or selected_decision.get("eligible") is not True
+        or not isinstance(report.get("splits"), dict)
+    ):
+        return None
+    for split in ("dev", "holdout"):
+        values = report["splits"].get(split, {}).get(selected_policy)
+        baseline = report["splits"].get(split, {}).get("bm25")
+        if not isinstance(values, dict) or not isinstance(baseline, dict):
+            return None
+        if values.get("query_count", 0) <= 0 or baseline.get("query_count", 0) != values["query_count"]:
+            return None
+        for metrics in (values, baseline):
+            for key in (
+                "required_source_recall_at_5", "complete_required_sources_at_5",
+                "mrr_at_5", "ndcg_at_5", "image_evidence_hit_at_5",
+                "no_answer_nonempty_candidate_rate",
+            ):
+                value = metrics.get(key)
+                if not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(value) or not 0 <= value <= 1:
+                    return None
+            if metrics.get("version_mismatch_count") != 0 or metrics.get("explicit_version_mismatch_count") != 0:
+                return None
+            if not isinstance(metrics.get("search_p95_ms"), (int, float)) or metrics["search_p95_ms"] < 0:
+                return None
+        if (
+            values["required_source_recall_at_5"] < baseline["required_source_recall_at_5"]
+            or values["complete_required_sources_at_5"] < baseline["complete_required_sources_at_5"]
+            or values["no_answer_nonempty_candidate_rate"] > baseline["no_answer_nonempty_candidate_rate"]
+            or values["search_p95_ms"] > max(baseline["search_p95_ms"] * 1.2, 1.0)
+        ):
+            return None
+    if (
+        report["splits"]["holdout"][selected_policy]["image_evidence_hit_at_5"]
+        <= report["splits"]["holdout"]["bm25"]["image_evidence_hit_at_5"]
+    ):
+        return None
+    return report
+
+
 def _validated_retrieval_release(index: PublicKnowledgeIndex) -> dict | None:
     """Publish offline V3 numbers only for the exact index and policy now serving requests."""
     if getattr(index, "runtime_policy", index.policy.get("default_policy")) != index.policy.get("default_policy"):
@@ -491,7 +606,10 @@ def workspace(request: Request) -> dict:
     manifest = index.manifest
     release = _validated_retrieval_release(index)
     experiment = _validated_v4_experiment(index)
-    autoware_evaluation = _validated_autoware_evaluation(index)
+    autoware_quality_v1 = _validated_autoware_quality_v1(index)
+    autoware_evaluation = (
+        _validated_autoware_evaluation(index) if autoware_quality_v1 is None else None
+    )
     source_retrieval_times = []
     for source in manifest.get("sources", []):
         value = source.get("retrieval_timestamp")
@@ -532,11 +650,13 @@ def workspace(request: Request) -> dict:
         "base_retrieval_policy": index.policy["default_policy"],
         "approved_image_chunk_count": len(getattr(index, "_images", [])),
         "retrieval_evaluation_status": (
+            "autoware_quality_v1_validated" if autoware_quality_v1 else
             "autoware_retrieval_v3_validated" if autoware_evaluation else
             "v4_bm25_validated" if experiment else
             "v3_validated" if release else "expanded_corpus_pending_rebenchmark"
         ),
         "frozen_benchmark_query_count": (
+            autoware_quality_v1["case_count"] if autoware_quality_v1 else
             sum(autoware_evaluation["splits"][split][_runtime_policy(index)]["query_count"] for split in ("dev", "holdout"))
             if autoware_evaluation else
             experiment["scope"]["question_count"] if experiment else
@@ -545,6 +665,10 @@ def workspace(request: Request) -> dict:
         ),
         "data_origin": str(manifest.get("data_origin") or f"{manifest['workspace']} official public materials"),
         "upstream_writes_enabled": False,
+        **getattr(request.app.state, "public_build_identity", {
+            "build_revision": "unknown", "corpus_fingerprint": {"fingerprint_sha256": "unknown"},
+            "retrieval_config_fingerprint": "unknown", "evaluation_fingerprint": "unknown",
+        }),
         "document_relationships": (
             _relationship_index(index).summary()
             if _relationship_index(index) is not None
@@ -564,7 +688,23 @@ def workspace(request: Request) -> dict:
         ))
     if source_retrieval_times:
         result["latest_source_retrieval_timestamp"] = max(source_retrieval_times).isoformat()
-    if autoware_evaluation:
+    if autoware_quality_v1:
+        selected = _runtime_policy(index)
+        result["retrieval_evaluation"] = {
+            "name": "autoware_quality_v1",
+            "policy": selected,
+            "top_k": 5,
+            "selection": autoware_quality_v1["selection"],
+            "metric_scope": autoware_quality_v1["metric_scope"],
+            "case_count": autoware_quality_v1["case_count"],
+            "case_split_counts": autoware_quality_v1["case_split_counts"],
+            "category_counts": autoware_quality_v1["category_counts"],
+            "dev": {key: value for key, value in autoware_quality_v1["splits"]["dev"][selected].items() if key not in {"cases", "by_category"}},
+            "holdout": {key: value for key, value in autoware_quality_v1["splits"]["holdout"][selected].items() if key not in {"cases", "by_category"}},
+            "bm25_dev": {key: value for key, value in autoware_quality_v1["splits"]["dev"]["bm25"].items() if key not in {"cases", "by_category"}},
+            "bm25_holdout": {key: value for key, value in autoware_quality_v1["splits"]["holdout"]["bm25"].items() if key not in {"cases", "by_category"}},
+        }
+    elif autoware_evaluation:
         selected = _runtime_policy(index)
         result["retrieval_evaluation"] = {
             "name": "autoware_retrieval_v3",
@@ -654,6 +794,14 @@ def document(payload: DocumentRequest, request: Request) -> dict:
 @router.post("/search")
 def search(payload: SearchRequest, request: Request) -> dict:
     index = _index(request)
+    retrieval_started = time.perf_counter()
+    if is_out_of_scope_public_request(payload.query):
+        _log_public_stage(request, operation="search", stage="scope", status="OUT_OF_SCOPE", started=retrieval_started, hit_count=0)
+        return {
+            "query": payload.query, "results": [], "status": "OUT_OF_SCOPE",
+            "scope_status": "OUT_OF_SCOPE_PUBLIC_CORPUS",
+            "retrieval_policy": _runtime_policy(index), "consistency_notes": [],
+        }
     try:
         hits = _positive_retrieval_hits(index.search(
             _query_with_compound_aliases(payload.query, index),
@@ -662,6 +810,7 @@ def search(payload: SearchRequest, request: Request) -> dict:
     except ValueError as exc:
         raise HTTPException(status_code=422, detail="INVALID_PUBLIC_SEARCH") from exc
     hits = _with_document_relationships(index, hits)
+    _log_public_stage(request, operation="search", stage="retrieval", status="OK" if hits else "EMPTY", started=retrieval_started, hit_count=len(hits))
     return {
         "query": payload.query, "results": hits,
         "retrieval_policy": _runtime_policy(index),
@@ -672,6 +821,20 @@ def search(payload: SearchRequest, request: Request) -> dict:
 @router.post("/query")
 async def query(payload: SearchRequest, request: Request) -> dict:
     index = _index(request)
+    retrieval_started = time.perf_counter()
+    if is_out_of_scope_public_request(payload.query):
+        diagnostics = _generation_diagnostics(
+            None, request_id=getattr(request.state, "request_id", None),
+        )
+        diagnostics["failure_reason"] = "OUT_OF_SCOPE_PUBLIC_CORPUS"
+        diagnostics["candidate_count"] = 0
+        _log_public_stage(request, operation="query", stage="scope", status="OUT_OF_SCOPE", started=retrieval_started, hit_count=0)
+        return {
+            "answer": "N/A", "sources": [], "evidence": [],
+            "consistency_notes": [], "generation": diagnostics,
+            "retrieval_policy": _runtime_policy(index),
+            "status": "OUT_OF_SCOPE", "scope_status": "OUT_OF_SCOPE_PUBLIC_CORPUS",
+        }
     try:
         hits = _positive_retrieval_hits(await asyncio.to_thread(
             index.search, _query_with_compound_aliases(payload.query, index),
@@ -680,9 +843,12 @@ async def query(payload: SearchRequest, request: Request) -> dict:
     except ValueError as exc:
         raise HTTPException(status_code=422, detail="INVALID_PUBLIC_SEARCH") from exc
     hits = _with_document_relationships(index, hits)
+    _log_public_stage(request, operation="query", stage="retrieval", status="OK" if hits else "EMPTY", started=retrieval_started, hit_count=len(hits))
     notes = verified_consistency_notes(hits)
     generator = request.app.state.public_generator
-    diagnostics = _generation_diagnostics(generator)
+    diagnostics = _generation_diagnostics(
+        generator, request_id=getattr(request.state, "request_id", None),
+    )
     base = {
         "answer": "N/A", "sources": [], "evidence": hits,
         "consistency_notes": notes, "generation": diagnostics,
@@ -806,6 +972,17 @@ async def query(payload: SearchRequest, request: Request) -> dict:
 async def review_advice(payload: ReviewAdviceRequest, request: Request) -> dict:
     """Generate a review checklist from evidence pinned to the requested version."""
     index = _index(request)
+    if is_out_of_scope_public_request(payload.change_summary):
+        diagnostics = _generation_diagnostics(
+            None, request_id=getattr(request.state, "request_id", None),
+        )
+        diagnostics["failure_reason"] = "OUT_OF_SCOPE_PUBLIC_CORPUS"
+        diagnostics["candidate_count"] = 0
+        return {
+            "answer": "N/A", "sources": [], "evidence": [], "review": None,
+            "generation": diagnostics, "target_version": payload.version,
+            "status": "OUT_OF_SCOPE", "scope_status": "OUT_OF_SCOPE_PUBLIC_CORPUS",
+        }
     requested_ids = payload.evidence_chunk_ids
     if len(set(requested_ids)) != len(requested_ids):
         raise HTTPException(status_code=422, detail="INVALID_REVIEW_EVIDENCE")
@@ -827,7 +1004,9 @@ async def review_advice(payload: ReviewAdviceRequest, request: Request) -> dict:
         raise HTTPException(status_code=422, detail="INVALID_REVIEW_EVIDENCE")
     hits = [row for row in evidence if row is not None]
     generator = request.app.state.public_generator
-    diagnostics = _generation_diagnostics(generator)
+    diagnostics = _generation_diagnostics(
+        generator, request_id=getattr(request.state, "request_id", None),
+    )
     base = {
         "answer": "N/A", "sources": [], "evidence": hits,
         "review": None, "generation": diagnostics, "target_version": target_version,

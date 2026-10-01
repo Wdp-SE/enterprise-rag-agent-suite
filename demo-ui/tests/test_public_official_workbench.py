@@ -27,7 +27,7 @@ def _mock_client(monkeypatch):
     monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
         "workspace": "Apache DolphinScheduler", "baseline_version": "3.4.2",
         "current_version": "3.4.3", "source_count": 52, "chunk_count": 659,
-        "languages": ["zh-CN", "en-US"],
+        "languages": ["zh-CN", "en-US"], "repository": "apache/dolphinscheduler",
     })
     monkeypatch.setattr(PublicKnowledgeClient, "documents", lambda self: [{
         "document_id": CHUNK["document_id"], "document_key": CHUNK["document_key"],
@@ -66,6 +66,11 @@ def _mock_client(monkeypatch):
             "review_status": "REQUIRES_HUMAN_REVIEW",
         },
     })
+    monkeypatch.setattr(
+        PublicKnowledgeClient, "review_advice_for_version",
+        lambda self, change_summary, evidence_chunk_ids, *, version:
+            self.review_advice(change_summary, evidence_chunk_ids),
+    )
     monkeypatch.setattr(public_workbench, "_analyze_hypothetical", lambda client, selected, proposed_text: {
         "change": {"change_type": "MODIFIED"}, "selected_source": dict(CHUNK),
         "impacts": [{"relation": "suggested", "status": "SUGGESTED", "reason": "主题相关，需人工核验。", "evidence": dict(CHUNK)}],
@@ -164,9 +169,10 @@ def test_autoware_source_coverage_summary_calls_out_unverified_community_pages()
 
     assert summary is not None
     assert "官方 Documentation 英文 main 431 页" in summary
-    assert "社区中文译文 260 页" in summary
-    assert "44 页按路径匹配" in summary
-    assert "216 页当前未匹配" in summary
+    assert "中文社区资料 260 页" in summary
+    assert "44 页仅有路径匹配候选（内容和版本关系未核验）" in summary
+    assert "216 页未找到同路径英文资料" in summary
+    assert "仅核验通过的关联用于同步差异检查" in summary
 
 
 def test_workbench_warns_when_connected_public_rag_workspace_is_not_autoware(monkeypatch):
@@ -264,14 +270,36 @@ def _start_agent_request(app, summary="假设调整全局参数优先级，并�
 
 def test_public_home_has_two_chinese_modules_and_no_case_labels(monkeypatch):
     _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
+        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
+        "baseline_version": "0.51.0", "current_version": "latest",
+        "available_versions": ["latest", "docs-main", "1.9.0", "0.52.0", "0.51.0"],
+        "languages": ["en-US", "zh-CN"],
+        "source_breakdown": [
+            {"version": "docs-main", "locale": "en-US", "source_type": "official_documentation", "count": 431},
+            {"version": "1.9.0", "locale": "en-US", "source_type": "official_documentation", "count": 431},
+            {"version": "docs-main", "locale": "zh-CN", "source_type": "community_translation", "count": 260},
+            {"version": "0.52.0", "locale": "en-US", "source_type": "official_documentation", "count": 13},
+            {"version": "0.51.0", "locale": "en-US", "source_type": "official_documentation", "count": 13},
+        ],
+        "translation_alignment": {
+            "path_matched_to_official_main": 44,
+            "source_path_not_found_in_official_main": 216,
+        },
+    })
     app = AppTest.from_file(APP, default_timeout=40).run()
     assert not app.exception
     assert [item.value for item in app.title] == ["研发知识版本服务与变更影响审查"]
     text = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
-    assert "Apache DolphinScheduler" in text
+    assert "Autoware" in text
     assert "版本化研发知识服务 · RAG" in text
     assert "Agent · 研发资料变更审查" in text
     assert "研发资料变更影响审查" in text
+    assert "中文社区资料" in text
+    assert "仅对核验通过的文档关系开展同步差异审查" in text
+    assert "官方英文资料 + 社区中文译本" not in text
+    assert "中英文资料按来源独立收录" in text
     assert "进入知识检索" in {button.label for button in app.button}
     assert "发起变更审查" in {button.label for button in app.button}
     assert "Case A" not in text and "演示案例 A" not in text
@@ -477,6 +505,51 @@ def test_agent_shows_retrieval_trace_and_uncovered_change_clause(monkeypatch):
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
     assert "检索过程与覆盖范围" in {item.label for item in app.expander}
     assert "待排查调度失败恢复说明" in visible
+
+
+def test_agent_surfaces_stage_status_and_unverified_translation_check(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    related = {
+        "gap_type": "UNVERIFIED_TRANSLATION",
+        "message": "中英文对应关系待核验；不能据此判定内容不一致。",
+        "description": "中英文对应关系待核验；不能据此判定内容不一致。",
+        "missing_source_type": "经人工确认的中英文对应关系",
+        "expected_version": "0.52.0",
+        "suggested_query": "核验对应语种资料：docs-main:en:planning/example",
+        "suggested_action": "先确认两份资料确为同一范围，再检查更新时间。",
+    }
+    original_search = PublicKnowledgeClient.search
+
+    def search(self, question, **scope):
+        result = original_search(self, question, **scope)
+        result["results"] = [{
+            **result["results"][0],
+            "document_relationships": [{
+                "relation_type": "translation_of", "verification_status": "candidate",
+            }],
+        }]
+        return result
+
+    monkeypatch.setattr(PublicKnowledgeClient, "search", search)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    _start_agent_request(app)
+
+    assert not app.exception
+    result = app.session_state["official_request_review"]
+    result["stage_status"] = {"planning": "OK", "retrieval": "OK", "generation": "OK"}
+    result["evidence_gap_details"] = [related]
+    app.session_state["official_request_review"] = result
+    app.run()
+
+    assert not app.exception
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
+    assert "流程状态" in visible
+    assert "对应关系待核验" in visible
+    assert "0.52.0" in visible
+    assert "核验对应语种资料" in visible
+    assert "待补充核查" in {item.value for item in app.subheader}
 
 
 def test_agent_shows_model_abstention_gaps_as_unconfirmed_prompts(monkeypatch):
@@ -1303,6 +1376,48 @@ def test_verified_autoware_v3_exposes_cross_source_holdout_gap(monkeypatch):
     assert any("Autoware V3 评测与失败案例" in item.value for item in app.markdown)
 
 
+def test_quality_v1_benchmark_displays_current_bilingual_and_image_limits(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    baseline = {
+        "query_count": 31, "required_source_recall_at_5": 0.9143,
+        "complete_required_sources_at_5": 0.8929, "mrr_at_5": 0.7319,
+        "ndcg_at_5": 0.8071, "image_evidence_hit_at_5": 0.0,
+        "image_evidence_hits": "0/3", "version_mismatch_count": 0,
+        "no_answer_nonempty_candidate_rate": 1.0,
+        "no_answer_nonempty_candidates": "3/3", "search_p95_ms": 46.687,
+    }
+    selected = {**baseline, "image_evidence_hit_at_5": 0.6667,
+                "image_evidence_hits": "2/3", "search_p95_ms": 49.893,
+                "mean_retrieval_operations_per_query": 2}
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
+        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
+        "current_version": "latest", "source_count": 1148, "chunk_count": 7927,
+        "retrieval_policy": "bm25_figure_ocr",
+        "retrieval_evaluation_status": "autoware_quality_v1_validated",
+        "retrieval_evaluation": {
+            "name": "autoware_quality_v1", "policy": "bm25_figure_ocr", "top_k": 5,
+            "case_count": 82, "case_split_counts": {"dev": 51, "holdout": 31},
+            "category_counts": {"single_fact": 46, "image_evidence": 6},
+            "metric_scope": "retrieval candidate coverage only",
+            "dev": {**baseline, "query_count": 51},
+            "holdout": selected, "bm25_dev": {**baseline, "query_count": 51},
+            "bm25_holdout": baseline,
+        },
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "检索评测").click().run()
+
+    assert not app.exception
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader))
+    assert "冻结双语题集" in visible
+    assert "0/3" in visible and "2/3" in visible
+    assert "不是模型误答率" in visible
+    assert "不代表答案准确率" in visible
+    assert "autoware_retrieval_v3_validated" not in visible
+
+
 def test_benchmark_shows_v4_bm25_and_rejected_image_candidate_tradeoff(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
@@ -1425,3 +1540,23 @@ def test_switching_source_resets_previous_unsent_draft(monkeypatch):
     assert not app.exception
     assert app.text_area(key="official_proposed_text").value == second["content"]
     assert _state_get(app.session_state, "official_review_decision") is None
+
+
+def test_about_page_exposes_separate_frontend_backend_and_asset_fingerprints(monkeypatch):
+    _mock_client(monkeypatch)
+    import public_workbench
+
+    monkeypatch.setattr(public_workbench, "ui_build_revision", lambda: "a" * 40)
+    from services.public_knowledge_client import PublicKnowledgeClient
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
+        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
+        "repositories": ["autowarefoundation/autoware_universe"],
+        "build_revision": "b" * 40,
+        "corpus_fingerprint": {"fingerprint_sha256": "c" * 64},
+        "retrieval_config_fingerprint": "d" * 64,
+        "evaluation_fingerprint": "e" * 64,
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "系统说明").click().run()
+    assert not app.exception
+    assert any(item.label == "运行版本与资料指纹" for item in app.expander)

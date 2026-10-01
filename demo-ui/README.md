@@ -3,7 +3,9 @@
 - [GitHub 源码仓库](https://github.com/Wdp-SE/enterprise-rag-agent-suite)
 - [在线工作台](https://enterprise-rag-agent-suite-bfmkgsimdisxcewgco7ydk.streamlit.app/)
 
-默认公网入口 [app.py](app.py) 加载 **Autoware 研发资料检索与变更审查工作台**。固定语料包括官方 Autoware Documentation 英文 `main` / `1.9.0` 快照、Tomato ROS 社区中文译本，以及 Universe Planning 英文 `0.51.0` / `0.52.0` 快照。语料共 1,148 条版本/语言来源、660 个不同资料主题/路径和 7,927 个检索片段。默认 `latest` 组合 Documentation `main` 与 Universe `0.52.0`，不代表同一个软件发行版本，也不会实时追踪上游。260 页社区中文译文中 44 页的 canonical 路径匹配当前官方英文快照，216 页的对应关系未核实；系统会显示这一来源边界。
+公网前端、RAG 后端、语料、检索配置和评测集分别显示版本/指纹，见[发布核验说明](../docs/production_readiness.md)。只有 Git 提交可验证且工作区干净时才会显示构建 SHA；部署后按文档中的 Smoke 命令核对 Streamlit 与 Render 是否指向同一提交。
+
+默认公网入口 [app.py](app.py) 加载 **Autoware 研发资料检索与变更审查工作台**。固定语料包括官方 Autoware Documentation 英文 `main` / `1.9.0` 快照、Tomato ROS 社区仓库的中文资料，以及 Universe Planning 英文 `0.51.0` / `0.52.0` 快照。语料共 1,148 条版本/语言来源、660 个不同资料主题/路径和 7,927 个检索片段。默认 `latest` 组合 Documentation `main` 与 Universe `0.52.0`，不代表同一个软件发行版本，也不会实时追踪上游。260 页中文资料中 44 页只有路径匹配候选，216 页没有同路径英文资料。系统将它们作为各自独立的来源提供检索；只有核验通过的文档关系才用于同步差异检查。
 
 工作台提供版本与语言检索、引用溯源和带版本依据的变更影响审查；两条人工复核的 Universe 图片文字作为派生证据，保留原图 SHA 和固定来源。KEP 只用于启发变更提案和审核流程，不进入 RAG 语料。变更审查 Agent 保留自然语言原文，可选补充变更类型与影响范围；未填写类型时用确定性规则归类，无法识别时回退到通用检索。Agent 最多发起 4 次 RAG 查询、选取最多 5 条证据，并显示检索轨迹与结构化证据缺口。人工审核决定会追加写入匿名会话对应的本地 SQLite，并保留 JSON 下载；公网托管临时磁盘可能清空，且未实现登录身份、权限或集中审批。记录不写公共基线。
 
@@ -25,15 +27,15 @@
 
 1. “可信检索问答”：默认使用 Documentation `main` + Universe `0.52.0`；也可分别选择 Documentation `1.9.0`、Universe `0.52.0` / `0.51.0` 或全部快照。默认语言为“中文优先”，也可严格只查中文、只查英文或同时检索。示例覆盖 Autoware 启动、日志和规划架构的中文问题，以及 Planning Validator、Trajectory Checker 的英文问题。查看引用时可核对固定 Git commit、社区译文页面、路径对应状态和原文来源。“技术详情”显示的检索得分只用于排序，不代表事实可信度。
 2. “发起变更审查”：用自然语言描述假设变更；需要时展开可选字段补充变更类型与影响范围。系统拆分检索子问题并在当前版本资料中寻找证据，展示规则分类、检索轨迹、影响候选和结构化证据缺口；可选片段做修改前后对照，最后由人审核。人工决定绑定当前任务编号，可下载包含请求指纹、证据 ID、决定和时间的会话 JSON，但不会自动进入审批系统。仅有来源原文明确支持的文档关联才会标为已确认；主题相似或模型判断只作为待核对建议。
-3. “检索评测”页会说明当前双语语料尚未完成冻结 Benchmark。旧 Autoware V3 43 题评测针对扩充前的小语料，指纹与当前后端索引不匹配，不能用作当前成绩。新增 10 条中英检索冒烟题只验证严格语言过滤和预期来源是否进入 Top-5，不是准确率或泛化评测。旧 Apache DolphinScheduler 的 V1-V4 结果仅作历史工程记录，不能套用到 Autoware。
+3. “检索评测”页展示当前冻结的 Autoware 检索质量 V1：82 题，DEV 51 / HOLDOUT 31，按文档族隔离；BM25 与 `bm25_figure_ocr` 的文本来源召回与完整命中一致，后者将图片证据命中从 HOLDOUT 0/3 提到 2/3，版本错误为 0，暖检索 P95 增幅约 6.9%。这些是本地固定语料检索指标，不是生成答案正确率、幻觉率或公网 SLA。旧 Autoware V3 和 DolphinScheduler V1-V4 属历史结果，不能套用到当前语料。
 
-查询拆解评测使用 8 条手工样例测类型分类、子问题覆盖及 4 次查询上限：`python evaluation/agent_query_decomposition/run_evaluation.py`。这是规则规划契约的轻量离线评测，不代表端到端检索准确率、回答正确率或线上延迟。
+Agent 查询规划评测见 [`autoware_agent_query_planning_v1`](../evaluation/autoware_agent_query_planning_v1/README.md)，包含 28 条中英文请求，测确定性变更分类、公开范围拦截、子问题内容覆盖和 4 次查询上限，不调用 RAG 或模型。该轮修复期间已经查看留出用例，不能将其作为独立泛化结论；修复后 28 条全量自测为分类 28/28、范围 28/28、必需查询内容 56/56、预算 28/28。这些数值只描述固定规则契约。
 
 ## 检索结论与已知限制
 
-语料扩充后公网默认策略恢复为 BM25 基线。官方英文 Documentation、社区中文翻译和 Universe Planning 来自不同仓库与固定快照；默认范围是显式组合，不能把中文译本一概视作与当前官方英文版本严格等价。旧 DolphinScheduler 及 Autoware V3/V4 指标都不代表当前 Autoware 双语语料表现。完整策略选型需要冻结中英文 DEV/HOLDOUT 题集，覆盖必需来源召回、跨资料完整命中、版本正确率、无答案候选、图像证据覆盖和延迟；当前状态与计划见[双语评测说明](../evaluation/autoware_bilingual_v1/README.md)。旧 DolphinScheduler 的 V2-V4 实验保留在 `evaluation/real_world_retrieval/` 作为历史记录。
+公网默认策略为 `bm25_figure_ocr`：BM25 加入两条绑定原图哈希、且经人工目视核验的 OCR 文字；它没有改变文本来源召回指标。完整选型结果与评测边界见[Autoware 检索质量 V1](../evaluation/autoware_quality_v1/README.md)。官方英文 Documentation、社区中文翻译和 Universe Planning 来自不同仓库与固定快照；默认范围是显式组合，不能把中文译本一概视作与当前官方英文版本严格等价。旧 DolphinScheduler 及 Autoware V3/V4 指标不代表当前结果。
 
-当前语料仍不是完整 Autoware 资料库；260 页中文社区译文中有 216 页未匹配到官方 Documentation `main` 的同路径页面，具体版本对应关系未知。HTML 转换会索引正文、表格和代码块；图像像素未由导入器识别，alt/图片说明不等于 OCR。只有两张 Universe 图片的标签经过人工 OCR 复核，复杂图形关系不转成文本事实。当前新语料尚无可报告的双语质量基准；规则分类也可能因领域新词回退到通用类别。审查状态保存在当前 Session，下载审查 JSON 需要用户自行保存；系统不实现 locale sibling consistency，变更建议仍需人工复核。
+当前语料仍不是完整 Autoware 资料库；260 页中文社区译文中有 216 页未匹配到官方 Documentation `main` 的同路径页面，具体版本对应关系未知。HTML 转换会索引正文、表格和代码块；图像像素未由导入器普遍识别，alt/图片说明不等于 OCR，只有两张 Universe 图片的标签经过人工 OCR 复核，复杂图形关系不转成文本事实。检索 Benchmark 不代表答案质量。Agent 规则对新领域术语仍可能回退到通用类别；本轮规划评测的 HOLDOUT 已在调试中查看，需用新的锁定评测集验证泛化。公网托管实例不提供企业级登录、权限或持久化集中审批，建议仍需人工复核。
 
 ## 云端配置
 

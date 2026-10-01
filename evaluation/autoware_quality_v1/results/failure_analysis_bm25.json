@@ -1,0 +1,637 @@
+{
+  "schema_version": 1,
+  "benchmark": "autoware_quality_v1",
+  "policy": "bm25",
+  "failure_count": 18,
+  "case_count": 82,
+  "no_answer_nonempty_candidates": {
+    "dev": "3/3",
+    "holdout": "3/3"
+  },
+  "metric_scope": "retrieval misses and wrong-version diagnostics only; not answer accuracy or confidence",
+  "failures": [
+    {
+      "case_id": "docs_ci_translation_state",
+      "split": "dev",
+      "category": "translation_relation_state",
+      "query_language": "en",
+      "selected_component_versions": "documentation=docs-main,universe=0.52.0",
+      "relation_state": "candidate",
+      "expected_modality": "text",
+      "missing_required_sources": [
+        "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/ci-checks"
+      ],
+      "missing_image_ids": [],
+      "hit_document_ids_at_5": [
+        "docs-main:en:autoware-documentation/contributing/documentation-guidelines",
+        "docs-main:en:autoware-documentation/tutorials/others/an-example-procedure-for-adding-and-evaluating-a-new-node",
+        "docs-main:en:autoware-documentation/contributing/pull-request-guidelines/ci-checks",
+        "docs-main:en:autoware-documentation/community/support/docs-guide"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "docs_logging_en_to_zh",
+      "split": "dev",
+      "category": "en_query_zh_evidence",
+      "query_language": "en",
+      "selected_component_versions": "documentation=docs-main,universe=0.52.0",
+      "relation_state": "candidate",
+      "expected_modality": "text",
+      "missing_required_sources": [
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging"
+      ],
+      "missing_image_ids": [],
+      "hit_document_ids_at_5": [
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:en:autoware-documentation/tutorials/others/debug-autoware",
+        "docs-main:en:autoware-documentation/demos/planning-sim/using-launch-gui"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "docs_logging_translation_state",
+      "split": "dev",
+      "category": "translation_relation_state",
+      "query_language": "en",
+      "selected_component_versions": "documentation=docs-main,universe=0.52.0",
+      "relation_state": "candidate",
+      "expected_modality": "text",
+      "missing_required_sources": [
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging"
+      ],
+      "missing_image_ids": [],
+      "hit_document_ids_at_5": [
+        "docs-main:en:autoware-documentation/tutorials/others/an-example-procedure-for-adding-and-evaluating-a-new-node",
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:en:autoware-documentation/tutorials/integrating-autoware/creating-maps/creating-vector-map/lanelet2",
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "docs_logging_zh_to_en",
+      "split": "dev",
+      "category": "zh_query_en_evidence",
+      "query_language": "zh",
+      "selected_component_versions": "documentation=docs-main,universe=0.52.0",
+      "relation_state": "candidate",
+      "expected_modality": "text",
+      "missing_required_sources": [
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging"
+      ],
+      "missing_image_ids": [],
+      "hit_document_ids_at_5": [
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:zh:autoware-documentation/design/autoware-architecture/map/map-requirements/vector-map-requirements-overview/category_intersection",
+        "docs-main:zh:autoware-documentation/design/autoware-interfaces/ad-api/features/manual-control",
+        "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "docs_parameters_en_to_zh",
+      "split": "dev",
+      "category": "en_query_zh_evidence",
+      "query_language": "en",
+      "selected_component_versions": "documentation=docs-main,universe=0.52.0",
+      "relation_state": "candidate",
+      "expected_modality": "text",
+      "missing_required_sources": [
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters"
+      ],
+      "missing_image_ids": [],
+      "hit_document_ids_at_5": [
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/launch-files",
+        "0.52.0:en:planning/trajectory_validator/design"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "docs_parameters_translation_state",
+      "split": "dev",
+      "category": "translation_relation_state",
+      "query_language": "en",
+      "selected_component_versions": "documentation=docs-main,universe=0.52.0",
+      "relation_state": "candidate",
+      "expected_modality": "text",
+      "missing_required_sources": [
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters"
+      ],
+      "missing_image_ids": [],
+      "hit_document_ids_at_5": [
+        "docs-main:en:autoware-documentation/contributing/documentation-guidelines",
+        "docs-main:en:autoware-documentation/tutorials/others/an-example-procedure-for-adding-and-evaluating-a-new-node",
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "0.52.0:en:planning/overview",
+        "docs-main:en:autoware-documentation/tutorials/integrating-autoware/tuning-parameters-and-performance/tuning-parameters"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "docs_parameters_zh_to_en",
+      "split": "dev",
+      "category": "zh_query_en_evidence",
+      "query_language": "zh",
+      "selected_component_versions": "documentation=docs-main,universe=0.52.0",
+      "relation_state": "candidate",
+      "expected_modality": "text",
+      "missing_required_sources": [
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters"
+      ],
+      "missing_image_ids": [],
+      "hit_document_ids_at_5": [
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:zh:autoware-documentation/contributing/testing-guidelines/integration-testing",
+        "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/launch-autoware"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "docs_planning_design_en_to_zh",
+      "split": "dev",
+      "category": "en_query_zh_evidence",
+      "query_language": "en",
+      "selected_component_versions": "documentation=docs-main,universe=0.52.0",
+      "relation_state": "unknown",
+      "expected_modality": "text",
+      "missing_required_sources": [
+        "docs-main:zh:autoware-documentation/design/autoware-architecture/planning"
+      ],
+      "missing_image_ids": [],
+      "hit_document_ids_at_5": [
+        "docs-main:en:autoware-documentation/design/autoware-architecture-v1/components/perception/reference_implementation",
+        "docs-main:en:autoware-documentation/design/autoware-architecture-v1/components/planning",
+        "docs-main:en:autoware-documentation/simulation-evaluation/components_evaluation/localization_evaluation/urban-environment-evaluation",
+        "docs-main:en:autoware-documentation/design/autoware-architecture-v1/interfaces",
+        "docs-main:en:autoware-documentation/design/autoware-architecture-v1/components/perception"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "parameter_launch_cross_source",
+      "split": "dev",
+      "category": "cross_source",
+      "query_language": "en",
+      "selected_component_versions": "documentation=docs-main,universe=0.52.0",
+      "relation_state": "candidate",
+      "expected_modality": "text",
+      "missing_required_sources": [
+        "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/launch-autoware"
+      ],
+      "missing_image_ids": [],
+      "hit_document_ids_at_5": [
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/topic-namespaces"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "v3_start_diagram_holdout_32",
+      "split": "dev",
+      "category": "image_evidence",
+      "query_language": "en",
+      "selected_component_versions": "universe=0.52.0",
+      "relation_state": "none",
+      "expected_modality": "image",
+      "missing_required_sources": [],
+      "missing_image_ids": [
+        "876db03219da6219"
+      ],
+      "hit_document_ids_at_5": [
+        "0.52.0:en:planning/start_planner/design",
+        "0.52.0:en:planning/goal_planner/design"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "v3_start_search_policy_04",
+      "split": "dev",
+      "category": "image_evidence",
+      "query_language": "en",
+      "selected_component_versions": "universe=0.52.0",
+      "relation_state": "none",
+      "expected_modality": "image",
+      "missing_required_sources": [],
+      "missing_image_ids": [
+        "876db03219da6219"
+      ],
+      "hit_document_ids_at_5": [
+        "0.52.0:en:planning/start_planner/design",
+        "0.52.0:en:planning/start_planner/parameters"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "v3_start_search_policy_holdout_11",
+      "split": "dev",
+      "category": "image_evidence",
+      "query_language": "en",
+      "selected_component_versions": "universe=0.52.0",
+      "relation_state": "none",
+      "expected_modality": "image",
+      "missing_required_sources": [],
+      "missing_image_ids": [
+        "876db03219da6219"
+      ],
+      "hit_document_ids_at_5": [
+        "0.52.0:en:planning/start_planner/design",
+        "0.52.0:en:planning/goal_planner/design",
+        "0.52.0:en:planning/start_planner/parameters"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "docs_launch_relation_unknown",
+      "split": "holdout",
+      "category": "translation_relation_state",
+      "query_language": "en",
+      "selected_component_versions": "documentation=docs-main,universe=0.52.0",
+      "relation_state": "unknown",
+      "expected_modality": "text",
+      "missing_required_sources": [
+        "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/launch-autoware"
+      ],
+      "missing_image_ids": [],
+      "hit_document_ids_at_5": [
+        "docs-main:en:autoware-documentation/tutorials/others/an-example-procedure-for-adding-and-evaluating-a-new-node",
+        "docs-main:en:autoware-documentation/demos/rosbag-replay-simulation",
+        "docs-main:en:autoware-documentation/demos/planning-sim/using-launch-gui",
+        "docs-main:en:autoware-documentation/contributing/documentation-guidelines",
+        "docs-main:en:autoware-documentation/tutorials/training-machine-learning-models/training-models"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "docs_unit_testing_en_to_zh",
+      "split": "holdout",
+      "category": "en_query_zh_evidence",
+      "query_language": "en",
+      "selected_component_versions": "documentation=docs-main,universe=0.52.0",
+      "relation_state": "candidate",
+      "expected_modality": "text",
+      "missing_required_sources": [
+        "docs-main:zh:autoware-documentation/contributing/testing-guidelines/unit-testing"
+      ],
+      "missing_image_ids": [],
+      "hit_document_ids_at_5": [
+        "docs-main:en:autoware-documentation/contributing/testing-guidelines/unit-testing",
+        "docs-main:en:autoware-documentation/design/autoware-architecture-v1/interfaces/ad-api/features/operation_mode",
+        "docs-main:en:autoware-documentation/installation",
+        "docs-main:en:autoware-documentation/tutorials/others/advanced-usage-of-colcon",
+        "docs-main:en:autoware-documentation/design/autoware-concepts"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "docs_unit_testing_zh_to_en",
+      "split": "holdout",
+      "category": "zh_query_en_evidence",
+      "query_language": "zh",
+      "selected_component_versions": "documentation=docs-main,universe=0.52.0",
+      "relation_state": "candidate",
+      "expected_modality": "text",
+      "missing_required_sources": [
+        "docs-main:en:autoware-documentation/contributing/testing-guidelines/unit-testing"
+      ],
+      "missing_image_ids": [],
+      "hit_document_ids_at_5": [
+        "docs-main:zh:autoware-documentation/contributing/testing-guidelines/unit-testing",
+        "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/creating-maps/open-source-slam/sc-lego-loam",
+        "docs-main:zh:autoware-documentation/contributing/testing-guidelines/integration-testing",
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/topic-namespaces",
+        "docs-main:zh:autoware-documentation/contributing/testing-guidelines"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "v3_goal_diagram_holdout_33",
+      "split": "holdout",
+      "category": "image_evidence",
+      "query_language": "en",
+      "selected_component_versions": "universe=0.52.0",
+      "relation_state": "none",
+      "expected_modality": "image",
+      "missing_required_sources": [],
+      "missing_image_ids": [
+        "32682b345ea86e13"
+      ],
+      "hit_document_ids_at_5": [
+        "0.52.0:en:planning/goal_planner/design",
+        "0.52.0:en:planning/intersection_velocity/design",
+        "0.52.0:en:planning/freespace_planner/design"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "v3_goal_image_labels_09",
+      "split": "holdout",
+      "category": "image_evidence",
+      "query_language": "en",
+      "selected_component_versions": "universe=0.52.0",
+      "relation_state": "none",
+      "expected_modality": "image",
+      "missing_required_sources": [],
+      "missing_image_ids": [
+        "32682b345ea86e13"
+      ],
+      "hit_document_ids_at_5": [
+        "0.52.0:en:planning/goal_planner/design",
+        "0.52.0:en:planning/start_planner/design"
+      ],
+      "version_mismatches_at_5": []
+    },
+    {
+      "case_id": "v3_goal_image_labels_holdout_12",
+      "split": "holdout",
+      "category": "image_evidence",
+      "query_language": "en",
+      "selected_component_versions": "universe=0.52.0",
+      "relation_state": "none",
+      "expected_modality": "image",
+      "missing_required_sources": [],
+      "missing_image_ids": [
+        "32682b345ea86e13"
+      ],
+      "hit_document_ids_at_5": [
+        "0.52.0:en:planning/goal_planner/design",
+        "0.52.0:en:planning/intersection_velocity/design",
+        "0.52.0:en:planning/freespace_planner/design"
+      ],
+      "version_mismatches_at_5": []
+    }
+  ],
+  "by_category": {
+    "cross_source": {
+      "case_ids": [
+        "parameter_launch_cross_source"
+      ],
+      "missing_source_ids": [
+        "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/launch-autoware"
+      ],
+      "missing_image_ids": [],
+      "wrong_version_count": 0
+    },
+    "en_query_zh_evidence": {
+      "case_ids": [
+        "docs_logging_en_to_zh",
+        "docs_parameters_en_to_zh",
+        "docs_planning_design_en_to_zh",
+        "docs_unit_testing_en_to_zh"
+      ],
+      "missing_source_ids": [
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:zh:autoware-documentation/contributing/testing-guidelines/unit-testing",
+        "docs-main:zh:autoware-documentation/design/autoware-architecture/planning"
+      ],
+      "missing_image_ids": [],
+      "wrong_version_count": 0
+    },
+    "image_evidence": {
+      "case_ids": [
+        "v3_goal_diagram_holdout_33",
+        "v3_goal_image_labels_09",
+        "v3_goal_image_labels_holdout_12",
+        "v3_start_diagram_holdout_32",
+        "v3_start_search_policy_04",
+        "v3_start_search_policy_holdout_11"
+      ],
+      "missing_source_ids": [],
+      "missing_image_ids": [
+        "32682b345ea86e13",
+        "876db03219da6219"
+      ],
+      "wrong_version_count": 0
+    },
+    "translation_relation_state": {
+      "case_ids": [
+        "docs_ci_translation_state",
+        "docs_launch_relation_unknown",
+        "docs_logging_translation_state",
+        "docs_parameters_translation_state"
+      ],
+      "missing_source_ids": [
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/ci-checks",
+        "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/launch-autoware"
+      ],
+      "missing_image_ids": [],
+      "wrong_version_count": 0
+    },
+    "zh_query_en_evidence": {
+      "case_ids": [
+        "docs_logging_zh_to_en",
+        "docs_parameters_zh_to_en",
+        "docs_unit_testing_zh_to_en"
+      ],
+      "missing_source_ids": [
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:en:autoware-documentation/contributing/testing-guidelines/unit-testing"
+      ],
+      "missing_image_ids": [],
+      "wrong_version_count": 0
+    }
+  },
+  "by_query_language": {
+    "en": {
+      "case_ids": [
+        "docs_ci_translation_state",
+        "docs_launch_relation_unknown",
+        "docs_logging_en_to_zh",
+        "docs_logging_translation_state",
+        "docs_parameters_en_to_zh",
+        "docs_parameters_translation_state",
+        "docs_planning_design_en_to_zh",
+        "docs_unit_testing_en_to_zh",
+        "parameter_launch_cross_source",
+        "v3_goal_diagram_holdout_33",
+        "v3_goal_image_labels_09",
+        "v3_goal_image_labels_holdout_12",
+        "v3_start_diagram_holdout_32",
+        "v3_start_search_policy_04",
+        "v3_start_search_policy_holdout_11"
+      ],
+      "missing_source_ids": [
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/ci-checks",
+        "docs-main:zh:autoware-documentation/contributing/testing-guidelines/unit-testing",
+        "docs-main:zh:autoware-documentation/design/autoware-architecture/planning",
+        "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/launch-autoware"
+      ],
+      "missing_image_ids": [
+        "32682b345ea86e13",
+        "876db03219da6219"
+      ],
+      "wrong_version_count": 0
+    },
+    "zh": {
+      "case_ids": [
+        "docs_logging_zh_to_en",
+        "docs_parameters_zh_to_en",
+        "docs_unit_testing_zh_to_en"
+      ],
+      "missing_source_ids": [
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:en:autoware-documentation/contributing/testing-guidelines/unit-testing"
+      ],
+      "missing_image_ids": [],
+      "wrong_version_count": 0
+    }
+  },
+  "by_relation_state": {
+    "candidate": {
+      "case_ids": [
+        "docs_ci_translation_state",
+        "docs_logging_en_to_zh",
+        "docs_logging_translation_state",
+        "docs_logging_zh_to_en",
+        "docs_parameters_en_to_zh",
+        "docs_parameters_translation_state",
+        "docs_parameters_zh_to_en",
+        "docs_unit_testing_en_to_zh",
+        "docs_unit_testing_zh_to_en",
+        "parameter_launch_cross_source"
+      ],
+      "missing_source_ids": [
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:en:autoware-documentation/contributing/testing-guidelines/unit-testing",
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/ci-checks",
+        "docs-main:zh:autoware-documentation/contributing/testing-guidelines/unit-testing",
+        "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/launch-autoware"
+      ],
+      "missing_image_ids": [],
+      "wrong_version_count": 0
+    },
+    "none": {
+      "case_ids": [
+        "v3_goal_diagram_holdout_33",
+        "v3_goal_image_labels_09",
+        "v3_goal_image_labels_holdout_12",
+        "v3_start_diagram_holdout_32",
+        "v3_start_search_policy_04",
+        "v3_start_search_policy_holdout_11"
+      ],
+      "missing_source_ids": [],
+      "missing_image_ids": [
+        "32682b345ea86e13",
+        "876db03219da6219"
+      ],
+      "wrong_version_count": 0
+    },
+    "unknown": {
+      "case_ids": [
+        "docs_launch_relation_unknown",
+        "docs_planning_design_en_to_zh"
+      ],
+      "missing_source_ids": [
+        "docs-main:zh:autoware-documentation/design/autoware-architecture/planning",
+        "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/launch-autoware"
+      ],
+      "missing_image_ids": [],
+      "wrong_version_count": 0
+    }
+  },
+  "by_selected_component_version": {
+    "documentation=docs-main,universe=0.52.0": {
+      "case_ids": [
+        "docs_ci_translation_state",
+        "docs_launch_relation_unknown",
+        "docs_logging_en_to_zh",
+        "docs_logging_translation_state",
+        "docs_logging_zh_to_en",
+        "docs_parameters_en_to_zh",
+        "docs_parameters_translation_state",
+        "docs_parameters_zh_to_en",
+        "docs_planning_design_en_to_zh",
+        "docs_unit_testing_en_to_zh",
+        "docs_unit_testing_zh_to_en",
+        "parameter_launch_cross_source"
+      ],
+      "missing_source_ids": [
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:en:autoware-documentation/contributing/testing-guidelines/unit-testing",
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/ci-checks",
+        "docs-main:zh:autoware-documentation/contributing/testing-guidelines/unit-testing",
+        "docs-main:zh:autoware-documentation/design/autoware-architecture/planning",
+        "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/launch-autoware"
+      ],
+      "missing_image_ids": [],
+      "wrong_version_count": 0
+    },
+    "universe=0.52.0": {
+      "case_ids": [
+        "v3_goal_diagram_holdout_33",
+        "v3_goal_image_labels_09",
+        "v3_goal_image_labels_holdout_12",
+        "v3_start_diagram_holdout_32",
+        "v3_start_search_policy_04",
+        "v3_start_search_policy_holdout_11"
+      ],
+      "missing_source_ids": [],
+      "missing_image_ids": [
+        "32682b345ea86e13",
+        "876db03219da6219"
+      ],
+      "wrong_version_count": 0
+    }
+  },
+  "by_expected_modality": {
+    "image": {
+      "case_ids": [
+        "v3_goal_diagram_holdout_33",
+        "v3_goal_image_labels_09",
+        "v3_goal_image_labels_holdout_12",
+        "v3_start_diagram_holdout_32",
+        "v3_start_search_policy_04",
+        "v3_start_search_policy_holdout_11"
+      ],
+      "missing_source_ids": [],
+      "missing_image_ids": [
+        "32682b345ea86e13",
+        "876db03219da6219"
+      ],
+      "wrong_version_count": 0
+    },
+    "text": {
+      "case_ids": [
+        "docs_ci_translation_state",
+        "docs_launch_relation_unknown",
+        "docs_logging_en_to_zh",
+        "docs_logging_translation_state",
+        "docs_logging_zh_to_en",
+        "docs_parameters_en_to_zh",
+        "docs_parameters_translation_state",
+        "docs_parameters_zh_to_en",
+        "docs_planning_design_en_to_zh",
+        "docs_unit_testing_en_to_zh",
+        "docs_unit_testing_zh_to_en",
+        "parameter_launch_cross_source"
+      ],
+      "missing_source_ids": [
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:en:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:en:autoware-documentation/contributing/testing-guidelines/unit-testing",
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/console-logging",
+        "docs-main:zh:autoware-documentation/contributing/coding-guidelines/ros-nodes/parameters",
+        "docs-main:zh:autoware-documentation/contributing/pull-request-guidelines/ci-checks",
+        "docs-main:zh:autoware-documentation/contributing/testing-guidelines/unit-testing",
+        "docs-main:zh:autoware-documentation/design/autoware-architecture/planning",
+        "docs-main:zh:autoware-documentation/how-to-guides/integrating-autoware/launch-autoware"
+      ],
+      "missing_image_ids": [],
+      "wrong_version_count": 0
+    }
+  }
+}

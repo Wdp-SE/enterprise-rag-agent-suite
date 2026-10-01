@@ -82,7 +82,7 @@ _CLASSIFICATION_RULES: dict[str, dict[str, tuple[str, ...]]] = {
         "context": ("变量", "默认值", "startup parameter", "global parameter"),
     },
     "interface_compatibility": {
-        "strong": ("接口", "api", "协议", "请求", "响应", "兼容", "endpoint", "health-check", "health check"),
+        "strong": ("接口", "api", "协议", "请求", "响应", "兼容", "topic", "message type", "endpoint", "health-check", "health check"),
         "context": ("字段", "schema", "request", "response"),
     },
     "workflow_behavior": {
@@ -94,6 +94,7 @@ _CLASSIFICATION_RULES: dict[str, dict[str, tuple[str, ...]]] = {
             "规划", "路径", "轨迹", "障碍物", "避障", "可行驶区域", "驶出", "泊车",
             "planning", "planner", "trajectory", "obstacle", "collision", "drivable area",
             "pull-out", "pull out", "goal planner", "start planner", "path planning",
+            "路权", "intersection",
         ),
         "context": ("行为", "规划模块", "vehicle behavior", "planning module"),
     },
@@ -102,7 +103,7 @@ _CLASSIFICATION_RULES: dict[str, dict[str, tuple[str, ...]]] = {
         "context": ("schema", "数据模型"),
     },
     "security_permission": {
-        "strong": ("安全", "权限", "鉴权", "认证", "授权", "密级", "加密", "security", "permission", "auth", "authentication", "authorization"),
+        "strong": ("安全", "权限", "鉴权", "认证", "授权", "密级", "加密", "security", "permission", "auth", "authentication", "authorization", "oidc", "group-to-role", "role sync"),
         "context": ("角色", "访问控制", "access control"),
     },
 }
@@ -134,7 +135,10 @@ _PRIVATE_DATA_SUBJECT = re.compile(
 )
 _PRIVATE_ORG_ENGLISH = re.compile(
     r"\b(?:internal|private|proprietary|company[- ]specific|organization[- ]specific)"
-    r"\s+(?:company\s+)?(?:api|endpoint|ticket|workflow|policy|directory|phone|permission|data)\b",
+    r"\s+(?:company\s+)?(?:api|endpoint|ticket|workflow|policy|directory|phone|permission|data)\b"
+    r"|\b(?:our\s+)?company(?:'s)?\s+jira\s+(?:access[- ]approval|approver|admin|reviewer)"
+    r"\s+(?:audit\s+trail|list|directory)\b"
+    r"|\b(?:our\s+)?internal\s+(?:company\s+)?jira\s+(?:approver|admin|reviewer)\s+(?:list|directory)\b",
     re.IGNORECASE,
 )
 
@@ -168,7 +172,7 @@ def _expand_retrieval_query(query: str) -> str:
     return f"{query} {' '.join(aliases)}" if aliases else query
 
 
-def classify_change_type(text: str) -> str:
+def _classify_change_type_clause(text: str) -> str:
     normalized = text.casefold()
     explicit_parameter_terms = (
         "参数", "parameter", "timeout", "concurrency", "并发", "容量", "阈值", "threshold",
@@ -185,6 +189,26 @@ def classify_change_type(text: str) -> str:
         strong_weight = 4 if key in {"parameter_config", "security_permission"} else 3
         ranked.append((strong_hits * strong_weight + min(context_hits, 2), -order, key))
     return max(ranked, default=(0, 0, "general"))[2]
+
+
+def classify_change_type(text: str) -> str:
+    """Classify the primary change intent before its secondary audit checks.
+
+    Requests often pair the actual change with checks to run (for example,
+    changing trajectory validation and checking a numeric threshold). Letting
+    every clause vote equally can incorrectly turn a planning change into a
+    parameter change. Fall back to the complete request for audit-only prompts.
+    """
+    clauses = [
+        part.strip()
+        for part in _CLAUSE_SPLIT.split(text or "")
+        if part.strip()
+    ]
+    if clauses:
+        primary_type = _classify_change_type_clause(clauses[0])
+        if primary_type != "general":
+            return primary_type
+    return _classify_change_type_clause(text or "")
 
 
 def resolve_change_type(text: str, requested: str | None = None) -> tuple[str, str]:

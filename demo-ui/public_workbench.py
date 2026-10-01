@@ -15,6 +15,7 @@ from urllib.parse import urljoin, urlsplit
 
 import streamlit as st
 
+from build_identity import ui_build_revision
 from components.public_theme import PUBLIC_CSS
 from services.public_knowledge_client import PublicKnowledgeClient
 from services.review_audit import SQLiteReviewAudit
@@ -192,8 +193,8 @@ def _source_coverage_text(workspace: dict | None) -> str | None:
     return (
         f"资料覆盖：官方 Documentation 英文 main {english_main} 页、release 1.9.0 {english_release} 页；"
         f"Universe Planning 英文 0.52.0 / 0.51.0 各 {universe_latest} / {universe_baseline} 份；"
-        f"另收录社区中文译文 {chinese} 页，其中 {matched} 页按路径匹配到官方 main，"
-        f"{unverified} 页当前未匹配到同路径英文原文，均保留为独立社区快照。"
+        f"另收录中文社区资料 {chinese} 页，其中 {matched} 页仅有路径匹配候选（内容和版本关系未核验），"
+        f"{unverified} 页未找到同路径英文资料；所有页面均可独立检索，仅核验通过的关联用于同步差异检查。"
     )
 
 
@@ -319,7 +320,7 @@ def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None
     )
     source_label = {
         "official_documentation": "官方文档",
-        "community_translation": "社区中文译文",
+        "community_translation": "中文社区资料",
         "github_release": "官方 Release",
         "github_issue": "官方 Issue",
         "github_pull_request": "官方 PR",
@@ -347,15 +348,15 @@ def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None
             if row.get("source_type") == "community_translation":
                 if not relation_caption:
                     if row.get("translation_alignment_status") == "path_matched_to_official_main":
-                        st.caption("路径已匹配 · 内容未逐句核验。")
+                        st.caption("路径匹配仅为候选 · 内容及版本对应关系未核验。")
                     else:
-                        st.caption("英文对应关系待核验。")
+                        st.caption("未找到同路径英文资料 · 作为独立社区资料检索，不据此推断版本漂移。")
                 if row.get("rendered_url"):
-                    st.markdown(f"[阅读社区译文]({row['rendered_url']})")
+                    st.markdown(f"[阅读中文社区资料]({row['rendered_url']})")
                 if row.get("english_source_url"):
                     st.markdown(f"[查看对应英文原文]({row['english_source_url']})")
                 elif row.get("canonical_url"):
-                    st.markdown(f"[查看译文标注的官方页面]({row['canonical_url']})")
+                    st.markdown(f"[查看来源标注的官方关联页]({row['canonical_url']})")
         if row.get("source_url"):
             st.markdown(f"[查看固定提交来源]({row['source_url']})")
         with st.expander("技术详情"):
@@ -524,11 +525,14 @@ def _home(ready: bool, workspace: dict | None) -> None:
     language_label = " / ".join("中文" if value == "zh-CN" else "English" if value == "en-US" else value for value in locales) or "服务连接后确认"
     st.markdown('<div class="masthead"><span class="kicker">公开研发资料 / 版本化知识空间</span></div>', unsafe_allow_html=True)
     st.title("研发知识版本服务与变更影响审查")
-    st.write(f"基于 {name} 已收录资料，提供版本检索、引用溯源与变更影响审查。")
+    st.write(
+        f"基于 {name} 已收录资料提供版本检索与变更审查；中英文资料按来源独立收录，"
+        "仅对核验通过的文档关系开展同步差异审查。"
+    )
     state = "已连接" if ready else "等待连接"
     status = [
         ("知识空间", name),
-        ("资料性质", "官方英文资料 + 社区中文译本"),
+        ("资料来源", "官方英文文档 + 中文社区资料"),
         ("默认检索范围", version_range),
         ("语言", language_label),
         ("服务状态", state),
@@ -544,7 +548,7 @@ def _home(ready: bool, workspace: dict | None) -> None:
         with st.container(border=True, key="public_rag_module"):
             _module_heading("版本化研发知识服务 · RAG")
             st.markdown("### 版本化知识检索与问答")
-            st.write("按版本与语言范围检索研发资料，查看固定来源和引用依据，核对不同快照间的资料差异。")
+            st.write("按来源、版本与语言检索；仅核验通过的文档关联用于一致性检查。")
             st.button("进入知识检索", type="primary", use_container_width=True,
                       on_click=_navigate, args=("版本检索与问答",))
     with right:
@@ -581,7 +585,7 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
     default_version_label = _version_option_label(current, workspace) if current else "无法确认最新已收录版本"
     st.markdown(
         f'<div class="context-strip"><span><strong>知识空间</strong> {escape(name)}</span>'
-        f'<span><strong>资料</strong> 官方英文资料 / 社区中文译本</span>'
+        f'<span><strong>资料</strong> 官方英文文档 / 中文社区资料</span>'
         f'<span><strong>默认版本</strong> {escape(default_version_label)}</span>'
         f'<span><strong>默认检索</strong> {escape(default_policy)}</span></div>',
         unsafe_allow_html=True,
@@ -676,7 +680,9 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                     citation_numbers = "　".join(f"[{index}]" for index in range(1, len(sources) + 1))
                     st.markdown(f'<span class="citation-index">引用编号：{citation_numbers}</span>', unsafe_allow_html=True)
             else:
-                if payload.get("status") == "NO_EVIDENCE":
+                if payload.get("status") == "OUT_OF_SCOPE":
+                    st.caption("问题涉及当前公开语料无法提供的企业内部信息；系统已停止检索与模型生成。")
+                elif payload.get("status") == "NO_EVIDENCE":
                     st.caption("当前版本与语言范围内未找到匹配资料；请调整范围或改用原文术语。")
                 elif payload.get("status") == "ABSTAINED":
                     diagnostic = payload.get("generation") or {}
@@ -750,6 +756,8 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
             else:
                 _evidence(payload.get("evidence", []), heading="检索到的资料")
         else:
+            if payload.get("status") == "OUT_OF_SCOPE":
+                st.caption("问题涉及当前公开语料无法提供的企业内部信息；系统已停止检索。")
             _consistency(payload.get("consistency_notes", []))
             _evidence(payload.get("results", []), heading="检索到的资料")
         with st.expander("本次检索技术详情"):
@@ -895,7 +903,7 @@ def _review_advice_panel(result: dict, *, context: str = "review") -> None:
                         st.markdown('<div class="agent-field-label">影响判断</div>', unsafe_allow_html=True)
                         st.markdown(escape(str(candidate.get("reason") or "需要人工核对该资料。")))
                         st.markdown('<div class="agent-field-label">建议核对动作</div>', unsafe_allow_html=True)
-                        st.markdown(escape(str(candidate.get("suggested_action") or "对照官方原文确认是否需要同步。")))
+                        st.markdown(escape(str(candidate.get("suggested_action") or "核对引用资料与变更范围后，由审核人决定后续动作。")))
                         if source:
                             evidence_number = source_numbers.get(evidence_id)
                             st.markdown(
@@ -930,9 +938,19 @@ def _review_advice_panel(result: dict, *, context: str = "review") -> None:
             st.markdown("**变更理解**")
             st.write(interpretation)
             st.caption("具体候选、原文和修改前后对照见下方；所有建议仍需人工确认。")
+        structured_gap_text = {
+            str(row.get("message") or row.get("description") or "").strip()
+            for row in result.get("evidence_gap_details") or []
+        }
         follow_up = []
-        follow_up.extend(("证据缺口", value) for value in (review.get("evidence_gaps") or []))
-        follow_up.extend(("版本或语言歧义", value) for value in (review.get("version_ambiguities") or []))
+        follow_up.extend(
+            ("证据缺口", value) for value in (review.get("evidence_gaps") or [])
+            if str(value).strip() not in structured_gap_text
+        )
+        follow_up.extend(
+            ("版本或语言歧义", value) for value in (review.get("version_ambiguities") or [])
+            if str(value).strip() not in structured_gap_text
+        )
         follow_up.extend(("人工检查", value) for value in (review.get("reviewer_actions") or []))
         if follow_up:
             with st.expander(f"未解决事项与人工检查（{len(follow_up)}）"):
@@ -1202,19 +1220,51 @@ def _retrieval_trace_panel(result: dict) -> None:
     trace = result.get("retrieval_trace")
     if not isinstance(trace, dict):
         return
-    model_gaps = set((result.get("review_advice", {}).get("review") or {}).get("evidence_gaps") or [])
-    retrieval_gaps = [gap for gap in result.get("evidence_gaps", []) if gap not in model_gaps]
-    if retrieval_gaps:
-        st.caption("尚需补充检索证据：" + "；".join(retrieval_gaps))
+    stage_status = result.get("stage_status") or {}
+    if stage_status:
+        stage_labels = {"planning": "问题拆解", "retrieval": "资料检索", "generation": "建议整理"}
+        status_labels = {
+            "OK": "完成", "EMPTY": "无结果", "FAILED": "失败",
+            "SKIPPED": "未执行", "OUT_OF_SCOPE": "超出范围",
+        }
+        rendered = "　·　".join(
+            f"{stage_labels.get(stage, stage)}：{status_labels.get(status, status)}"
+            for stage, status in stage_status.items()
+        )
+        st.caption(f"流程状态　{rendered}")
     gap_details = result.get("evidence_gap_details") or []
     if gap_details:
-        with st.expander(f"结构化证据缺口（{len(gap_details)}）"):
-            for gap in gap_details:
-                st.markdown(f"**{gap.get('gap_type', 'REVIEW_REQUIRED')}** · {gap.get('message', '')}")
-                if gap.get("expected_materials"):
-                    st.caption(f"建议补查资料：{gap['expected_materials']}")
-                if gap.get("suggested_action"):
-                    st.write(gap["suggested_action"])
+        st.subheader("待补充核查")
+        gap_labels = {
+            "NO_REQUIRED_SOURCE": "缺少必要资料",
+            "UNVERIFIED_TRANSLATION": "中英文对应关系待核验",
+            "VERSION_AMBIGUITY": "版本适用性待确认",
+            "IMAGE_NOT_REVIEWED": "图片证据待核验",
+            "OUT_OF_SCOPE": "超出当前资料范围",
+            "OUT_OF_SCOPE_PUBLIC_CORPUS": "超出当前资料范围",
+            "RETRIEVAL_FAILED": "检索未完成",
+            "INVALID_CITATION": "无效引用已移除",
+            "MODEL_REPORTED": "模型提示待核验",
+        }
+        for gap in gap_details:
+            gap_type = str(gap.get("gap_type") or "REVIEW_REQUIRED")
+            description = str(gap.get("description") or gap.get("message") or "需要人工核查。")
+            st.markdown(f"**{gap_labels.get(gap_type, '待核查事项')}** · {escape(description)}")
+            missing_source = gap.get("missing_source_type") or gap.get("expected_materials")
+            expected_version = gap.get("expected_version")
+            metadata = []
+            if missing_source:
+                metadata.append(f"待补资料：{escape(str(missing_source))}")
+            if expected_version:
+                metadata.append(f"适用版本：{escape(str(expected_version))}")
+            if metadata:
+                st.caption("　｜　".join(metadata))
+            suggested_query = gap.get("suggested_query")
+            if suggested_query:
+                st.caption(f"建议核查问题：{escape(str(suggested_query))}")
+            action = gap.get("suggested_action")
+            if action:
+                st.markdown(escape(str(action)))
     with st.expander("检索过程与覆盖范围"):
         st.caption(f"任务编号：{result.get('task_id', '当前会话')} · 模型建议状态：{trace.get('model_status', '未调用')}")
         labels = {
@@ -1557,7 +1607,7 @@ def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None)
     st.caption(f"当前条件下有 {len(filtered)} 份固定来源资料。")
     kind = {
         "official_documentation": "官方文档",
-        "community_translation": "社区中文译文",
+        "community_translation": "中文社区资料",
         "github_release": "官方 Release",
         "github_issue": "官方 Issue",
         "github_pull_request": "官方 PR",
@@ -1590,10 +1640,56 @@ def _benchmark(workspace: dict | None) -> None:
     st.markdown(f"**当前默认：{policy}**。Dense 是字符哈希向量基线，不是神经语义 Embedding；Hybrid 在旧语料选型中未超过 BM25。")
     release_status = workspace.get("retrieval_evaluation_status") if workspace else None
     release = workspace.get("retrieval_evaluation") if workspace and release_status in (
-        "autoware_retrieval_v3_validated", "autoware_retrieval_v1_validated", "v4_bm25_validated", "v3_validated",
+        "autoware_quality_v1_validated", "autoware_retrieval_v3_validated",
+        "autoware_retrieval_v1_validated", "v4_bm25_validated", "v3_validated",
     ) else None
     experiment = workspace.get("retrieval_experiment") if workspace else None
-    if isinstance(release, dict) and release.get("name") == "autoware_retrieval_v3" and release.get("policy", "").upper() == policy:
+    if isinstance(release, dict) and release.get("name") == "autoware_quality_v1" and release.get("policy", "").upper() == policy:
+        st.markdown("**Autoware 当前检索策略评测（冻结双语题集，Top-5）**")
+        counts = release.get("case_split_counts", {})
+        st.caption(
+            f"{release.get('case_count', '—')} 道按文档族隔离的固定问题（DEV {counts.get('dev', '—')} / HOLDOUT {counts.get('holdout', '—')}）；"
+            f"覆盖版本、跨资料、中英跨语、关系状态、图片证据与范围外问题。当前结果仅衡量证据检索，不代表答案准确率、幻觉率或公网延迟。"
+        )
+        fields = (
+            ("complete_required_sources_at_5", "完整来源@5"),
+            ("required_source_recall_at_5", "来源召回@5"),
+            ("mrr_at_5", "MRR@5"),
+            ("image_evidence_hits", "图片证据"),
+        )
+        rows = ["| 切分 / 策略 | 题数 | " + " | ".join(label for _, label in fields) + " | 错版本 | 本机检索 P95 |",
+                "| --- | ---: | " + " | ".join("---:" for _ in fields) + " | ---: | ---: |"]
+        for split_name, label, baseline_key in (
+            ("dev", "DEV", "bm25_dev"), ("holdout", "HOLDOUT", "bm25_holdout"),
+        ):
+            for strategy, values in (("BM25", release[baseline_key]), ("BM25 + 已校对图片文字", release[split_name])):
+                rows.append(
+                    f"| {label} / {strategy} | {values['query_count']} | "
+                    + " | ".join(
+                        str(values[key]) if key == "image_evidence_hits" else f"{values[key] * 100:.1f}%"
+                        for key, _ in fields
+                    )
+                    + f" | {values['version_mismatch_count']} | {values['search_p95_ms']:.2f} ms |"
+                )
+        st.markdown("\n".join(rows))
+        holdout = release["holdout"]
+        baseline_holdout = release["bm25_holdout"]
+        st.caption(
+            f"HOLDOUT 图片证据命中从 {baseline_holdout['image_evidence_hits']} 提升到 {holdout['image_evidence_hits']}；"
+            f"完整来源率 {baseline_holdout['complete_required_sources_at_5'] * 100:.1f}% → "
+            f"{holdout['complete_required_sources_at_5'] * 100:.1f}%，错版本 {holdout['version_mismatch_count']}。"
+            "图片证据只计入人工校对并绑定原图的 OCR；未命中图片不代表原文没有图，需补齐图像审核数据后再评。"
+        )
+        st.caption(
+            f"HOLDOUT 无答案问题仍有检索候选 {holdout['no_answer_nonempty_candidates']}；这只是检索噪声诊断，不是模型误答率。"
+            "端到端回答支持度与引用质量由人工复核评测，公网延迟需在线监控。"
+        )
+        if holdout.get("complete_required_sources_at_5", 1) < 1:
+            st.warning("HOLDOUT 仍有跨资料问题未找齐全部必需来源；后续应根据失败案例改善召回，不能把问题藏在总分里。")
+        st.markdown(
+            "[查看质量评测集、指标口径与失败案例](https://github.com/Wdp-SE/enterprise-rag-agent-suite/blob/main/evaluation/autoware_quality_v1/README.md)"
+        )
+    elif isinstance(release, dict) and release.get("name") == "autoware_retrieval_v3" and release.get("policy", "").upper() == policy:
         st.markdown("**Autoware 当前检索策略评测（冻结题集，Top-5）**")
         st.caption(
             f"{workspace.get('source_count', '—')} 份固定提交官方资料、{workspace.get('chunk_count', '—')} 个文本片段，"
@@ -1773,6 +1869,15 @@ def _about(workspace: dict | None) -> None:
     ]
     if repository_links:
         st.markdown("公开来源仓库：" + " · ".join(repository_links))
+    with st.expander("运行版本与资料指纹"):
+        st.write(f"前端构建：`{ui_build_revision()}`")
+        st.write(f"RAG 后端构建：`{(workspace or {}).get('build_revision') or 'unknown'}`")
+        corpus_fingerprint = (workspace or {}).get("corpus_fingerprint") or {}
+        corpus_hash = corpus_fingerprint.get("fingerprint_sha256", "unknown")
+        st.write(f"语料指纹：`{corpus_hash}`")
+        st.write(f"检索配置指纹：`{(workspace or {}).get('retrieval_config_fingerprint') or 'unknown'}`")
+        st.write(f"评测集指纹：`{(workspace or {}).get('evaluation_fingerprint') or 'unknown'}`")
+        st.caption("SHA 仅在 Git 提交可验证且工作区干净时显示；公网 Streamlit 与 RAG 服务分别部署，需核对两端版本。")
 
 
 def render() -> None:

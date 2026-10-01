@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from pathlib import Path
 from datetime import datetime, timezone
+import re
 
 import pytest
 from fastapi.testclient import TestClient
@@ -52,17 +54,22 @@ def test_autoware_workspace_profile_comes_from_manifest(tmp_path):
 
     assert workspace["workspace"] == "Autoware"
     assert workspace["repository"] == "autowarefoundation/autoware_universe"
-    assert workspace["current_version"] == "0.52.0"
+    assert workspace["current_version"] == "latest"
     assert workspace["baseline_version"] == "0.51.0"
-    assert workspace["languages"] == ["en-US"]
-    assert workspace["unique_document_count"] == 13
-    assert workspace["source_count"] == 26
+    assert workspace["languages"] == ["en-US", "zh-CN"]
+    assert workspace["unique_document_count"] == 660
+    assert workspace["source_count"] == 1148
     assert workspace["corpus_is_complete"] is False
-    assert "freespace" in workspace["corpus_scope"].casefold()
-    assert "intersection" in workspace["corpus_scope"].casefold()
-    assert "planning" in workspace["corpus_scope"].casefold()
-    assert workspace["data_origin"] == "Autoware official public materials"
+    assert "universe planning releases" in workspace["corpus_scope"].casefold()
+    assert "community chinese translation" in workspace["corpus_scope"].casefold()
+    assert "documentation main" in workspace["corpus_scope"].casefold()
+    assert "community Chinese translation snapshot" in workspace["data_origin"]
     assert health["workspace"] == "Autoware"
+    assert health["build_revision"] == "unknown" or re.fullmatch(r"[0-9a-f]{40}", health["build_revision"])
+    assert health["corpus_fingerprint"]["fingerprint_sha256"] != "unknown"
+    assert re.fullmatch(r"[0-9a-f]{64}", health["retrieval_config_fingerprint"])
+    assert workspace["build_revision"] == health["build_revision"]
+    assert workspace["evaluation_fingerprint"] == health["evaluation_fingerprint"]
     assert "DolphinScheduler" not in json.dumps(workspace)
 
 
@@ -82,12 +89,85 @@ def test_autoware_public_deployment_uses_benchmarked_image_policy_and_current_re
 
     assert health["runtime_retrieval_policy"] == "bm25_figure_ocr"
     assert health["approved_image_chunk_count"] == 2
-    assert workspace["retrieval_evaluation_status"] == "autoware_retrieval_v3_validated"
-    assert workspace["current_version"] == "0.52.0"
-    assert workspace["available_versions"] == ["0.52.0", "0.51.0"]
-    assert workspace["retrieval_evaluation"]["holdout"]["image_evidence_hits"] == "2/2"
+    assert workspace["retrieval_evaluation_status"] == "autoware_quality_v1_validated"
+    assert workspace["current_version"] == "latest"
+    assert workspace["available_versions"] == ["latest", "docs-main", "1.9.0", "0.52.0", "0.51.0"]
+    assert workspace["retrieval_evaluation"]["name"] == "autoware_quality_v1"
+    assert workspace["retrieval_evaluation"]["holdout"]["image_evidence_hits"] == "2/3"
+    assert 0 <= workspace["retrieval_evaluation"]["holdout"]["mrr_at_5"] <= 1
     assert response.status_code == 200
     assert any(row.get("figure_id") == "32682b345ea86e13" for row in response.json()["results"])
+
+
+def test_private_company_query_is_rejected_before_retrieval_or_generation(monkeypatch):
+    index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
+
+    def unexpected_search(*args, **kwargs):
+        raise AssertionError("out-of-scope query must not run retrieval")
+
+    monkeypatch.setattr(index, "search", unexpected_search)
+
+    class Generator:
+        provider = "deepseek"
+        model = "test-model"
+
+        def generate(self, **kwargs):
+            raise AssertionError("out-of-scope query must not call a model")
+
+    private_queries = [
+        "Can this public corpus show our company's Jira access-approval audit trail?",
+        "Who in our company approves Jira access requests?",
+        "Find our internal Jira approval workflow?",
+    ]
+    with TestClient(create_app(
+        index=index,
+        generator=Generator(),
+        retrieval_config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+    )) as client:
+        for private_query in private_queries:
+            search = client.post("/public/search", json={
+                "query": private_query, "version": "latest", "language": "en",
+            })
+            query = client.post("/public/query", json={
+                "query": private_query, "version": "latest", "language": "en",
+            })
+
+            assert search.status_code == 200
+            assert search.json()["status"] == "OUT_OF_SCOPE"
+            assert search.json()["results"] == []
+            assert query.status_code == 200
+            assert query.json()["status"] == "OUT_OF_SCOPE"
+            assert query.json()["evidence"] == []
+            assert query.json()["generation"]["failure_reason"] == "OUT_OF_SCOPE_PUBLIC_CORPUS"
+
+
+def test_request_id_reaches_generation_diagnostics_and_logs_never_include_question(caplog):
+    class Generator:
+        provider = "deepseek"
+        model = "test-model"
+
+        def generate(self, *, question, context):
+            raise GenerationProviderError("GENERATION_RATE_LIMITED")
+
+    request_id = "review-trace-2026-01"
+    private_prompt = "Autoware health-check endpoint SECRET-PROMPT-CANARY-7af1"
+    with caplog.at_level(logging.INFO, logger="src.public_server"):
+        with TestClient(create_app(
+            index=PublicKnowledgeIndex(root=AUTOWARE_CORPUS),
+            generator=Generator(),
+            retrieval_config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+        )) as client:
+            response = client.post(
+                "/public/query", json={
+                    "query": private_prompt, "version": "latest", "language": "en",
+                }, headers={"X-Request-ID": request_id},
+            )
+
+    assert response.headers["X-Request-ID"] == request_id
+    assert response.json()["generation"]["request_id"] == request_id
+    assert request_id in caplog.text
+    assert private_prompt not in caplog.text
+    assert "SECRET-PROMPT-CANARY-7af1" not in caplog.text
 
 
 def test_review_advice_accepts_reviewed_image_evidence_from_rag_search():
@@ -173,6 +253,40 @@ def test_autoware_evaluation_rechecks_benchmark_selection_gates(tmp_path, monkey
     assert public_api._validated_autoware_evaluation(runtime) is None
 
 
+def test_autoware_quality_v1_workspace_uses_current_frozen_report():
+    runtime = PublicRetrievalRuntime(
+        PublicKnowledgeIndex(root=AUTOWARE_CORPUS),
+        config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+    )
+
+    report = public_api._validated_autoware_quality_v1(runtime)
+
+    assert report is not None
+    assert report["name"] == "autoware_quality_v1"
+    assert report["case_count"] == 82
+    assert report["selection"]["selected_policy"] == "bm25_figure_ocr"
+
+
+def test_autoware_quality_v1_rejects_report_that_fails_holdout_gate(tmp_path, monkeypatch):
+    source_path = Path(__file__).resolve().parents[2] / "evaluation" / "autoware_quality_v1" / "results" / "benchmark.json"
+    report = json.loads(source_path.read_text(encoding="utf-8"))
+    report["splits"]["holdout"]["bm25_figure_ocr"]["image_evidence_hit_at_5"] = 0.0
+    report_path = tmp_path / "results" / "benchmark.json"
+    report_path.parent.mkdir(parents=True)
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    monkeypatch.setattr(public_api, "_AUTOWARE_QUALITY_V1_ROOT", tmp_path, raising=False)
+    monkeypatch.setattr(
+        public_api, "_AUTOWARE_QUALITY_V1_BENCHMARK_SHA256",
+        public_api._portable_text_sha256(report_path), raising=False,
+    )
+    runtime = PublicRetrievalRuntime(
+        PublicKnowledgeIndex(root=AUTOWARE_CORPUS),
+        config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
+    )
+
+    assert public_api._validated_autoware_quality_v1(runtime) is None
+
+
 def test_public_server_selects_manifest_corpus_and_runtime_config_from_environment(monkeypatch):
     monkeypatch.setenv("RAG_PUBLIC_CORPUS_ROOT", str(AUTOWARE_CORPUS))
     monkeypatch.setenv(
@@ -184,7 +298,7 @@ def test_public_server_selects_manifest_corpus_and_runtime_config_from_environme
         workspace = client.get("/public/workspace").json()
 
     assert health["workspace"] == workspace["workspace"] == "Autoware"
-    assert workspace["current_version"] == "0.52.0"
+    assert workspace["current_version"] == "latest"
 
 
 def test_public_workspace_and_review_support_manifests_without_declared_version_list():

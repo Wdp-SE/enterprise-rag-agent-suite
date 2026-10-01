@@ -111,6 +111,9 @@ def test_natural_language_review_searches_current_corpus_before_grounded_advice(
     assert len(result["retrieval_trace"]["queries"]) <= 4
     assert result["review_advice"]["status"] == "OK"
     assert result["review_advice"]["review"]["review_status"] == "REQUIRES_HUMAN_REVIEW"
+    assert result["stage_status"] == {
+        "planning": "OK", "retrieval": "OK", "generation": "OK",
+    }
     assert result["impacts"][0]["reason"] == "该章节解释当前参数优先级。"
     assert result["impacts"][0]["suggested_action"] == "检查示例和相关版本说明是否同步。"
     cited = result["review_advice"]["sources"][0]["chunk_id"]
@@ -283,7 +286,11 @@ def test_no_retrieval_match_reports_gap_and_skips_model():
     assert result["retrieval_trace"]["queries"][0]["status"] == "no_retrieval_match"
     assert result["retrieval_trace"]["uncovered_queries"] == ["核对未收录的恢复策略"]
     assert "核对未收录的恢复策略" in result["evidence_gaps"][0]
-    assert result["evidence_gap_details"][0]["gap_type"] == "NO_MATCH"
+    assert result["evidence_gap_details"][0]["gap_type"] == "NO_REQUIRED_SOURCE"
+    assert result["evidence_gap_details"][0]["legacy_gap_code"] == "NO_MATCH"
+    assert result["evidence_gap_details"][0]["missing_source_type"]
+    assert result["evidence_gap_details"][0]["expected_version"] == "3.4.3"
+    assert result["evidence_gap_details"][0]["suggested_query"] == "核对未收录的恢复策略"
     assert result["evidence_gap_details"][0]["requires_human_review"] is True
     assert [row[0] for row in gateway.calls] == ["search"]
 
@@ -392,7 +399,8 @@ def test_natural_language_review_keeps_model_gaps_when_it_abstains():
     assert result["review_advice"]["sources"] == []
     assert result["review_advice"]["review"]["impact_candidates"] == []
     assert result["review_advice"]["review"]["version_ambiguities"] == ["尚未核对历史版本。"]
-    assert result["evidence_gaps"] == ["缺少下游节点恢复行为说明。"]
+    assert result["evidence_gaps"] == ["缺少下游节点恢复行为说明。", "尚未核对历史版本。"]
+    assert any(row["gap_type"] == "VERSION_AMBIGUITY" for row in result["evidence_gap_details"])
     assert result["impacts"] == []
     assert result["retrieved_results"]
     assert result["retrieval_trace"]["model_status"] == "ABSTAINED"
@@ -498,3 +506,192 @@ def test_rejects_history_unknown_source_and_unchanged_content():
         PublicReviewAgent(gateway).analyze({**selected, "source_url": "https://example.com"}, "new")
     with pytest.raises(ValueError, match="当前"):
         PublicReviewAgent(gateway).analyze({**selected, "version": "3.4.2"}, "new")
+
+
+def test_invalid_model_citation_is_removed_without_discarding_valid_candidates():
+    gateway = Gateway()
+    evidence = gateway.search("调整参数", version="3.4.3", language="zh_preferred")["results"][0]
+    gateway.review_advice = lambda *_args: {
+        "status": "OK", "answer": "请核对引用证据。", "sources": [evidence],
+        "review": {
+            "change_interpretation": "核对参数行为。",
+            "impact_candidates": [
+                {"evidence_chunk_id": evidence["chunk_id"], "reason": "有效来源。", "suggested_action": "对照原文。"},
+                {"evidence_chunk_id": "invented-chunk", "reason": "不存在来源。", "suggested_action": "不要直接采纳。"},
+            ],
+            "evidence_gaps": [], "version_ambiguities": [],
+            "reviewer_actions": ["人工核对。"], "review_status": "REQUIRES_HUMAN_REVIEW",
+        },
+    }
+
+    result = PublicReviewAgent(gateway).analyze_request("调整参数")
+
+    assert result["review_advice"]["status"] == "OK"
+    assert [row["evidence"]["chunk_id"] for row in result["impacts"]] == [evidence["chunk_id"]]
+    assert [row["evidence_chunk_id"] for row in result["review_advice"]["review"]["impact_candidates"]] == [evidence["chunk_id"]]
+    invalid = next(row for row in result["evidence_gap_details"] if row["gap_type"] == "INVALID_CITATION")
+    assert invalid["missing_source_type"] == "本次检索证据中的有效引用 ID"
+    assert "invented-chunk" not in invalid["message"]
+
+
+def test_unverified_translation_relation_is_a_review_gap_not_a_drift_conclusion():
+    gateway = Gateway()
+    source = next(
+        row for row in CHUNKS
+        if row["document_key"] == "guide/parameter/priority"
+        and row["language"] == "zh" and row["version"] == "3.4.3"
+    )
+    source_id = source["document_id"]
+    target_id = source_id.replace(":zh:", ":en:")
+    candidate = {
+        **source,
+        "document_relationships": [{
+            "relation_type": "translation_of", "verification_status": "candidate",
+            "source_document_id": source_id, "target_document_id": target_id,
+        }],
+    }
+    gateway.search = lambda *_args, **_kwargs: {"results": [candidate], "retrieval_policy": "bm25"}
+
+    result = PublicReviewAgent(gateway).analyze_request("核对参数优先级变更是否需要同步")
+
+    gap = next(row for row in result["evidence_gap_details"] if row["gap_type"] == "UNVERIFIED_TRANSLATION")
+    assert gap["expected_version"] == "3.4.3"
+    assert target_id in gap["suggested_query"]
+    assert "对应关系待核验" in gap["description"]
+    assert not any(row["gap_type"] == "LANGUAGE_DRIFT" for row in result["evidence_gap_details"])
+
+
+def test_latest_composite_accepts_only_declared_component_versions_and_repositories():
+    official = {
+        "chunk_id": "docs-main:en:planning/example:1",
+        "document_id": "docs-main:en:planning/example", "document_key": "planning/example",
+        "version": "docs-main", "language": "en", "locale": "en-US",
+        "heading": "Planning example", "content": "Official documentation evidence.",
+        "retrieval_score": 3.0, "repository": "autowarefoundation/autoware-documentation",
+        "commit": "a" * 40,
+        "source_url": "https://github.com/autowarefoundation/autoware-documentation/blob/" + "a" * 40 + "/planning/example.md",
+    }
+    community = {
+        **official,
+        "chunk_id": "docs-main:zh:planning/example:1",
+        "document_id": "docs-main:zh:planning/example", "language": "zh", "locale": "zh-CN",
+        "content": "社区中文译本证据。", "repository": "tomato-ros/autoware-documentation-cn",
+        "source_type": "community_translation", "commit": "b" * 40,
+        "source_url": "https://github.com/tomato-ros/autoware-documentation-cn/blob/" + "b" * 40 + "/planning/example.md",
+        "document_relationships": [{
+            "relation_type": "translation_of", "verification_status": "candidate",
+            "source_document_id": "docs-main:zh:planning/example",
+            "target_document_id": "docs-main:en:planning/example",
+        }],
+    }
+    historical = {**official, "chunk_id": "0.51.0:en:planning/example:1", "version": "0.51.0"}
+
+    class CompositeGateway(Gateway):
+        def workspace(self):
+            return {
+                "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
+                "repositories": [
+                    "autowarefoundation/autoware-documentation",
+                    "autowarefoundation/autoware_universe",
+                    "tomato-ros/autoware-documentation-cn",
+                ],
+                "current_version": "latest", "available_versions": ["latest", "docs-main", "0.52.0", "0.51.0"],
+                "version_scopes": {"latest": {"versions": ["docs-main", "0.52.0"]}},
+            }
+
+        def search(self, question, *, version, language, top_k=5):
+            self.calls.append(("search", version, language, top_k))
+            return {"retrieval_policy": "bm25_figure_ocr", "results": [official, community, historical]}
+
+        def review_advice_for_version(self, summary, evidence_chunk_ids, *, version):
+            self.calls.append(("review_advice_for_version", version, evidence_chunk_ids))
+            return {
+                "status": "ABSTAINED", "answer": "N/A", "sources": [],
+                "review": {
+                    "change_interpretation": "需人工核查。", "impact_candidates": [],
+                    "evidence_gaps": [], "version_ambiguities": [], "reviewer_actions": [],
+                    "review_status": "REQUIRES_HUMAN_REVIEW",
+                },
+            }
+
+    gateway = CompositeGateway()
+    result = PublicReviewAgent(gateway).analyze_request("Check the planning changes in the current release")
+
+    assert {row["version"] for row in result["retrieved_results"]} == {"docs-main"}
+    assert {row["repository"] for row in result["retrieved_results"]} == {
+        "autowarefoundation/autoware-documentation", "tomato-ros/autoware-documentation-cn",
+    }
+    assert not any(row["version"] == "0.51.0" for row in result["retrieved_results"])
+    assert gateway.calls[-1][1] == "latest"
+    assert any(row["gap_type"] == "UNVERIFIED_TRANSLATION" for row in result["evidence_gap_details"])
+
+
+def test_community_translation_without_registry_row_is_not_claimed_as_aligned():
+    gateway = Gateway()
+    source = next(
+        row for row in CHUNKS
+        if row["document_key"] == "guide/parameter/priority"
+        and row["language"] == "zh" and row["version"] == "3.4.3"
+    )
+    community_translation = {
+        **source, "source_type": "community_translation", "document_relationships": [],
+        "repository": "community/docs-zh",
+        "source_url": "https://github.com/community/docs-zh/blob/" + "c" * 40 + "/parameter.md",
+        "commit": "c" * 40,
+    }
+    gateway.workspace = lambda: {
+        "workspace": "Autoware", "repository": "apache/dolphinscheduler",
+        "repositories": ["apache/dolphinscheduler", "community/docs-zh"],
+        "current_version": "3.4.3", "available_versions": ["3.4.3"],
+    }
+    gateway.search = lambda *_args, **_kwargs: {"results": [community_translation]}
+
+    result = PublicReviewAgent(gateway).analyze_request("Review this change against the current Chinese guide")
+
+    gap = next(row for row in result["evidence_gap_details"] if row["gap_type"] == "UNVERIFIED_TRANSLATION")
+    assert "尚无经人工核实的英文对应关系" in gap["description"]
+    assert "内容同步或漂移" in gap["description"]
+    assert "对应英文官方资料" in gap["suggested_query"]
+
+
+def test_exact_review_reports_search_failure_instead_of_a_false_no_match():
+    gateway = Gateway()
+    selected = next(
+        row for row in CHUNKS
+        if row["document_key"] == "guide/parameter/priority"
+        and row["language"] == "zh" and row["version"] == "3.4.3"
+    )
+    gateway.search = lambda *_args, **_kwargs: (_ for _ in ()).throw(ConnectionError("offline"))
+
+    result = PublicReviewAgent(gateway).analyze(selected, selected["content"] + " proposed change")
+
+    assert result["stage_status"]["retrieval"] == "FAILED"
+    assert result["retrieval_trace"]["queries"][0]["status"] == "search_unavailable"
+    assert result["evidence_gap_details"][0]["gap_type"] == "RETRIEVAL_FAILED"
+    assert "未完成" in result["evidence_gap_details"][0]["description"]
+
+
+def test_stage_status_distinguishes_retrieval_empty_failure_and_generation_failure():
+    no_hits = Gateway()
+    no_hits.search = lambda *_args, **_kwargs: {"results": []}
+    no_evidence_result = PublicReviewAgent(no_hits).analyze_request("未收录参数行为")
+    assert no_evidence_result["stage_status"] == {
+        "planning": "OK", "retrieval": "EMPTY", "generation": "SKIPPED",
+    }
+
+    unavailable = Gateway()
+    unavailable.search = lambda *_args, **_kwargs: (_ for _ in ()).throw(ConnectionError())
+    unavailable_result = PublicReviewAgent(unavailable).analyze_request("检查参数行为")
+    assert unavailable_result["stage_status"] == {
+        "planning": "OK", "retrieval": "FAILED", "generation": "SKIPPED",
+    }
+
+    provider_failure = Gateway()
+    provider_failure.review_advice = lambda *_args: {
+        "status": "GENERATION_PROVIDER_TIMEOUT", "answer": "N/A", "sources": [],
+    }
+    failed_generation = PublicReviewAgent(provider_failure).analyze_request("检查参数行为")
+    assert failed_generation["stage_status"] == {
+        "planning": "OK", "retrieval": "OK", "generation": "FAILED",
+    }
+    assert failed_generation["retrieved_results"]

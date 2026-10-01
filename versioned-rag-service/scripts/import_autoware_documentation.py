@@ -410,6 +410,33 @@ def _repo_entries(selection: dict) -> tuple[dict, dict, dict]:
     return snapshots["docs-main"], snapshots["docs-1.9.0"], community
 
 
+def _pending_retrieval_selection(
+    runtime_config: dict, policy: dict, manifest_sha256: str,
+) -> tuple[dict, dict]:
+    """Invalidate promotion after a corpus rebuild and preserve BM25 as control."""
+    runtime_config = dict(runtime_config)
+    policy = dict(policy)
+    note = (
+        "The source snapshot or index changed; the previous quality-v1 report no longer applies. "
+        "Keep BM25 as the control until evaluation/autoware_quality_v1 is rerun."
+    )
+    runtime_config.update({
+        "default_policy": "bm25",
+        "selection_status": "pending_quality_v1_after_corpus_change",
+        "selection_evaluation": "evaluation/autoware_quality_v1/README.md",
+        "selection_note": note,
+        "benchmark_corpus_sha256": manifest_sha256,
+    })
+    policy.update({
+        "default_policy": "bm25",
+        "selection_status": "bm25_baseline_pending_quality_v1",
+        "benchmark_query_count": 0,
+        "selection_note": note,
+        "benchmark_corpus_sha256": manifest_sha256,
+    })
+    return runtime_config, policy
+
+
 def import_documentation(
     *, official_main_checkout: Path, official_release_checkout: Path,
     community_checkout: Path, output_root: Path = CORPUS_ROOT,
@@ -511,29 +538,24 @@ def import_documentation(
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     shutil.copyfile(SERVICE_ROOT / "config" / "public_retrieval_runtime.json", output_root / "retrieval_policy.json")
     runtime_config = json.loads((SERVICE_ROOT / "config" / "autoware_retrieval_policy.json").read_text(encoding="utf-8"))
-    runtime_config["default_policy"] = "bm25"
-    runtime_config["selection_status"] = "pending_bilingual_rebenchmark"
-    runtime_config["selection_evaluation"] = "evaluation/autoware_bilingual_v1/README.md"
-    runtime_config["selection_note"] = (
-        "The previous bm25_figure_ocr selection was validated only on the 26-source Autoware Universe "
-        "Planning corpus. This expanded multilingual documentation corpus retains BM25 as a baseline; "
-        "no candidate is presented as the best-performing policy until the bilingual benchmark is run."
+    policy = json.loads((output_root / "retrieval_policy.json").read_text(encoding="utf-8"))
+    runtime_config, policy = _pending_retrieval_selection(
+        runtime_config, policy, hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
     )
-    (output_root / "public_retrieval_runtime.json").write_text(
+    runtime_config_path = output_root / "public_retrieval_runtime.json"
+    runtime_config_path.write_text(
         json.dumps(runtime_config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n",
     )
-    policy = json.loads((output_root / "retrieval_policy.json").read_text(encoding="utf-8"))
-    policy["default_policy"] = "bm25"
-    policy["selection_status"] = "pending_bilingual_rebenchmark"
-    policy["benchmark_query_count"] = 0
-    policy["selection_note"] = (
-        "BM25 is retained as the transparent lexical baseline after corpus expansion. "
-        "No retrieval strategy is claimed as optimal until the bilingual Autoware evaluation is run."
-    )
-    policy["benchmark_corpus_sha256"] = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
     policy_path = output_root / "retrieval_policy.json"
     policy_path.write_text(json.dumps(policy, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     stats = build_index(output_root)
+    runtime_config["index_artifacts_sha256"] = {
+        name: hashlib.sha256((output_root / name).read_bytes()).hexdigest()
+        for name in ("chunks.json", "dense_vectors.npy")
+    }
+    runtime_config_path.write_text(
+        json.dumps(runtime_config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n",
+    )
 
     current_manifest_bytes = manifest_path.read_bytes()
     inventory = preserve_verified_figure_evidence(
