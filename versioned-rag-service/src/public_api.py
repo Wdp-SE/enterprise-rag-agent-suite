@@ -1180,7 +1180,7 @@ async def query(payload: SearchRequest, request: Request) -> dict:
     try:
         hits = _positive_retrieval_hits(await asyncio.to_thread(
             index.search, _query_with_compound_aliases(payload.query, index),
-            top_k=5, version=payload.version, language=payload.language
+            top_k=payload.top_k, version=payload.version, language=payload.language
         ))
     except ValueError as exc:
         raise HTTPException(status_code=422, detail="INVALID_PUBLIC_SEARCH") from exc

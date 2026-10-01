@@ -230,6 +230,26 @@ def _request(call, *, fallback: str):
     return None
 
 
+def _scroll_to_results() -> None:
+    """Move the Streamlit page to the knowledge results after a request."""
+    script = """
+    <script>
+    (() => {
+      const scroll = () => {
+        const target = document.getElementById("knowledge-results-anchor");
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+      requestAnimationFrame(() => requestAnimationFrame(scroll));
+    })();
+    </script>
+    """
+    html_renderer = getattr(st, "html", None)
+    if html_renderer is not None:
+        html_renderer(script, unsafe_allow_javascript=True)
+    else:
+        st.components.v1.html(script, height=1, scrolling=False)
+
+
 def _remember_document_titles(docs: list[dict]) -> None:
     titles = st.session_state.setdefault("official_document_titles", {})
     titles.update({row["document_id"]: row.get("title") or row.get("document_key", "")
@@ -645,23 +665,47 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                             disabled=not ready,
                             use_container_width=True)
     with search_col:
+        top_k = st.slider(
+            "证据条数（Top-K）", min_value=1, max_value=10, value=5,
+            key="official_top_k",
+            help="控制本次检索以及回答生成可使用的证据条数。版本和语言范围仍由服务端严格过滤。",
+        )
         with st.expander("只想核对原文？"):
             st.caption("只显示检索原文，不生成回答。")
             search_now = st.button("仅查看检索原文", key="knowledge_search",
                                    disabled=not ready, use_container_width=True)
     st.caption("应用不设固定生成次数上限；费用和限流以服务商规则为准。")
+    scroll_to_results = ask_now or search_now
+    if scroll_to_results:
+        st.markdown('<div id="knowledge-results-anchor"></div>', unsafe_allow_html=True)
     if ask_now:
         with st.spinner("正在检索资料并核对引用……"):
-            payload = _request(lambda: client.query_official(submitted_question, version=version, language=language), fallback="知识问答暂不可用。")
+            payload = _request(
+                lambda: client.query_official(
+                    submitted_question, version=version, language=language, top_k=top_k,
+                ),
+                fallback="知识问答暂不可用。",
+            )
         if payload:
             st.session_state["official_result"] = ("query", submitted_question, version, language, payload)
+            st.session_state["official_result_top_k"] = top_k
     if search_now:
         with st.spinner("正在检索资料……"):
-            payload = _request(lambda: client.search(submitted_question, version=version, language=language), fallback="资料检索暂不可用。")
+            payload = _request(
+                lambda: client.search(
+                    submitted_question, version=version, language=language, top_k=top_k,
+                ),
+                fallback="资料检索暂不可用。",
+            )
         if payload:
             st.session_state["official_result"] = ("search", submitted_question, version, language, payload)
+            st.session_state["official_result_top_k"] = top_k
     result = st.session_state.get("official_result")
-    if result and result[1:4] == (submitted_question, version, language):
+    if (
+        result
+        and result[1:4] == (submitted_question, version, language)
+        and st.session_state.get("official_result_top_k", 5) == top_k
+    ):
         if ready and "official_document_titles" not in st.session_state:
             docs = _request(client.documents, fallback="来源目录暂不可用，仍可查看原文链接。")
             if docs is not None:
@@ -764,7 +808,10 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
             _consistency(payload.get("consistency_notes", []))
             _evidence(payload.get("results", []), heading="检索到的资料")
         with st.expander("本次检索技术详情"):
-            st.write(f"检索范围：{version} · 语言：{language} · 默认策略：{payload.get('retrieval_policy', '由服务配置')}")
+            st.write(
+                f"检索范围：{version} · 语言：{language} · Top-K：{top_k} · "
+                f"默认策略：{payload.get('retrieval_policy', '由服务配置')}"
+            )
             st.caption("候选排序分数只用于同一检索策略内的排序，不代表事实正确性。")
             generation = payload.get("generation") if mode == "query" else None
             if isinstance(generation, dict):
@@ -781,6 +828,8 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                 )
     if not ready:
         st.info("知识服务可能正在冷启动；资料范围会在连接恢复后显示，请稍后刷新。")
+    if scroll_to_results:
+        _scroll_to_results()
 
 
 def _analyze_hypothetical(client: PublicKnowledgeClient, selected: dict, proposed: str) -> dict:

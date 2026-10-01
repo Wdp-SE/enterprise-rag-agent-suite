@@ -130,6 +130,23 @@ def test_public_generation_timeout_is_never_retried():
     assert len(session.calls) == 1
 
 
+def test_public_generation_forwards_selected_top_k():
+    session = Session([Response({"status": "GENERATION_NOT_CONFIGURED"})])
+    client = PublicKnowledgeClient("http://localhost:8765", session=session)
+
+    client.query_official(
+        "What is the API server health-check endpoint?",
+        version="latest", language="all", top_k=8,
+    )
+
+    assert session.calls[0][3]["json"] == {
+        "query": "What is the API server health-check endpoint?",
+        "version": "latest",
+        "language": "all",
+        "top_k": 8,
+    }
+
+
 def test_review_advice_posts_selected_evidence_once_without_retry():
     session = Session([Response({"status": "OK", "answer": "advice", "sources": []})])
     client = PublicKnowledgeClient(

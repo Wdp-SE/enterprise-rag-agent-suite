@@ -1060,6 +1060,61 @@ def test_rag_actions_alerts_and_typography_use_neutral_accessible_styles(monkeyp
     assert "font-size:clamp(1.14rem,1.06rem + .2vw,1.3rem)!important;" in PUBLIC_CSS
 
 
+def test_knowledge_top_k_applies_to_generation_and_raw_search_and_scrolls_to_results(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+    import public_workbench
+
+    calls = []
+    scrolled = []
+
+    def query_official(self, question, *, version, language, top_k=5):
+        calls.append(("query", question, version, language, top_k))
+        return {
+            "answer": "上游参数优先于启动参数。", "sources": [dict(CHUNK)],
+            "claims": [{"text": "上游参数优先于启动参数。", "source_indexes": [1]}],
+            "evidence": [dict(CHUNK)], "status": "OK", "consistency_notes": [],
+        }
+
+    def search(self, question, *, version, language, top_k=5):
+        calls.append(("search", question, version, language, top_k))
+        return {
+            "query": question, "results": [dict(CHUNK)], "retrieval_policy": "bm25",
+            "consistency_notes": [],
+        }
+
+    monkeypatch.setattr(PublicKnowledgeClient, "query_official", query_official)
+    monkeypatch.setattr(PublicKnowledgeClient, "search", search)
+    monkeypatch.setattr(public_workbench, "_scroll_to_results", lambda: scrolled.append(True))
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+
+    app.slider(key="official_top_k").set_value(8).run()
+    next(button for button in app.button if button.label == "生成带引用回答").click().run()
+    assert calls[-1][0] == "query" and calls[-1][-1] == 8
+    assert scrolled == [True]
+
+    next(button for button in app.button if button.label == "仅查看检索原文").click().run()
+    assert calls[-1][0] == "search" and calls[-1][-1] == 8
+    assert scrolled == [True, True]
+
+
+def test_scroll_to_results_uses_same_document_html_script(monkeypatch):
+    import public_workbench
+
+    rendered = []
+    monkeypatch.setattr(
+        public_workbench.st, "html",
+        lambda body, *, unsafe_allow_javascript=False: rendered.append((body, unsafe_allow_javascript)),
+    )
+
+    public_workbench._scroll_to_results()
+
+    assert rendered and rendered[0][1] is True
+    assert 'getElementById("knowledge-results-anchor")' in rendered[0][0]
+    assert "scrollIntoView" in rendered[0][0]
+
+
 def test_streamlit_alert_inner_layers_cannot_restore_blue_backgrounds():
     from components.public_theme import PUBLIC_CSS
 
@@ -1096,6 +1151,16 @@ def test_workbench_theme_keeps_neutral_base_and_equal_home_cards():
     assert "[class*=\"st-key-source_card_\"]" in PUBLIC_CSS
     assert ".st-key-generated_answer {" in PUBLIC_CSS
     assert "border-left:3px solid var(--ink)!important;border-radius:0!important;" in PUBLIC_CSS
+
+
+def test_public_workbench_theme_sets_black_primary_accent():
+    import tomllib
+
+    config_path = APP.parent / ".streamlit" / "config.toml"
+    with config_path.open("rb") as config_file:
+        config = tomllib.load(config_file)
+
+    assert config["theme"]["primaryColor"] == "#171717"
 
 
 def test_home_module_action_clearance_and_readable_text_scale_are_preserved():

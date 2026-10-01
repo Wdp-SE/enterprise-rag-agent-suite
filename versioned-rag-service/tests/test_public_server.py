@@ -586,6 +586,24 @@ def test_public_query_without_generator_returns_evidence_not_fake_answer():
         assert payload["evidence"]
 
 
+def test_public_query_retrieves_the_requested_top_k_before_generation():
+    class AbstainingGenerator:
+        provider = "deepseek"
+        model = "test-model"
+
+        def generate(self, *, question, context):
+            return {"claims": [], "relevant_sources": []}
+
+    with TestClient(create_app(index=PublicKnowledgeIndex(), generator=AbstainingGenerator())) as client:
+        response = client.post("/public/query", json={"query": QUESTION, "top_k": 2})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "ABSTAINED"
+    assert len(payload["evidence"]) == 2
+    assert payload["generation"]["candidate_count"] == 2
+
+
 def test_api_server_health_example_retrieves_the_exact_endpoint_evidence():
     index = PublicKnowledgeIndex()
     hits = index.search(

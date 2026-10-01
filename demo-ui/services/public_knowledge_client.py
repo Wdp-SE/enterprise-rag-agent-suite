@@ -21,10 +21,12 @@ class PublicKnowledgeClient(RAGClient):
             json={"query": question, "version": version, "language": language, "top_k": top_k},
         )
 
-    def query_official(self, question: str, *, version: str, language: str) -> dict:
+    def query_official(
+        self, question: str, *, version: str, language: str, top_k: int = 5,
+    ) -> dict:
         return self._request(
             "POST", "/public/query", retry_limit=0, request_timeout=max(60.0, self.timeout),
-            json={"query": question, "version": version, "language": language},
+            json={"query": question, "version": version, "language": language, "top_k": top_k},
         )
 
     def review_advice(
