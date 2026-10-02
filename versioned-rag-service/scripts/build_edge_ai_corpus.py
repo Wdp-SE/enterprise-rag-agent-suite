@@ -94,7 +94,22 @@ def build_manifest(import_manifest: dict, selection: dict | None = None) -> dict
         "schema_version": 1,
         "workspace_id": "edge_ai_device",
         "workspace": "reComputer Industrial / Jetson 边缘 AI 工程知识",
-        "domain_profile": "edge_ai_device",
+        "domain_profile": {
+            "id": "edge_ai_device",
+            "name": "reComputer Industrial / Jetson 边缘 AI 工程知识",
+            "business_scenario": "面向设备研发、集成和运维人员，按固定中文资料快照与设备/软件范围查询工程资料；变更审查 Agent 只整理有来源支持的影响候选和证据缺口，由工程师确认。",
+            "source_scope": "Seeed Studio Wiki 的中文公开文档快照，不代表内部 BOM、企业工单、设备实测结果或产品认证。",
+            "change_types": [
+                {"id": "software_baseline", "label": "JetPack / L4T / BSP 软件基线变更", "document_families": ["software_baseline", "firmware", "bsp_build", "software_update", "kernel_upgrade"]},
+                {"id": "device_configuration", "label": "设备型号、模组或接口配置变更", "document_families": ["support_matrix", "hardware_software_baseline", "hardware_interface"]},
+                {"id": "deployment_operations", "label": "边缘 AI 部署、升级或运维变更", "document_families": ["ai_deployment", "ai_deployment_validation", "ota_upgrade", "backup_restore", "diagnostics"]},
+            ],
+            "example_queries": [
+                "J4012 在 JetPack 7.2 下部署工业视觉需要检查哪些环境？",
+                "reComputer Industrial J4011 升级 JetPack 6.2 前应核对哪些刷写和热设计注意事项？",
+                "J30/J40 设备如何获取系统日志并用于故障排查？",
+            ],
+        },
         "corpus_scope": "Seeed reComputer Industrial / Jetson 中文公开工程资料；覆盖设备、刷写、软件基线、部署、诊断与验证。",
         "repository": "Seeed-Studio/wiki-documents",
         "source_snapshot": {
@@ -112,6 +127,7 @@ def build_manifest(import_manifest: dict, selection: dict | None = None) -> dict
         "carrier_boards": _unique_values(rows, "carrier_board"),
         "software_baselines": _unique_values(rows, "software_baselines"),
         "languages": ["zh"],
+        "retrieval_evaluation_status": "new_corpus_pending_rebenchmark",
         "sources": rows,
     }
 

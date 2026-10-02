@@ -116,6 +116,14 @@ class PublicRetrievalRuntime:
                 "source_type": source["source_type"],
                 "repository": source.get("repository"),
                 "document_path": source.get("document_path"),
+                **{
+                    field: source[field]
+                    for field in (
+                        "device_model", "module_sku", "carrier_board", "software_baselines",
+                        "source_snapshot", "source_id", "license", "license_status", "attribution",
+                    )
+                    if source.get(field)
+                },
                 "retrieval_policy": "bm25_figure_ocr",
             })
         return rows
@@ -133,7 +141,11 @@ class PublicRetrievalRuntime:
         """Expose the base index's exact/composite scope resolver to API consumers."""
         return self.base_index._version_members(version)
 
-    def _image_scope(self, *, version: str, language: str) -> list[dict]:
+    def _image_scope(
+        self, *, version: str, language: str, device_model: str | None = None,
+        module_sku: str | None = None, carrier_board: str | None = None,
+        software_baseline: str | None = None,
+    ) -> list[dict]:
         try:
             version_members = self.base_index._version_members(version)
         except ValueError as exc:
@@ -144,6 +156,20 @@ class PublicRetrievalRuntime:
             row for row in self._images
             if version_members is None or row["version"] in version_members
         ]
+        filters = {
+            "device_model": device_model,
+            "module_sku": module_sku,
+            "carrier_board": carrier_board,
+            "software_baselines": software_baseline,
+        }
+        for field, expected in filters.items():
+            if expected is None:
+                continue
+            eligible = [
+                row for row in eligible
+                if row.get(field) == "*" or isinstance(row.get(field), list)
+                and ("*" in row[field] or expected in row[field])
+            ]
         if language in ("zh", "en"):
             return [row for row in eligible if row["language"] == language]
         # One citation per screenshot; zh_preferred and all both avoid duplicate OCR rows.
@@ -155,11 +181,19 @@ class PublicRetrievalRuntime:
                 chosen[key] = row
         return list(chosen.values())
 
-    def _search_images(self, query: str, *, top_k: int, version: str, language: str) -> list[dict]:
+    def _search_images(
+        self, query: str, *, top_k: int, version: str, language: str,
+        device_model: str | None = None, module_sku: str | None = None,
+        carrier_board: str | None = None, software_baseline: str | None = None,
+    ) -> list[dict]:
         query_terms = tokens(query)
         if not query_terms:
             return []
-        rows = self._image_scope(version=version, language=language)
+        rows = self._image_scope(
+            version=version, language=language, device_model=device_model,
+            module_sku=module_sku, carrier_board=carrier_board,
+            software_baseline=software_baseline,
+        )
         if not rows:
             return []
         term_rows = [Counter(tokens(row["heading"] + " " + row["document_key"] + " " + row["content"])) for row in rows]
@@ -225,17 +259,25 @@ class PublicRetrievalRuntime:
         return merged
 
     def search(self, query: str, *, top_k: int = 5, version: str = "current",
-               language: str = "zh_preferred", policy: str | None = None) -> list[dict]:
+               language: str = "zh_preferred", policy: str | None = None,
+               device_model: str | None = None, module_sku: str | None = None,
+               carrier_board: str | None = None, software_baseline: str | None = None) -> list[dict]:
         selected = policy or self.runtime_policy
         if selected not in self.config["allowed_policies"]:
             raise ValueError("unsupported retrieval runtime policy")
+        facet_kwargs = {
+            "device_model": device_model,
+            "module_sku": module_sku,
+            "carrier_board": carrier_board,
+            "software_baseline": software_baseline,
+        }
         # Delegate validation for query length, top_k, version and language to the pinned index.
         if selected == "bm25":
             self.last_retrieval_call_count = 1
-            return self.base_index.search(query, top_k=top_k, version=version, language=language, policy="bm25")
+            return self.base_index.search(query, top_k=top_k, version=version, language=language, policy="bm25", **facet_kwargs)
         if selected == "hybrid":
             self.last_retrieval_call_count = 1
-            return self.base_index.search(query, top_k=top_k, version=version, language=language, policy="hybrid")
+            return self.base_index.search(query, top_k=top_k, version=version, language=language, policy="hybrid", **facet_kwargs)
 
         use_facets = selected in ("bm25_faceted_rrf", "bm25_faceted_figure_ocr")
         use_images = selected in ("bm25_figure_ocr", "bm25_faceted_figure_ocr")
@@ -248,11 +290,15 @@ class PublicRetrievalRuntime:
         self.last_retrieval_call_count = 0
         for facet in facets:
             document_rankings.append(self.base_index.search(
-                facet, top_k=top_k, version=version, language=language, policy="bm25",
+                facet, top_k=top_k, version=version, language=language, policy="bm25", **facet_kwargs,
             ))
             self.last_retrieval_call_count += 1
             if use_images:
-                image_hits.extend(self._search_images(facet, top_k=top_k, version=version, language=language))
+                image_hits.extend(self._search_images(
+                    facet, top_k=top_k, version=version, language=language,
+                    device_model=device_model, module_sku=module_sku,
+                    carrier_board=carrier_board, software_baseline=software_baseline,
+                ))
                 self.last_retrieval_call_count += 1
         if len(document_rankings) == 1:
             result = document_rankings[0]

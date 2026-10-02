@@ -103,13 +103,12 @@ def _matches_facets(chunk: dict, filters: dict[str, str | None]) -> bool:
 ```
 - [x] **Step 4: 建新语料与索引**：新增可重复 `scripts/build_edge_ai_corpus.py`，只接受与来源 allowlist 完全匹配的 18 份中文资料，生成 manifest、394 个 chunks、向量、BM25 基线策略及运行时配置；新语料快照 `wiki-1eadc6584f96`，策略状态为待重测。
 - [x] **Step 5: 运行知识服务测试**：`python -m pytest tests/test_edge_ai_public_knowledge.py tests/test_public_knowledge.py -q` → 27 passed；实际 corpus build 成功，J4012 + JetPack 7.2 与 J4012 + JetPack 6.x 的检索 smoke 命中对应领域资料。
-- [ ] **Step 6: Commit 新语料索引边界**：仅提交新领域 manifest、许可通过的语料资产、策略配置、服务实现和相应测试。
+- [x] **Step 6: Commit 新语料索引边界**：仅提交新领域 manifest、许可通过的语料资产、策略配置、服务实现和相应测试；commit `3fb3015 feat: build edge AI Chinese knowledge index`。
 
 ### Task 3: 公开 API 与客户端支持设备配置
 
 **Files:**
 - Modify: `versioned-rag-service/src/public_api.py`
-- Modify: `versioned-rag-service/src/public_server.py`
 - Modify: `demo-ui/services/public_knowledge_client.py`
 - Modify: `versioned-rag-service/tests/test_public_server.py`
 - Create: `versioned-rag-service/tests/test_edge_ai_public_api.py`
@@ -118,9 +117,9 @@ def _matches_facets(chunk: dict, filters: dict[str, str | None]) -> bool:
 - `SearchRequest` 新增与 Task 2 一致的四个可选 facet 字段；`POST /public/search`、`POST /public/query` 和 `/public/review-advice` 的内部检索都采用相同范围。
 - `/public/workspace` 返回 `workspace_id`、`domain_profile`、`snapshots`、`available_versions`、`hardware_models`、`module_skus`、`carrier_boards`、`software_baselines`、`languages` 与来源计数；评测字段只有在新语料/代码/策略/题集指纹一致时返回。
 
-- [ ] **Step 1: 写 API 合约测试**：断言有效设备筛选只返回匹配证据；未知型号或软件基线返回 HTTP 422 和稳定错误码；缺失可判定结论的必要配置时返回候选和缺口；健康与 workspace 只报告 `edge_ai_device` profile；任何旧领域 corpus 注入都被拒绝。
-- [ ] **Step 2: 运行测试确认失败**：执行 `python -m pytest tests/test_edge_ai_public_api.py -q`，预期新 workspace 字段与请求过滤尚不存在。
-- [ ] **Step 3: 更新请求模型和路由**：增加请求 facet 字段并校验它们属于 manifest 声明的选项；将它们传入 index search、生成证据和审查建议；去掉只对 Autoware 禁止英文的硬编码，改用 manifest 声明的语言集合通用校验。
+- [x] **Step 1: 写 API 合约测试**：覆盖 edge workspace identity、来源/快照/profile、设备与软件硬过滤、未配置生成时仅回证据、拒绝未知型号/基线/英文检索，以及拒绝将其他设备的证据用于当前审查。
+- [x] **Step 2: 运行测试确认失败**：`python -m pytest tests/test_edge_ai_public_api.py -q` 首轮 4 failed，暴露旧 workspace `baseline_version` 假设、请求缺 facet 字段/语言过滤和审查证据范围校验缺失。
+- [x] **Step 3: 更新请求模型和路由**：Search、Query、ReviewAdvice 均接受四个 facet 并校验 manifest 选项；设备范围传入服务端检索和 RRF 子查询，审查端校验已提交证据确属请求设备/基线；edge workspace 只接受中文语料，旧 Autoware 兼容支路将在 Task 7 退役。
 
 ```python
 class SearchRequest(BaseModel):
@@ -134,8 +133,8 @@ class SearchRequest(BaseModel):
     carrier_board: str | None = None
     software_baseline: str | None = None
 ```
-- [ ] **Step 4: 更新 workspace 响应与客户端**：workspace 由 manifest/profile 产生，不含 Autoware 专属评测分支或旧语料 fallback；`PublicKnowledgeClient.search` 与 `query_official` 接受并序列化设备 facet。
-- [ ] **Step 5: 运行 API 回归**：执行 `python -m pytest tests/test_edge_ai_public_api.py tests/test_public_server.py -q`；旧域评测相关断言改为历史档案不向活动 workspace 暴露。
+- [x] **Step 4: 更新 workspace 响应与客户端**：workspace 从 edge manifest 返回领域 profile、快照、语言和各 facet 选项；client 支持序列化四类 facet，未填写的过滤字段省略。
+- [x] **Step 5: 运行 API 回归**：edge 合约 4 passed；既有 API 63 passed、runtime 12 passed、release smoke 5 passed；client 范围契约 10 passed。旧评测/兼容支路将在 Task 7 从活动代码移除。
 - [ ] **Step 6: Commit API 范围契约**：提交 API、客户端和对应测试。
 
 ### Task 4: 设备变更领域 Agent 与证据来源校验
