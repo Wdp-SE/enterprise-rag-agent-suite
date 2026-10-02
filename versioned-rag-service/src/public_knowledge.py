@@ -10,6 +10,7 @@ import time
 import unicodedata
 from collections import Counter
 from pathlib import Path
+from urllib.parse import urlparse
 
 import numpy as np
 
@@ -26,6 +27,10 @@ BM25_DIVERSITY_PREFIX = {
 }
 SUPPORTED_POLICIES = ("dense", "bm25", "bm25_fields", *BM25_DIVERSITY_PREFIX, "hybrid")
 BM25_FIELD_WEIGHTS = {"title": 3.0, "heading_path": 4.0, "body": 1.0}
+EDGE_AI_WORKSPACE_ID = "edge_ai_device"
+EDGE_AI_SOURCE_HOST = "wiki.seeedstudio.com"
+EDGE_AI_FACET_FIELDS = ("device_model", "module_sku", "carrier_board", "software_baselines")
+_SOFTWARE_HEADING_RE = re.compile(r"\bJetPack\s+\d+(?:\.\d+)*(?:\s*\([^)]*L4T[^)]*\))?", re.I)
 
 
 def tokens(text: str) -> list[str]:
@@ -100,8 +105,71 @@ def _document_title(text: str, fallback: str) -> str:
     return fallback
 
 
+def _validate_edge_ai_manifest(root: Path, manifest: dict) -> None:
+    """Reject drift from the pinned, Chinese-only public edge-AI workspace."""
+    if manifest.get("workspace_id") != EDGE_AI_WORKSPACE_ID:
+        raise ValueError("public edge-AI corpus workspace mismatch")
+    snapshot = manifest.get("source_snapshot")
+    if not isinstance(snapshot, dict):
+        raise ValueError("public edge-AI source snapshot is missing")
+    snapshot_version = snapshot.get("version")
+    commit = snapshot.get("commit")
+    if (
+        not isinstance(snapshot_version, str) or not snapshot_version
+        or not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit)
+        or manifest.get("current_version") != snapshot_version
+        or snapshot_version not in manifest.get("available_versions", [])
+        or manifest.get("repository") != snapshot.get("repository")
+    ):
+        raise ValueError("public edge-AI snapshot version is invalid")
+    for field in ("hardware_models", "module_skus", "carrier_boards", "software_baselines"):
+        values = manifest.get(field)
+        if not isinstance(values, list) or any(not isinstance(value, str) or not value.strip() for value in values):
+            raise ValueError(f"public edge-AI {field} must be a declared string list")
+    sources = manifest.get("sources")
+    if not isinstance(sources, list) or not sources:
+        raise ValueError("public edge-AI source list is empty")
+    root_resolved = Path(root).resolve()
+    for source in sources:
+        if not isinstance(source, dict):
+            raise ValueError("public edge-AI source record is invalid")
+        source_url = source.get("source_url")
+        parsed_url = urlparse(source_url) if isinstance(source_url, str) else None
+        if (
+            source.get("version") != snapshot_version
+            or source.get("source_snapshot") != snapshot_version
+            or source.get("language") != "zh"
+            or source.get("locale") != "zh-CN"
+            or source.get("repository") != snapshot.get("repository")
+            or source.get("commit") != commit
+            or source.get("license_status") != "redistributable"
+            or not isinstance(source.get("license"), str) or not source["license"].strip()
+            or not isinstance(source.get("attribution"), str) or not source["attribution"].strip()
+            or parsed_url is None or parsed_url.scheme != "https"
+            or parsed_url.hostname != EDGE_AI_SOURCE_HOST
+            or not parsed_url.path.startswith("/cn/")
+        ):
+            raise ValueError("public edge-AI corpus contains an unapproved source")
+        local_path = source.get("local_path")
+        if not isinstance(local_path, str) or not local_path.strip():
+            raise ValueError("public edge-AI source path is missing")
+        resolved_path = (root_resolved / local_path).resolve()
+        if not resolved_path.is_relative_to(root_resolved) or not resolved_path.is_file():
+            raise ValueError("public edge-AI source path is outside the pinned corpus")
+        for field in EDGE_AI_FACET_FIELDS:
+            values = source.get(field)
+            if not isinstance(values, list) or not values or any(
+                not isinstance(value, str) or not value.strip() for value in values
+            ):
+                raise ValueError(f"public edge-AI source {field} is invalid")
+        if hashlib.sha256(resolved_path.read_bytes()).hexdigest() != source.get("sha256"):
+            raise ValueError(f"public edge-AI source hash mismatch: {local_path}")
+
+
 def build_index(root: Path = ROOT) -> dict:
     manifest = json.loads((root / "corpus_manifest.json").read_text(encoding="utf-8"))
+    if manifest.get("workspace_id") == EDGE_AI_WORKSPACE_ID:
+        _validate_edge_ai_manifest(root, manifest)
     chunks = []
     for source in manifest["sources"]:
         raw = (root / source["local_path"]).read_bytes()
@@ -111,6 +179,18 @@ def build_index(root: Path = ROOT) -> dict:
         document_title = _document_title(body, source["document_key"])
         for number, (heading, heading_path, content) in enumerate(_parts(body), start=1):
             key = f"{source['version']}:{source['language']}:{source['document_key']}"
+            facet_metadata = {
+                field: source[field]
+                for field in EDGE_AI_FACET_FIELDS
+                if source.get(field)
+            }
+            if manifest.get("workspace_id") == EDGE_AI_WORKSPACE_ID:
+                declared_baselines = source["software_baselines"]
+                if declared_baselines == ["*"]:
+                    section_text = " ".join([*heading_path, heading])
+                    match = _SOFTWARE_HEADING_RE.search(section_text)
+                    if match:
+                        facet_metadata["software_baselines"] = [re.sub(r"\s+", " ", match.group(0)).strip()]
             chunks.append({
                 "chunk_id": f"{key}:{number}", "document_id": key,
                 "document_key": source["document_key"], "version": source["version"],
@@ -119,6 +199,16 @@ def build_index(root: Path = ROOT) -> dict:
                 "document_title": document_title, "heading": heading,
                 "heading_path": heading_path, "content": content,
                 "repository": source["repository"], "document_path": source["document_path"],
+                **facet_metadata,
+                **{
+                    field: source[field]
+                    for field in (
+                        "source_snapshot", "source_id", "license", "license_status",
+                        "attribution", "source_format", "document_family", "scope_note",
+                        "source_updated_at",
+                    )
+                    if source.get(field)
+                },
                 **{
                     field: source[field]
                     for field in (
@@ -158,6 +248,8 @@ class PublicKnowledgeIndex:
     def __init__(self, root: Path = ROOT):
         self.root = root
         self.manifest = json.loads((root / "corpus_manifest.json").read_text(encoding="utf-8"))
+        if self.manifest.get("workspace_id") == EDGE_AI_WORKSPACE_ID:
+            _validate_edge_ai_manifest(root, self.manifest)
         # Relationship integrity is independent from ordinary retrieval. An absent or
         # stale registry disables relationship claims, but leaves corpus search usable.
         self.document_relations = DocumentRelationIndex.from_corpus(root, self.manifest)
@@ -264,6 +356,8 @@ class PublicKnowledgeIndex:
     def search(
         self, query: str, *, top_k: int = 5, version: str = "current",
         language: str = "zh_preferred", policy: str | None = None,
+        device_model: str | None = None, module_sku: str | None = None,
+        carrier_board: str | None = None, software_baseline: str | None = None,
     ) -> list[dict]:
         if not query.strip() or len(query) > 4000 or not 1 <= top_k <= 20:
             raise ValueError("invalid search request")
@@ -273,6 +367,21 @@ class PublicKnowledgeIndex:
             raise
         if language not in ("zh_preferred", "all", "zh", "en"):
             raise ValueError("unsupported public corpus scope")
+        facet_filters = {
+            "device_model": device_model,
+            "module_sku": module_sku,
+            "carrier_board": carrier_board,
+            "software_baselines": software_baseline,
+        }
+        if self.manifest.get("workspace_id") == EDGE_AI_WORKSPACE_ID:
+            declared_values = {
+                "device_model": self.manifest["hardware_models"],
+                "module_sku": self.manifest["module_skus"],
+                "carrier_board": self.manifest["carrier_boards"],
+                "software_baselines": self.manifest["software_baselines"],
+            }
+            if any(value is not None and value not in declared_values[field] for field, value in facet_filters.items()):
+                raise ValueError("unsupported public device or software scope")
         policy = policy or self.policy.get("default_policy")
         if policy not in SUPPORTED_POLICIES:
             raise ValueError("unsupported retrieval policy")
@@ -283,6 +392,7 @@ class PublicKnowledgeIndex:
             i for i, chunk in enumerate(self.chunks)
             if (version_members is None or chunk["version"] in version_members)
             and (language not in ("zh", "en") or chunk["language"] == language)
+            and (self.manifest.get("workspace_id") != EDGE_AI_WORKSPACE_ID or _matches_facets(chunk, facet_filters))
         ]
         # Language preference is a candidate tie-break, not a hard filter.
         def ranked(scores: np.ndarray) -> list[int]:
@@ -330,6 +440,20 @@ class PublicKnowledgeIndex:
         for rank, i in enumerate(order[:top_k], start=1):
             result.append({**self.chunks[i], "rank": rank, "retrieval_score": float(score[i]), "retrieval_policy": policy})
         return result
+
+
+def _matches_facets(chunk: dict, filters: dict[str, str | None]) -> bool:
+    """Apply exact AND facets; '*' means generic guidance, not a compatibility claim."""
+    for field, expected in filters.items():
+        if expected is None:
+            continue
+        observed = chunk.get(field)
+        if isinstance(observed, list):
+            if "*" not in observed and expected not in observed:
+                return False
+        elif observed != "*" and observed != expected:
+            return False
+    return True
 
 
 def verified_consistency_notes(hits: list[dict]) -> list[dict]:

@@ -66,7 +66,7 @@ def validate_source_record(row: dict, *, source_root: Path) -> None:
         raise ValueError("source content hash mismatch")
 ```
 - [x] **Step 5: 运行来源导入测试**：导入器通过，18/18 来源许可与 SHA 校验为 redistributable；`python -m pytest tests/test_edge_ai_source_import.py -q` 19 passed。图片共 334 个引用从索引正文剔除，未声称 OCR 可检索。
-- [ ] **Step 6: Commit 来源与导入边界**：仅提交本任务文件及获许可的源快照。
+- [x] **Step 6: Commit 来源与导入边界**：仅提交本任务文件及获许可的源快照；commit `23810bd feat: import audited Chinese Jetson corpus`。
 
 ### Task 2: 新领域语料 manifest、索引与硬件/软件过滤
 
@@ -75,16 +75,16 @@ def validate_source_record(row: dict, *, source_root: Path) -> None:
 - Create: `versioned-rag-service/public_corpus_edge_ai/retrieval_policy.json`
 - Create: `versioned-rag-service/public_corpus_edge_ai/public_retrieval_runtime.json`
 - Modify: `versioned-rag-service/src/public_knowledge.py`
+- Create: `versioned-rag-service/scripts/build_edge_ai_corpus.py`
 - Create: `versioned-rag-service/tests/test_edge_ai_public_knowledge.py`
-- Modify: `versioned-rag-service/tests/conftest.py`
 
 **Interfaces:**
 - 保留当前 `PublicKnowledgeIndex.search(query, *, top_k, version, language, policy)` 参数，并添加可选 `device_model: str | None`、`module_sku: str | None`、`carrier_board: str | None`、`software_baseline: str | None`。
 - 每个 chunk 复制来源 manifest 中非空的同名设备/软件元数据；`version` 继续表示资料快照，不改义为产品发行版。
 
-- [ ] **Step 1: 写 manifest 与过滤测试**：小型 fixture 包含两个资料快照、同一型号的两个 L4T 基线、另一个设备型号和中文页面；断言 manifest 区分 snapshot 与 software baseline，构建出的 chunk 保留设备字段，四个过滤器分别只返回符合配置的 chunk。
-- [ ] **Step 2: 运行测试确认失败**：执行 `python -m pytest tests/test_edge_ai_public_knowledge.py -q`；预期当前 index 缺少这些过滤字段和设备域 manifest 校验。
-- [ ] **Step 3: 实现 manifest 校验和 facet 过滤**：校验活动 workspace id、语言、来源许可证、路径、快照、型号和软件基线；在 `build_index` 中将 facet 元数据写入 chunks；在 eligible 文档筛选阶段按四个可选 facet 过滤，保持版本与语言过滤先于打分。
+- [x] **Step 1: 写 manifest 与过滤测试**：小型 fixture 覆盖通用指导、两个 JetPack 基线和两个设备型号；断言 manifest 区分 snapshot 与 software baseline、chunk 保留来源/设备字段、四个过滤器均为硬过滤且 AND 组合，通用来源可参与候选。
+- [x] **Step 2: 运行测试确认失败**：`python -m pytest tests/test_edge_ai_public_knowledge.py -q` 初次结果 9 failed，暴露 index 缺设备过滤字段、scope 元数据与许可/中文来源校验；按测试失败补实现。
+- [x] **Step 3: 实现 manifest 校验和 facet 过滤**：校验活动 workspace、中文语言、来源许可、Seeed Wiki 主机、路径、固定快照和哈希；chunk 保存设备/基线/来源字段；eligible 文档阶段按四个可选 facet 做精确交集，通用 `*` 只纳入通用说明，不代表兼容性。
 
 ```python
 FACET_FIELDS = ("device_model", "module_sku", "carrier_board", "software_baseline")
@@ -101,8 +101,8 @@ def _matches_facets(chunk: dict, filters: dict[str, str | None]) -> bool:
             return False
     return True
 ```
-- [ ] **Step 4: 建新语料与索引**：使用 Task 1 的许可通过文件生成 manifest/chunks/向量与完整性哈希；profile 中只把来源能证明的型号和基线标为可筛选项；将默认索引根切换到 `public_corpus_edge_ai`，错配 corpus/profile 或 hash 时启动失败，不退回旧 `public_corpus`。
-- [ ] **Step 5: 运行知识服务测试**：执行 `python -m pytest tests/test_edge_ai_public_knowledge.py tests/test_public_knowledge.py -q`；确认 fixture 与新语料都通过来源哈希、manifest 和范围过滤检查。
+- [x] **Step 4: 建新语料与索引**：新增可重复 `scripts/build_edge_ai_corpus.py`，只接受与来源 allowlist 完全匹配的 18 份中文资料，生成 manifest、394 个 chunks、向量、BM25 基线策略及运行时配置；新语料快照 `wiki-1eadc6584f96`，策略状态为待重测。
+- [x] **Step 5: 运行知识服务测试**：`python -m pytest tests/test_edge_ai_public_knowledge.py tests/test_public_knowledge.py -q` → 27 passed；实际 corpus build 成功，J4012 + JetPack 7.2 与 J4012 + JetPack 6.x 的检索 smoke 命中对应领域资料。
 - [ ] **Step 6: Commit 新语料索引边界**：仅提交新领域 manifest、许可通过的语料资产、策略配置、服务实现和相应测试。
 
 ### Task 3: 公开 API 与客户端支持设备配置
