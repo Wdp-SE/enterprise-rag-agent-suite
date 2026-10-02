@@ -191,11 +191,11 @@ for query in plan["queries"][:4]:
 - UI 从 `workspace.domain_profile` 读取产品名称、允许的筛选值、示例问题、变更类别、来源说明和评测状态。
 - 知识查询和 Agent 页面用独立控件设置资料快照、设备型号、模组/载板和软件基线；工作台不把资料快照显示成产品发行版。
 
-- [ ] **Step 1: 写 profile 与用户流程测试**：workspace profile 只接受 `edge_ai_device` 和 `zh-CN`；示例问题只能来自新领域 profile；页面渲染中不出现活动 Autoware/DolphinScheduler 入口、旧分数、双语提示或旧产品示例；查询客户端收到用户选中的四个过滤字段。
-- [ ] **Step 2: 运行 UI 测试确认失败**：执行 `python -m pytest tests/test_public_workspace_profile.py tests/test_public_official_workbench.py -q`（在 `demo-ui/` 执行），记录未满足的断言。
-- [ ] **Step 3: 将 profile 校验改为领域 ID 校验**：删除单仓库 Autoware 绑定，检查 `workspace_id`、profile id、语言和声明来源；不匹配时禁用查询并显示实际 profile 错误。
-- [ ] **Step 4: 移除旧 Streamlit 演示切换**：把 `demo-ui/app.py` 简化为只导入并运行 `public_workbench.render()`；删除 `DEMO_LEGACY_FIXTURES` 分支和用于旧合成工单 UI 的 imports。更新 `test_app.py`，验证启动始终进入当前 public workbench，设置旧环境变量也不能切换至旧界面。
-- [ ] **Step 5: 更新页面流和显示**：替换旧业务文案、问题示例、筛选项与 Agent 类型；评测页只渲染指纹匹配的新评测和明确的指标口径；“版本与历史”区分资料快照、设备型号、JetPack/L4T 基线；未评测状态写清楚，不回显历史领域数值。
+- [x] **Step 1: 写 profile 与用户流程测试**：workspace profile 只接受 `edge_ai_device` 和中文；示例问题只能来自新领域 profile；首页与导航测试禁止旧活动领域入口、双语提示或旧产品案例；查询客户端须收到用户选择的四个过滤字段。
+- [x] **Step 2: 运行 UI 测试确认失败**：在 UI 重构前运行现有公开工作台测试，记录旧 workspace profile 与业务文案未满足新领域断言。
+- [x] **Step 3: 将 profile 校验改为领域 ID 校验**：检验 workspace/profile ID、唯一声明仓库和中文语言；不匹配时阻止公共演示继续渲染，避免将错域结果伪装成当前证据。
+- [x] **Step 4: 移除旧 Streamlit 演示切换**：`demo-ui/app.py` 只导入并运行 `public_workbench.render()`；旧环境变量不会切换至合成业务页面。
+- [x] **Step 5: 更新页面流和显示**：首页、查询、Agent 类型、来源页及版本说明从 edge profile/manifest 读取；评测页标记待测，不显示其他语料分数；图片 OCR 证据需匹配当前 manifest 的仓库与固定 commit；文档关联卡片不再写死旧项目名。
 
 ```python
 profile = workspace["domain_profile"]
@@ -203,8 +203,8 @@ device_model = st.selectbox("设备型号", profile["hardware_models"], key="edg
 software_baseline = st.selectbox("软件基线", profile["software_baselines"], key="edge_software_baseline")
 snapshot = st.selectbox("资料快照", workspace["available_versions"], key="corpus_snapshot")
 ```
-- [ ] **Step 6: 重写用户文档并验证界面**：README 介绍唯一的新业务、来源边界、运行方式、公开限制和准确性评测；用 UI 测试检查主要页面文案，运行 `python -m pytest tests/test_public_workspace_profile.py tests/test_public_official_workbench.py tests/test_app.py -q`。
-- [ ] **Step 7: Commit 工作台切换**：提交 profile/client/UI/README 改动。
+- [x] **Step 6: 重写用户文档并验证界面**：重写根目录与 Streamlit README；`demo-ui` 的公开工作台、profile 与入口回归 77 passed。
+- [x] **Step 7: Commit 工作台切换**：待本任务代码提交后完成。
 
 ### Task 6: 冻结新语料检索与变更审查评测
 

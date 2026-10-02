@@ -1,137 +1,62 @@
-# 研发知识版本服务与证据约束变更审查系统
+# 版本化研发知识 RAG 与证据约束变更审查 Agent
 
-一个面向研发资料生命周期的版本化知识 RAG 与证据约束变更审查 Agent。系统把公开软件资料检索与合成企业工程资料审查放在同一套工作台中：RAG 负责范围受控的版本检索与引用溯源；Agent 基于证据拆解影响候选、标注缺口并提出待审核建议；人工保留最终决策权。本项目是独立工程演示，不是 Autoware 官方产品，也不代表任何上游或企业内部系统。
+这是面向 AI 应用开发岗位的工程原型，聚焦一个可说明、可验证的业务：边缘 AI 设备研发人员需要查清设备规格、软件基线、刷写部署和运维资料；发生变更时，系统从同一组有来源记录的资料中找出可能相关内容、列出证据缺口，由工程师审核。
 
-- [GitHub 源码仓库](https://github.com/Wdp-SE/enterprise-rag-agent-suite)
-- [在线工作台](https://enterprise-rag-agent-suite-bfmkgsimdisxcewgco7ydk.streamlit.app/)
-- [RAG API 文档](https://version-aware-rag-public-demo.onrender.com/docs)
-- [RAG 健康状态](https://version-aware-rag-public-demo.onrender.com/health)
-- [Autoware 旧语料 RAG 与变更审查 V2 评测（历史）](evaluation/autoware_accuracy_v2/README.md)
-- [最终检索选型报告](evaluation/real_world_retrieval/final_selection/final_selection.md)
+- RAG 提供按资料快照、设备型号、模组 SKU、载板和 JetPack/L4T 基线过滤的中文工程资料检索，并为证据保留原始来源。
+- Agent 按软件基线、设备/接口配置、AI 部署/运维等变更类型规划有限查询，将证据组织成待核对候选；缺少设备或基线信息时明确提示，不推断兼容性。
+- 人工保留最终决定权。Agent 不修改源文档、BOM、设备配置或上游仓库。
 
-> 在线链接指向已有公网服务，实际运行版本以托管平台显示的部署提交为准。
+## 当前演示范围
 
-## 项目与架构
+唯一活动语料为 Seeed Studio Wiki 的 reComputer Industrial / Jetson 中文公开工程资料。当前固定语料快照来自 `Seeed-Studio/wiki-documents` 提交 `1eadc6584f962b6efdbdb3e49b2b4ce30c85be08`，索引包含 18 份来源和 394 个检索片段。它是经过许可与内容哈希审核的精选快照，不是完整产品资料库，也不代表任何企业内部资料、硬件实测、认证结论或兼容性验证。资料正文中的 334 个图片引用没有 OCR 入库，不能声称系统可以检索图内文字。
 
-这是一个项目：公开 Autoware 资料是当前演示语料；KEP 只启发提案和审查流程设计，不是检索语料。另一种本地运行场景仍使用合成工程资料，不是第二个项目：
+软件基线（JetPack/L4T）是文档适用范围筛选条件，`wiki-1eadc6584f96` 是资料来源快照；两者不是同一类版本。当前只有一个资料快照，历史快照比较尚未提供。中英文对照、企业 Jira/工单、BOM、真实设备测试和生产权限控制也不在演示范围内。
 
-1. **公网默认场景：Autoware 中文研发资料检索与变更审查**。RAG 只检索 Tomato ROS 社区维护的中文译本，收录 2026-07 当前快照和 2026-01 历史快照；日期代表仓库提交时间，不是 Autoware 产品版本。每份资料固定到 Git commit 并保留内容哈希。Agent 按确定性规则识别变更类别，把原始描述拆成有上限的子问题调用 RAG，再将候选证据交给模型辅助分析。结果包含检索轨迹、覆盖状态、结构化证据缺口和人工核对动作。Agent 不写回公开语料或 Autoware 上游。
-2. **本地扩展场景：研发工程变更工作台**。使用完全合成的需求、设计、API、测试和运维文档，演示版本 Diff、标识符与追踪关系、RAG 影响发现、证据绑定、修改建议和人工审核。预置案例可继续演示冲突校验、候选版本验证与显式激活；用户自定义需求修改只进入当前审查。默认公网实例不加载这套合成工作流；本地设置 `DEMO_LEGACY_FIXTURES=true` 才能进入。
+## 方案与质量口径
 
-    公网默认：固定版本 Autoware 中文资料 → FastAPI BM25 → 问题/变更描述 → 引用证据 → Agent 辅助分析 → 人工审核
-    本地扩展演示：合成研发文件 → 结构解析与元数据 → 版本 Diff / RAG 影响发现 → PatchCandidate → 人工审核 → 安全候选版本
+当前使用 BM25 作为可解释检索基线，并支持 UI 选择 Top-K 与设备/软件过滤。新语料的冻结题集和指纹绑定评测尚未完成，因此不公布当前语料的召回率、答案准确率、幻觉率或最优策略。任何其他领域、旧语料或仓库离线实验的数字都不能当作这里的成绩。下一步先建立按来源文档族隔离的 DEV/HOLDOUT 问题集，再比较基线、候选扩展和重排；Agent 查询覆盖、证据完整率及人工判断质量单独报告。
 
-在线工作台用于体验产品流程；API 文档用于查看公开 RAG 接口。当前只发布中文社区译本：2026-07 快照 260 份来源，2026-01 历史快照 259 份来源，共 519 条版本化来源记录、260 个资料主题和 3,806 个检索片段。当前 `latest` 只指向 2026-07 快照；用户可另选 2026-01 历史快照。资料不是 Autoware 官方中文译本，也不是完整产品文档库。此前英文语料上的评测指纹不匹配，当前 BM25 仅作透明基线；中文语料的重新评测完成前不公布当前性能指标或最优策略。服务启动时不抓取上游，也不重建索引。
+Agent 每项审查最多拆为 4 次 RAG 查询，最多把 8 条证据交给生成分析；候选引用按当前语料来源登记表校验。没有有效证据时保留缺口并停止肯定结论。当前审查与审核决定保留在会话/演示运行环境中，不是带身份和集中审计的企业审批系统。
 
-### 目录职责
+## 技术组成
 
-- `versioned-rag-service/`：FastAPI 知识服务，负责版本范围内的 BM25 检索、引用依据和可选的引用约束回答。
-- `change-review-agent/`：自然语言变更规划、证据约束公开审查 Agent，以及工程资料变更工作流。
-- `demo-ui/`：同一产品的 Streamlit 入口；默认公网配置由 `app.py` 加载 `public_workbench.py`，设置本地合成演示开关后由 `app.py` 展示企业式工程资料工作流。
-- `project_delivery/v4_change_impact_review/demo_data/`：完全合成的研发资料与结构化清单，不包含企业真实文档。
-- `evaluation/autoware_agent_query_planning_v1/`：Autoware 变更规划规则评测，不调用 RAG/模型；本轮调试查看过留出用例，详见其限制说明。
-- `evaluation/autoware_accuracy_v2/`：切换中文社区语料前的历史 RAG/Agent 评测；题目、策略和语料指纹均不匹配当前版本，不能作为当前成绩。
-- `evaluation/autoware_quality_v1/`：当前语料扩展前的历史 RAG 评测，保留作历史记录，不代表当前检索质量。
-- `evaluation/change_review_v5/`：32 条 DolphinScheduler 语料上的历史变更审查评测，仅保留为旧版 Agent 规划记录；不代表当前 Autoware 语料效果，也不调用或评分生成模型。
-- `evaluation/autoware_retrieval_v3/`：语料扩展前的 43 道 Autoware 小语料冻结检索评测，保留作历史记录，不代表当前语料表现。
-- `evaluation/autoware_bilingual_v1/`：旧双语语料上的历史冒烟用例；当前公网只收录中文资料，不再以它代表当前语言或检索行为。
+- `versioned-rag-service/`：FastAPI、Pydantic、BM25 知识索引和公开检索 API。
+- `change-review-agent/`：基于领域 profile 的变更分类、有限查询规划、证据核验和人工审核流程。
+- `demo-ui/`：Streamlit 检索与变更审查工作台。
+- `versioned-rag-service/public_corpus_edge_ai/`：许可审计后的固定资料、索引清单和检索配置。
+- `evaluation/edge_ai_retrieval_v1/` 与 `evaluation/edge_ai_change_review_v1/`：后续冻结检索和审查评测所在目录；只有实际运行并绑定指纹后才发布指标。
 
-### 变更规划与证据缺口
+## 本地运行
 
-变更输入保留自然语言原文，并可选补充变更类型和影响范围。未指定类型时，规则从参数/配置、接口/兼容性、规划/轨迹行为、工作流/行为、数据/存储、安全/权限等类别进行确定性识别；无法识别时回退到通用检索，不阻断用户原始描述。Agent 将完整请求拆分为最多 4 项检查，每项按所选语种检索，最多选取 8 条模型证据，逐条记录命中与纳入状态。证据缺口除了兼容旧接口的可读文本，也会提供缺口类型、查询、预期资料类别和人工补查动作；模型报告的缺口会标记为“待人工核验”，不会当成事实。
-
-Autoware 查询规划评测有 28 条中英固定请求、14 个文档族；复现命令为 `python evaluation/autoware_agent_query_planning_v1/run_evaluation.py --split all`。当前规则在已检查的用例上分类、范围判定、查询内容覆盖和 4 条预算均通过。该轮修复期间查看过原 HOLDOUT 的逐例结果，因此这一分割不再是本轮实现的独立泛化验证。新评测版本应在未来规则冻结后建立干净留出集。V5 是 Autoware 语料切换前、基于 DolphinScheduler 的历史变更审查评测：
+安装 Python 3.12 环境和项目依赖后，先启动 RAG 服务，再启动 Streamlit。RAG 服务进程要使用新语料配置：
 
 ```powershell
-python evaluation/change_review_v5/run_evaluation.py --split dev --policy bm25
+$env:RAG_PUBLIC_CORPUS_ROOT = "public_corpus_edge_ai"
+$env:RAG_PUBLIC_RETRIEVAL_CONFIG = "public_corpus_edge_ai/public_retrieval_runtime.json"
+Set-Location versioned-rag-service
+..\.venv\Scripts\python.exe -m uvicorn src.public_server:app --host 127.0.0.1 --port 8765
 ```
 
-V5 共 32 条请求、18 个场景族，DEV 25 条、HOLDOUT 7 条；含跨资料、图片线索、无答案和私有范围请求。其规则分类和检索数据只描述旧 DolphinScheduler 版本，不是当前 Autoware 服务的指标，也不代表真实用户分布、答案准确率、幻觉率或公网延迟；越界问题拦截和公开无答案候选噪声见 [V5 历史评测说明](evaluation/change_review_v5/README.md)。Autoware V3 是语料切换前的历史评测，不能代表当前中文快照效果；当前资料范围和重评状态见[中文语料说明](versioned-rag-service/public_corpus_autoware/README.md)。
-
-## 检索选型：历史基线与当前复评
-
-以下是旧语料上的历史选型记录，与当前中文快照无关：当时在同一份 52 来源语料、同一版本过滤和语言范围、Chunk A、Top-5 条件下，比较了 BM25、真实多语言神经 Dense（multilingual E5）和 Hybrid。以下 Hit@K、MRR 均按 DEV 的 22 条可回答问题计算；耗时是本地进程内 warm retrieval，不含模型加载、HTTP、冷启动或生成。
-
-| 方案 | DEV Hit@1 | DEV Hit@5 | DEV MRR | 双来源完整命中 | P95 |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| BM25 | 0.3636 | 0.8182 | 0.5295 | 0/2 | 1.36 ms |
-| multilingual E5 | 0.2727 | 0.7273 | 0.4508 | 0/2 | 21.94 ms |
-| Hybrid，BM25 权重 0.75 | 0.3636 | 0.8182 | 0.5470 | 0/2 | 22.31 ms |
-| 锁定的 BM25 HOLDOUT | 0.4286 | 0.7619 | 0.5833 | 0/2 | 1.55 ms |
-
-Hybrid 的最佳配置只让 DEV MRR 小幅增加 0.0175；Hit@1、Hit@5 和跨文档双来源命中均未改善，P95 则显著高于 BM25。因此 V1.0 保留 Chunk A（1250 chars、无 overlap）+ BM25 + Top-5，不设置文档数上限；Hybrid、神经 Dense 和 Rerank 不进入正式检索链路。跨文档题合计双来源完整命中为 0/4。HOLDOUT 是从此前已评测的 46 条题目中做的回顾性确定划分，不是独立真实用户测试，不能据此声称真实用户准确率。
-
-当前中文快照尚无指纹匹配的冻结检索评测，工作台不会把旧双语语料或 DolphinScheduler 的历史结果展示成当前成绩。旧结果仅供复核评测方法与失败案例；它们不代表当前中文检索质量、生成答案质量或真实变更影响准确率。
-
-### V2 检索质量实验
-
-随后在旧版 52 份来源、659 个 chunk 上用独立 40 条查询做了 V2 来源级 DEV/HOLDOUT 对比。字段加权 BM25 候选在 DEV 上表现更好，但未通过锁定 HOLDOUT 晋级门槛，因此没有切换默认策略。这是扩充语料之前的历史实验，不能代表当前 Autoware 语料的质量。指标定义和历史结果见[V2 实验报告](evaluation/real_world_retrieval/quality_v2/report.md)。
-
-### DolphinScheduler 历史 V3 评测（非当前语料）
-
-旧 DolphinScheduler 语料的 V3 冻结了 72 道业务题，按场景家族分为 DEV/HOLDOUT 各 36 道。该轮比较后保留 BM25，一次性 HOLDOUT 的 32 道可回答题中，27 道找齐全部必需来源；8 道多来源题仅 4 道找齐。它反映的是旧语料的历史短板，不是当前 Autoware 服务的评测结论。题库、锁文件、结果与失败题见 [V3 评测说明](evaluation/real_world_retrieval/quality_v3/README.md)和 [V3 报告](evaluation/real_world_retrieval/quality_v3/report.md)。
-
-### DolphinScheduler 历史 V4 图片证据与多资料复评（不代表当前语料）
-
-V4 冻结了 104 道单资料、跨资料、跨版本、截图 OCR、图文联合与无答案问题，按问题族和图片分组为 DEV 51、HOLDOUT 53。经人工复核的 OCR 候选在 HOLDOUT 上将图片 Hit@5 从 0 提升至 100%，完整来源率从 85.7% 提升至 91.8%，跨资料完整命中从 37.5% 提升至 75%；但原文锚点召回从 79.2% 降至 69.8%，超过 5 个百分点退化上限。候选未晋级，公网仍使用 BM25。无答案题仍全部返回候选（4/4），候选噪声指标不是生成幻觉率；nDCG 实现存在重复计数问题，未用于结论。V4 的锁定命令没有代码强制并记录 DEV 晋级门槛；该流程限制和 V5 改进要求已如实记入 [V4 评测说明](evaluation/real_world_retrieval/quality_v4/README.md)。具体逐项结果见 [V4 报告](evaluation/real_world_retrieval/quality_v4/report.md)。
-
-上述图片评测与 OCR 记录均属于 DolphinScheduler 历史语料。当前 Autoware 的图片索引范围、人工复核边界和在线策略见 [Autoware 图片证据说明](versioned-rag-service/public_corpus_autoware/FIGURE_EVIDENCE.md)。
-
-旧 DolphinScheduler V3/V4 发布记录与当前 Autoware 语料无关；不要用它们宣称当前服务通过 Autoware 评测校验。旧 Autoware V3 也只描述扩充前的小语料。当前 `/public/workspace` 只在运行代码、语料和冻结题集指纹全部匹配时展示 Autoware 检索 V2 与 Agent 流程对比；这些验证面向检索来源召回与流程覆盖，不代表生成答案质量或真实变更影响准确率。历史复算说明见 [Autoware 检索评测 V3](evaluation/autoware_retrieval_v3/README.md)。
-
-运行相关服务测试时，请在 `versioned-rag-service/` 目录执行 `python -m pytest -q`；Autoware 冻结题集与复算方式见评测说明。
-
-### 当前 Autoware 中文语料状态
-
-当前中文资料范围和固定提交见 [Autoware 中文语料说明](versioned-rag-service/public_corpus_autoware/README.md) 及 [语料清单](versioned-rag-service/public_corpus_autoware/corpus_manifest.json)。旧版 RAG/Agent 评测与当前中文语料指纹不匹配，不代表当前检索质量。中文语料的新冻结评测尚未完成；答案准确率、幻觉率和真实变更影响准确率也未评估。
-
-不要在当前冻结目录重跑 `run_quality_v3.py --split dev`：它会覆盖 `results/dev__bm25.json`，新测得的耗时会改变已锁定的结果哈希。需要重新实验时，应使用独立工作树或新评测版本，并把结果写到独立路径，保留这份冻结记录不变。
-
-### Final selection 的复现边界
-
-`run_selection.py` 提供 `chunk` → `retriever` → `topk` → `diversity` → `holdout` 阶段，没有单条命令完整重跑 final selection。Holdout 受 `selection_lock.json` 及其锁定的 DEV 结果哈希约束；当前冻结结果已包含 Holdout，不能对它随意重复执行。下面只示范 DEV 分块策略阶段，不代表完整选型重跑；该命令会更新 `evaluation/real_world_retrieval/final_selection/results.json`：
+另开 PowerShell 窗口启动工作台：
 
 ```powershell
-python .\evaluation\real_world_retrieval\final_selection\run_selection.py chunk --chunk A
+$env:RAG_API_BASE_URL = "http://127.0.0.1:8765"
+Set-Location demo-ui
+..\change-review-agent\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1 --server.port 8502
 ```
 
-## 三分钟体验
+模型密钥只配置在 RAG 后端进程。没有密钥时仍可检索和运行不依赖生成的审查步骤；在线模型可用性仍受服务商账户、限流和网络影响。请勿把密钥写入前端 Secrets 或仓库。
 
-1. 打开“版本化知识检索”，询问 Start Planner 搜索策略或 Goal Planner 图中的标签；核对答案引用、当前版本和固定来源。
-2. 进入“发起变更审查”，自由描述假设变更；也可在可选结构化信息中指定类别与影响范围。查看规则分类、最多 4 条查询的覆盖轨迹、候选证据与缺口。
-3. 由人工确认或退回本次影响分析。需要对具体段落制作修改前后草案时，可继续人工审核；该公开资料路径不修改公共语料或上游仓库。
-4. 若要在本机展示企业式生命周期闭环，设置 `DEMO_LEGACY_FIXTURES=true` 后重启工作台，再运行合成预置案例；公网演示当前展示公开资料检索与会话变更审查。
+## 发布说明
 
-## Known Limitations
+源码工作区、RAG 后端语料、Streamlit 前端和公网部署需要分别核对构建 SHA 与语料指纹。当前任务只准备源码与 main 分支；在公网部署完成并核实两端指纹前，现有在线链接可能仍展示旧业务版本，不应作为新版本效果证明。
 
-- 当前 Autoware 公开语料只保留 Tomato ROS 社区中文译本的 2026-07 与 2026-01 两个固定提交快照；日期是仓库快照日期，不是 Autoware 产品发行版本。它不是完整产品资料库，且当前没有经过复核的图片 OCR 记录，因此图像像素不可检索。
-- 企业工程工作台使用完全合成的小型文档集与固定案例，用于验证流程与安全边界，不能代表真实企业文档覆盖率或业务效果。
-- 历史 V1 四条跨文档题的双来源完整 Top-5 命中为 0/4。扩充语料会改变排序，现有新语料成绩必须单独复评，不能沿用历史指标。
-- 旧 V1/V2/V3 评测与新中文语料的来源、版本和指纹不同；过去的双语冒烟样例也不构成当前质量评测。当前中文语料的新冻结评测尚未完成，因此不公布当前检索质量或策略优劣；答案准确率、幻觉率和真实变更影响准确率尚未评估。
-- 公开资料变更审查的人工决定会追加写入本地 SQLite，并可下载 JSON；记录按匿名 Streamlit 会话过滤，但没有身份认证，托管实例临时磁盘也可能在重启或重新部署后清空。它不等同集中式审批审计、跨实例任务存储或 ACL/RBAC。V4 预置工程案例使用本地文件 Checkpoint 和 Candidate Version 目录。
-- 系统不修改 Autoware 上游，不创建 PR，也不自动发布修改。
-- multilingual E5 仅用于选型实验；Hybrid 和 Rerank 均不在正式运行链路中。
-- 资料命中和引用来源不等于回答事实已被证明；检索分数只用于排序，不代表真实性。
-- 当前版本不实现 locale sibling consistency；语言/版本相关提示不能替代人工核对。
-- 规则分类和查询拆解评测集规模小且为人工编写；生产落地前需要基于脱敏真实工单建立分层评测，检查类型混淆、检索缺口与误报，并设置版本化回归门槛。
-- 本地 P95 不代表公网延迟或服务等级承诺。
-- 公开 RAG API 当前没有访问身份鉴权；若在公网后端配置付费模型密钥，直接调用公开生成接口也会产生费用。系统不设会话调用次数上限，部署者需在模型服务商侧设置预算与费用告警，并监控请求量；这不是企业级成本治理或用户级计费审计。
+- [GitHub 源码](https://github.com/Wdp-SE/enterprise-rag-agent-suite)
+- [RAG API 文档](https://version-aware-rag-public-demo.onrender.com/docs)（以托管服务实际部署版本为准）
 
-## 本地启动
+## 相关说明
 
-本地 clean-clone 已在 Python 3.11 验证通过；这记录的是已验证环境，不代表项目最低 Python 版本。Render 部署配置使用 Python 3.12.8；本文不推测 Streamlit Community Cloud 的 Python 版本。克隆后无需私有企业资料或本机历史 runtime：
-
-    py -3.11 -m venv versioned-rag-service\.venv
-    & .\versioned-rag-service\.venv\Scripts\python.exe -m pip install -r versioned-rag-service\requirements-render.txt
-    py -3.11 -m venv change-review-agent\.venv
-    & .\change-review-agent\.venv\Scripts\python.exe -m pip install -r change-review-agent\requirements.txt
-    & .\change-review-agent\.venv\Scripts\python.exe -m pip install -r demo-ui\requirements.txt
-    .\start_prototype.ps1
-
-打开 http://127.0.0.1:8502/；本地 RAG API 文档为 http://127.0.0.1:8765/docs。启动脚本默认优先使用 DeepSeek（`deepseek-flash`）；本机配置所选供应商的 API Key 后会自动启用回答生成，缺少密钥时仍可检索和进行会话内变更审查。运行 `./start_prototype.ps1 -DisableGeneration` 可关闭生成。也支持 DashScope/Qwen：设置 `RD_V2_GENERATION_PROVIDER=dashscope` 与 `DASHSCOPE_API_KEY`。仅在本机 RAG 后端或 Render RAG 后端配置密钥，不要写入仓库、日志或 Streamlit Secrets。详细字段见[部署指南](project_delivery/public_value_prototype/free_deployment_guide.md)和[工作台说明](demo-ui/README.md)。
-
-应用不设固定会话生成次数上限。后端生成开关、模型密钥和供应商服务状态共同决定能否生成；供应商的计费余额、限流和网络超时仍可能导致单次失败。失败时保留可核查的检索证据，不能承诺“只要有余额每次必定成功”。`/health` 可区分关闭生成、缺密钥与已配置但未经实时验证；成功或失败请求返回不含密钥的生成诊断，便于定位问题。当前中文语料没有经过人工复核的图片 OCR 片段，因此图像像素中的文字暂不可检索；范围见[图片证据说明](versioned-rag-service/public_corpus_autoware/FIGURE_EVIDENCE.md)。
-
-## 资料来源
-
-当前公网 RAG 语料仅来自 [Tomato ROS Autoware 中文社区译本](https://github.com/tomato-ros/autoware-documentation-cn)，包含固定提交 `eb089f637534f1e84b8d0c950be1ab302ee22c50`（2026-07 当前快照）和 `5f2ee521d5f26cfe832d6d6abf6d1885909706cd`（2026-01 历史快照）。两者是社区仓库日期快照，不是产品版本；官方英文文档和 Universe 资料已从当前公开语料中移除。来源路径、语言、许可和 SHA-256 见 [Autoware corpus manifest](versioned-rag-service/public_corpus_autoware/corpus_manifest.json)。译本由社区维护，并非 Autoware 官方翻译；本项目与 Autoware 基金会或维护组织无隶属关系。早期 Apache DolphinScheduler 数据仅作为历史工程记录，不是公网默认语料。
+- [RAG 服务](versioned-rag-service/README.md)
+- [Streamlit 工作台](demo-ui/README.md)
+- [Seeed 语料许可与归属审计](versioned-rag-service/public_corpus_edge_ai/SOURCE_AUDIT.md)
+- [完整迁移实施计划](docs/superpowers/plans/2026-10-03-edge-ai-public-corpus-migration.md)

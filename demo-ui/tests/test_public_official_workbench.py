@@ -72,7 +72,7 @@ def _mock_client(monkeypatch):
         lambda self, change_summary, evidence_chunk_ids, *, version:
             self.review_advice(change_summary, evidence_chunk_ids),
     )
-    monkeypatch.setattr(public_workbench, "_analyze_hypothetical", lambda client, selected, proposed_text: {
+    monkeypatch.setattr(public_workbench, "_analyze_hypothetical", lambda client, selected, proposed_text, **kwargs: {
         "change": {"change_type": "MODIFIED"}, "selected_source": dict(CHUNK),
         "impacts": [{"relation": "suggested", "status": "SUGGESTED", "reason": "主题相关，需人工核验。", "evidence": dict(CHUNK)}],
         "confirmed_relations": [], "patch_candidate": {
@@ -96,6 +96,102 @@ def _mock_client(monkeypatch):
             },
         },
     })
+
+
+def _edge_workspace():
+    return {
+        "workspace_id": "edge_ai_device",
+        "domain_profile": {
+            "id": "edge_ai_device",
+            "name": "边缘 AI 设备研发变更审查",
+            "example_queries": [
+                "J4012 在 JetPack 7.2 下部署工业视觉需要检查哪些环境？",
+                "reComputer Industrial J4011 升级 JetPack 6.2 前应核对哪些刷写和热设计注意事项？",
+                "J30/J40 设备如何获取系统日志并用于故障排查？",
+            ],
+            "change_types": [
+                {"id": "software_baseline", "label": "软件基线变更"},
+                {"id": "device_configuration", "label": "设备与接口配置变更"},
+                {"id": "deployment_operations", "label": "AI 部署与运维变更"},
+            ],
+        },
+        "workspace": "reComputer Industrial / Jetson 边缘 AI 工程知识",
+        "repository": "Seeed-Studio/wiki-documents",
+        "repositories": ["Seeed-Studio/wiki-documents"],
+        "current_version": "wiki-1eadc6584f96",
+        "available_versions": ["wiki-1eadc6584f96"],
+        "version_labels": {"wiki-1eadc6584f96": "当前固定资料快照"},
+        "version_scopes": {"latest": {"versions": ["wiki-1eadc6584f96"]}},
+        "languages": ["zh"],
+        "source_count": 18, "chunk_count": 394, "unique_document_count": 18,
+        "hardware_models": ["reComputer Industrial J4012", "reComputer Industrial J3011"],
+        "module_skus": ["P3767-0000"], "carrier_boards": ["J401"],
+        "software_baselines": ["JetPack 6.2", "JetPack 7.2 (L4T 39.2.0)"],
+        "source_registry": [{
+            "source_id": "seeed-jetson-flash-firmware",
+            "source_url": "https://wiki.seeedstudio.com/cn/jetson_developtool_flash_firmware/",
+            "repository": "Seeed-Studio/wiki-documents", "source_snapshot": "wiki-1eadc6584f96",
+            "commit": "1eadc6584f962b6efdbdb3e49b2b4ce30c85be08", "sha256": "a" * 64,
+        }],
+        "snapshots": [{"version": "wiki-1eadc6584f96", "commit": "1eadc6584f962b6efdbdb3e49b2b4ce30c85be08"}],
+        "retrieval_evaluation_status": "new_corpus_pending_rebenchmark",
+    }
+
+
+def test_edge_knowledge_filters_are_forwarded_to_rag(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: _edge_workspace())
+    seen = []
+    monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: (
+        seen.append((question, scope)) or {
+            "answer": "仅展示带来源的资料回答。", "sources": [dict(CHUNK)],
+            "evidence": [dict(CHUNK)], "status": "OK", "consistency_notes": [],
+        }
+    ))
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+    app.selectbox(key="official_device_model").set_value("reComputer Industrial J4012")
+    app.selectbox(key="official_software_baseline").set_value("JetPack 7.2 (L4T 39.2.0)").run()
+    next(button for button in app.button if button.label == "生成带引用回答").click().run()
+
+    assert not app.exception
+    assert seen[0][1]["language"] == "zh"
+    assert seen[0][1]["device_model"] == "reComputer Industrial J4012"
+    assert seen[0][1]["software_baseline"] == "JetPack 7.2 (L4T 39.2.0)"
+    assert "JetPack 7.2 下部署工业视觉" in app.selectbox(key="official_example").options[0]
+
+
+def test_edge_agent_shows_domain_change_types_and_passes_confirmed_scope(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+    import public_workbench
+
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: _edge_workspace())
+    calls = []
+    monkeypatch.setattr(public_workbench, "_analyze_change_request", lambda *args, **kwargs: (
+        calls.append(kwargs) or {"request_summary": args[1], "request_plan": {}, "retrieved_results": []}
+    ))
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "发起变更审查").click().run()
+
+    labels = {item for item in app.selectbox(key="official_change_type").options}
+    assert "软件基线变更" in labels
+    assert "设备与接口配置变更" in labels
+    assert not any("规划 / 轨迹" in item or "工作流 / 行为" in item for item in labels)
+    app.text_area(key="official_change_request").set_value("升级 J4012 的 JetPack 软件基线")
+    app.selectbox(key="agent_device_model").set_value("reComputer Industrial J4012")
+    app.selectbox(key="agent_module_sku").set_value("P3767-0000")
+    app.selectbox(key="agent_carrier_board").set_value("J401")
+    app.selectbox(key="agent_software_baseline").set_value("JetPack 6.2").run()
+    next(button for button in app.button if button.label == "检索资料并分析影响").click().run()
+
+    assert not app.exception
+    assert calls[0]["device_scope"]["device_model"] == "reComputer Industrial J4012"
+    assert calls[0]["device_scope"]["module_sku"] == "P3767-0000"
+    assert calls[0]["device_scope"]["carrier_board"] == "J401"
+    assert calls[0]["device_scope"]["software_baseline"] == "JetPack 6.2"
 
 
 def test_workspace_scoped_selectors_follow_the_latest_manifest_version():
@@ -146,18 +242,20 @@ def test_relationship_labels_keep_path_candidates_distinct_from_confirmed_transl
     assert "译文" not in localized
 
 
-def test_autoware_source_coverage_summary_reports_one_chinese_snapshot():
+def test_source_coverage_summary_reports_edge_device_snapshot_and_families():
     import public_workbench
 
     summary = public_workbench._source_coverage_text({
+        "current_version": "wiki-1eadc6584f96", "source_count": 18,
         "source_breakdown": [
-            {"version": "community-zh-2026-07", "locale": "zh-CN", "source_type": "community_translation", "count": 260},
+            {"version": "wiki-1eadc6584f96", "locale": "zh-CN", "document_family": "ai_deployment", "count": 4},
+            {"version": "wiki-1eadc6584f96", "locale": "zh-CN", "document_family": "hardware_interface", "count": 3},
         ],
     })
 
     assert summary is not None
-    assert "中文社区资料 260 页" in summary
-    assert "当前仅有一个中文快照" in summary
+    assert "18 份资料" in summary
+    assert "ai deployment" in summary and "hardware interface" in summary
 
 
 def test_workbench_warns_when_connected_public_rag_workspace_is_not_autoware(monkeypatch):
@@ -176,7 +274,7 @@ def test_workbench_warns_when_connected_public_rag_workspace_is_not_autoware(mon
 
     assert not app.exception
     warning = "\n".join(item.value for item in app.warning)
-    assert "Autoware 工作台不匹配" in warning
+    assert "知识空间不匹配" in warning
     assert "RAG_API_BASE_URL" not in warning
     assert "public_corpus_autoware" not in warning
     assert not any("资料规模" in item.value for item in list(app.markdown) + list(app.caption))
@@ -254,29 +352,20 @@ def _start_agent_request(app, summary="假设调整全局参数优先级，并�
     return app
 
 
-def test_public_home_has_two_chinese_modules_and_no_case_labels(monkeypatch):
+def test_public_home_has_edge_ai_modules_and_no_case_labels(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
-    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
-        "baseline_version": "latest", "current_version": "latest",
-        "available_versions": ["latest"],
-        "version_labels": {"latest": "当前中文社区译本快照"},
-        "languages": ["zh-CN"],
-        "source_breakdown": [
-            {"version": "community-zh-2026-07", "locale": "zh-CN", "source_type": "community_translation", "count": 260},
-        ],
-    })
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: _edge_workspace())
     app = AppTest.from_file(APP, default_timeout=40).run()
     assert not app.exception
     assert [item.value for item in app.title] == ["研发知识版本服务与变更影响审查"]
     text = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
-    assert "Autoware" in text
+    assert "reComputer Industrial" in text
     assert "版本化研发知识服务 · RAG" in text
     assert "Agent · 研发资料变更审查" in text
     assert "研发资料变更影响审查" in text
-    assert "中文社区资料" in text
-    assert "当前仅有一个中文快照" in text
+    assert "中文公开工程资料" in text
+    assert "固定资料快照" in text
     assert "官方英文资料" not in text
     assert "中英文资料" not in text
     assert "进入知识检索" in {button.label for button in app.button}
@@ -298,17 +387,18 @@ def test_public_rag_keeps_answer_before_real_cited_source(monkeypatch):
     assert not app.exception
     text = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
     assert {item.value for item in app.subheader} >= {"回答", "引用依据"}
-    assert "查看固定提交来源" in text
+    assert "阅读原始页面" in text
     assert "[1] 参数优先级" in text
     assert "引用编号对应本次检索片段" in text
     assert "证据支撑度：一般" not in text
-    assert "不代表答案正确率" in text
+    assert "不代表事实正确性" in text
     assert "证据可信度" not in text
 
 
 def test_rag_renders_approved_image_ocr_as_derived_evidence(monkeypatch):
     _mock_client(monkeypatch)
-    import public_workbench
+    from services.public_knowledge_client import PublicKnowledgeClient
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: _edge_workspace())
 
     image = {
         **CHUNK,
@@ -319,9 +409,10 @@ def test_rag_renders_approved_image_ocr_as_derived_evidence(monkeypatch):
         "content": "Node_A 日志截图显示输出 100 和 66。",
         "modality": "image_ocr", "figure_id": "64bd324feb4e55a2",
         "review_status": "approved", "sha256": "a" * 64,
-        "commit": "a190201acffa03d199d4ca216288734a6513de3d",
-        "raw_url": "https://raw.githubusercontent.com/apache/dolphinscheduler/a190201acffa03d199d4ca216288734a6513de3d/docs/img/example.png",
-        "source_url": "https://github.com/apache/dolphinscheduler/blob/a190201acffa03d199d4ca216288734a6513de3d/docs/docs/zh/guide/parameter/context.md",
+        "repository": "Seeed-Studio/wiki-documents",
+        "commit": "1eadc6584f962b6efdbdb3e49b2b4ce30c85be08",
+        "raw_url": "https://raw.githubusercontent.com/Seeed-Studio/wiki-documents/1eadc6584f962b6efdbdb3e49b2b4ce30c85be08/docs/img/example.png",
+        "source_url": "https://github.com/Seeed-Studio/wiki-documents/blob/1eadc6584f962b6efdbdb3e49b2b4ce30c85be08/docs/cn/jetson_developtool_flash_firmware.md",
     }
     from services.public_knowledge_client import PublicKnowledgeClient
     monkeypatch.setattr(PublicKnowledgeClient, "search", lambda self, question, **scope: {
@@ -334,10 +425,38 @@ def test_rag_renders_approved_image_ocr_as_derived_evidence(monkeypatch):
 
     assert not app.exception
     text = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
-    assert "截图 OCR 文字" in text
-    assert "需对照原图" in text
+    assert "截图 OCR 证据" in text
+    assert "人工校对的 OCR 派生证据，请对照原图" in text
     assert "[查看原图]" in text
-    assert "在 GitHub 查看固定版本来源" in text
+    assert "阅读原始页面" in text
+
+
+def test_rag_hides_approved_image_ocr_from_a_repository_outside_edge_workspace(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: _edge_workspace())
+
+    image = {
+        **CHUNK,
+        "modality": "image_ocr", "figure_id": "foreign-figure",
+        "review_status": "approved", "sha256": "a" * 64,
+        "repository": "apache/dolphinscheduler",
+        "commit": "a190201acffa03d199d4ca216288734a6513de3d",
+        "raw_url": "https://raw.githubusercontent.com/apache/dolphinscheduler/a190201acffa03d199d4ca216288734a6513de3d/docs/img/example.png",
+        "source_url": "https://github.com/apache/dolphinscheduler/blob/a190201acffa03d199d4ca216288734a6513de3d/docs/docs/zh/guide/example.md",
+        "content": "foreign project screenshot OCR",
+    }
+    monkeypatch.setattr(PublicKnowledgeClient, "search", lambda self, question, **scope: {
+        "query": question, "results": [dict(image)], "retrieval_policy": "bm25_figure_ocr",
+    })
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+    next(button for button in app.button if button.label == "仅查看检索原文").click().run()
+
+    assert not app.exception
+    visible = "\n".join(item.value for group in (app.markdown, app.caption, app.info, app.warning) for item in group)
+    assert "截图证据未通过来源校验，已隐藏识别文本" in visible
+    assert "foreign project screenshot OCR" not in visible
 
 
 def test_rag_hides_image_ocr_when_approval_or_pinned_image_url_is_invalid(monkeypatch):
@@ -371,7 +490,8 @@ def test_version_selector_uses_latest_published_workspace_version(monkeypatch):
 
     monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
         "workspace": "Apache DolphinScheduler", "baseline_version": "3.4.3",
-        "current_version": "3.5.0", "source_count": 70, "chunk_count": 800,
+        "current_version": "3.5.0", "available_versions": ["3.5.0", "3.4.3"],
+        "source_count": 70, "chunk_count": 800,
     })
     app = AppTest.from_file(APP, default_timeout=40).run()
     next(button for button in app.button if button.label == "版本化知识检索").click().run()
@@ -389,7 +509,8 @@ def test_version_selector_tracks_new_latest_release_after_manual_old_selection(m
 
     workspace = {
         "workspace": "Apache DolphinScheduler", "baseline_version": "3.4.2",
-        "current_version": "3.4.3", "source_count": 52, "chunk_count": 659,
+        "current_version": "3.4.3", "available_versions": ["3.4.3", "3.4.2"],
+        "source_count": 52, "chunk_count": 659,
         "latest_source_retrieval_timestamp": "2026-09-27T16:48:07.391969+00:00",
     }
     monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: dict(workspace))
@@ -399,6 +520,7 @@ def test_version_selector_tracks_new_latest_release_after_manual_old_selection(m
 
     workspace.update(
         baseline_version="3.4.3", current_version="3.5.0",
+        available_versions=["3.5.0", "3.4.3"],
         latest_source_retrieval_timestamp="2026-09-28T09:15:00+00:00",
     )
     app.run()
@@ -408,8 +530,8 @@ def test_version_selector_tracks_new_latest_release_after_manual_old_selection(m
     app.selectbox(key="official_version").set_value("3.4.3").run()
     assert app.selectbox(key="official_version").value == "3.4.3"
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
-    assert "最新已收录版本" in visible
-    assert "最近收录资料" in visible and "2026-09-28 09:15 UTC" in visible
+    assert "最新已收录" in app.selectbox(key="official_version").options[0]
+    assert "最近收录：" in visible and "2026-09-28 09:15 UTC" in visible
 
 
 def test_offline_version_fallback_is_not_presented_as_latest(monkeypatch):
@@ -421,10 +543,10 @@ def test_offline_version_fallback_is_not_presented_as_latest(monkeypatch):
     next(button for button in app.button if button.label == "版本化知识检索").click().run()
 
     assert not app.exception
-    assert app.selectbox(key="official_version").value == "3.4.3"
+    assert app.selectbox(key="official_version").value == "等待连接"
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
     assert "无法确认最新已收录版本" in visible
-    assert "离线回退配置" in visible
+    assert "暂未获取当前版本信息" in visible
 
 
 def test_agent_result_prioritizes_analysis_and_pairs_actions_with_evidence(monkeypatch):
@@ -578,7 +700,7 @@ def test_review_export_records_task_evidence_and_human_decision_without_raw_draf
     assert report["selected_source_id"] == "3.4.3:zh:guide/test:1"
     assert report["public_baseline_written"] is False
     assert report["proposed_after_sha256"]
-    assert report["schema_version"] == 2
+    assert report["schema_version"] == 3
     assert "private proposed text" not in json.dumps(report, ensure_ascii=False)
 
 
@@ -606,7 +728,7 @@ def test_generation_rate_limit_keeps_evidence_and_explains_retry(monkeypatch):
     assert "test-request-1" in visible
 
 
-def test_long_hit_fragment_is_complete_once_and_names_github_as_snapshot(monkeypatch):
+def test_long_hit_fragment_is_complete_once_and_links_to_original_page(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
 
@@ -623,7 +745,7 @@ def test_long_hit_fragment_is_complete_once_and_names_github_as_snapshot(monkeyp
     visible = "\n".join(item.value for item in app.markdown)
     assert visible.count("命中证据。") == 200
     assert all("完整命中片段" not in item.label for item in app.expander)
-    assert "在 GitHub 查看固定版本来源" in visible
+    assert "阅读原始页面" in visible
 
 
 def test_generated_answer_shows_cited_evidence_first_and_collapses_other_hits(monkeypatch):
@@ -670,7 +792,7 @@ def test_agent_starts_with_natural_language_and_uses_rag_to_find_candidates(monk
     from services.public_knowledge_client import PublicKnowledgeClient
 
     calls = []
-    def search(self, question, *, version, language, top_k=5):
+    def search(self, question, *, version, language, top_k=5, **scope):
         calls.append((question, version, language, top_k))
         return {"query": question, "results": [dict(CHUNK)], "retrieval_policy": "bm25"}
 
@@ -680,15 +802,14 @@ def test_agent_starts_with_natural_language_and_uses_rag_to_find_candidates(monk
 
     assert app.text_area(key="official_change_request").label == "描述研发变更"
     assert not any(box.label == "选择真实研发资料" for box in app.selectbox)
-    change_request = "计划将全局参数优先级调整为最高，请找出需要核对的研发资料。"
+    change_request = "计划将 J4012 的软件基线升级至 JetPack 7.2，请核对升级和验证资料。"
     app.text_area(key="official_change_request").set_value(change_request).run()
     next(button for button in app.button if button.label == "检索资料并分析影响").click().run()
 
     assert not app.exception
-    assert calls == [
-        (f"{change_request} global parameter", "3.4.3", "zh", 5),
-        (f"{change_request} global parameter", "3.4.3", "en", 5),
-    ]
+    assert calls
+    assert all(call[2] == "zh" for call in calls)
+    assert all(call[1] == "3.4.3" for call in calls)
     assert app.session_state["official_request_review"]["request_summary"] == change_request
     assert app.session_state["official_request_review"]["impacts"][0]["evidence"]["chunk_id"] == CHUNK["chunk_id"]
     headings = [item.value for item in app.subheader]
@@ -696,19 +817,13 @@ def test_agent_starts_with_natural_language_and_uses_rag_to_find_candidates(monk
     assert "建议引用的官方片段（变更分析）" not in headings
     evidence_ids = [item["chunk_id"] for item in app.session_state["official_request_review"]["retrieved_results"]]
     assert len(evidence_ids) == len(set(evidence_ids))
-    assert "检索覆盖不完整" in "\n".join(item.value for item in app.warning)
 
 
 def test_rag_suggested_question_is_muted_placeholder_and_used_when_submitted_blank(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
 
-    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Autoware", "repository": "tomato-ros/autoware-documentation-cn",
-        "baseline_version": "community-zh-2026-01", "current_version": "latest",
-        "available_versions": ["latest", "community-zh-2026-07", "community-zh-2026-01"],
-        "languages": ["zh-CN"],
-    })
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: _edge_workspace())
 
     submitted = []
     monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: (
@@ -722,11 +837,12 @@ def test_rag_suggested_question_is_muted_placeholder_and_used_when_submitted_bla
 
     question = app.text_area(key="official_question")
     assert question.value == ""
-    assert question.placeholder == "如何启动 Autoware 并通过命令行参数启用或禁用模块？"
+    example = _edge_workspace()["domain_profile"]["example_queries"][0]
+    assert question.placeholder == example
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
 
     assert not app.exception
-    assert submitted == ["如何启动 Autoware 并通过命令行参数启用或禁用模块？"]
+    assert submitted == [example]
     assert "依据官方资料生成的回答。" in "\n".join(item.value for item in app.markdown)
 
 
@@ -750,29 +866,23 @@ def test_rag_generation_uses_user_edited_question(monkeypatch):
     assert submitted == ["规划验证器如何检查轨迹？"]
 
 
-def test_suggested_questions_match_current_autoware_corpus(monkeypatch):
+def test_suggested_questions_match_current_edge_ai_profile(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
-    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Autoware", "repository": "tomato-ros/autoware-documentation-cn",
-        "baseline_version": "community-zh-2026-01", "current_version": "latest",
-        "available_versions": ["latest", "community-zh-2026-07", "community-zh-2026-01"],
-        "languages": ["zh-CN"],
-    })
+    workspace = _edge_workspace()
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: workspace)
     app = AppTest.from_file(APP, default_timeout=40).run()
     next(button for button in app.button if button.label == "版本化知识检索").click().run()
 
     example_picker = app.selectbox(key="official_example")
     options = example_picker.options
-    assert "如何启动 Autoware 并通过命令行参数启用或禁用模块？" in options
-    assert "如何使用 ROS 2 日志调试 Autoware？" in options
-    assert "Autoware 规划模块由哪些部分组成？" in options
+    assert options == workspace["domain_profile"]["example_queries"]
     assert not any(question.isascii() for question in options)
     assert not any("DolphinScheduler" in question or "API server" in question for question in options)
     assert not any(item.label == "从已收录资料选择示例问题" for item in app.expander)
     assert example_picker.label == "示例问题（选择后可编辑）"
 
-    selected_question = "如何启动 Autoware 并通过命令行参数启用或禁用模块？"
+    selected_question = options[1]
     example_picker.set_value(selected_question).run()
     assert app.text_area(key="official_question").value == selected_question
 
@@ -1202,6 +1312,18 @@ def test_relative_corpus_links_point_to_the_pinned_official_source():
     assert "[官方发布](https://github.com/apache/dolphinscheduler/releases)" in rendered
 
 
+def test_relative_wiki_links_resolve_to_seeed_origin_without_rewriting_external_links():
+    from public_workbench import _rewrite_relative_source_links
+
+    source_url = "https://wiki.seeedstudio.com/cn/jetson_developtool_flash_firmware/"
+    content = "[刷写指南](/cn/flash/jetpack_to_selected_product/) [同目录](../faq/) [外部](https://example.com/a)"
+    rendered = _rewrite_relative_source_links(content, source_url)
+
+    assert "[刷写指南](https://wiki.seeedstudio.com/cn/flash/jetpack_to_selected_product/)" in rendered
+    assert "[同目录](https://wiki.seeedstudio.com/cn/faq/)" in rendered
+    assert "[外部](https://example.com/a)" in rendered
+
+
 def test_wide_layout_uses_full_main_column_and_unframed_back_arrow():
     from components.public_theme import PUBLIC_CSS
 
@@ -1316,16 +1438,16 @@ def test_public_agent_shows_explicit_document_reference_without_confirming_parag
 
     analyze = public_workbench._analyze_hypothetical
 
-    def with_document_reference(client, selected, proposed):
-        result = analyze(client, selected, proposed)
+    def with_document_reference(client, selected, proposed, **kwargs):
+        result = analyze(client, selected, proposed, **kwargs)
         result["confirmed_relations"] = [{
             "relation_type": "DOCUMENT_REFERENCE",
-            "source_document_id": "3.4.3:en:proposals/dsip-107-implementation",
-            "target_document_id": "3.4.3:en:proposals/dsip-107-proposal",
-            "source_chunk_id": "3.4.3:en:proposals/dsip-107-implementation:2",
-            "source_heading": "Purpose of the pull request",
-            "source_url": "https://github.com/apache/dolphinscheduler/pull/18464",
-            "source_excerpt": "This pull request is an independent part of DSIP #18454.",
+            "source_document_id": "wiki-1eadc6584f96:zh:jetson-flash-guide",
+            "target_document_id": "wiki-1eadc6584f96:zh:jetson-carrier-board-guide",
+            "source_chunk_id": "wiki-1eadc6584f96:zh:jetson-flash-guide:2",
+            "source_heading": "固件刷写与载板选择",
+            "source_url": "https://wiki.seeedstudio.com/cn/jetson_developtool_flash_firmware/",
+            "source_excerpt": "刷写前需要确认设备型号、目标载板与系统镜像版本。",
         }]
         return result
 
@@ -1337,277 +1459,66 @@ def test_public_agent_shows_explicit_document_reference_without_confirming_parag
     assert not app.exception
     assert "已确认文档关联" in {item.value for item in app.subheader}
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
-    assert "independent part of DSIP #18454" in visible
-    assert "https://github.com/apache/dolphinscheduler/pull/18464" in visible
-    assert "不证明所选段落受影响" in visible
+    assert "刷写前需要确认设备型号、目标载板与系统镜像版本" in visible
+    assert "https://wiki.seeedstudio.com/cn/jetson_developtool_flash_firmware/" in visible
+    assert "官方实现 PR" not in visible and "DSIP" not in visible
+    assert "不代表所选段落受影响" in visible
     assert "待核对资料" in visible
     assert "已确认关系" not in visible
 
 
-def test_public_navigation_exposes_versions_sources_evaluation_and_limits(monkeypatch):
+def test_public_navigation_exposes_single_domain_and_pending_edge_evaluation(monkeypatch):
     _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: _edge_workspace())
     app = AppTest.from_file(APP, default_timeout=40).run()
     labels = {button.label for button in app.button}
     assert {"总览", "版本化知识检索", "版本与历史", "资料来源", "发起变更审查", "影响候选", "修改建议对照", "检索评测", "已知限制"} <= labels
     next(button for button in app.button if button.label == "检索评测").click().run()
     assert not app.exception
-    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader))
-    assert "技术选型依据" in visible
-    assert "字符哈希向量基线" in visible
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader) + list(app.warning))
+    assert "当前语料评测状态" in visible
+    assert "尚未完成" in visible
     assert "BM25" in visible
-    assert "Rerank" in visible
-    assert "43 条可回答" in visible
-    assert "双来源" in visible and "0/4" in visible
+    assert "Autoware" not in visible and "DolphinScheduler" not in visible
+    assert "43 条可回答" not in visible
 
 
-def test_benchmark_prefers_server_verified_v3_and_labels_old_numbers_historical(monkeypatch):
+def test_benchmark_ignores_other_corpus_numbers_for_new_edge_workspace(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
-
-    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Apache DolphinScheduler", "baseline_version": "3.4.2",
-        "current_version": "3.4.3", "source_count": 132, "chunk_count": 1322,
-        "retrieval_policy": "bm25", "retrieval_evaluation_status": "v3_validated",
+    workspace = {
+        **_edge_workspace(),
         "retrieval_evaluation": {
-            "name": "quality_v3", "policy": "bm25", "top_k": 5,
-            "dev": {
-                "question_count": 36, "answerable_count": 32, "no_answer_count": 4,
-                "complete_source_count": 30, "multi_source_question_count": 8,
-                "complete_multi_source_count": 6, "evidence_marker_found": 44,
-                "evidence_marker_count": 48, "source_hit_at_5": 0.96875,
-                "source_recall_at_5_macro": 0.953125, "mrr": 0.921875,
-                "warm_search_p95_ms": 7.52,
-            },
-            "holdout": {
-                "question_count": 36, "answerable_count": 32, "no_answer_count": 4,
-                "complete_source_count": 27, "multi_source_question_count": 8,
-                "complete_multi_source_count": 4, "evidence_marker_found": 37,
-                "evidence_marker_count": 49, "source_hit_at_5": 0.875,
-                "source_recall_at_5_macro": 0.859375, "mrr": 0.7604167,
-                "warm_search_p95_ms": 7.02,
-            },
+            "name": "autoware_accuracy_v2", "case_count": 90,
+            "holdout": {"required_source_recall_at_5": 0.99},
         },
-    })
-    app = AppTest.from_file(APP, default_timeout=40).run()
-    next(button for button in app.button if button.label == "检索评测").click().run()
-
-    assert not app.exception
-    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader))
-    assert "V3 当前扩充语料" in visible
-    assert "27/32" in visible and "4/8" in visible and "37/49" in visible
-    assert "历史选型（旧语料）" in visible
-    assert "正在单独复评" not in visible
-
-
-def test_benchmark_does_not_present_local_v3_as_current_without_matching_backend_release(monkeypatch):
-    _mock_client(monkeypatch)
-    app = AppTest.from_file(APP, default_timeout=40).run()
-    next(button for button in app.button if button.label == "检索评测").click().run()
-    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader))
-
-    assert not app.exception
-    assert "V3 当前扩充语料" not in visible
-    assert "历史选型（旧语料）" in visible
-
-
-def test_verified_autoware_v3_exposes_cross_source_holdout_gap(monkeypatch):
-    _mock_client(monkeypatch)
-    from services.public_knowledge_client import PublicKnowledgeClient
-
-    metrics = {
-        "query_count": 11,
-        "complete_required_sources_at_5": 0.9,
-        "required_source_recall_at_5": 0.9167,
-        "image_evidence_hit_at_5": 1.0,
-        "image_evidence_hits": "2/2",
-        "version_mismatch_count": 0,
-        "no_answer_nonempty_candidate_rate": 1.0,
-        "no_answer_cases": 1,
-        "search_p95_ms": 3.6,
     }
-    baseline = {**metrics, "image_evidence_hit_at_5": 0.0, "image_evidence_hits": "0/2"}
-    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
-        "current_version": "0.52.0", "source_count": 26, "chunk_count": 562,
-        "retrieval_policy": "bm25_figure_ocr",
-        "retrieval_evaluation_status": "autoware_retrieval_v3_validated",
-        "retrieval_evaluation": {
-            "name": "autoware_retrieval_v3", "policy": "bm25_figure_ocr", "top_k": 5,
-            "metric_scope": "retrieval only; no LLM answer quality or hallucination claim",
-            "dev": {**metrics, "query_count": 32, "complete_required_sources_at_5": 1.0,
-                    "required_source_recall_at_5": 1.0, "image_evidence_hits": "3/4"},
-            "holdout": metrics, "bm25_dev": baseline, "bm25_holdout": baseline,
-        },
-    })
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: workspace)
     app = AppTest.from_file(APP, default_timeout=40).run()
     next(button for button in app.button if button.label == "检索评测").click().run()
 
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader) + list(app.warning))
     assert not app.exception
-    assert any("跨资料问题未找齐全部必需来源" in item.value for item in app.warning)
-    assert any("无答案问题仍返回了候选" in item.value for item in app.warning)
-    assert any("Autoware V3 评测与失败案例" in item.value for item in app.markdown)
+    assert "尚未完成与语料指纹绑定的冻结评测" in visible
+    assert "0.99" not in visible and "autoware_accuracy_v2" not in visible
+    assert "其他领域语料上的分数不适用于本知识空间" in visible
 
 
-def test_quality_v1_benchmark_displays_current_bilingual_and_image_limits(monkeypatch):
+def test_edge_version_page_distinguishes_snapshot_from_software_baselines(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
-
-    baseline = {
-        "query_count": 31, "required_source_recall_at_5": 0.9143,
-        "complete_required_sources_at_5": 0.8929, "mrr_at_5": 0.7319,
-        "ndcg_at_5": 0.8071, "image_evidence_hit_at_5": 0.0,
-        "image_evidence_hits": "0/3", "version_mismatch_count": 0,
-        "no_answer_nonempty_candidate_rate": 1.0,
-        "no_answer_nonempty_candidates": "3/3", "search_p95_ms": 46.687,
-    }
-    selected = {**baseline, "image_evidence_hit_at_5": 0.6667,
-                "image_evidence_hits": "2/3", "search_p95_ms": 49.893,
-                "mean_retrieval_operations_per_query": 2}
-    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
-        "current_version": "latest", "source_count": 1148, "chunk_count": 7927,
-        "retrieval_policy": "bm25_figure_ocr",
-        "retrieval_evaluation_status": "autoware_quality_v1_validated",
-        "retrieval_evaluation": {
-            "name": "autoware_quality_v1", "policy": "bm25_figure_ocr", "top_k": 5,
-            "case_count": 82, "case_split_counts": {"dev": 51, "holdout": 31},
-            "category_counts": {"single_fact": 46, "image_evidence": 6},
-            "metric_scope": "retrieval candidate coverage only",
-            "dev": {**baseline, "query_count": 51},
-            "holdout": selected, "bm25_dev": {**baseline, "query_count": 51},
-            "bm25_holdout": baseline,
-        },
-    })
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: _edge_workspace())
+    monkeypatch.setattr(PublicKnowledgeClient, "documents", lambda self: [])
     app = AppTest.from_file(APP, default_timeout=40).run()
-    next(button for button in app.button if button.label == "检索评测").click().run()
+    next(button for button in app.button if button.label == "版本与历史").click().run()
 
+    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
     assert not app.exception
-    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader))
-    assert "冻结双语题集" in visible
-    assert "0/3" in visible and "2/3" in visible
-    assert "不是模型误答率" in visible
-    assert "不代表答案准确率" in visible
-    assert "autoware_retrieval_v3_validated" not in visible
-
-
-def test_accuracy_v2_benchmark_shows_current_strategy_and_rejected_candidate(monkeypatch):
-    _mock_client(monkeypatch)
-    from services.public_knowledge_client import PublicKnowledgeClient
-
-    current = {
-        "required_source_recall_at_5": 0.4,
-        "complete_required_sources_at_5": 0.3,
-        "required_source_recall_at_20": 0.58,
-        "mrr_at_5": 0.2596,
-        "ndcg_at_5": 0.3079,
-        "explicit_version_mismatch_count": 0,
-        "search_p95_ms": 52.779,
-        "query_count": 45,
-        "image_hit_count": 6,
-        "image_case_count": 6,
-        "answer_accuracy": None,
-        "unanswerable_candidate_rate": 1.0,
-    }
-    candidate = {
-        **current,
-        "required_source_recall_at_5": 0.38,
-        "required_source_recall_at_20": 0.5,
-        "mrr_at_5": 0.2196,
-        "ndcg_at_5": 0.2737,
-        "search_p95_ms": 55.852,
-    }
-    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
-        "current_version": "latest", "source_count": 1148, "chunk_count": 7927,
-        "retrieval_policy": "bm25_figure_ocr",
-        "retrieval_evaluation_status": "autoware_accuracy_v2_validated",
-        "retrieval_evaluation": {
-            "name": "autoware_accuracy_v2", "policy": "bm25_figure_ocr", "top_k": 5,
-            "case_count": 90, "case_split_counts": {"dev": 45, "holdout": 45},
-            "metric_scope": "retrieval source recall and ranking only",
-            "dev": current, "holdout": current, "bm25_dev": current, "bm25_holdout": current,
-            "candidate": {"policy": "hybrid_figure_ocr", "dev": candidate,
-                          "holdout": candidate, "decision": "not_promoted",
-                          "decision_reason": "候选跨语方向回退。"},
-            "candidate_decision": "not_promoted",
-            "interpretation": "not answer accuracy or production latency",
-        },
-        "change_review_evaluation": {
-            "name": "autoware_accuracy_v2_agent", "case_count": 57,
-            "holdout": {
-                "bilingual": {"case_count": 28, "evidence_source_recall": 0.6364,
-                              "complete_evidence_source_rate": 0.5652,
-                              "retrieval_check_coverage_rate": 0.8161,
-                              "retrieval_language_coverage_rate": 0.9107,
-                              "complete_retrieval_case_rate": 0.7143,
-                              "search_calls_mean": 6.0, "latency_p95_ms": 341.352},
-                "zh": {"case_count": 28, "evidence_source_recall": 0.2727,
-                       "complete_evidence_source_rate": 0.2609,
-                       "retrieval_check_coverage_rate": 0.8621,
-                       "retrieval_language_coverage_rate": 0.8571,
-                       "complete_retrieval_case_rate": 0.8571,
-                       "search_calls_mean": 3.0, "latency_p95_ms": 171.422},
-            },
-        },
-    })
-    app = AppTest.from_file(APP, default_timeout=40).run()
-    next(button for button in app.button if button.label == "检索评测").click().run()
-    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader))
-
-    assert not app.exception
-    assert "当前 RAG 检索策略评测" in visible
-    assert "BM25 + 已校对图片文字" in visible
-    assert "Hybrid + 图片 OCR 候选未晋级" in visible
-    assert "Agent 变更审查检索策略对比" in visible
-    assert "来源标签是从 RAG 题集转移的检索锚点" in visible
-    assert "约翻倍" in visible
-    assert "不代表生成答案准确率" in visible
-    assert "52.78 ms" in visible
-
-
-def test_benchmark_shows_v4_bm25_and_rejected_image_candidate_tradeoff(monkeypatch):
-    _mock_client(monkeypatch)
-    from services.public_knowledge_client import PublicKnowledgeClient
-
-    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Apache DolphinScheduler", "current_version": "3.4.3",
-        "source_count": 132, "chunk_count": 1322, "retrieval_policy": "bm25",
-        "retrieval_evaluation_status": "v4_bm25_validated",
-        "retrieval_evaluation": {
-            "name": "quality_v4", "policy": "bm25", "top_k": 5,
-            "interpretation": "Retrieval only.",
-            "dev": {"question_count": 51, "complete_source_at_5": 0.7436,
-                     "anchor_recall_at_5": 0.5510, "image_hit_at_5": 0.0,
-                     "version_mismatch_count": 0, "no_answer_nonempty_candidate_rate": 1.0,
-                     "warm_p95_ms": 9.83},
-            "holdout": {"question_count": 53, "complete_source_at_5": 0.8571,
-                         "anchor_recall_at_5": 0.7925, "image_hit_at_5": 0.0,
-                         "version_mismatch_count": 0, "no_answer_nonempty_candidate_rate": 1.0,
-                         "warm_p95_ms": 6.20},
-        },
-        "retrieval_experiment": {
-            "name": "quality_v4_image_ocr_candidate", "status": "candidate_not_promoted",
-            "candidate_policy": "bm25_figure_ocr",
-            "decision_reason": "原文锚点召回下降 9.4 个百分点，超过 5 个百分点门槛。",
-            "holdout_candidate": {"question_count": 53, "complete_source_at_5": 0.9184,
-                                  "anchor_recall_at_5": 0.6981, "image_hit_at_5": 1.0,
-                                  "warm_p95_ms": 8.33},
-            "promotion_comparison": {"passed": False},
-        },
-    })
-
-    app = AppTest.from_file(APP, default_timeout=40).run()
-    next(button for button in app.button if button.label == "检索评测").click().run()
-    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader))
-
-    assert not app.exception
-    assert "V4 当前 BM25 基线" in visible
-    assert "图片 OCR 候选未晋级" in visible
-    assert "BM25（线上默认）" in visible
-    assert "BM25 + 图片 OCR（实验候选）" in visible
-    assert "原文锚点召回下降 9.4 个百分点" in visible
-
-
+    assert "当前固定中文资料快照" in visible
+    assert "JetPack / L4T 基线" in visible
+    assert "资料快照与软件发行版本分别管理" not in visible
+    assert "不等于已验证兼容" in visible
 def test_relative_official_link_stays_on_commit_or_becomes_plain_text():
     from public_workbench import _rewrite_relative_source_links
 
@@ -1655,7 +1566,7 @@ def test_agent_review_sections_remain_session_bound_after_navigation(monkeypatch
     assert not app.exception
     next(button for button in app.button if button.label == "影响候选").click().run()
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
-    assert "可能相关资料" in visible or "在 GitHub 查看固定版本来源" in visible
+    assert "可能相关资料" in visible or "阅读原始页面" in visible
     next(button for button in app.button if button.label == "人工审核").click().run()
     assert app.session_state["official_request_review"]["sandbox_only"] is True
     next(button for button in app.button if button.label == "确认已审阅本次影响分析").click().run()

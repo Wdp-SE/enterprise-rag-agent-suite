@@ -79,11 +79,15 @@ def _request_context_matches(
     result: dict | None, *, summary: str, target_version: str,
     objective: str, constraints: str, validation_plan: str,
     selected_type_code: str | None, impact_scope: str,
+    device_scope: dict[str, str | None] | None = None,
 ) -> bool:
     """Avoid stale results while keeping pre-RAG scope rejections visible."""
     if not result or result.get("request_summary") != summary.strip():
         return False
     plan = result.get("request_plan") or {}
+    plan_scope = plan.get("device_scope") or {}
+    if any(plan_scope.get(key) != value for key, value in (device_scope or {}).items()):
+        return False
     if result.get("scope_status") == "OUT_OF_SCOPE":
         return True
     context = result.get("request_context") or {}
@@ -103,7 +107,7 @@ def _request_context_matches(
 
 def _published_language_options(workspace: dict | None) -> list[tuple[str, str]]:
     locales = set((workspace or {}).get("languages") or [])
-    if "zh-CN" in locales:
+    if locales.intersection({"zh", "zh-CN", "zh-TW"}):
         return [("zh", "中文")]
     if "en-US" in locales:
         return [("en", "English")]
@@ -169,23 +173,50 @@ def _source_coverage_text(workspace: dict | None) -> str | None:
     if not workspace:
         return None
     rows = workspace.get("source_breakdown") or []
-    counts = {
-        (str(row.get("version", "")), str(row.get("locale", "")), str(row.get("source_type", ""))): int(row.get("count", 0))
-        for row in rows if isinstance(row, dict)
-    }
-    chinese = sum(
-        count for (_version, locale, source_type), count in counts.items()
-        if locale == "zh-CN" and source_type == "community_translation"
-    )
-    if chinese == 0:
+    counts = [row for row in rows if isinstance(row, dict) and int(row.get("count", 0)) > 0]
+    if not counts:
         return None
-    snapshots = sorted({
-        version for (version, locale, source_type), count in counts.items()
-        if count and locale == "zh-CN" and source_type == "community_translation"
-    })
-    labels = workspace.get("version_labels") or {}
-    snapshot_names = "、".join(str(labels.get(version, version)) for version in snapshots)
-    return f"资料覆盖：{chinese} 条中文社区资料版本记录；已收录 {len(snapshots)} 个固定快照：{snapshot_names}。"
+    families = sorted({str(row.get("document_family", "工程资料")).replace("_", " ") for row in counts})
+    source_count = int(workspace.get("source_count") or sum(int(row.get("count", 0)) for row in counts))
+    snapshot = str(workspace.get("current_version") or "当前快照")
+    return f"当前中文快照 {snapshot} 收录 {source_count} 份资料，覆盖：{'、'.join(families)}。"
+
+
+_DEVICE_SCOPE_FIELDS = (
+    ("device_model", "hardware_models", "设备型号"),
+    ("module_sku", "module_skus", "模组 SKU"),
+    ("carrier_board", "carrier_boards", "载板"),
+    ("software_baseline", "software_baselines", "软件基线"),
+)
+
+
+def _device_scope_options(workspace: dict | None) -> dict[str, list[str]]:
+    workspace = workspace or {}
+    return {
+        key: list(dict.fromkeys(str(value) for value in workspace.get(source, []) if value))
+        for key, source, _label in _DEVICE_SCOPE_FIELDS
+    }
+
+
+def _device_scope_controls(workspace: dict | None, *, prefix: str) -> dict[str, str | None]:
+    """Render manifest-backed hardware/software filters and return confirmed values."""
+    options = _device_scope_options(workspace)
+    selected = {key: None for key, _source, _label in _DEVICE_SCOPE_FIELDS}
+    available = [field for field in _DEVICE_SCOPE_FIELDS if options[field[0]]]
+    if not available:
+        return selected
+    with st.expander("可选：限定设备与软件环境", expanded=False):
+        st.caption("选择后会作为硬过滤条件；未指定的维度不会被推断为兼容。")
+        columns = st.columns(min(4, len(available)), gap="small")
+        for index, (key, _source, label) in enumerate(available):
+            widget_key = f"{prefix}_{key}"
+            choices = ["不限定", *options[key]]
+            if st.session_state.get(widget_key) not in choices:
+                st.session_state[widget_key] = "不限定"
+            with columns[index % len(columns)]:
+                value = st.selectbox(label, choices, key=widget_key)
+            selected[key] = value if value != "不限定" else None
+    return selected
 
 
 def _client() -> PublicKnowledgeClient:
@@ -265,25 +296,34 @@ def _replace_markdown_images(content: str) -> str:
 
 
 def _rewrite_relative_source_links(content: str, source_url: str) -> str:
-    """Keep Markdown navigation on the same pinned official GitHub commit."""
+    """Resolve relative Markdown links while staying on the same trusted source host."""
     source = urlsplit(source_url)
     pinned_prefix = re.match(
         r"^/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/blob/([0-9a-f]{40})/", source.path
     )
-    if source.scheme != "https" or source.netloc != "github.com" or not pinned_prefix:
+    wiki_source = source.scheme == "https" and source.netloc == "wiki.seeedstudio.com"
+    github_source = source.scheme == "https" and source.netloc == "github.com" and pinned_prefix
+    if not wiki_source and not github_source:
         return content
-    pinned_root = f"https://github.com{pinned_prefix.group(1)}/blob/{pinned_prefix.group(2)}/"
+    pinned_root = (
+        f"https://github.com/{pinned_prefix.group(1)}/blob/{pinned_prefix.group(2)}/"
+        if pinned_prefix else None
+    )
 
     def replace(match: re.Match[str]) -> str:
         destination = match.group(2).strip()
         parsed = urlsplit(destination)
         if (
             not destination or any(char.isspace() for char in destination)
-            or parsed.scheme or parsed.netloc or parsed.path.startswith("/")
+            or parsed.scheme or parsed.netloc
+            or (not wiki_source and parsed.path.startswith("/"))
         ):
             return match.group(0)
         resolved = urljoin(source_url, destination)
-        if not resolved.startswith(pinned_root):
+        resolved_parts = urlsplit(resolved)
+        if resolved_parts.scheme != "https" or resolved_parts.netloc != source.netloc:
+            return match.group(0)
+        if pinned_root and not resolved.startswith(pinned_root):
             return match.group(1)
         return f"[{match.group(1)}]({resolved})"
 
@@ -360,7 +400,7 @@ def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None
                 if row.get("rendered_url"):
                     st.markdown(f"[阅读中文社区资料]({row['rendered_url']})")
         if row.get("source_url"):
-            st.markdown(f"[查看固定提交来源]({row['source_url']})")
+            st.markdown(f"[阅读原始页面]({row['source_url']})")
         with st.expander("技术详情"):
             st.code(f"document_key={row.get('document_key', '')}\nchunk_id={row.get('chunk_id', '')}\npolicy={row.get('retrieval_policy', '')}")
             if is_image:
@@ -376,6 +416,15 @@ def _verified_image_citation(row: dict) -> bool:
     if not re.fullmatch(r"[0-9a-f]{64}", sha) or not str(row.get("content", "")).strip():
         return False
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
+        return False
+    workspace = st.session_state.get("official_workspace") or {}
+    allowed_repositories = set(workspace.get("repositories") or [workspace.get("repository", "")])
+    pinned_commits = {
+        str(item.get("commit"))
+        for item in [*(workspace.get("source_registry") or []), *(workspace.get("snapshots") or [])]
+        if isinstance(item, dict) and item.get("commit")
+    }
+    if repository not in allowed_repositories or commit not in pinned_commits:
         return False
     raw_prefix = f"https://raw.githubusercontent.com/{repository}/{commit}/"
     source_prefix = f"https://github.com/{repository}/blob/{commit}/"
@@ -417,7 +466,7 @@ def _consistency(notes: list[dict], *, primary: dict | None = None) -> None:
                 st.markdown(f"明确字面值：`{note.get('parameter', '参数')}` → **{values}**")
             for source in note.get("sources", []):
                 st.markdown(
-                    f"- [{source.get('version', '版本未标注')} · {source.get('locale', '语言未标注')} · 固定来源（GitHub）]"
+                    f"- [{source.get('version', '版本未标注')} · {source.get('locale', '语言未标注')} · 原始来源]"
                     f"({source.get('source_url', '')})"
                 )
 
@@ -524,17 +573,17 @@ def _home(ready: bool, workspace: dict | None) -> None:
     version_range = _version_option_label(current, workspace) if current else "服务未连接，无法确认"
     name = _workspace_name(workspace)
     locales = (workspace or {}).get("languages") or []
-    language_label = "中文" if locales == ["zh-CN"] else "服务连接后确认"
+    language_label = "中文" if set(locales).intersection({"zh", "zh-CN", "zh-TW"}) else "服务连接后确认"
     st.markdown('<div class="masthead"><span class="kicker">公开研发资料 / 版本化知识空间</span></div>', unsafe_allow_html=True)
     st.title("研发知识版本服务与变更影响审查")
     st.write(
-        f"基于 {name} 已收录的中文社区译本，提供资料检索与变更影响审查；检索结果保留固定提交来源，"
-        "审查建议由人工确认。默认检索 2026-07 快照，也可选择 2026-01 中文历史快照。"
+        f"基于 {name} 的中文公开工程资料，按资料快照、设备型号与软件环境检索；"
+        "变更审查只整理可追溯的影响候选和证据缺口，最终由工程师确认。"
     )
     state = "已连接" if ready else "等待连接"
     status = [
         ("知识空间", name),
-        ("资料来源", "固定提交的中文社区译本"),
+        ("资料来源", "固定来源的中文公开工程资料"),
         ("默认检索范围", version_range),
         ("语言", language_label),
         ("服务状态", state),
@@ -550,7 +599,7 @@ def _home(ready: bool, workspace: dict | None) -> None:
         with st.container(border=True, key="public_rag_module"):
             _module_heading("版本化研发知识服务 · RAG")
             st.markdown("### 版本化知识检索与问答")
-            st.write("在固定版本的中文研发资料中检索，并保留原文出处。")
+            st.write("按资料快照、设备和软件环境检索工程资料，并保留原文出处。")
             st.button("进入知识检索", type="primary", use_container_width=True,
                       on_click=_navigate, args=("版本检索与问答",))
     with right:
@@ -587,7 +636,7 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
     default_version_label = _version_option_label(current, workspace) if current else "无法确认最新已收录版本"
     st.markdown(
         f'<div class="context-strip"><span><strong>知识空间</strong> {escape(name)}</span>'
-        f'<span><strong>资料</strong> 固定版本中文社区译本</span>'
+        f'<span><strong>资料</strong> 固定来源的中文公开工程资料</span>'
         f'<span><strong>默认版本</strong> {escape(default_version_label)}</span>'
         f'<span><strong>默认检索</strong> {escape(default_policy)}</span></div>',
         unsafe_allow_html=True,
@@ -618,18 +667,21 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
             )
         with c:
             st.markdown("**资料类型**")
-            st.caption("中文设计资料 / 使用指南 / 工程规范")
-    if str((workspace or {}).get("workspace", "")).casefold() == "autoware":
-        examples = [
-            "如何启动 Autoware 并通过命令行参数启用或禁用模块？",
-            "如何使用 ROS 2 日志调试 Autoware？",
-            "Autoware 规划模块由哪些部分组成？",
-        ]
-    else:
-        examples = [
-            f"{name} 中某个功能或参数是如何设计的？",
-            "哪些公开资料描述了这个变更的相关模块与验证方式？",
-        ]
+            families = sorted({
+                str(row.get("document_family", "工程资料")).replace("_", " ")
+                for row in (workspace or {}).get("source_breakdown", []) if isinstance(row, dict)
+            })
+            st.caption(" / ".join(families[:4]) if families else "当前公开工程资料")
+    selected_scope = _device_scope_controls(workspace, prefix="official")
+    filters = {key: value for key, value in selected_scope.items() if value is not None}
+    profile = (workspace or {}).get("domain_profile") or {}
+    examples = list(profile.get("example_queries") or [])
+    examples = [str(item) for item in examples if isinstance(item, str) and item.strip()]
+    if not examples:
+        examples = [f"{name} 中某个功能或参数是如何设计的？"]
+    example_key = "official_example"
+    if st.session_state.get(example_key) not in examples:
+        st.session_state[example_key] = examples[0]
     st.selectbox(
         "示例问题（选择后可编辑）", examples, key="official_example",
         on_change=_use_example,
@@ -661,34 +713,36 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
             payload = _request(
                 lambda: client.query_official(
                     submitted_question, version=version, language=language, top_k=top_k,
+                    **filters,
                 ),
                 fallback="知识问答暂不可用。",
             )
         if payload:
-            st.session_state["official_result"] = ("query", submitted_question, version, language, payload)
+            st.session_state["official_result"] = ("query", submitted_question, version, language, selected_scope, payload)
             st.session_state["official_result_top_k"] = top_k
     if search_now:
         with st.spinner("正在检索资料……"):
             payload = _request(
                 lambda: client.search(
                     submitted_question, version=version, language=language, top_k=top_k,
+                    **filters,
                 ),
                 fallback="资料检索暂不可用。",
             )
         if payload:
-            st.session_state["official_result"] = ("search", submitted_question, version, language, payload)
+            st.session_state["official_result"] = ("search", submitted_question, version, language, selected_scope, payload)
             st.session_state["official_result_top_k"] = top_k
     result = st.session_state.get("official_result")
     if (
         result
-        and result[1:4] == (submitted_question, version, language)
+        and result[1:5] == (submitted_question, version, language, selected_scope)
         and st.session_state.get("official_result_top_k", 5) == top_k
     ):
         if ready and "official_document_titles" not in st.session_state:
             docs = _request(client.documents, fallback="来源目录暂不可用，仍可查看原文链接。")
             if docs is not None:
                 _remember_document_titles(docs)
-        mode, _, _, _, payload = result
+        mode, _, _, _, _filters, payload = result
         st.markdown('<div class="section-rule">结果与核验</div>', unsafe_allow_html=True)
         if mode == "query":
             st.subheader("回答")
@@ -790,6 +844,9 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                 f"检索范围：{version} · 语言：{language} · Top-K：{top_k} · "
                 f"默认策略：{payload.get('retrieval_policy', '由服务配置')}"
             )
+            selected_filters = [(label, selected_scope.get(key)) for key, _source, label in _DEVICE_SCOPE_FIELDS if selected_scope.get(key)]
+            if selected_filters:
+                st.caption("设备/软件范围：" + " · ".join(f"{label}：{value}" for label, value in selected_filters))
             st.caption("候选排序分数只用于同一检索策略内的排序，不代表事实正确性。")
             generation = payload.get("generation") if mode == "query" else None
             if isinstance(generation, dict):
@@ -810,12 +867,15 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
         _scroll_to_results()
 
 
-def _analyze_hypothetical(client: PublicKnowledgeClient, selected: dict, proposed: str) -> dict:
+def _analyze_hypothetical(
+    client: PublicKnowledgeClient, selected: dict, proposed: str,
+    *, device_scope: dict[str, str | None] | None = None,
+) -> dict:
     agent_root = Path(__file__).resolve().parents[1] / "change-review-agent"
     if str(agent_root) not in sys.path:
         sys.path.insert(0, str(agent_root))
     from app.public_review import PublicReviewAgent
-    return PublicReviewAgent(client).analyze(selected, proposed)
+    return PublicReviewAgent(client).analyze(selected, proposed, **(device_scope or {}))
 
 
 def _analyze_change_request(
@@ -829,6 +889,7 @@ def _analyze_change_request(
     constraints: str | None = None,
     validation_plan: str | None = None,
     language_mode: str = "zh",
+    device_scope: dict[str, str | None] | None = None,
 ) -> dict:
     agent_root = Path(__file__).resolve().parents[1] / "change-review-agent"
     if str(agent_root) not in sys.path:
@@ -838,7 +899,7 @@ def _analyze_change_request(
         change_summary, change_type=change_type, impact_scope=impact_scope,
         target_version=target_version, objective=objective,
         constraints=constraints, validation_plan=validation_plan,
-        language_mode=language_mode,
+        language_mode=language_mode, **(device_scope or {}),
     )
 
 
@@ -861,13 +922,14 @@ def _impact_panel(result: dict) -> None:
         st.caption("该引用只确认文档关联，不代表所选段落受影响。")
         for reference in references:
             with st.container(border=True):
-                st.markdown("**官方实现 PR #18464 → DSIP #18454**")
+                relation_type = str(reference.get("relation_type") or "文档关联")
+                st.markdown(f"**{escape(relation_type.replace('_', ' '))}**")
                 st.caption(f"明确引用所在章节：{reference['source_heading']}")
                 excerpt = _rewrite_relative_source_links(
                     _replace_markdown_images(reference["source_excerpt"]), reference.get("source_url", "")
                 )
                 st.write(excerpt[:300] + ("…" if len(excerpt) > 300 else ""))
-                st.markdown(f"[在 GitHub 查看固定版本来源]({reference['source_url']})")
+                st.markdown(f"[阅读原始页面]({reference['source_url']})")
                 if len(excerpt) > 300:
                     with st.expander("查看完整引用原文"):
                         st.write(excerpt)
@@ -885,7 +947,7 @@ def _impact_panel(result: dict) -> None:
                 _replace_markdown_images(evidence.get("content", "")), evidence.get("source_url", "")
             )
             st.write(content[:300] + ("…" if len(content) > 300 else ""))
-            st.markdown(f"[在 GitHub 查看固定版本来源]({evidence['source_url']})")
+            st.markdown(f"[阅读原始页面]({evidence['source_url']})")
             if len(content) > 300:
                 with st.expander("查看完整相关片段"):
                     st.write(content)
@@ -1365,6 +1427,11 @@ def _agent(
     else:
         versions, default_version_index = _published_versions(workspace), 0
     name = _workspace_name(workspace)
+    profile = (workspace or {}).get("domain_profile") or {}
+    example_queries = [
+        str(value) for value in profile.get("example_queries", [])
+        if isinstance(value, str) and value.strip()
+    ]
     st.caption(f"用自然语言描述研发变更；Agent 调用 RAG 检索{version_scope}，再整理待核对的影响候选和建议。")
     st.info(f"本次分析仅保留在当前会话，不自动修改 {name} 上游项目或公共资料。")
     _remember_document_titles(docs)
@@ -1375,23 +1442,22 @@ def _agent(
     summary = st.text_area(
         "描述研发变更", height=120,
         placeholder=(
-            "例如：计划调整行为路径规划的 pull-out 判断条件，请检查相关参数、模块说明与验证资料。"
-            if str((workspace or {}).get("workspace", "")).casefold()
-            == "autoware"
-            else "例如：计划调整某个已收录功能的行为，请检查相关模块、参数和验证资料。"
+            f"例如：{example_queries[0]}；请补充目标设备和软件基线，便于缩小核查范围。"
+            if example_queries else "描述计划修改的设备、软件基线、部署或运维行为，并说明希望核对的资料。"
         ),
         key="official_change_request", on_change=_save_change_request,
     )
-    type_options = {
-        "自动识别": None,
-        "参数 / 配置变更": "parameter_config",
-        "接口 / 兼容性变更": "interface_compatibility",
-        "工作流 / 行为变更": "workflow_behavior",
-        "规划 / 轨迹行为变更": "planning_behavior",
-        "数据 / 存储变更": "data_storage",
-        "安全 / 权限变更": "security_permission",
-        "其他 / 待识别": "general",
-    }
+    type_options = {"自动识别": None}
+    for change_type in profile.get("change_types", []):
+        if not isinstance(change_type, dict):
+            continue
+        type_id = str(change_type.get("id") or "").strip()
+        label = str(change_type.get("label") or type_id).strip()
+        if type_id and label and type_id != "general":
+            type_options[label] = type_id
+    type_options["其他 / 待识别"] = "general"
+    if st.session_state.get("official_change_type") not in type_options:
+        st.session_state["official_change_type"] = "自动识别"
     with st.expander("可选：补充结构化变更信息"):
         selected_type = st.selectbox(
             "变更类型", list(type_options), key="official_change_type",
@@ -1399,12 +1465,7 @@ def _agent(
         )
         impact_scope = st.text_input(
             "影响范围（模块、项目或对象）", max_chars=160,
-            placeholder=(
-                "例如：行为路径规划、规划验证器"
-                if str((workspace or {}).get("workspace", "")).casefold()
-                == "autoware"
-                else "例如：目标模块、接口或配置项"
-            ),
+            placeholder="例如：设备型号、接口、刷写流程、推理部署或故障恢复步骤",
             key="official_impact_scope", on_change=_change_request_context_changed,
         )
         target_version = st.selectbox(
@@ -1428,6 +1489,7 @@ def _agent(
             on_change=_change_request_context_changed,
         )
         st.caption("未填写的目标、约束或验证计划会明确标为待补充；Agent 不会代替你推断事实。")
+    device_scope = _device_scope_controls(workspace, prefix="agent")
     language_mode = "zh"
     st.caption(
         "Agent 保留原始描述，最多拆分 4 项检查；每项只检索中文资料，最多 4 次 RAG 查询，"
@@ -1440,7 +1502,7 @@ def _agent(
                     client, summary, type_options[selected_type], impact_scope,
                     target_version=target_version, objective=objective,
                     constraints=constraints, validation_plan=validation_plan,
-                    language_mode=language_mode,
+                    language_mode=language_mode, device_scope=device_scope,
                 ),
                 fallback="变更影响分析暂未完成。",
             )
@@ -1457,6 +1519,7 @@ def _agent(
         objective=objective, constraints=constraints, validation_plan=validation_plan,
         selected_type_code=selected_type_code,
         impact_scope=st.session_state.get("official_impact_scope", ""),
+        device_scope=device_scope,
     ) else None
     if active_request:
         stage = 3 if _review_decision_for(active_request) else 2
@@ -1467,6 +1530,8 @@ def _agent(
             f"识别方式：{'人工选择' if plan.get('classification_source') == 'user_selected' else '规则识别'} · "
             f"检索关注点：{plan.get('retrieval_focus', '按原始描述检索')}"
         )
+        for warning in plan.get("scope_warnings") or []:
+            st.warning(warning)
         context = active_request.get("request_context") or {}
         context_labels = {
             "objective": "变更目标", "constraints": "约束条件",
@@ -1539,7 +1604,7 @@ def _agent(
                         st.write(_rewrite_relative_source_links(
                             _replace_markdown_images(selected["content"]), selected.get("source_url", "")
                         ))
-                        st.markdown(f"[在 GitHub 查看固定版本来源]({selected['source_url']})")
+                        st.markdown(f"[阅读原始页面]({selected['source_url']})")
                     proposed = st.text_area(
                         "目标段落草案", height=170, key="official_proposed_text",
                         on_change=_save_review_draft,
@@ -1550,15 +1615,24 @@ def _agent(
                     ):
                         with st.spinner("正在核对段落差异、关联资料与引用依据……"):
                             result = _request(
-                                lambda: _analyze_hypothetical(client, selected, proposed),
+                                lambda: _analyze_hypothetical(
+                                    client, selected, proposed, device_scope=device_scope,
+                                ),
                                 fallback="具体草案核对暂未完成。",
                             )
                         if result:
                             st.session_state["official_review"] = result
+                            st.session_state["official_exact_scope"] = device_scope.copy()
                             st.session_state["official_review_decision"] = None
                             st.rerun()
         exact_result = st.session_state.get("official_review")
-        active_exact = exact_result if exact_result and exact_result.get("selected_source", {}).get("chunk_id") == st.session_state.get("official_change_chunk") else None
+        active_exact = (
+            exact_result
+            if exact_result
+            and exact_result.get("selected_source", {}).get("chunk_id") == st.session_state.get("official_change_chunk")
+            and st.session_state.get("official_exact_scope") == device_scope
+            else None
+        )
         if active_exact:
             st.markdown('<div class="section-rule">具体段落草案核对</div>', unsafe_allow_html=True)
             _review_advice_panel(active_exact, context="草案核对")
@@ -1596,11 +1670,41 @@ def _review_subpage(choice: str) -> None:
 
 def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None) -> None:
     _page_header("知识服务", "版本与历史", page_key="versions")
-    st.write("仅展示已收录的公开资料快照；默认范围是多来源组合，并非单一软件发行版本。")
     if not ready:
         st.info("知识服务暂不可用，连接恢复后可查看各版本的真实资料。")
         return
     docs = _request(client.documents, fallback="版本资料目录暂不可用。") or []
+    if (workspace or {}).get("workspace_id") == "edge_ai_device":
+        st.write("资料快照记录语料的固定来源版本；JetPack/L4T 与设备型号是检索范围，不代表历史语料快照。")
+        snapshots = (workspace or {}).get("snapshots") or []
+        for index, snapshot in enumerate(snapshots):
+            version = str(snapshot.get("version") or _confirmed_current_version(workspace) or "当前快照")
+            with st.container(border=True, key=f"edge_snapshot_{index}"):
+                st.markdown(f"### 当前固定中文资料快照 · `{version}`")
+                details = [
+                    f"资料数：{snapshot.get('source_count', len(docs))}",
+                    f"仓库：{snapshot.get('repository') or (workspace or {}).get('repository', '未声明')}",
+                    f"来源提交：`{snapshot.get('commit') or '未声明'}`",
+                ]
+                if snapshot.get("captured_at_date"):
+                    details.append(f"固定日期：{snapshot['captured_at_date']}")
+                st.caption("　·　".join(details))
+        st.markdown("**资料中标注的设备与软件范围**")
+        for key, label in (
+            ("hardware_models", "设备型号"), ("module_skus", "模组 SKU"),
+            ("carrier_boards", "载板"), ("software_baselines", "JetPack / L4T 基线"),
+        ):
+            values = (workspace or {}).get(key) or []
+            if values:
+                st.write(f"**{label}：** " + "、".join(str(value) for value in values))
+        st.caption("这些是来源资料标注的适用范围；出现某个版本或型号不等于已验证兼容。")
+        if docs:
+            with st.expander(f"查看固定快照中的资料（{len(docs)}）"):
+                for row in docs:
+                    title = row.get("title") or row.get("document_key") or "公开资料"
+                    st.markdown(f"- {title} · [阅读原始页面]({row['source_url']})")
+        return
+    st.write("仅展示已收录的公开资料快照；资料快照与软件发行版本分别管理。")
     baseline = workspace.get("baseline_version") if workspace else None
     current = _confirmed_current_version(workspace)
     latest_source_time = _format_snapshot_timestamp(
@@ -1624,19 +1728,19 @@ def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None
                 for row in matching[:5]:
                     st.markdown(
                         f"- {row.get('title') or row['document_key']} · "
-                        f"[固定版本来源（GitHub）]({row['source_url']})"
+                        f"[阅读原始页面]({row['source_url']})"
                     )
                     if row.get("rendered_url"):
-                        st.markdown(f"  [阅读社区中文页面]({row['rendered_url']})")
+                        st.markdown(f"  [阅读排版页面]({row['rendered_url']})")
                 if len(matching) > 5:
                     with st.expander(f"查看其余 {len(matching)-5} 份资料"):
                         for row in matching[5:]:
                             st.markdown(
                                 f"- {row.get('title') or row['document_key']} · "
-                                f"[固定版本来源（GitHub）]({row['source_url']})"
+                                f"[阅读原始页面]({row['source_url']})"
                             )
                             if row.get("rendered_url"):
-                                st.markdown(f"  [阅读社区中文页面]({row['rendered_url']})")
+                                st.markdown(f"  [阅读排版页面]({row['rendered_url']})")
     st.info("版本对照请在知识检索中选择“全部已收录版本”。")
     st.button("进入知识检索", on_click=_navigate, args=("版本检索与问答",))
 
@@ -1644,7 +1748,9 @@ def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None
 def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None) -> None:
     _page_header("知识服务", "资料来源", page_key="sources")
     name = _workspace_name(workspace)
-    st.write(f"资料来自 {name} 中文社区译本的固定提交快照。")
+    profile = (workspace or {}).get("domain_profile") or {}
+    source_scope = profile.get("source_scope") or (workspace or {}).get("data_origin")
+    st.write(source_scope or f"资料来自 {name} 的公开来源固定快照。")
     coverage = _source_coverage_text(workspace)
     if coverage:
         with st.expander("查看收录范围与语言对应情况"):
@@ -1662,7 +1768,7 @@ def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None)
     ]
     st.caption(f"当前条件下有 {len(filtered)} 份固定来源资料。")
     kind = {
-        "official_documentation": "官方文档",
+        "official_documentation": "公开工程文档",
         "community_translation": "中文社区译本",
         "github_release": "官方 Release",
         "github_issue": "官方 Issue",
@@ -1672,9 +1778,9 @@ def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None)
         with st.container(border=True, key=f"source_row_{index}"):
             st.markdown(f"**{row.get('title') or row['document_key']}**")
             st.caption(f"{_version_option_label(row.get('version', ''), workspace)}　｜　{row.get('locale', '')}　｜　{kind.get(row.get('source_type'), '公开资料')}")
-            st.markdown(f"[查看固定提交来源]({row['source_url']})")
+            st.markdown(f"[阅读原始页面]({row['source_url']})")
             if row.get("rendered_url"):
-                st.markdown(f"[阅读社区译文]({row['rendered_url']})")
+                st.markdown(f"[阅读排版页面]({row['rendered_url']})")
             if row.get("source_type") == "community_translation":
                 st.caption("社区维护的中文译本；此链接固定到收录提交。")
     if len(filtered) > 12:
@@ -1682,305 +1788,45 @@ def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None)
             for row in filtered[12:]:
                 st.markdown(
                     f"- {row.get('title') or row['document_key']} · "
-                    f"[固定版本来源（GitHub）]({row['source_url']})"
+                    f"[阅读原始页面]({row['source_url']})"
                 )
 
 
 def _benchmark(workspace: dict | None) -> None:
     _page_header("系统说明", "检索评测", page_key="benchmark")
-    st.subheader("技术选型依据")
-    st.write("检索策略依据有版本记录的 Benchmark 选择；语料变更后必须重新评测。")
-    policy = str(workspace.get("retrieval_policy", "由服务配置") if workspace else "由服务配置").upper()
-    st.markdown(f"**当前默认：{policy}**。Dense 是字符哈希向量基线，不是神经语义 Embedding；Hybrid 在旧语料选型中未超过 BM25。")
-    release_status = workspace.get("retrieval_evaluation_status") if workspace else None
-    release = workspace.get("retrieval_evaluation") if workspace and release_status in (
-        "autoware_accuracy_v2_validated", "autoware_quality_v1_validated", "autoware_retrieval_v3_validated",
-        "autoware_retrieval_v1_validated", "v4_bm25_validated", "v3_validated",
-    ) else None
-    experiment = workspace.get("retrieval_experiment") if workspace else None
-    if isinstance(release, dict) and release.get("name") == "autoware_accuracy_v2" and release.get("policy", "").upper() == policy:
-        st.markdown("**Autoware 当前 RAG 检索策略评测（冻结双语题集，Top-5）**")
-        counts = release.get("case_split_counts", {})
-        st.caption(
-            f"{release.get('case_count', '—')} 道按文档族隔离的问题（DEV {counts.get('dev', '—')} / HOLDOUT {counts.get('holdout', '—')}）；"
-            "覆盖跨资料、中英跨语、版本、关系状态、无答案范围与图片文字。只衡量证据来源召回和排序，"
-            "不代表生成答案准确率、幻觉率或公网延迟。"
-        )
-        fields = (
-            ("complete_required_sources_at_5", "完整来源@5"),
-            ("required_source_recall_at_5", "来源召回@5"),
-            ("mrr_at_5", "MRR@5"),
-            ("ndcg_at_5", "nDCG@5"),
-        )
-        rows = [
-            "| 切分 / 策略 | 题数 | " + " | ".join(label for _, label in fields) + " | 错版本 | 本机检索 P95 |",
-            "| --- | ---: | " + " | ".join("---:" for _ in fields) + " | ---: | ---: |",
-        ]
-        for split_name, label, baseline_key in (
-            ("dev", "DEV", "bm25_dev"), ("holdout", "HOLDOUT", "bm25_holdout"),
-        ):
-            for strategy, values in (("BM25", release[baseline_key]), ("BM25 + 已校对图片文字", release[split_name])):
-                rows.append(
-                    f"| {label} / {strategy} | {values['query_count']} | "
-                    + " | ".join(f"{values[key] * 100:.1f}%" for key, _ in fields)
-                    + f" | {values['explicit_version_mismatch_count']} | {values['search_p95_ms']:.2f} ms |"
-                )
-        st.markdown("\n".join(rows))
-        holdout = release["holdout"]
-        st.caption(
-            f"HOLDOUT 图片探针 {holdout['image_hit_count']}/{holdout['image_case_count']} 命中；"
-            "仅覆盖两张人工复核过的图，不代表一般图片理解能力。无答案问题的候选召回率 "
-            f"{holdout['unanswerable_candidate_rate'] * 100:.1f}% 是检索噪声诊断，不等同模型误答或幻觉。"
-        )
-        candidate = release.get("candidate")
-        if isinstance(candidate, dict) and candidate.get("decision") == "not_promoted":
-            trial = candidate["holdout"]
-            comparison = [
-                "| HOLDOUT 策略 | 完整来源@5 | 来源召回@5 | 来源召回@20 | 图片探针 | 本机检索 P95 |",
-                "| --- | ---: | ---: | ---: | ---: | ---: |",
-                f"| 当前 BM25 + OCR | {holdout['complete_required_sources_at_5'] * 100:.1f}% | "
-                f"{holdout['required_source_recall_at_5'] * 100:.1f}% | {holdout['required_source_recall_at_20'] * 100:.1f}% | "
-                f"{holdout['image_hit_count']}/{holdout['image_case_count']} | {holdout['search_p95_ms']:.2f} ms |",
-                f"| Hybrid + 图片 OCR 候选 | {trial['complete_required_sources_at_5'] * 100:.1f}% | "
-                f"{trial['required_source_recall_at_5'] * 100:.1f}% | {trial['required_source_recall_at_20'] * 100:.1f}% | "
-                f"{trial['image_hit_count']}/{trial['image_case_count']} | {trial['search_p95_ms']:.2f} ms |",
-            ]
-            st.markdown("**Hybrid + 图片 OCR 候选未晋级**")
-            st.markdown("\n".join(comparison))
-            st.caption(candidate.get("decision_reason", "候选未通过预先设定的 HOLDOUT 门槛。"))
-        review = workspace.get("change_review_evaluation")
-        if isinstance(review, dict) and review.get("name") == "autoware_accuracy_v2_agent":
-            st.markdown("**Agent 变更审查检索策略对比（HOLDOUT）**")
-            st.caption(
-                f"{review['case_count']} 道固定变更任务；本次工作流未调用 LLM。来源标签是从 RAG 题集转移的检索锚点，"
-                "不是经人工确认的真实影响范围，因此这里只比较检索覆盖和流程耗时，不报告 Agent 影响准确率。"
-            )
-            bilingual = review["holdout"]["bilingual"]
-            chinese_only = review["holdout"]["zh"]
-            agent_fields = (
-                ("evidence_source_recall", "来源锚点召回"),
-                ("complete_evidence_source_rate", "完整锚点率"),
-                ("retrieval_check_coverage_rate", "检查项覆盖"),
-                ("retrieval_language_coverage_rate", "语言覆盖"),
-                ("complete_retrieval_case_rate", "完整检索审查率"),
-            )
-            agent_rows = [
-                "| HOLDOUT 模式 | 任务数 | " + " | ".join(label for _, label in agent_fields) + " | 平均检索调用 | 本机 P95 |",
-                "| --- | ---: | " + " | ".join("---:" for _ in agent_fields) + " | ---: | ---: |",
-            ]
-            for label, values in (("中英双语", bilingual), ("中文单语", chinese_only)):
-                agent_rows.append(
-                    f"| {label} | {values['case_count']} | "
-                    + " | ".join(f"{values[key] * 100:.1f}%" for key, _ in agent_fields)
-                    + f" | {values['search_calls_mean']:.1f} | {values['latency_p95_ms']:.0f} ms |"
-                )
-            st.markdown("\n".join(agent_rows))
-            st.caption(
-                "双语检索提升跨语言来源锚点召回，但检索调用和本机耗时约翻倍；严格的双语覆盖门禁会把更多任务标为需补查。"
-                "这组结果不含公网网络与模型生成时间，也不能外推成最终审查质量。"
-            )
-        st.markdown(
-            "[查看 V2 冻结题集、DEV/HOLDOUT 结果和评测边界]("
-            "https://github.com/Wdp-SE/enterprise-rag-agent-suite/blob/main/"
-            "evaluation/autoware_accuracy_v2/README.md)"
-        )
-    elif isinstance(release, dict) and release.get("name") == "autoware_quality_v1" and release.get("policy", "").upper() == policy:
-        st.markdown("**Autoware 当前检索策略评测（冻结双语题集，Top-5）**")
-        counts = release.get("case_split_counts", {})
-        st.caption(
-            f"{release.get('case_count', '—')} 道按文档族隔离的固定问题（DEV {counts.get('dev', '—')} / HOLDOUT {counts.get('holdout', '—')}）；"
-            f"覆盖版本、跨资料、中英跨语、关系状态、图片证据与范围外问题。当前结果仅衡量证据检索，不代表答案准确率、幻觉率或公网延迟。"
-        )
-        fields = (
-            ("complete_required_sources_at_5", "完整来源@5"),
-            ("required_source_recall_at_5", "来源召回@5"),
-            ("mrr_at_5", "MRR@5"),
-            ("image_evidence_hits", "图片证据"),
-        )
-        rows = ["| 切分 / 策略 | 题数 | " + " | ".join(label for _, label in fields) + " | 错版本 | 本机检索 P95 |",
-                "| --- | ---: | " + " | ".join("---:" for _ in fields) + " | ---: | ---: |"]
-        for split_name, label, baseline_key in (
-            ("dev", "DEV", "bm25_dev"), ("holdout", "HOLDOUT", "bm25_holdout"),
-        ):
-            for strategy, values in (("BM25", release[baseline_key]), ("BM25 + 已校对图片文字", release[split_name])):
-                rows.append(
-                    f"| {label} / {strategy} | {values['query_count']} | "
-                    + " | ".join(
-                        str(values[key]) if key == "image_evidence_hits" else f"{values[key] * 100:.1f}%"
-                        for key, _ in fields
-                    )
-                    + f" | {values['version_mismatch_count']} | {values['search_p95_ms']:.2f} ms |"
-                )
-        st.markdown("\n".join(rows))
-        holdout = release["holdout"]
-        baseline_holdout = release["bm25_holdout"]
-        st.caption(
-            f"HOLDOUT 图片证据命中从 {baseline_holdout['image_evidence_hits']} 提升到 {holdout['image_evidence_hits']}；"
-            f"完整来源率 {baseline_holdout['complete_required_sources_at_5'] * 100:.1f}% → "
-            f"{holdout['complete_required_sources_at_5'] * 100:.1f}%，错版本 {holdout['version_mismatch_count']}。"
-            "图片证据只计入人工校对并绑定原图的 OCR；未命中图片不代表原文没有图，需补齐图像审核数据后再评。"
-        )
-        st.caption(
-            f"HOLDOUT 无答案问题仍有检索候选 {holdout['no_answer_nonempty_candidates']}；这只是检索噪声诊断，不是模型误答率。"
-            "端到端回答支持度与引用质量由人工复核评测，公网延迟需在线监控。"
-        )
-        if holdout.get("complete_required_sources_at_5", 1) < 1:
-            st.warning("HOLDOUT 仍有跨资料问题未找齐全部必需来源；后续应根据失败案例改善召回，不能把问题藏在总分里。")
-        st.markdown(
-            "[查看质量评测集、指标口径与失败案例](https://github.com/Wdp-SE/enterprise-rag-agent-suite/blob/main/evaluation/autoware_quality_v1/README.md)"
-        )
-    elif isinstance(release, dict) and release.get("name") == "autoware_retrieval_v3" and release.get("policy", "").upper() == policy:
-        st.markdown("**Autoware 当前检索策略评测（冻结题集，Top-5）**")
-        st.caption(
-            f"{workspace.get('source_count', '—')} 份固定提交官方资料、{workspace.get('chunk_count', '—')} 个文本片段，"
-            "另含 2 条经人工复核并绑定原图 SHA 的图中文字证据；评测含 43 道手工问题（DEV 32 / HOLDOUT 11），"
-            "仅衡量检索，不代表答案正确率、幻觉率或公网延迟。"
-        )
-        fields = (
-            ("complete_required_sources_at_5", "完整来源@5"),
-            ("required_source_recall_at_5", "来源召回@5"),
-            ("image_evidence_hit_at_5", "图片证据命中@5"),
-            ("no_answer_nonempty_candidate_rate", "无答案仍召回候选"),
-        )
-        rows = ["| 切分 / 策略 | 题数 | " + " | ".join(label for _, label in fields) + " | 错版本 | warm P95 |",
-                "| --- | ---: | " + " | ".join("---:" for _ in fields) + " | ---: | ---: |"]
-        for split_name, label, baseline_key in (
-            ("dev", "DEV", "bm25_dev"), ("holdout", "HOLDOUT", "bm25_holdout"),
-        ):
-            baseline = release[baseline_key]
-            selected = release[split_name]
-            for strategy, values in (("BM25", baseline), ("BM25 + 图片文字", selected)):
-                rows.append(
-                    f"| {label} / {strategy} | {values['query_count']} | "
-                    + " | ".join(f"{values[key] * 100:.1f}%" for key, _ in fields)
-                    + f" | {values['version_mismatch_count']} | {values['search_p95_ms']:.2f} ms |"
-                )
-        st.markdown("\n".join(rows))
-        st.caption(
-            "图片文字候选只在至少两个图中文字词命中且不挤掉 Top-5 内唯一来源时加入；"
-            "本题集 DEV 来源指标与 BM25 持平，图片证据命中由 0/4 升至 3/4；HOLDOUT 来源指标持平，图片命中由 0/2 升至 2/2。"
-        )
-        if release["holdout"].get("complete_required_sources_at_5", 1) < 1:
-            st.warning(
-                "HOLDOUT 有跨资料问题未找齐全部必需来源；这说明跨模块召回仍有缺口。"
-                "查看冻结评测说明中的失败案例，后续改进应使用新评测版本验证。"
-            )
-            st.markdown(
-                "[查看 Autoware V3 评测与失败案例]("
-                "(https://github.com/Wdp-SE/enterprise-rag-agent-suite/blob/main/"
-                "evaluation/autoware_retrieval_v3/README.md)"
-            )
-        if release["holdout"]["no_answer_nonempty_candidate_rate"] > 0:
-            st.warning(
-                "Holdout 无答案问题仍返回了候选（1/1）。检索命中不等于问题可回答；"
-                "下一步要扩充无答案题并评估拒答阈值，不能把这个结果解释为生成准确率。"
-            )
-    elif isinstance(release, dict) and release.get("name") == "quality_v4" and release.get("policy", "").upper() == policy:
-        st.markdown("**V4 当前 BM25 基线（索引与评测指纹已匹配）**")
-        st.caption("132 份官方固定来源、1322 个文本片段，并使用 30 条人工复核截图 OCR 证据进行独立策略实验。当前线上仍使用 BM25；下面是冻结题集的离线结果，不是生成答案准确率、幻觉率或公网延迟。")
-        fields = (
-            ("complete_source_at_5", "完整来源@5"),
-            ("anchor_recall_at_5", "原文锚点召回@5"),
-            ("image_hit_at_5", "图片命中@5"),
-            ("no_answer_nonempty_candidate_rate", "无答案仍召回候选"),
-        )
-        rows = ["| 切分 | 题数 | " + " | ".join(label for _, label in fields) + " | 错版本 | warm P95 |",
-                "| --- | ---: | " + " | ".join("---:" for _ in fields) + " | ---: | ---: |"]
-        for split, label in (("dev", "DEV"), ("holdout", "HOLDOUT")):
-            values = release.get(split, {})
-            rows.append(
-                f"| {label} | {values['question_count']} | "
-                + " | ".join(f"{values[key] * 100:.1f}%" for key, _ in fields)
-                + f" | {values['version_mismatch_count']} | {values['warm_p95_ms']:.2f} ms |"
-            )
-        st.markdown("\n".join(rows))
-        if isinstance(experiment, dict) and experiment.get("status") == "candidate_not_promoted":
-            ocr = experiment["holdout_candidate"]
-            # The baseline and candidate are shown side by side to make the trade-off explicit.
-            baseline_metrics = release.get("holdout", {})
-            fields = (("complete_source_at_5", "完整来源@5"), ("anchor_recall_at_5", "原文锚点召回@5"),
-                      ("image_hit_at_5", "图片命中@5"), ("warm_p95_ms", "warm P95"))
-            comparison_rows = ["| HOLDOUT 策略 | " + " | ".join(label for _, label in fields) + " |",
-                               "| --- | " + " | ".join("---:" for _ in fields) + " |"]
-            comparison_rows.append("| BM25（线上默认） | " + " | ".join(
-                f"{baseline_metrics[key] * 100:.1f}%" if key != "warm_p95_ms" else f"{baseline_metrics[key]:.2f} ms"
-                for key, _ in fields
-            ) + " |")
-            comparison_rows.append("| BM25 + 图片 OCR（实验候选） | " + " | ".join(
-                f"{ocr[key] * 100:.1f}%" if key != "warm_p95_ms" else f"{ocr[key]:.2f} ms"
-                for key, _ in fields
-            ) + " |")
-            st.markdown("**图片 OCR 候选未晋级**")
-            st.markdown("\n".join(comparison_rows))
-            st.caption(experiment.get("decision_reason", "候选未达到预先设定的非劣化门槛。"))
-            st.caption("无答案题仍有检索候选，说明需要另做相关性阈值与拒答评测；这不等于模型产生了幻觉。图片 OCR 为派生证据，需核对固定版本原图。")
-    elif isinstance(release, dict) and release.get("name") == "quality_v3" and release.get("policy", "").upper() == policy:
-        st.markdown("**V3 当前扩充语料（后端语料、策略与索引指纹已匹配）**")
-        st.caption("132 份官方固定来源、1322 个片段；DEV 选型后仅对 BM25 打开一次 HOLDOUT。Top-5 来源与原文锚点指标，分母只含可回答题；无答案题另作检索诊断。")
-        st.caption("当前服务核对语料、默认检索策略与片段索引指纹；选型和 DEV/HOLDOUT 结果哈希由仓库测试核验。以下是离线检索评测，不是线上实时质量监控。")
-        fields = (
-            ("source_hit_at_5", "来源 Hit@5"),
-            ("source_recall_at_5_macro", "来源 Recall@5（宏）"),
-            ("mrr", "来源 MRR"),
-        )
-        rows = ["| 切分 | 题数（可答/无答案） | " + " | ".join(label for _, label in fields) + " | 完整来源 | 多来源完整 | 原文锚点 | warm P95 |",
-                "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
-        for split, label in (("dev", "DEV"), ("holdout", "HOLDOUT")):
-            values = release.get(split, {})
-            rows.append(
-                f"| {label} | {values['question_count']}（{values['answerable_count']}/{values['no_answer_count']}） | "
-                + " | ".join(f"{values[key]:.4f}" for key, _ in fields)
-                + f" | {values['complete_source_count']}/{values['answerable_count']}"
-                + f" | {values['complete_multi_source_count']}/{values['multi_source_question_count']}"
-                + f" | {values['evidence_marker_found']}/{values['evidence_marker_count']}"
-                + f" | {values['warm_search_p95_ms']:.2f} ms |"
-            )
-        st.markdown("\n".join(rows))
-        st.caption("HOLDOUT 多来源完整命中仅 4/8，跨资料与跨版本核对仍是短板。本机 warm 检索时间不含公网、冷启动和模型生成；这些指标也不能代表答案正确率或幻觉率。")
-    elif workspace and workspace.get("retrieval_evaluation_status") in {
-        "expanded_corpus_pending_rebenchmark", "chinese_only_pending_rebenchmark",
-    }:
+    st.subheader("当前语料评测状态")
+    if not workspace:
+        st.info("知识服务尚未连接，当前无法确认语料与检索策略。")
+        return
+
+    status = str(workspace.get("retrieval_evaluation_status") or "pending")
+    policy = str(workspace.get("retrieval_policy") or "由服务配置").upper()
+    st.markdown(f"**当前策略：{policy}**")
+    if status != "edge_ai_retrieval_v1_validated":
         st.warning(
-            "当前语料已切换为中文社区资料快照，旧语料评测与当前指纹不匹配，不能作为当前成绩。"
-            "BM25 暂作可解释基线；中文语料评测完成前，不公布当前检索质量或最优策略。"
+            "当前 Seeed 中文工程资料尚未完成与语料指纹绑定的冻结评测；"
+            "此前其他领域语料上的分数不适用于本知识空间，因此这里不展示为当前成绩。"
         )
     else:
-        st.caption("当前后端尚未匹配已发布评测的语料与策略指纹；可能仍运行旧服务、候选策略或不同语料。不能把仓库内离线指标当作当前后端成绩。")
-    st.caption("Rerank 尚未在当前中文快照上完成评测，因此不进入默认检索链路。")
-    st.markdown("**历史选型（旧语料）**")
-    st.caption("以下冻结实验仅用于回顾早期检索策略选择；语料和问题集都不是当前 Autoware 中文快照，不能作为当前质量指标。")
-    path = Path(__file__).resolve().parents[1] / "evaluation" / "real_world_retrieval" / "results" / "benchmark_results.json"
-    try:
-        report = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        st.info("本地评测记录暂不可用。当前页面不展示推测指标，请查看仓库中的真实检索评测文件。")
-        return
-    bm25_overall = report["results"]["bm25"]["overall"]
-    st.caption(
-        f"{report['query_count']} 条经官方原文核验的问题，其中 {bm25_overall['answerable']} 条可回答、"
-        f"{bm25_overall['no_answer_queries']} 条无答案探针；Hit/MRR 的分母为可回答题。"
-        f"同一语料、版本范围与 Top-{report['top_k']}；延迟为本地进程内检索。"
+        report = workspace.get("retrieval_evaluation")
+        if not isinstance(report, dict) or report.get("name") != "edge_ai_retrieval_v1":
+            st.warning("后端标记为已评测，但没有返回匹配的边缘设备评测报告；当前不展示未经核验的数字。")
+        else:
+            st.info("边缘设备评测报告已匹配当前语料。")
+            st.json(report)
+
+    corpus = workspace.get("corpus_fingerprint") or {}
+    st.markdown("**当前运行范围**")
+    st.write(
+        f"{workspace.get('source_count', 0)} 份中文来源 · "
+        f"{workspace.get('chunk_count', 0)} 个检索片段 · "
+        f"语料指纹 `{corpus.get('fingerprint_sha256', '未返回')}`"
     )
-    names = {"dense": "Dense", "bm25": "BM25", "hybrid": "Hybrid"}
-    fields = (("hit_at_1", "Hit@1"), ("hit_at_3", "Hit@3"), ("hit_at_5", "Hit@5"),
-              ("mrr", "MRR"), ("ndcg_at_5", "nDCG@5"), ("p50_ms", "P50 ms"), ("p95_ms", "P95 ms"))
-    header = "| 策略 | " + " | ".join(label for _, label in fields) + " |"
-    rule = "| --- | " + " | ".join("---:" for _ in fields) + " |"
-    rows = []
-    for key in ("dense", "bm25", "hybrid"):
-        metrics = report["results"][key]["overall"]
-        rows.append("| " + names[key] + " | " + " | ".join(str(metrics[field]) for field, _ in fields) + " |")
-    for key in ("Dense + Rerank", "Hybrid + Rerank"):
-        rows.append("| " + key + " | NOT EVALUATED | " + " | ".join("—" for _ in fields[1:]) + " |")
-    st.markdown("\n".join((header, rule, *rows)))
-    st.info(f"这只代表所选官方资料子集与 {report['query_count']} 条查询。无答案问题也可能返回检索候选，候选不等于正确答案。")
-    selected_results = report["results"].get(policy.lower(), report["results"]["bm25"])
-    cross = selected_results["by_category"]["cross_document"]
-    both_count = round(cross["cross_document_both_source_at_5"] * cross["queries"])
     st.caption(
-        f"跨文档题的双来源 Top-5 完整命中：{both_count}/{cross['queries']}；"
-        "表中 Hit@5 只要求命中任一来源，不能代表多来源答案已完整找到。"
+        "后续评测分别报告必需来源召回、完整证据集率、错误设备/软件范围命中、"
+        "无答案误召回和检索延迟；Agent 影响候选与生成答案质量另行评测。"
     )
+    st.caption("当前新语料默认使用可解释的 BM25 基线；重排策略需在同一冻结题集上验证后再考虑启用。")
 
 
 def _limits() -> None:
