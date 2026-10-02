@@ -13,6 +13,13 @@ versioned-rag-service/public_corpus_autoware/corpus_manifest.json -text whitespa
 versioned-rag-service/public_corpus_autoware/LICENSE -text whitespace=cr-at-eol
 versioned-rag-service/public_corpus_autoware/*.json text eol=lf
 versioned-rag-service/public_corpus_autoware/NOTICE text eol=lf
+# Preserve the raw source snapshots and normalized corpus documents byte-for-byte;
+# their SHA-256 values are checked by the importer and runtime index builder.
+versioned-rag-service/public_corpus_edge_ai/raw_snapshots/** -text whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
+versioned-rag-service/public_corpus_edge_ai/sources/** -text whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
+versioned-rag-service/public_corpus_edge_ai/*.json text eol=lf
+versioned-rag-service/public_corpus_edge_ai/*.md text eol=lf
+versioned-rag-service/config/edge_ai_source_selection.json text eol=lf
 # The frozen V3 retrieval candidate hashes the exact code bytes. Preserve its
 # mixed historical line endings so Linux deployments match the evaluation lock.
 versioned-rag-service/src/public_knowledge.py -text whitespace=cr-at-eol
