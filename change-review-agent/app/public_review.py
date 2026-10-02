@@ -12,6 +12,7 @@ import json
 import re
 import unicodedata
 import uuid
+from pathlib import Path
 from typing import Protocol
 from urllib.parse import urlsplit
 
@@ -21,15 +22,25 @@ from app.change_request import (
     is_out_of_scope_public_request,
     request_queries,
 )
+from app.domain_profile import load_change_profile
+
+
+EDGE_CHANGE_PROFILE_PATH = Path(__file__).resolve().parents[1] / "config" / "edge_ai_device_change_profile.json"
 
 
 class PublicKnowledgeGateway(Protocol):
     def workspace(self) -> dict: ...
     def document(self, document_id: str) -> list[dict]: ...
-    def search(self, question: str, *, version: str, language: str, top_k: int = 5) -> dict: ...
+    def search(
+        self, question: str, *, version: str, language: str, top_k: int = 5,
+        device_model: str | None = None, module_sku: str | None = None,
+        carrier_board: str | None = None, software_baseline: str | None = None,
+    ) -> dict: ...
     def review_advice(self, change_summary: str, evidence_chunk_ids: list[str]) -> dict: ...
     def review_advice_for_version(
         self, change_summary: str, evidence_chunk_ids: list[str], *, version: str,
+        device_model: str | None = None, module_sku: str | None = None,
+        carrier_board: str | None = None, software_baseline: str | None = None,
     ) -> dict: ...
     def engineering_diff(self, old_items: list[dict], new_items: list[dict]) -> dict: ...
     def engineering_impacts(self, payload: dict) -> dict: ...
@@ -70,12 +81,40 @@ def _workspace_repositories(workspace: dict) -> set[str]:
 
 
 def _official_hit(
-    row: dict, current_version: str, repository: str | set[str], *, allowed_versions: set[str] | None = None,
+    row: dict, current_version: str, repository: str | set[str], *,
+    allowed_versions: set[str] | None = None,
+    allowed_sources: list[dict] | None = None,
 ) -> bool:
     score = row.get("retrieval_score")
     parsed = urlsplit(str(row.get("source_url", "")))
     repositories = {repository} if isinstance(repository, str) else set(repository)
     row_repository = row.get("repository")
+    if allowed_sources is not None:
+        source_id = row.get("source_id")
+        trusted = next((item for item in allowed_sources if item.get("source_id") == source_id), None)
+        if not isinstance(trusted, dict):
+            return False
+        trusted_url = str(trusted.get("source_url") or "")
+        trusted_parsed = urlsplit(trusted_url)
+        trusted_repository = str(trusted.get("repository") or "")
+        trusted_snapshot = str(trusted.get("source_snapshot") or "")
+        trusted_commit = str(trusted.get("commit") or "")
+        trusted_hash = str(trusted.get("sha256") or "")
+        return bool(
+            row.get("version") in (allowed_versions or {current_version})
+            and row.get("source_snapshot") == trusted_snapshot
+            and trusted_snapshot == row.get("version")
+            and row.get("source_url") == trusted_url
+            and trusted_parsed.scheme == "https"
+            and trusted_parsed.netloc
+            and row_repository == trusted_repository
+            and trusted_repository in repositories
+            and re.fullmatch(r"[0-9a-f]{40}", trusted_commit)
+            and re.fullmatch(r"[0-9a-f]{64}", trusted_hash)
+            and row.get("language") == "zh"
+            and bool(row.get("chunk_id"))
+            and (score is None or isinstance(score, (int, float)) and score > 0)
+        )
     if isinstance(row_repository, str) and row_repository.strip():
         matched_repository = row_repository.strip()
     elif len(repositories) == 1:
@@ -231,9 +270,9 @@ def _retrieval_gap_details(
         ),
         "search_unavailable": ("RETRIEVAL_FAILED", "SEARCH_UNAVAILABLE", "检索服务未完成"),
     }
-    material = (CHANGE_TYPES.get((plan or {}).get("change_type"), CHANGE_TYPES["general"]) or {}).get(
-        "materials", CHANGE_TYPES["general"]["materials"]
-    )
+    material = (plan or {}).get("expected_materials") or (
+        CHANGE_TYPES.get((plan or {}).get("change_type"), CHANGE_TYPES["general"]) or {}
+    ).get("materials", CHANGE_TYPES["general"]["materials"])
     action = (plan or {}).get("gap_action", CHANGE_TYPES["general"]["action"])
     details = []
     seen = set()
@@ -533,6 +572,10 @@ class PublicReviewAgent:
         constraints: str | None = None,
         validation_plan: str | None = None,
         language_mode: str = "bilingual",
+        device_model: str | None = None,
+        module_sku: str | None = None,
+        carrier_board: str | None = None,
+        software_baseline: str | None = None,
     ) -> dict:
         """Find current-version candidates from a natural-language change request."""
         summary = change_summary.strip()
@@ -612,12 +655,44 @@ class PublicReviewAgent:
         workspace = self.gateway.workspace()
         current_version = workspace["current_version"]
         repositories = _workspace_repositories(workspace)
+        edge_profile = None
+        source_registry = None
+        scope_values = {
+            "device_model": device_model,
+            "module_sku": module_sku,
+            "carrier_board": carrier_board,
+            "software_baseline": software_baseline,
+        }
+        if workspace.get("workspace_id") == "edge_ai_device":
+            edge_profile = load_change_profile(EDGE_CHANGE_PROFILE_PATH)
+            if (workspace.get("domain_profile") or {}).get("id") != edge_profile["id"]:
+                raise ValueError("Agent 领域配置与当前知识空间不匹配")
+            if language_mode == "en":
+                raise ValueError("当前知识空间仅收录中文资料，请使用中文审查")
+            languages = ["zh"]
+            edge_profile["scope_options"] = {
+                "device_model": list(workspace.get("hardware_models", [])),
+                "module_sku": list(workspace.get("module_skus", [])),
+                "carrier_board": list(workspace.get("carrier_boards", [])),
+                "software_baseline": list(workspace.get("software_baselines", [])),
+            }
+            source_registry = workspace.get("source_registry")
+            if not isinstance(source_registry, list) or not source_registry:
+                raise ValueError("当前知识空间未提供可校验的来源清单")
         available_versions = [
             str(value) for value in workspace.get("available_versions", [current_version])
         ]
         selected_version = current_version if not target_version or target_version == "current" else target_version
         if selected_version not in available_versions:
             raise ValueError("目标版本不在当前知识空间的已收录版本中")
+        if edge_profile is not None:
+            plan = build_request_plan(
+                summary, change_type=change_type, impact_scope=impact_scope,
+                profile=edge_profile, device_model=device_model, module_sku=module_sku,
+                carrier_board=carrier_board, software_baseline=software_baseline,
+                target_snapshot=selected_version,
+            )
+            plan["language_mode"] = "zh"
         allowed_versions = _scope_versions(workspace, selected_version)
         context_values = {}
         for name, raw_value in (
@@ -643,7 +718,8 @@ class PublicReviewAgent:
             json.dumps({
                 "version": selected_version, "change_type": plan["change_type"],
                 "impact_scope": plan["impact_scope"], "summary": summary,
-                "language_mode": language_mode,
+                "language_mode": "zh" if edge_profile is not None else language_mode,
+                "device_scope": plan.get("device_scope"),
                 **context_values,
             }, ensure_ascii=False, sort_keys=True)
         )[:20]
@@ -664,12 +740,14 @@ class PublicReviewAgent:
                 try:
                     search_result = self.gateway.search(
                         search_query, version=selected_version, language=language, top_k=5,
+                        **(scope_values if edge_profile is not None else {}),
                     )
                     retrieval_policy = search_result.get("retrieval_policy", retrieval_policy)
                     rows = [
                         row for row in search_result.get("results", [])
                         if _official_hit(
                             row, selected_version, repositories, allowed_versions=allowed_versions,
+                            allowed_sources=source_registry,
                         )
                         and str(row.get("language") or row.get("locale") or "").casefold().startswith(language)
                     ]
@@ -743,13 +821,29 @@ class PublicReviewAgent:
                 f"\n检索覆盖状态：{'完整' if coverage['complete'] else '不完整'}"
                 f"\n审查边界：{coverage['incomplete_reason'] or '仅把引用资料列为待核对候选，最终由人工确认'}"
             )
+            if edge_profile is not None:
+                scope = plan["device_scope"]
+                scope_text = "；".join(f"{key}={value or '未指定'}" for key, value in scope.items())
+                advice_summary += (
+                    f"\n设备范围：{scope_text}"
+                    "\n安全约束：只列有本次证据支持的待核对候选；不得将缺少证据解释为兼容、无影响或已通过验证；"
+                    "资料没有明确给出设备与软件组合时，必须作为证据缺口交由工程师实测确认。"
+                )
             evidence_ids = [row["chunk_id"] for row in candidates]
             versioned_review = getattr(self.gateway, "review_advice_for_version", None)
-            advice = (
-                versioned_review(advice_summary, evidence_ids, version=selected_version)
-                if callable(versioned_review)
-                else self.gateway.review_advice(advice_summary, evidence_ids)
-            )
+            if callable(versioned_review):
+                advice = versioned_review(
+                    advice_summary, evidence_ids, version=selected_version,
+                    **(scope_values if edge_profile is not None else {}),
+                )
+            else:
+                advice_method = self.gateway.review_advice
+                if edge_profile is not None:
+                    advice = advice_method(
+                        advice_summary, evidence_ids, version=selected_version, **scope_values,
+                    )
+                else:
+                    advice = advice_method(advice_summary, evidence_ids)
         except Exception:
             # Model assistance is optional; the underlying RAG candidates remain visible.
             advice = {"status": "GENERATION_PROVIDER_UNAVAILABLE", "answer": "N/A", "sources": []}
@@ -793,23 +887,33 @@ class PublicReviewAgent:
             "public_baseline_written": False,
         }
 
-    def analyze(self, selected: dict, proposed_text: str) -> dict:
+    def analyze(
+        self, selected: dict, proposed_text: str, *,
+        device_model: str | None = None, module_sku: str | None = None,
+        carrier_board: str | None = None, software_baseline: str | None = None,
+    ) -> dict:
         workspace = self.gateway.workspace()
         current_version = workspace["current_version"]
         repositories = _workspace_repositories(workspace)
         allowed_versions = _scope_versions(workspace, current_version)
+        edge_profile = workspace.get("workspace_id") == "edge_ai_device"
+        source_registry = workspace.get("source_registry") if edge_profile else None
+        if edge_profile:
+            source_is_trusted = _official_hit(
+                selected, current_version, repositories, allowed_versions=allowed_versions,
+                allowed_sources=source_registry if isinstance(source_registry, list) else [],
+            )
+        else:
+            source_is_trusted = (
+                selected.get("version") in allowed_versions
+                and selected.get("repository") in repositories
+                and urlsplit(str(selected.get("source_url") or "")).scheme == "https"
+                and urlsplit(str(selected.get("source_url") or "")).netloc == "github.com"
+            )
         if selected.get("version") not in allowed_versions:
             raise ValueError("只能选择当前知识空间最新已收录范围内的资料")
-        source_url = urlsplit(str(selected.get("source_url") or ""))
-        selected_repository = str(selected.get("repository") or "")
-        expected_prefix = "/" + selected_repository.strip("/") + "/"
-        if (
-            selected_repository not in repositories
-            or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", selected_repository)
-            or source_url.scheme != "https" or source_url.netloc != "github.com"
-            or not source_url.path.startswith(expected_prefix)
-        ):
-            raise ValueError("资料来源与当前知识空间的官方仓库不匹配")
+        if not source_is_trusted:
+            raise ValueError("资料来源与当前知识空间的官方来源清单不匹配")
         proposed = proposed_text.strip()
         if not proposed or len(proposed) > 4000:
             raise ValueError("假设性变更内容应为 1 到 4000 字")
@@ -826,10 +930,27 @@ class PublicReviewAgent:
         )[:20]
         related_query = (selected["heading"] + " " + proposed)[:1000]
         retrieval_failed = False
+        scope_values = {
+            "device_model": device_model,
+            "module_sku": module_sku,
+            "carrier_board": carrier_board,
+            "software_baseline": software_baseline,
+        } if edge_profile else {}
+        if edge_profile:
+            scope_options = {
+                "device_model": workspace.get("hardware_models", []),
+                "module_sku": workspace.get("module_skus", []),
+                "carrier_board": workspace.get("carrier_boards", []),
+                "software_baseline": workspace.get("software_baselines", []),
+            }
+            for field, value in scope_values.items():
+                if value is not None and value not in scope_options[field]:
+                    raise ValueError(f"{field} 不在当前知识空间的可选范围中")
         try:
             retrieved = self.gateway.search(
                 related_query,
-                version=current_version, language="all", top_k=12,
+                version=current_version, language="zh" if edge_profile else "all", top_k=12,
+                **scope_values,
             )["results"]
         except Exception:
             retrieved = []
@@ -839,9 +960,10 @@ class PublicReviewAgent:
             if row["chunk_id"] != selected["chunk_id"]
             and _official_hit(
                 row, current_version, repositories, allowed_versions=allowed_versions,
+                allowed_sources=source_registry if isinstance(source_registry, list) else None,
             )
         ][:5]
-        document_reference = _confirmed_dsip_document_reference(
+        document_reference = None if edge_profile else _confirmed_dsip_document_reference(
             self.gateway, selected, current_version
         )
         impacts = self.gateway.engineering_impacts({
@@ -863,7 +985,8 @@ class PublicReviewAgent:
             )
             try:
                 review_advice = self.gateway.review_advice(
-                    change_summary, [row["chunk_id"] for row in related]
+                    change_summary, [row["chunk_id"] for row in related],
+                    **({"version": current_version, **scope_values} if edge_profile else {}),
                 )
             except Exception:
                 # Optional model advice must never block the deterministic review flow.

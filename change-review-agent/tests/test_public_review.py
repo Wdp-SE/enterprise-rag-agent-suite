@@ -741,3 +741,131 @@ def test_stage_status_distinguishes_retrieval_empty_failure_and_generation_failu
         "planning": "OK", "retrieval": "OK", "generation": "FAILED",
     }
     assert failed_generation["retrieved_results"]
+
+
+def test_edge_ai_agent_uses_chinese_profile_and_forwards_confirmed_hardware_scope():
+    source = {
+        "chunk_id": "wiki-snapshot:zh:seeed-jetson-flashing-troubleshooting:1",
+        "document_id": "wiki-snapshot:zh:seeed-jetson-flashing-troubleshooting",
+        "document_key": "seeed-jetson-flashing-troubleshooting",
+        "version": "wiki-snapshot", "language": "zh", "locale": "zh-CN",
+        "source_snapshot": "wiki-snapshot", "source_id": "seeed-jetson-flashing-troubleshooting",
+        "repository": "Seeed-Studio/wiki-documents", "document_path": "sites/zh-CN/docs/flash.md",
+        "source_url": "https://wiki.seeedstudio.com/cn/jetson_flash/",
+        "heading": "刷写 JetPack", "content": "按设备型号核对 JetPack 与 L4T 版本。",
+        "retrieval_score": 1.2, "device_model": ["reComputer Industrial J4012"],
+        "module_sku": ["P3767-0000"], "carrier_board": ["J401"],
+        "software_baselines": ["JetPack 6.2"],
+    }
+    registry = [{
+        "source_id": source["source_id"], "source_url": source["source_url"],
+        "repository": source["repository"], "source_snapshot": "wiki-snapshot",
+        "commit": "1" * 40, "sha256": "a" * 64,
+    }]
+
+    class EdgeGateway:
+        def __init__(self):
+            self.calls = []
+
+        def workspace(self):
+            return {
+                "workspace_id": "edge_ai_device", "workspace": "reComputer 工程知识",
+                "repository": "Seeed-Studio/wiki-documents", "repositories": ["Seeed-Studio/wiki-documents"],
+                "current_version": "wiki-snapshot", "available_versions": ["wiki-snapshot"],
+                "version_scopes": {"latest": {"versions": ["wiki-snapshot"]}},
+                "languages": ["zh"], "hardware_models": ["reComputer Industrial J4012"],
+                "module_skus": ["P3767-0000"], "carrier_boards": ["J401"],
+                "software_baselines": ["JetPack 6.2"], "source_registry": registry,
+                "snapshots": [{"version": "wiki-snapshot", "commit": "1" * 40}],
+                "domain_profile": {"id": "edge_ai_device"},
+            }
+
+        def search(self, question, *, version, language, top_k=5, device_model=None,
+                   module_sku=None, carrier_board=None, software_baseline=None):
+            self.calls.append(("search", version, language, top_k, device_model, module_sku,
+                               carrier_board, software_baseline, question))
+            return {"retrieval_policy": "bm25", "results": [source]}
+
+        def review_advice_for_version(self, summary, evidence_chunk_ids, *, version,
+                                      device_model=None, module_sku=None, carrier_board=None,
+                                      software_baseline=None):
+            self.calls.append(("review", version, device_model, module_sku, carrier_board, software_baseline))
+            return {
+                "status": "OK", "answer": "待工程师复核刷写兼容性。", "sources": [source],
+                "review": {
+                    "impact_candidates": [{
+                        "evidence_chunk_id": evidence_chunk_ids[0],
+                        "reason": "该资料说明刷写步骤与软件基线。",
+                        "suggested_action": "按目标设备核对刷写包和回归验证。",
+                    }],
+                    "evidence_gaps": ["未找到该设备完整的内部验证报告。"],
+                    "version_ambiguities": [], "reviewer_actions": ["人工核验"],
+                    "review_status": "REQUIRES_HUMAN_REVIEW",
+                },
+            }
+
+    gateway = EdgeGateway()
+    result = PublicReviewAgent(gateway).analyze_request(
+        "将 J4012 的软件基线从 JetPack 6.2 升级到 7.2，核对刷写和运行验证。",
+        device_model="reComputer Industrial J4012", module_sku="P3767-0000",
+        carrier_board="J401", software_baseline="JetPack 6.2",
+    )
+
+    assert _official_hit(source, "wiki-snapshot", {"Seeed-Studio/wiki-documents"},
+                         allowed_versions={"wiki-snapshot"}, allowed_sources=registry)
+    assert result["request_plan"]["change_type"] == "software_baseline"
+    assert result["request_plan"]["device_scope"]["device_model"] == "reComputer Industrial J4012"
+    assert result["retrieval_trace"]["languages_per_check"] == ["zh"]
+    assert all(call[2] == "zh" for call in gateway.calls if call[0] == "search")
+    assert all(call[4:8] == (
+        "reComputer Industrial J4012", "P3767-0000", "J401", "JetPack 6.2",
+    ) for call in gateway.calls if call[0] == "search")
+    assert gateway.calls[-1] == (
+        "review", "wiki-snapshot", "reComputer Industrial J4012", "P3767-0000", "J401", "JetPack 6.2",
+    )
+    assert result["impacts"] and result["review_advice"]["review"]["review_status"] == "REQUIRES_HUMAN_REVIEW"
+    assert result["stage_status"]["retrieval"] == "OK"
+
+    gateway.calls.clear()
+    gateway.search = lambda *_args, **_kwargs: {"retrieval_policy": "bm25", "results": []}
+    no_evidence = PublicReviewAgent(gateway).analyze_request(
+        "为 J4012 升级 JetPack 前核对刷写要求。",
+        device_model="reComputer Industrial J4012", module_sku="P3767-0000",
+        carrier_board="J401", software_baseline="JetPack 6.2",
+    )
+    assert no_evidence["retrieved_results"] == []
+    assert no_evidence["impacts"] == []
+    assert no_evidence["review_advice"]["status"] == "NO_EVIDENCE"
+    assert no_evidence["stage_status"]["generation"] == "SKIPPED"
+    assert no_evidence["evidence_gap_details"]
+    assert not any(call[0] == "review" for call in gateway.calls)
+
+    with pytest.raises(ValueError, match="不在当前知识空间"):
+        PublicReviewAgent(gateway).analyze_request(
+            "检查未知设备升级 JetPack 的影响。", device_model="Unknown Board X",
+        )
+    with pytest.raises(ValueError, match="仅收录中文"):
+        PublicReviewAgent(gateway).analyze_request(
+            "检查 JetPack 升级影响。", language_mode="en",
+        )
+
+
+def test_edge_ai_source_validation_rejects_unregistered_or_wrong_host_evidence():
+    registry = [{
+        "source_id": "known-source", "source_url": "https://wiki.seeedstudio.com/cn/known/",
+        "repository": "Seeed-Studio/wiki-documents", "source_snapshot": "wiki-snapshot",
+        "commit": "1" * 40, "sha256": "a" * 64,
+    }]
+    evidence = {
+        "chunk_id": "e1", "source_id": "known-source", "version": "wiki-snapshot",
+        "source_snapshot": "wiki-snapshot", "repository": "Seeed-Studio/wiki-documents",
+        "source_url": "https://wiki.seeedstudio.com/cn/known/", "language": "zh",
+        "retrieval_score": 1.0,
+    }
+
+    assert _official_hit(evidence, "wiki-snapshot", {"Seeed-Studio/wiki-documents"},
+                         allowed_sources=registry)
+    assert not _official_hit({**evidence, "source_url": "https://attacker.example/cn/known/"},
+                             "wiki-snapshot", {"Seeed-Studio/wiki-documents"}, allowed_sources=registry)
+    assert not _official_hit({**evidence, "source_id": "unknown-source"},
+                             "wiki-snapshot", {"Seeed-Studio/wiki-documents"}, allowed_sources=registry)

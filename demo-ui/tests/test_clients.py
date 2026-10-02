@@ -152,6 +152,7 @@ def test_public_knowledge_client_forwards_edge_device_scope_facets():
         Response({"results": []}),
         Response({"evidence": []}),
         Response({"status": "GENERATION_NOT_CONFIGURED"}),
+        Response({"status": "GENERATION_NOT_CONFIGURED"}),
     ])
     client = PublicKnowledgeClient("http://localhost:8765", session=session)
     scope = {
@@ -164,6 +165,7 @@ def test_public_knowledge_client_forwards_edge_device_scope_facets():
     client.search("工业视觉", version="wiki-abc", language="zh", **scope)
     client.query_official("工业视觉", version="wiki-abc", language="zh", **scope)
     client.review_advice("升级视觉运行环境", ["evidence-1"], version="wiki-abc", **scope)
+    client.review_advice_for_version("复核刷写影响", ["evidence-2"], version="wiki-abc", **scope)
 
     assert session.calls[0][3]["json"] == {
         "query": "工业视觉", "version": "wiki-abc", "language": "zh", "top_k": 5, **scope,
@@ -173,6 +175,9 @@ def test_public_knowledge_client_forwards_edge_device_scope_facets():
     }
     assert session.calls[2][3]["json"] == {
         "change_summary": "升级视觉运行环境", "evidence_chunk_ids": ["evidence-1"], "version": "wiki-abc", **scope,
+    }
+    assert session.calls[3][3]["json"] == {
+        "change_summary": "复核刷写影响", "evidence_chunk_ids": ["evidence-2"], "version": "wiki-abc", **scope,
     }
 
 

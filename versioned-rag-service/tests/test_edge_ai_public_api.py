@@ -55,6 +55,9 @@ def test_workspace_and_health_identify_only_the_chinese_edge_ai_profile(tmp_path
     assert workspace["chunk_count"] == 394
     assert workspace["current_version"] == "wiki-1eadc6584f96"
     assert workspace["snapshots"][0]["commit"] == "1eadc6584f962b6efdbdb3e49b2b4ce30c85be08"
+    assert len(workspace["source_registry"]) == workspace["source_count"]
+    assert all({"source_id", "source_url", "repository", "source_snapshot", "commit", "sha256"} <= set(row)
+               for row in workspace["source_registry"])
     assert "JetPack 7.2 (L4T 39.2.0)" in workspace["software_baselines"]
     assert "reComputer Industrial J4012" in workspace["hardware_models"]
     assert workspace["retrieval_evaluation_status"] == "new_corpus_pending_rebenchmark"
@@ -123,3 +126,23 @@ def test_review_advice_cannot_reuse_evidence_outside_selected_device_scope(tmp_p
 
     assert response.status_code == 422
     assert response.json()["detail"] == "INVALID_REVIEW_EVIDENCE"
+
+
+def test_review_advice_accepts_evidence_only_with_matching_confirmed_scope(tmp_path, monkeypatch):
+    scope = {
+        "device_model": "reComputer Industrial J4012",
+        "software_baseline": "JetPack 7.2 (L4T 39.2.0)",
+    }
+    with _client(tmp_path, monkeypatch) as client:
+        search = client.post("/public/search", json={
+            "query": "工业视觉监控部署环境", **scope,
+        }).json()
+        chunk_id = search["results"][0]["chunk_id"]
+        response = client.post("/public/review-advice", json={
+            "change_summary": "更新 J4012 工业视觉部署环境",
+            "evidence_chunk_ids": [chunk_id], **scope,
+        })
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "GENERATION_NOT_CONFIGURED"
+    assert [row["chunk_id"] for row in response.json()["evidence"]] == [chunk_id]

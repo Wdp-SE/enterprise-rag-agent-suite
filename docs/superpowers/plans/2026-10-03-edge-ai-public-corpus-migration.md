@@ -135,7 +135,7 @@ class SearchRequest(BaseModel):
 ```
 - [x] **Step 4: 更新 workspace 响应与客户端**：workspace 从 edge manifest 返回领域 profile、快照、语言和各 facet 选项；client 支持序列化四类 facet，未填写的过滤字段省略。
 - [x] **Step 5: 运行 API 回归**：edge 合约 4 passed；既有 API 63 passed、runtime 12 passed、release smoke 5 passed；client 范围契约 10 passed。旧评测/兼容支路将在 Task 7 从活动代码移除。
-- [ ] **Step 6: Commit API 范围契约**：提交 API、客户端和对应测试。
+- [x] **Step 6: Commit API 范围契约**：已由 commit `1cf2dfc` 提交 API、客户端和对应测试。
 
 ### Task 4: 设备变更领域 Agent 与证据来源校验
 
@@ -152,9 +152,9 @@ class SearchRequest(BaseModel):
 - `build_request_plan(summary: str, *, change_type: str | None = None, impact_scope: str | None = None, profile: dict | None = None, device_model: str | None = None, module_sku: str | None = None, carrier_board: str | None = None, software_baseline: str | None = None, target_snapshot: str = "current") -> dict`；返回原始描述、分类来源、最多四个检索问题、目标设备/软件基线和预期资料类型。
 - Agent 的检索 gateway `search(question, *, version, language, top_k=5, device_model=None, module_sku=None, carrier_board=None, software_baseline=None)` 将 Task 3 的设备 facet 传给每个子查询；证据来源按当前 workspace manifest 的 allowlist 主机、repository/commit 或固定页面 hash 校验，不再只接受 GitHub `blob` URL。
 
-- [ ] **Step 1: 写设备变更规划和安全断言测试**：覆盖 J40/J30 型号变化、模组/载板替换、JetPack/L4T/BSP 升级、电源/热/接口配置、AI runtime/部署、测试资料变化；断言最多四次检索、原描述保留、未知型号要求人工补充、无匹配证据不会产生“兼容/不受影响”的肯定结论。
-- [ ] **Step 2: 运行 Agent 测试确认失败**：执行 `python -m pytest tests/test_change_request.py tests/test_public_review.py -q`；预期仍含 Autoware planning 分类、双语审查和 GitHub-only 来源限定。
-- [ ] **Step 3: 加设备领域 profile**：把设备变更类别、中文关键词、检索焦点、预期资料类型及人工 checklist 放在 JSON profile；通用 clause splitting、查询预算和原文保留继续留在 `change_request.py`，无领域支持的请求回退为 general 并标记未识别。
+- [x] **Step 1: 写设备变更规划和安全断言测试**：覆盖 JetPack/L4T/BSP 变更、四类确认范围透传、最多四次检索、原描述保留、未知型号拒绝扩大检索、无证据跳过生成并保留缺口。
+- [x] **Step 2: 运行 Agent 测试确认失败**：`python -m pytest tests/test_change_request.py tests/test_public_review.py -q` 首轮因领域 profile 模块未实现而失败；实现后转绿。
+- [x] **Step 3: 加设备领域 profile**：设备变更类别、中文关键词、检索焦点、预期资料类型和人工 checklist 已配置在 JSON profile；通用 clause splitting 与四问题预算继续复用，未知类别回退为 general。
 
 ```python
 plan = build_request_plan(
@@ -170,9 +170,9 @@ for query in plan["queries"][:4]:
         carrier_board=plan["carrier_board"], software_baseline=plan["software_baseline"],
     )
 ```
-- [ ] **Step 4: 限定检索和证据**：对变更输入抽取/接收用户确认的设备型号、模块、载板和软件基线；子查询共享这些过滤条件；只把本轮 RAG 返回的证据 ID 传入生成；来源校验依据当前 manifest，而非把任何可访问 URL 当作受信证据。
-- [ ] **Step 5: 运行 Agent 回归**：重跑两个 Agent 测试文件和 `python -m pytest tests/change_impact_review -q`（在 `change-review-agent/` 执行）；测试要证明无证据时保留缺口、有证据才列影响候选、人工审核字段保留。
-- [ ] **Step 6: Commit 领域审查 profile**：提交 Agent profile、规则、来源校验和回归测试。
+- [x] **Step 4: 限定检索和证据**：每个子查询和 review-advice 均透传用户确认的设备/SKU/载板/软件基线；RAG workspace 暴露由已验证 manifest 导出的 source registry，Agent 比对 source ID、精确 URL、仓库、快照、commit/hash 与中文语言；生成只接收本轮 RAG 证据 ID。
+- [x] **Step 5: 运行 Agent 回归**：`tests/test_change_request.py`、`tests/test_public_review.py` 与 `tests/change_impact_review` 合计 60 passed；edge API 与 public server 合计 68 passed；client scope tests 10 passed。新增断言覆盖无证据时跳过生成并保留缺口、匹配证据才可列为候选、仍须人工审查。
+- [x] **Step 6: Commit 领域审查 profile**：本次提交包含 Agent profile、规则、来源校验、workspace source registry 和对应回归测试。
 
 ### Task 5: 单一领域工作台与公开说明
 

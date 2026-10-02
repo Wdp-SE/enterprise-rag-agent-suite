@@ -1,8 +1,16 @@
+from pathlib import Path
+
+import pytest
+
 from app.change_request import (
     build_request_plan,
     classify_change_type,
     is_out_of_scope_public_request,
 )
+from app.domain_profile import load_change_profile
+
+
+EDGE_PROFILE_PATH = Path(__file__).resolve().parents[1] / "config" / "edge_ai_device_change_profile.json"
 
 
 def test_comma_joined_change_and_verification_are_planned_separately():
@@ -148,3 +156,58 @@ def test_english_question_and_follow_up_check_become_separate_agent_queries():
     assert len(plan["queries"]) == 3
     assert any("signed audit record" in row["query"] for row in plan["queries"])
     assert any("official API contract" in row["query"] for row in plan["queries"])
+
+
+def test_edge_profile_loads_valid_domain_change_categories():
+    profile = load_change_profile(EDGE_PROFILE_PATH)
+
+    assert profile["id"] == "edge_ai_device"
+    assert {row["id"] for row in profile["change_types"]} == {
+        "software_baseline", "device_configuration", "deployment_operations", "general",
+    }
+    assert profile["languages"] == ["zh"]
+
+
+def test_edge_request_plan_keeps_original_text_and_filters_confirmed_device_scope():
+    profile = load_change_profile(EDGE_PROFILE_PATH)
+    profile["scope_options"] = {
+        "device_model": ["reComputer Industrial J4012"],
+        "module_sku": ["P3767-0000"],
+        "carrier_board": ["J401"],
+        "software_baseline": ["JetPack 6.2"],
+    }
+    summary = "将 J4012 的 JetPack 基线从 6.2 升级到 7.2，并核对刷写、驱动和部署验证。"
+
+    plan = build_request_plan(
+        summary,
+        profile=profile,
+        device_model="reComputer Industrial J4012",
+        module_sku="P3767-0000",
+        carrier_board="J401",
+        software_baseline="JetPack 6.2",
+        target_snapshot="wiki-1eadc6584f96",
+    )
+
+    assert plan["change_type"] == "software_baseline"
+    assert plan["original_request"] == summary
+    assert plan["target_snapshot"] == "wiki-1eadc6584f96"
+    assert plan["device_scope"] == {
+        "device_model": "reComputer Industrial J4012",
+        "module_sku": "P3767-0000",
+        "carrier_board": "J401",
+        "software_baseline": "JetPack 6.2",
+    }
+    assert len(plan["queries"]) <= 4
+    assert all("SubWorkflow" not in row["search_query"] for row in plan["queries"])
+
+
+def test_edge_request_plan_rejects_unknown_device_scope_instead_of_dropping_filter():
+    profile = load_change_profile(EDGE_PROFILE_PATH)
+    profile["scope_options"] = {"device_model": ["reComputer Industrial J4012"]}
+
+    with pytest.raises(ValueError, match="不在当前知识空间"):
+        build_request_plan(
+            "升级 JetPack",
+            profile=profile,
+            device_model="Unknown Board X",
+        )

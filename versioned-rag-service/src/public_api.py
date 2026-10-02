@@ -1003,6 +1003,16 @@ def workspace(request: Request) -> dict:
                 "source_count": len(manifest.get("sources", [])),
                 "label": "当前固定中文资料快照",
             }],
+            # The Agent uses this manifest-derived allowlist to validate that a
+            # citation is one of the pinned sources in this workspace. The RAG
+            # service verifies source hashes when loading the index.
+            "source_registry": [
+                {
+                    key: source.get(key)
+                    for key in ("source_id", "source_url", "repository", "source_snapshot", "commit", "sha256")
+                }
+                for source in manifest.get("sources", [])
+            ],
             "hardware_models": list(manifest.get("hardware_models", [])),
             "module_skus": list(manifest.get("module_skus", [])),
             "carrier_boards": list(manifest.get("carrier_boards", [])),

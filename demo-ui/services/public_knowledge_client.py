@@ -70,8 +70,14 @@ class PublicKnowledgeClient(RAGClient):
 
     def review_advice_for_version(
         self, change_summary: str, evidence_chunk_ids: list[str], *, version: str,
+        device_model: str | None = None, module_sku: str | None = None,
+        carrier_board: str | None = None, software_baseline: str | None = None,
     ) -> dict:
-        return self.review_advice(change_summary, evidence_chunk_ids, version=version)
+        return self.review_advice(
+            change_summary, evidence_chunk_ids, version=version,
+            device_model=device_model, module_sku=module_sku,
+            carrier_board=carrier_board, software_baseline=software_baseline,
+        )
 
     def engineering_diff(self, old_items: list[dict], new_items: list[dict]) -> dict:
         return self._request(
