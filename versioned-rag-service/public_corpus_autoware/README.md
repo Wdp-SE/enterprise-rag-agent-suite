@@ -1,25 +1,24 @@
-# Autoware 多语言公开研发资料语料
+# Autoware 中文社区资料快照
 
-本目录是用于公开演示的固定语料快照，覆盖 Autoware Documentation 和 Universe Planning 资料。它不是完整 Autoware 镜像，也不是官方认证的中文知识库。
+本目录只包含 Tomato ROS 社区维护的 Autoware 中文译本，不含英文官方文档或英文专属产品快照。它用于演示版本受控的中文研发资料检索与变更审查，不是 Autoware 官方中文资料，也不是完整产品文档库。
 
-| 检索范围 | 来源内容 | 版本化来源数 |
-| --- | --- | ---: |
-| `latest`（默认组合范围） | 官方 Documentation `main` 英文 431 页 + 中文社区资料 260 页 + Universe Planning 0.52.0 英文 13 份 | 704 |
-| `docs-main` | 官方 Documentation `main` 英文资料 + 中文社区资料 | 691 |
-| `1.9.0` | 官方 Documentation 稳定文档发布版英文资料 | 431 |
-| `0.52.0` | Autoware Universe Planning 英文历史/当前演示快照 | 13 |
-| `0.51.0` | Autoware Universe Planning 英文基线快照 | 13 |
+| 检索选项 | 固定来源提交 | 中文来源数 | 说明 |
+| --- | --- | ---: | --- |
+| `latest`（默认） | `eb089f637534f1e84b8d0c950be1ab302ee22c50` | 260 | 2026-07 当前社区快照 |
+| `community-zh-2026-07` | 同上 | 260 | 当前快照的显式版本名 |
+| `community-zh-2026-01` | `5f2ee521d5f26cfe832d6d6abf6d1885909706cd` | 259 | 2026-01 历史社区快照；仅收录与当前选定资料范围相同且可解析的页面 |
 
-当前总计 1,148 条版本/语言来源、660 个不同资料主题/路径、7,927 个检索片段。两条已人工复核的 Universe 截图 OCR 证据继续作为派生证据保留，不等同于原始文档正文。
+两次快照的日期来自社区仓库提交时间，不代表 Autoware 产品发行版本。当前与历史资料共有 260 个资料主题；历史快照缺少 1 个当前页面。总计 519 条版本化来源记录、3,806 个检索片段。服务默认只查 `latest`；用户明确选择历史版本时才检索 2026-01 快照。
 
-默认 `latest` 是**组合检索范围**，由固定的 Documentation `main` 快照与 Universe `0.52.0` 快照组成；这两个仓库版本号含义不同，不代表同一 Autoware 软件发行版。它只表示本仓库选择并固定的最新演示资料组合，不会跟踪上游实时变化。Documentation `1.9.0`、Universe `0.52.0` 与 `0.51.0` 都可以单独检索。
+所有资料均固定到上表所列 commit，正文 Markdown、原始 HTML SHA、提交链接和许可信息记录在 [`corpus_manifest.json`](corpus_manifest.json)。原始仓库为 [Tomato ROS Autoware 中文社区译本](https://github.com/tomato-ros/autoware-documentation-cn)，采用 Apache-2.0；本项目是独立演示，与 Autoware Foundation 无隶属关系，详见 [`LICENSE`](LICENSE) 和 [`NOTICE`](NOTICE)。
 
-中文资料来自 [Tomato ROS 社区仓库](https://github.com/tomato-ros/autoware-documentation-cn)，固定到 commit `eb089f637534f1e84b8d0c950be1ab302ee22c50`。本次从 HTML 页面提取正文、标题、列表、表格和代码块，保存本地可索引的 Markdown；每页同时记录固定 HTML commit、原始 HTML SHA、社区网页、canonical URL 与路径核验状态。260 页中有 44 页的 canonical 路径与固定的官方 Documentation `main` 快照相同，这只构成**对应候选**，不代表语义或版本已核验；216 页找不到同路径英文资料。产品因此将两类资料作为各自独立的公开来源提供检索；只有经人工验证的文档关系才用于中英文同步差异检查。未匹配页面不会被算作版本漂移，也不声称逐句翻译已经审核。社区网页链接用于阅读，固定 Git commit 与 SHA 才是本语料的来源快照。
+## 检索与证据边界
 
-官方英文资料来自 [Autoware Documentation](https://github.com/autowarefoundation/autoware-documentation)，`main` 固定到 `f43b9606771ec6badf51d03131d73c0f7b708049`，稳定文档 `1.9.0` 固定到 `664ae9421d39943b7c7e80f64eba184e632a44bb`。Universe Planning 两个快照分别固定到 `0.51.0` 的 `d4d260983d357e1b2b34291d91933f9f4b53bf94` 与 `0.52.0` 的 `6e477c645efec33f7909095eea684474e97f5e3d`。三个来源仓库的公开资料采用 Apache-2.0；详细来源、路径、commit、许可与文件 SHA 记录在 [`corpus_manifest.json`](corpus_manifest.json)，版权文本和归属见 [`LICENSE`](LICENSE) 与 [`NOTICE`](NOTICE)。
+- 语料语言筛选严格限定为 `zh-CN`；服务端拒绝 Autoware 工作区的英文或全语言查询。
+- `latest` 指向 2026-07 中文快照，不会把两个日期快照混在一次默认检索中；版本选择器可显式查看历史快照。
+- 默认 `bm25` 是可解释的检索基线。语料改为中文专用快照后，旧的英文/双语评测哈希不再匹配；新冻结集复评完成前不公布当前检索指标，也不宣称该策略最优。
+- 页面正文、表格、列表和代码块可参与检索。图片像素没有执行通用 OCR，图片中的文字目前不保证可检索；当前审核 OCR sidecar 为空。
+- 社区译文可能存在遗漏或延迟更新。系统展示固定提交来源，关键参数和安全相关结论仍须人工核对。
+- 变更审查只生成影响候选和待核查建议，由人做最终判断，不会改写上游或当前语料。
 
-图片处理有明确边界：导入器只索引社区 HTML 中可见的图片说明/alt 文本，并标明图像像素未执行 OCR；不会把图形本身的细节伪装成检索事实。两张 Universe 截图的既有人工复核 OCR 仍绑定原图 SHA。需要图片问答时，应增加经人工核对的图像题与图片证据，不能仅凭资料数量推断图像覆盖已经解决。
-
-当前检索策略与公开质量评测见 [`evaluation/autoware_quality_v1`](../../evaluation/autoware_quality_v1/README.md)。旧 43 题 Autoware V3 评测指纹不匹配当前语料，不能代表当前效果；检索指标也不等同于答案准确率或双语同步准确率。
-
-服务启动时校验 manifest、每份本地资料的 SHA、生成的索引和策略指纹；请求时不访问 GitHub，也不抓取最新内容。更新来源需要审核所选 commit 与 Apache-2.0 许可，再运行 `scripts/import_autoware_documentation.py` 重建索引、更新摘要并重新执行检索与关系核验评测。
+启动服务时会校验语料清单、所有来源 SHA、索引文件和运行配置指纹。更新数据需要选择并固定社区仓库 commit，重新导入、构建索引、建立新的中文评测集并通过验证后再发布；服务请求期间不会抓取 GitHub。

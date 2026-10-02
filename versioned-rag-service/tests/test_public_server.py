@@ -53,17 +53,17 @@ def test_autoware_workspace_profile_comes_from_manifest(tmp_path):
         health = client.get("/health").json()
 
     assert workspace["workspace"] == "Autoware"
-    assert workspace["repository"] == "autowarefoundation/autoware_universe"
+    assert workspace["repository"] == "tomato-ros/autoware-documentation-cn"
     assert workspace["current_version"] == "latest"
-    assert workspace["baseline_version"] == "0.51.0"
-    assert workspace["languages"] == ["en-US", "zh-CN"]
-    assert workspace["unique_document_count"] == 660
-    assert workspace["source_count"] == 1148
+    assert workspace["baseline_version"] == "community-zh-2026-01"
+    assert workspace["languages"] == ["zh-CN"]
+    assert workspace["available_versions"] == ["latest", "community-zh-2026-07", "community-zh-2026-01"]
+    assert workspace["unique_document_count"] == 260
+    assert workspace["source_count"] == 519
     assert workspace["corpus_is_complete"] is False
-    assert "universe planning releases" in workspace["corpus_scope"].casefold()
-    assert "community chinese translation" in workspace["corpus_scope"].casefold()
-    assert "documentation main" in workspace["corpus_scope"].casefold()
-    assert "community Chinese translation snapshot" in workspace["data_origin"]
+    assert "Chinese-only public demo corpus" in workspace["corpus_scope"]
+    assert "English source documents and English-only product snapshots are excluded" in workspace["corpus_scope"]
+    assert "Chinese community translation snapshots" in workspace["data_origin"]
     assert health["workspace"] == "Autoware"
     assert health["build_revision"] == "unknown" or re.fullmatch(r"[0-9a-f]{40}", health["build_revision"])
     assert health["corpus_fingerprint"]["fingerprint_sha256"] != "unknown"
@@ -73,9 +73,9 @@ def test_autoware_workspace_profile_comes_from_manifest(tmp_path):
     assert "DolphinScheduler" not in json.dumps(workspace)
 
 
-def test_autoware_public_deployment_uses_benchmarked_image_policy_and_current_release():
+def test_autoware_public_deployment_serves_chinese_snapshot_only():
     index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
-    question = "What two readable labels appear in the Goal Planner image about the drivable area and stopping?"
+    question = "如何启动 Autoware 并通过命令行参数启用或禁用模块？"
 
     with TestClient(create_app(
         index=index,
@@ -84,24 +84,32 @@ def test_autoware_public_deployment_uses_benchmarked_image_policy_and_current_re
         health = client.get("/health").json()
         workspace = client.get("/public/workspace").json()
         response = client.post("/public/search", json={
-            "query": question, "version": "current", "language": "en",
+            "query": question, "version": "latest", "language": "zh",
+        })
+        preferred = client.post("/public/search", json={
+            "query": question, "version": "latest", "language": "zh_preferred",
+        })
+        all_languages = client.post("/public/search", json={
+            "query": question, "version": "latest", "language": "all",
+        })
+        english = client.post("/public/search", json={
+            "query": "How do I start Autoware?", "version": "latest", "language": "en",
         })
 
-    assert health["runtime_retrieval_policy"] == "bm25_figure_ocr"
-    assert health["approved_image_chunk_count"] == 2
-    assert workspace["retrieval_evaluation_status"] == "autoware_accuracy_v2_validated"
+    assert health["approved_image_chunk_count"] == 0
     assert workspace["current_version"] == "latest"
-    assert workspace["available_versions"] == ["latest", "docs-main", "1.9.0", "0.52.0", "0.51.0"]
-    assert workspace["retrieval_evaluation"]["name"] == "autoware_accuracy_v2"
-    assert workspace["retrieval_evaluation"]["holdout"]["required_source_recall_at_5"] == 0.4
-    assert workspace["retrieval_evaluation"]["holdout"]["image_hit_count"] == 6
-    assert 0 <= workspace["retrieval_evaluation"]["holdout"]["mrr_at_5"] <= 1
-    assert workspace["retrieval_evaluation"]["candidate_decision"] == "not_promoted"
-    assert workspace["change_review_evaluation"]["holdout"]["bilingual"]["evidence_source_recall"] == pytest.approx(7 / 11)
-    assert workspace["change_review_evaluation"]["holdout"]["zh"]["evidence_source_recall"] == pytest.approx(3 / 11)
-    assert workspace["change_review_evaluation"]["holdout"]["bilingual"]["model_evaluated_case_count"] == 0
+    assert workspace["available_versions"] == ["latest", "community-zh-2026-07", "community-zh-2026-01"]
+    assert workspace["languages"] == ["zh-CN"]
+    assert workspace["source_count"] == 519
+    assert workspace["retrieval_evaluation_status"] == "chinese_only_pending_rebenchmark"
     assert response.status_code == 200
-    assert any(row.get("figure_id") == "32682b345ea86e13" for row in response.json()["results"])
+    assert response.json()["results"]
+    assert all(row["language"] == "zh" for row in response.json()["results"])
+    assert preferred.status_code == 200
+    assert all(row["language"] == "zh" for row in preferred.json()["results"])
+    assert all_languages.status_code == 200
+    assert all(row["language"] == "zh" for row in all_languages.json()["results"])
+    assert english.status_code == 422
 
 
 def test_private_company_query_is_rejected_before_retrieval_or_generation(monkeypatch):
@@ -155,7 +163,7 @@ def test_request_id_reaches_generation_diagnostics_and_logs_never_include_questi
             raise GenerationProviderError("GENERATION_RATE_LIMITED")
 
     request_id = "review-trace-2026-01"
-    private_prompt = "Autoware health-check endpoint SECRET-PROMPT-CANARY-7af1"
+    private_prompt = "请检索 Autoware 健康检查端点 SECRET-PROMPT-CANARY-7af1"
     with caplog.at_level(logging.INFO, logger="src.public_server"):
         with TestClient(create_app(
             index=PublicKnowledgeIndex(root=AUTOWARE_CORPUS),
@@ -164,7 +172,7 @@ def test_request_id_reaches_generation_diagnostics_and_logs_never_include_questi
         )) as client:
             response = client.post(
                 "/public/query", json={
-                    "query": private_prompt, "version": "latest", "language": "en",
+                    "query": private_prompt, "version": "latest", "language": "zh",
                 }, headers={"X-Request-ID": request_id},
             )
 
@@ -175,9 +183,9 @@ def test_request_id_reaches_generation_diagnostics_and_logs_never_include_questi
     assert "SECRET-PROMPT-CANARY-7af1" not in caplog.text
 
 
-def test_review_advice_accepts_reviewed_image_evidence_from_rag_search():
+def test_autoware_review_advice_uses_text_evidence_without_claiming_image_ocr():
     index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
-    query = "What two readable labels appear in the Goal Planner image about the drivable area and stopping?"
+    query = "如何启动 Autoware 并通过命令行参数启用或禁用模块？"
     generated_contexts = []
 
     class Generator:
@@ -186,14 +194,14 @@ def test_review_advice_accepts_reviewed_image_evidence_from_rag_search():
         def generate_review(self, *, change_summary, context):
             generated_contexts.append(context)
             return {
-                "change_interpretation": "Check the Goal Planner behavior against the reviewed figure labels.",
+                "change_interpretation": "根据中文资料检查启动参数变更影响。",
                 "impact_candidates": [{
                     "evidence_chunk_id": self.cited_chunk_id,
-                    "reason": "The reviewed image OCR contains the cited labels.",
-                    "suggested_action": "A reviewer should inspect the source figure and related behavior.",
+                    "reason": "引用片段描述了启动参数。",
+                    "suggested_action": "由审核人核对固定提交来源。",
                 }],
                 "evidence_gaps": [], "version_ambiguities": [],
-                "reviewer_actions": ["Manually confirm the original figure."],
+                "reviewer_actions": ["人工核对来源资料。"],
                 "review_status": "REQUIRES_HUMAN_REVIEW",
             }
 
@@ -204,25 +212,25 @@ def test_review_advice_accepts_reviewed_image_evidence_from_rag_search():
         retrieval_config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
     )) as client:
         search = client.post("/public/search", json={
-            "query": query, "version": "current", "language": "en",
+            "query": query, "version": "latest", "language": "zh",
         })
-        image = next(row for row in search.json()["results"] if row.get("figure_id"))
-        generator.cited_chunk_id = image["chunk_id"]
+        evidence = search.json()["results"][0]
+        generator.cited_chunk_id = evidence["chunk_id"]
         response = client.post("/public/review-advice", json={
-            "change_summary": "Review the Goal Planner labels and related behavior.",
-            "evidence_chunk_ids": [image["chunk_id"]],
+            "change_summary": "检查启动参数变更影响。",
+            "evidence_chunk_ids": [evidence["chunk_id"]],
+            "version": "latest",
         })
 
     assert search.status_code == 200
     assert response.status_code == 200
     result = response.json()
     assert result["status"] == "OK"
-    assert result["evidence"][0]["figure_id"] == image["figure_id"]
-    assert result["sources"][0]["raw_url"] == image["raw_url"]
-    assert result["review"]["impact_candidates"][0]["evidence_chunk_id"] == image["chunk_id"]
-    assert "figure_id=" + image["figure_id"] in generated_contexts[0]
-    assert image["raw_url"] in generated_contexts[0]
-    assert "image OCR contains transcribed labels only" in generated_contexts[0]
+    assert result["evidence"][0]["chunk_id"] == evidence["chunk_id"]
+    assert result["evidence"][0]["source_type"] == "community_translation"
+    assert "source_type=community_translation" in generated_contexts[0]
+    assert "figure_id=" not in generated_contexts[0]
+    assert "image OCR" not in generated_contexts[0]
 
 
 def test_autoware_evaluation_rejects_report_metrics_changed_after_freeze(tmp_path, monkeypatch):
@@ -266,10 +274,7 @@ def test_autoware_quality_v1_workspace_uses_current_frozen_report():
 
     report = public_api._validated_autoware_quality_v1(runtime)
 
-    assert report is not None
-    assert report["name"] == "autoware_quality_v1"
-    assert report["case_count"] == 82
-    assert report["selection"]["selected_policy"] == "bm25_figure_ocr"
+    assert report is None
 
 
 def test_autoware_accuracy_v2_matches_current_strategy_and_rejects_hybrid_promotion():
@@ -280,12 +285,7 @@ def test_autoware_accuracy_v2_matches_current_strategy_and_rejects_hybrid_promot
 
     report = public_api._validated_autoware_accuracy_v2(runtime)
 
-    assert report is not None
-    assert report["name"] == "autoware_accuracy_v2"
-    assert report["policy"] == "bm25_figure_ocr"
-    assert report["holdout"]["required_source_recall_at_5"] == 0.4
-    assert report["candidate_decision"] == "not_promoted"
-    assert report["candidate"]["policy"] == "hybrid_figure_ocr"
+    assert report is None
 
 
 def test_autoware_accuracy_v2_rejects_report_modified_after_freeze(tmp_path, monkeypatch):
@@ -357,7 +357,9 @@ def test_public_workspace_and_review_support_manifests_without_declared_version_
 def test_generation_prompts_use_active_workspace_identity_not_old_product_brand(tmp_path):
     index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
     sidecar, lock = _write_empty_figure_sidecar(AUTOWARE_CORPUS, tmp_path)
-    expected = index.search("planning validator trajectory", top_k=1, version="current", language="all")[0]
+    expected = index.search(
+        "规划验证器如何检查轨迹？", top_k=1, version="latest", language="zh",
+    )[0]
     prompts = []
 
     class Generator:
@@ -388,7 +390,7 @@ def test_generation_prompts_use_active_workspace_identity_not_old_product_brand(
         figure_sidecar_path=sidecar, figure_sidecar_lock_path=lock,
     )) as client:
         query = client.post("/public/query", json={
-            "query": "planning validator trajectory", "language": "all",
+            "query": "规划验证器如何检查轨迹？", "language": "zh", "version": "latest",
         }).json()
         advice = client.post("/public/review-advice", json={
             "change_summary": "Review planner validation behavior.",
@@ -460,7 +462,7 @@ def test_legacy_default_corpus_routes_remain_available_without_stale_eval_claims
         )
 
 
-def test_autoware_bilingual_corpus_api_exposes_composite_latest_and_translation_provenance():
+def test_autoware_chinese_corpus_api_exposes_only_the_pinned_chinese_snapshot():
     project = Path(__file__).resolve().parents[2]
     corpus = project / "versioned-rag-service" / "public_corpus_autoware"
     index = PublicKnowledgeIndex(corpus)
@@ -476,7 +478,7 @@ def test_autoware_bilingual_corpus_api_exposes_composite_latest_and_translation_
         english = client.post("/public/search", json={
             "query": "What does the planning validator check before publishing a trajectory?",
             "version": "latest", "language": "en", "top_k": 5,
-        }).json()["results"]
+        })
         review = client.post("/public/review-advice", json={
             "change_summary": "调整规划模块启动配置",
             "evidence_chunk_ids": [chinese[0]["chunk_id"]],
@@ -484,22 +486,17 @@ def test_autoware_bilingual_corpus_api_exposes_composite_latest_and_translation_
         })
 
     assert workspace["current_version"] == "latest"
-    assert workspace["version_scopes"]["latest"]["versions"] == ["docs-main", "0.52.0"]
-    assert workspace["source_count"] == 1148
-    assert workspace["chunk_count"] == 7927
-    assert workspace["retrieval_evaluation_status"] == "expanded_corpus_pending_rebenchmark"
-    assert workspace["translation_alignment"] == {
-        "path_matched_to_official_main": 44,
-        "source_path_not_found_in_official_main": 216,
-    }
+    assert workspace["version_scopes"]["latest"]["versions"] == ["community-zh-2026-07"]
+    assert workspace["source_count"] == 519
+    assert workspace["languages"] == ["zh-CN"]
+    assert workspace["retrieval_evaluation_status"] == "chinese_only_pending_rebenchmark"
+    assert workspace["available_versions"] == ["latest", "community-zh-2026-07", "community-zh-2026-01"]
     chinese_doc = next(row for row in docs if row["source_type"] == "community_translation")
     assert chinese_doc["rendered_url"].startswith("https://tomato-ros.github.io/")
-    assert chinese_doc["translation_alignment_status"] in {
-        "path_matched_to_official_main", "source_path_not_found_in_official_main",
-    }
     assert any(row["source_type"] == "community_translation" for row in chinese)
-    assert english and all(row["language"] == "en" for row in english)
-    assert all(row["version"] in {"docs-main", "0.52.0"} for row in english)
+    assert all(row["locale"] == "zh-CN" for row in docs)
+    assert {row["version"] for row in docs} == {"community-zh-2026-07", "community-zh-2026-01"}
+    assert english.status_code == 422
     assert review.status_code == 200
     assert review.json()["status"] == "GENERATION_NOT_CONFIGURED"
 
@@ -649,7 +646,7 @@ def test_abstention_reports_missing_question_terms_instead_of_infrastructure_fai
     diagnostic = payload["generation"]
     assert diagnostic["failure_reason"] == "MODEL_NO_SUPPORTED_ANSWER"
     assert diagnostic["candidate_count"] == len(payload["evidence"]) == 5
-    assert {"api", "server", "health", "check"}.issubset(
+    assert {"api", "server", "health"}.issubset(
         set(diagnostic["evidence_coverage"]["matched_terms"])
     )
     assert diagnostic["evidence_coverage"]["missing_terms"] == []
@@ -883,8 +880,7 @@ def test_answer_evidence_support_is_explainable_and_penalizes_translation_or_ver
         [{"kind": "verified_version_text_difference", "document_key": "guide/launch"}],
     )
     assert risky["label"] == "有限"
-    assert "译文" in risky["summary"]
-    assert "路径未匹配官方版本" in risky["summary"]
+    assert "社区中文译本" in risky["summary"]
     assert "版本文字差异" in risky["summary"]
 
     aligned_translation = public_api._answer_evidence_support(
@@ -1342,7 +1338,10 @@ def test_public_review_advice_rejects_unknown_or_historical_evidence():
 
 def test_public_review_advice_allows_explicit_historical_version_bound_to_evidence(tmp_path):
     index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
-    hit = index.search("planning validator trajectory", top_k=1, version="0.51.0", language="all")[0]
+    historical_version = "community-zh-2026-01"
+    hit = index.search(
+        "规划验证器如何检查轨迹？", top_k=1, version=historical_version, language="zh",
+    )[0]
     captured = []
     sidecar, lock = _write_empty_figure_sidecar(AUTOWARE_CORPUS, tmp_path)
 
@@ -1366,14 +1365,14 @@ def test_public_review_advice_allows_explicit_historical_version_bound_to_eviden
         figure_sidecar_path=sidecar, figure_sidecar_lock_path=lock,
     )) as client:
         response = client.post("/public/review-advice", json={
-            "change_summary": "Review historical validator behavior.",
-            "evidence_chunk_ids": [hit["chunk_id"]], "version": "0.51.0",
+            "change_summary": "检查历史版本规划验证器的行为。",
+            "evidence_chunk_ids": [hit["chunk_id"]], "version": historical_version,
         })
 
     assert response.status_code == 200
     assert response.json()["status"] == "OK"
-    assert response.json()["evidence"][0]["version"] == "0.51.0"
-    assert "0.51.0" in captured[0]
+    assert response.json()["evidence"][0]["version"] == historical_version
+    assert historical_version in captured[0]
 
 
 def test_public_review_advice_without_generator_returns_evidence_only():
@@ -1391,12 +1390,9 @@ def test_public_review_advice_without_generator_returns_evidence_only():
     assert response.json()["evidence"][0]["chunk_id"] == hit["chunk_id"]
 
 
-def test_autoware_relationship_state_is_exposed_without_claiming_translation_drift():
+def test_autoware_chinese_only_corpus_has_no_cross_language_relationship_claims():
     index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
-    expected = next(
-        row for row in index.document_relations._rows
-        if row["verification_status"] == "candidate"
-    )
+    assert index.document_relations._rows == []
 
     with TestClient(create_app(
         index=index,
@@ -1404,24 +1400,19 @@ def test_autoware_relationship_state_is_exposed_without_claiming_translation_dri
     )) as client:
         workspace = client.get("/public/workspace").json()
         documents = client.get("/public/documents").json()["documents"]
-        detail = client.post("/public/document", json={
-            "document_id": expected["source_document_id"],
-        }).json()
         results = client.post("/public/search", json={
-            "query": "Autoware coding guidelines", "version": "docs-main", "language": "all", "top_k": 20,
+            "query": "Autoware 开发指南和贡献规范是什么？", "version": "latest", "language": "zh", "top_k": 20,
         }).json()["results"]
 
     assert workspace["document_relationships"]["status"] == "ready"
+    assert workspace["document_relationships"]["relation_count"] == 0
     assert workspace["document_relationships"]["verified_translation_pairs"] == 0
-    chinese_document = next(row for row in documents if row["document_id"] == expected["source_document_id"])
-    assert chinese_document["document_relationships"] == [expected]
-    assert detail["chunks"]
-    assert all(row["document_relationships"] == [expected] for row in detail["chunks"])
-    assert all("document_relationships" in row for row in results)
-    assert any(
-        relation["verification_status"] == "candidate"
-        for row in results for relation in row["document_relationships"]
-    )
+    assert documents
+    assert all(row["locale"] == "zh-CN" for row in documents)
+    assert all(not row["document_relationships"] for row in documents)
+    assert results
+    assert all(row["language"] == "zh" for row in results)
+    assert all(not row["document_relationships"] for row in results)
 
 
 def test_invalid_relationship_registry_does_not_disable_public_search():
@@ -1438,7 +1429,7 @@ def test_invalid_relationship_registry_does_not_disable_public_search():
     )) as client:
         workspace = client.get("/public/workspace").json()
         response = client.post("/public/search", json={
-            "query": "planning validator trajectory", "version": "current", "language": "en",
+            "query": "规划验证器如何检查轨迹？", "version": "latest", "language": "zh",
         })
 
     assert response.status_code == 200

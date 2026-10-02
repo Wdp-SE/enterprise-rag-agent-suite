@@ -1,9 +1,7 @@
-This directory contains selected public documentation from the following Apache-2.0 repositories:
+This directory contains selected Chinese community documentation snapshots from:
 
-- Autoware Universe: https://github.com/autowarefoundation/autoware_universe
-- Autoware Documentation: https://github.com/autowarefoundation/autoware-documentation
-- Autoware Documentation Chinese community translation: https://github.com/tomato-ros/autoware-documentation-cn
+- Tomato ROS Autoware Documentation Chinese community translation: https://github.com/tomato-ros/autoware-documentation-cn
 
-Each source snapshot is pinned by commit in corpus_manifest.json. The Chinese repository is a community-maintained translation and is not an official Autoware translation. The local Markdown files generated from its HTML pages are derived, indexable representations; upstream HTML hashes are retained in the manifest.
+The current and historical snapshots are pinned by commit in corpus_manifest.json. The repository is licensed under Apache-2.0. Its Chinese translation is community-maintained and is not an official Autoware translation.
 
-This project is an independent demonstration and is not affiliated with the Autoware Foundation or the listed repositories.
+This project is an independent demonstration and is not affiliated with the Autoware Foundation or Tomato ROS.

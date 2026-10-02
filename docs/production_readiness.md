@@ -21,15 +21,15 @@ python versioned-rag-service/scripts/public_release_smoke.py `
   --expected-sha <40-character-github-main-sha>
 ```
 
-The command confirms the Streamlit page responds, the copied frontend revision and API revision match the expected commit, `/health` and `/public/workspace` agree on asset fingerprints, Chinese and English public queries return evidence, explicit `0.52.0` results contain no other version, and the internal Jira probe is refused before generation. It reports hosted request timings as **remote latency**. It does not call an LLM for smoke tests and does not scrape rendered Streamlit state from HTML.
+The command confirms the Streamlit page responds, the frontend revision and API revision match the expected commit, `/health` and `/public/workspace` agree on asset fingerprints, the workspace exposes only `zh-CN`, current and historical Chinese queries return evidence from their requested snapshots, and the internal Jira probe is refused before generation. It reports hosted request timings as **remote latency**. It does not call an LLM for smoke tests and does not scrape rendered Streamlit state from HTML.
 
 Exit code 0 means those checks passed for the instant they ran; it is not a long-running availability guarantee. If the app has no Git metadata, an unknown revision, different UI/API commits, or a stale hosted deploy, the command fails closed. Do not relabel a failed or unknown check as current.
 
 ## Current performance evidence and limits
 
-Current retrieval policy is `bm25_figure_ocr`, selected by [Autoware retrieval quality V1](../evaluation/autoware_quality_v1/README.md). On the fixed local corpus, HOLDOUT required-source Recall@5 and complete-source rate remain unchanged from BM25; image-focused evidence is 2/3 versus 0/3; wrong-version hits are zero; warm retrieval P95 is approximately 6.9% above BM25 and below the provisional 20% gate. The suite contains 82 manually curated queries (DEV 51 / HOLDOUT 31) grouped by source family.
+Current retrieval policy is `bm25`, used as an interpretable control baseline for the Chinese-only corpus. The previous English/bilingual corpus evaluation fingerprint no longer matches, so those metrics are not reported as current performance. A new Chinese-only frozen benchmark must be run before promoting a different default strategy.
 
-These values are offline retrieval metrics, not answer correctness, hallucination rate, real-user generalization, or hosted latency. Only two image OCR records have been reviewed. The Agent planning set has 28 fixed Chinese/English cases and met its rule-contract assertions; its HOLDOUT was inspected during the current fix and is not an unbiased validation set. See [its evaluation notes](../evaluation/autoware_agent_query_planning_v1/README.md).
+Retrieval metrics require exact corpus and code fingerprints and are not answer correctness, hallucination rate, real-user generalization, or hosted latency. The current Chinese corpus has no reviewed image OCR records, so image pixels are not searchable. The Agent planning set has 28 fixed Chinese/English requests and met its rule-contract assertions; its HOLDOUT was inspected during earlier fixes and is not an unbiased validation set. See [its evaluation notes](../evaluation/autoware_agent_query_planning_v1/README.md).
 
 ## Future private deployment work
 

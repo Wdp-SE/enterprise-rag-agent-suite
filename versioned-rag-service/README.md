@@ -1,6 +1,6 @@
 # Autoware 版本化研发知识 RAG 服务
 
-公网 Render 服务仍使用 `src.public_server:app` 入口及 `public_corpus_autoware` 固定资产。当前语料包含 Autoware 官方 Documentation 的英文 `main` 和 `1.9.0` 快照、Tomato ROS 社区中文译本，以及 Universe Planning 的 `0.51.0` / `0.52.0` 快照，总计 1,148 条版本/语言来源、660 个资料主题/路径和 7,927 个文本片段。默认 `latest` 是 Documentation `main` + Universe `0.52.0` 的组合范围，不是单一产品发行版。260 页中文译文中 44 页路径匹配到当前官方英文快照；其余 216 页未能核实对应英文版本。服务不会实时追踪上游。当前公网默认 `bm25_figure_ocr`，即 BM25 加两张人工复核且绑定原图 SHA 的 OCR 证据；82 题质量 V1 显示文本召回与完整来源命中不变，HOLDOUT 图像证据命中由 0/3 提到 2/3，暖检索 P95 增幅约 6.9%。这不是答案准确率、幻觉率或公网延迟 SLA。KEP 仅启发变更提案/评审流程，不是 RAG 语料或兼容性声明。当前语料、图片审核记录和评测状态见 [语料目录](public_corpus_autoware/README.md)、[来源清单](public_corpus_autoware/corpus_manifest.json)、[图片证据说明](public_corpus_autoware/FIGURE_EVIDENCE.md)和[Autoware 检索质量 V1](../evaluation/autoware_quality_v1/README.md)。旧 DolphinScheduler 语料和 V1-V4 指标不代表公网当前结果。
+公网 Render 服务使用 `src.public_server:app` 入口及 `public_corpus_autoware` 固定资产。当前语料只收录 Tomato ROS 社区中文译本：2026-07 当前快照 260 份来源、2026-01 历史快照 259 份来源，共 519 条版本化来源记录、260 个资料主题和 3,806 个文本片段。`latest` 默认指向 2026-07；用户也可选择 2026-01。日期代表社区仓库提交时间，不是 Autoware 产品版本。该译本不是 Autoware 官方中文资料，服务不会实时追踪上游。当前默认策略为 `bm25`，仅作透明基线；过去英文/双语语料评测与当前指纹不匹配，中文专用重评完成前不公布当前质量指标或最优策略。KEP 只启发变更提案/评审流程，不是 RAG 语料或兼容性声明。当前来源和评测状态见[语料目录](public_corpus_autoware/README.md)、[来源清单](public_corpus_autoware/corpus_manifest.json)和[评测页面说明](../demo-ui/README.md)。旧 DolphinScheduler 与旧版 Autoware 指标不代表公网当前结果。
 
 对外职责是版本化资料检索、引用溯源和可选的引用约束生成。下文关于 `DENSE_ONLY + SECTION_PATH` 的说明属于保留的合成企业资料 Runtime 与测试路径，不等同于当前公开语料使用的 BM25 + 审核图片文字策略。
 
@@ -10,14 +10,14 @@
 
 - `GET /public/workspace` 返回固定 Autoware 语料的版本、来源和片段数，以及与当前语料、检索代码、OCR 侧车、配置和冻结问题集指纹匹配的评测状态。
 - `GET /health` 和 `/public/workspace` 返回提交、语料、检索配置与评测集指纹。提交号只在 Git revision 有效且部署工作区干净时公开，否则返回 `unknown`；不能把未知状态当成已发布。
-- `POST /public/search` 按版本、语言和问题检索官方片段及少量人工复核图中文字。省略版本时取清单中的 `current_version`；未知版本不会悄悄退回到其他版本。
+- `POST /public/search` 在 Autoware 工作区只接受中文检索，并按固定中文快照检索；省略版本时取清单中的 `current_version`，即 `latest`。历史日期快照可明确指定，未知版本不会悄悄退回到其他版本。
 - `POST /public/query` 返回检索证据，并在后端显式开启且模型服务可用时尝试带引用回答；模型不可用或引用校验失败时保留证据并关闭不可靠的回答。
 - 明确索取企业私有 Jira/审批等非公开信息时，`/public/search`、`/public/query` 和 `/public/review-advice` 在检索/生成前返回 `OUT_OF_SCOPE`；无答案 Smoke 使用此路径，不触发模型计费。
 - `POST /public/review-advice` 基于本次指定的证据片段提供受引用约束的变更审查建议，不能直接修改语料或上游项目。
 - `GET /health` 区分生成已关闭、缺少密钥、无效供应商和“已配置但未经实时验证”；它不是对供应商计费余额或下一次请求成功率的保证。
 - 每个 API 响应都有 `X-Request-ID`。健康检查与工作区指纹可用于发布核验；脱敏阶段日志不记录原始问题、提示词、模型响应或密钥。
 
-应用不设固定会话生成次数上限，也不自动无限重试。供应商余额、限流、服务故障、网络超时或无效/截断响应仍会导致单次调用失败。生成接口返回不含密钥的请求编号、供应商/模型、结束原因、用量和耗时等安全诊断，便于定位失败；不要把密钥放在 Streamlit Secrets 或日志中。当前两条图片派生证据保留原图 SHA、版本、提交和原始图片 URL，不会在请求时下载图片或调用视觉模型。服务启动时会核对审核 OCR sidecar 和独立的 `figure_evidence_reviewed.lock.json`；只改 OCR 文本但保留原图 SHA 的内容也会导致启动失败。
+应用不设固定会话生成次数上限，也不自动无限重试。供应商余额、限流、服务故障、网络超时或无效/截断响应仍会导致单次调用失败。生成接口返回不含密钥的请求编号、供应商/模型、结束原因、用量和耗时等安全诊断，便于定位失败；不要把密钥放在 Streamlit Secrets 或日志中。当前语料未包含经审核的图片 OCR 派生证据，图像像素中的文字暂不能检索。服务启动时仍校验空的图片证据 sidecar 与锁文件，防止旧版 OCR 记录混入当前中文快照。
 
 ## 历史 DolphinScheduler 评测
 

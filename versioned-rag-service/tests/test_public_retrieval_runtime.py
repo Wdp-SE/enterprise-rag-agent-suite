@@ -122,34 +122,33 @@ def test_faceted_single_fact_preserves_baseline_order(tmp_path):
     assert runtime.last_retrieval_call_count == 1
 
 
-def test_autoware_reviewed_image_search_adds_figure_without_losing_source_coverage():
+def test_autoware_public_runtime_is_chinese_only_and_has_no_english_ocr_corpus():
     index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
     runtime = PublicRetrievalRuntime(
         index,
         config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
         sidecar_path=AUTOWARE_CORPUS / "figure_evidence_reviewed.json",
     )
-    question = "What two readable labels appear in the Goal Planner image about the drivable area and stopping?"
+    question = "Autoware ROS 节点如何声明和读取参数？"
+    candidate = runtime.search(question, top_k=5, version="latest", language="zh")
+    english = runtime.search("How are trajectory checker constraints configured?", top_k=5, version="latest", language="en")
 
-    baseline = index.search(question, top_k=5, version="0.52.0", language="en", policy="bm25")
-    candidate = runtime.search(question, top_k=5, version="0.52.0", language="en", policy="bm25_figure_ocr")
-
-    assert any(row.get("figure_id") == "32682b345ea86e13" for row in candidate)
-    assert {row["document_key"] for row in candidate} == {row["document_key"] for row in baseline}
-    assert all(row["version"] == "0.52.0" for row in candidate)
+    assert candidate and all(row["locale"] == "zh-CN" for row in candidate)
+    assert not english
+    assert runtime._images == []
+    assert runtime.config["default_policy"] == "bm25"
 
 
-def test_autoware_unrelated_query_does_not_pull_image_by_workspace_metadata():
+def test_autoware_chinese_current_and_history_are_separate_version_scopes():
     index = PublicKnowledgeIndex(root=AUTOWARE_CORPUS)
     runtime = PublicRetrievalRuntime(
         index,
         config_path=AUTOWARE_CORPUS / "public_retrieval_runtime.json",
         sidecar_path=AUTOWARE_CORPUS / "figure_evidence_reviewed.json",
     )
-    question = "How are trajectory checker steering-angle constraints configured?"
+    question = "Autoware ROS 节点如何声明和读取参数？"
+    current = runtime.search(question, top_k=5, version="latest", language="zh")
+    history = runtime.search(question, top_k=5, version="community-zh-2026-01", language="zh")
 
-    baseline = index.search(question, top_k=5, version="0.52.0", language="en", policy="bm25")
-    candidate = runtime.search(question, top_k=5, version="0.52.0", language="en", policy="bm25_figure_ocr")
-
-    assert not any(row.get("modality") == "image_ocr" for row in candidate)
-    assert [row["chunk_id"] for row in candidate] == [row["chunk_id"] for row in baseline]
+    assert current and all(row["version"] == "community-zh-2026-07" for row in current)
+    assert history and all(row["version"] == "community-zh-2026-01" for row in history)

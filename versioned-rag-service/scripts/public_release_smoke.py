@@ -17,19 +17,14 @@ _FINGERPRINT = re.compile(r"^[0-9a-f]{64}$", re.IGNORECASE)
 _NO_ANSWER_QUERY = "Can this public corpus show our company's Jira access-approval audit trail?"
 _SEARCH_PROBES = (
     {
-        "name": "chinese_public_query",
-        "query": "Autoware PR 的 CI 检查标记为 Required 时意味着什么？",
+        "name": "chinese_current_snapshot_query",
+        "query": "如何启动 Autoware 并通过命令行参数启用或禁用模块？",
         "version": "latest", "language": "zh",
     },
     {
-        "name": "english_public_query",
-        "query": "What does a Required CI check mean for an Autoware pull request?",
-        "version": "latest", "language": "en",
-    },
-    {
-        "name": "explicit_version_query",
-        "query": "How is the Goal Planner behavior described in Autoware Universe 0.52.0?",
-        "version": "0.52.0", "language": "en",
+        "name": "chinese_historical_snapshot_query",
+        "query": "Autoware ROS 节点如何声明和读取参数？",
+        "version": "community-zh-2026-01", "language": "zh",
     },
 )
 
@@ -87,6 +82,8 @@ def _probe_search(client: httpx.Client, api_url: str, workspace: dict, probe: di
     rows = payload["results"]
     if not rows:
         raise ReleaseSmokeError(f"{probe['name']} returned no public evidence")
+    if any(row.get("language") != "zh" or row.get("locale") != "zh-CN" for row in rows):
+        raise ReleaseSmokeError(f"{probe['name']} returned non-Chinese evidence")
     scope = workspace.get("version_scopes", {}).get(probe["version"])
     members = scope.get("versions") if isinstance(scope, dict) else scope
     permitted_versions = {
@@ -129,6 +126,12 @@ def run_smoke(
     workspace, workspace_ms, _ = _request(client, "GET", f"{api_url}/public/workspace")
     if not workspace:
         raise ReleaseSmokeError("RAG workspace profile is unavailable")
+    if (
+        workspace.get("repository") != "tomato-ros/autoware-documentation-cn"
+        or workspace.get("languages") != ["zh-CN"]
+        or workspace.get("current_version") != "latest"
+    ):
+        raise ReleaseSmokeError("RAG workspace is not the pinned Chinese-only Autoware corpus")
     if workspace.get("build_revision", "unknown").casefold() != api_revision.casefold():
         raise ReleaseSmokeError("RAG health and workspace revisions differ")
     fingerprint_keys = {
@@ -154,7 +157,7 @@ def run_smoke(
     # This exact out-of-scope probe must be refused before RAG retrieval or a paid model call.
     no_answer, no_answer_ms, _ = _request(
         client, "POST", f"{api_url}/public/query",
-        json_body={"query": _NO_ANSWER_QUERY, "version": "latest", "language": "all"},
+        json_body={"query": _NO_ANSWER_QUERY, "version": "latest", "language": "zh"},
     )
     if not no_answer or no_answer.get("status") != "OUT_OF_SCOPE" or no_answer.get("evidence") != []:
         raise ReleaseSmokeError("no-answer scope guard failed or returned evidence")

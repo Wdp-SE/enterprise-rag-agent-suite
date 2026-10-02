@@ -1,48 +1,5 @@
 {
   "schema_version": 1,
-  "corpus_manifest_sha256": "ab00dfd18c11c0de4511729f9612d3176c8fe95dd390e0bc7ba2a337ff72a0fa",
-  "chunks": [
-    {
-      "schema_version": 1,
-      "chunk_id": "114e9eb5e6ccb1b4d021d767",
-      "repository": "autowarefoundation/autoware_universe",
-      "figure_id": "32682b345ea86e13",
-      "version": "0.52.0",
-      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
-      "language": "en",
-      "document_key": "planning/goal_planner/design",
-      "heading": "Goal Planner design / **Goal Search**",
-      "modality": "image_ocr",
-      "review_status": "approved",
-      "reviewed_at": "2026-09-30T00:00:00Z",
-      "review_note": "Manually transcribed only the two clearly legible labels from the hash-verified image. No interpretation of colored geometry or obstacle semantics is inferred.",
-      "ocr_engine": "human_visual_review",
-      "ocr_mean_confidence": null,
-      "sha256": "f196a0d87c1954bf2712fb3f0f22abbc37e10bc5f784ec0c3db6253666bef5a7",
-      "content": "Visible labels in the image: outside drivable area; obstacle stop.",
-      "source_url": "https://github.com/autowarefoundation/autoware_universe/blob/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/README.md",
-      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_goal_planner_module/images/goal_priority_object_to_avoid_rviz.png"
-    },
-    {
-      "schema_version": 1,
-      "chunk_id": "d54ca76bcdb2537a20b3efec",
-      "repository": "autowarefoundation/autoware_universe",
-      "figure_id": "876db03219da6219",
-      "version": "0.52.0",
-      "commit": "6e477c645efec33f7909095eea684474e97f5e3d",
-      "language": "en",
-      "document_key": "planning/start_planner/design",
-      "heading": "Start Planner design / Concept of safety assurance / 1. Generating path with static information / **search priority**",
-      "modality": "image_ocr",
-      "review_status": "approved",
-      "reviewed_at": "2026-09-30T00:00:00Z",
-      "review_note": "Reviewed text extracted from the embedded Draw.io diagram payload at the pinned source hash. Kept explicit labels and examples only; did not infer arrow semantics or planner behavior.",
-      "ocr_engine": "svg_text",
-      "ocr_mean_confidence": null,
-      "sha256": "b32a65495249827b66d41acb69bb4547b9b81ad567217793368dc9d489460955",
-      "content": "Figure context: Start Planner search priority. Visible diagram labels: planner_priority (planner priority); distance_priority (distance priority); high priority; low priority. Candidate planner types shown: shift_pull_out (shift pull out) and geometric_pull_out (geometric pull out). Example candidate labels shown: (3, geometric_pull_out) and (3, shift_pull_out). The extracted diagram contains repeated indexed candidates; no unstated ordering or safety behavior is inferred.",
-      "source_url": "https://github.com/autowarefoundation/autoware_universe/blob/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/README.md",
-      "raw_url": "https://raw.githubusercontent.com/autowarefoundation/autoware_universe/6e477c645efec33f7909095eea684474e97f5e3d/planning/behavior_path_planner/autoware_behavior_path_start_planner_module/images/priority_order.drawio.svg"
-    }
-  ]
+  "corpus_manifest_sha256": "40319dded6b3e81d7b1d38e5750d8a8bfb22318d7cfe730e77a4a22156ccd6cf",
+  "chunks": []
 }

@@ -17,17 +17,24 @@ def test_public_profile_flags_a_dolphinscheduler_api_mixed_with_autoware_version
     assert "RAG_PUBLIC_CORPUS_ROOT" not in warning
 
 
-def test_public_profile_accepts_the_pinned_autoware_bilingual_corpus():
+def test_public_profile_accepts_the_pinned_chinese_autoware_community_corpus():
     assert public_workspace_mismatch({
         "workspace": "Autoware",
-        "repository": "autowarefoundation/autoware_universe",
-        "repositories": [
-            "autowarefoundation/autoware_universe",
-            "autowarefoundation/autoware-documentation",
-            "tomato-ros/autoware-documentation-cn",
-        ],
-        "languages": ["en-US", "zh-CN"],
+        "repository": "tomato-ros/autoware-documentation-cn",
+        "repositories": ["tomato-ros/autoware-documentation-cn"],
+        "languages": ["zh-CN"],
     }, public_demo=True) is None
+
+
+def test_public_profile_rejects_a_bilingual_workspace_for_chinese_only_demo():
+    warning = public_workspace_mismatch({
+        "workspace": "Autoware",
+        "repository": "tomato-ros/autoware-documentation-cn",
+        "repositories": ["tomato-ros/autoware-documentation-cn"],
+        "languages": ["en-US", "zh-CN"],
+    }, public_demo=True)
+
+    assert warning is not None
 
 
 def test_workspace_snapshot_distinguishes_documents_from_versioned_sources():

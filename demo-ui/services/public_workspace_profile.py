@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 
-AUTOWARE_REPOSITORY = "autowarefoundation/autoware_universe"
-AUTOWARE_DOCUMENTATION_REPOSITORY = "autowarefoundation/autoware-documentation"
 AUTOWARE_CHINESE_REPOSITORY = "tomato-ros/autoware-documentation-cn"
 
 
@@ -17,11 +15,10 @@ def public_workspace_mismatch(workspace: dict | None, *, public_demo: bool) -> s
     name = str(workspace.get("workspace") or "未声明").strip()
     languages = sorted(str(value) for value in workspace.get("languages") or [])
     if (
-        AUTOWARE_REPOSITORY not in repositories
-        or AUTOWARE_DOCUMENTATION_REPOSITORY not in repositories
-        or AUTOWARE_CHINESE_REPOSITORY not in repositories
+        repository != AUTOWARE_CHINESE_REPOSITORY
+        or repositories != [AUTOWARE_CHINESE_REPOSITORY]
         or name.casefold() != "autoware"
-        or languages != ["en-US", "zh-CN"]
+        or languages != ["zh-CN"]
     ):
         return (
             "当前知识库与 Autoware 工作台不匹配，检索暂不可用。请联系维护者。"

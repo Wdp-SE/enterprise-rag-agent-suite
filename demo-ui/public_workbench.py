@@ -103,18 +103,11 @@ def _request_context_matches(
 
 def _published_language_options(workspace: dict | None) -> list[tuple[str, str]]:
     locales = set((workspace or {}).get("languages") or [])
-    options = []
     if "zh-CN" in locales:
-        options.extend((("zh_preferred", "中文优先"), ("zh", "中文")))
+        return [("zh", "中文")]
     if "en-US" in locales:
-        options.append(("en", "English"))
-    if len(locales) > 1:
-        options.insert(1 if options and options[0][0] == "zh_preferred" else 0, ("all", "全部已收录语言"))
-    if not options:
-        options = [("all", "语言元数据未声明")]
-    elif len(options) > 1 and not any(value == "all" for value, _ in options):
-        options.insert(0, ("all", "全部已收录语言"))
-    return options
+        return [("en", "English")]
+    return [("all", "语言元数据未声明")]
 
 
 def _sync_workspace_version(workspace: dict | None) -> str | None:
@@ -180,22 +173,19 @@ def _source_coverage_text(workspace: dict | None) -> str | None:
         (str(row.get("version", "")), str(row.get("locale", "")), str(row.get("source_type", ""))): int(row.get("count", 0))
         for row in rows if isinstance(row, dict)
     }
-    english_main = counts.get(("docs-main", "en-US", "official_documentation"), 0)
-    english_release = counts.get(("1.9.0", "en-US", "official_documentation"), 0)
-    chinese = counts.get(("docs-main", "zh-CN", "community_translation"), 0)
-    universe_latest = counts.get(("0.52.0", "en-US", "official_documentation"), 0)
-    universe_baseline = counts.get(("0.51.0", "en-US", "official_documentation"), 0)
-    alignment = workspace.get("translation_alignment") or {}
-    matched = int(alignment.get("path_matched_to_official_main", 0))
-    unverified = int(alignment.get("source_path_not_found_in_official_main", 0))
-    if not any((english_main, english_release, chinese, universe_latest, universe_baseline)):
-        return None
-    return (
-        f"资料覆盖：官方 Documentation 英文 main {english_main} 页、release 1.9.0 {english_release} 页；"
-        f"Universe Planning 英文 0.52.0 / 0.51.0 各 {universe_latest} / {universe_baseline} 份；"
-        f"另收录中文社区资料 {chinese} 页，其中 {matched} 页仅有路径匹配候选（内容和版本关系未核验），"
-        f"{unverified} 页未找到同路径英文资料；所有页面均可独立检索，仅核验通过的关联用于同步差异检查。"
+    chinese = sum(
+        count for (_version, locale, source_type), count in counts.items()
+        if locale == "zh-CN" and source_type == "community_translation"
     )
+    if chinese == 0:
+        return None
+    snapshots = sorted({
+        version for (version, locale, source_type), count in counts.items()
+        if count and locale == "zh-CN" and source_type == "community_translation"
+    })
+    labels = workspace.get("version_labels") or {}
+    snapshot_names = "、".join(str(labels.get(version, version)) for version in snapshots)
+    return f"资料覆盖：{chinese} 条中文社区资料版本记录；已收录 {len(snapshots)} 个固定快照：{snapshot_names}。"
 
 
 def _client() -> PublicKnowledgeClient:
@@ -330,7 +320,7 @@ def _document_relationship_caption(row: dict) -> str:
 
 def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None:
     section = row.get("heading") or "正文"
-    document_title = st.session_state.get("official_document_titles", {}).get(row.get("document_id")) or row.get("document_key") or "官方资料"
+    document_title = st.session_state.get("official_document_titles", {}).get(row.get("document_id")) or row.get("document_key") or "公开资料"
     version = row.get("version", "")
     current_version = st.session_state.get("official_current_version")
     latest_members = _scope_members(current_version or "", st.session_state.get("official_workspace")) if current_version else set()
@@ -340,7 +330,7 @@ def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None
     )
     source_label = {
         "official_documentation": "官方文档",
-        "community_translation": "中文社区资料",
+        "community_translation": "中文社区译本",
         "github_release": "官方 Release",
         "github_issue": "官方 Issue",
         "github_pull_request": "官方 PR",
@@ -366,17 +356,9 @@ def _source_card(row: dict, *, index: int, key_prefix: str = "evidence") -> None
             content = _rewrite_relative_source_links(content, row.get("source_url", ""))
             st.write(content)
             if row.get("source_type") == "community_translation":
-                if not relation_caption:
-                    if row.get("translation_alignment_status") == "path_matched_to_official_main":
-                        st.caption("路径匹配仅为候选 · 内容及版本对应关系未核验。")
-                    else:
-                        st.caption("未找到同路径英文资料 · 作为独立社区资料检索，不据此推断版本漂移。")
+                st.caption("社区维护的中文译本；关键参数请结合固定提交来源核对。")
                 if row.get("rendered_url"):
                     st.markdown(f"[阅读中文社区资料]({row['rendered_url']})")
-                if row.get("english_source_url"):
-                    st.markdown(f"[查看对应英文原文]({row['english_source_url']})")
-                elif row.get("canonical_url"):
-                    st.markdown(f"[查看来源标注的官方关联页]({row['canonical_url']})")
         if row.get("source_url"):
             st.markdown(f"[查看固定提交来源]({row['source_url']})")
         with st.expander("技术详情"):
@@ -542,17 +524,17 @@ def _home(ready: bool, workspace: dict | None) -> None:
     version_range = _version_option_label(current, workspace) if current else "服务未连接，无法确认"
     name = _workspace_name(workspace)
     locales = (workspace or {}).get("languages") or []
-    language_label = " / ".join("中文" if value == "zh-CN" else "English" if value == "en-US" else value for value in locales) or "服务连接后确认"
+    language_label = "中文" if locales == ["zh-CN"] else "服务连接后确认"
     st.markdown('<div class="masthead"><span class="kicker">公开研发资料 / 版本化知识空间</span></div>', unsafe_allow_html=True)
     st.title("研发知识版本服务与变更影响审查")
     st.write(
-        f"基于 {name} 已收录资料提供版本检索与变更审查；中英文资料按来源独立收录，"
-        "仅对核验通过的文档关系开展同步差异审查。"
+        f"基于 {name} 已收录的中文社区译本，提供资料检索与变更影响审查；检索结果保留固定提交来源，"
+        "审查建议由人工确认。默认检索 2026-07 快照，也可选择 2026-01 中文历史快照。"
     )
     state = "已连接" if ready else "等待连接"
     status = [
         ("知识空间", name),
-        ("资料来源", "官方英文文档 + 中文社区资料"),
+        ("资料来源", "固定提交的中文社区译本"),
         ("默认检索范围", version_range),
         ("语言", language_label),
         ("服务状态", state),
@@ -568,7 +550,7 @@ def _home(ready: bool, workspace: dict | None) -> None:
         with st.container(border=True, key="public_rag_module"):
             _module_heading("版本化研发知识服务 · RAG")
             st.markdown("### 版本化知识检索与问答")
-            st.write("按来源、版本与语言检索；仅核验通过的文档关联用于一致性检查。")
+            st.write("在固定版本的中文研发资料中检索，并保留原文出处。")
             st.button("进入知识检索", type="primary", use_container_width=True,
                       on_click=_navigate, args=("版本检索与问答",))
     with right:
@@ -605,7 +587,7 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
     default_version_label = _version_option_label(current, workspace) if current else "无法确认最新已收录版本"
     st.markdown(
         f'<div class="context-strip"><span><strong>知识空间</strong> {escape(name)}</span>'
-        f'<span><strong>资料</strong> 官方英文文档 / 中文社区资料</span>'
+        f'<span><strong>资料</strong> 固定版本中文社区译本</span>'
         f'<span><strong>默认版本</strong> {escape(default_version_label)}</span>'
         f'<span><strong>默认检索</strong> {escape(default_policy)}</span></div>',
         unsafe_allow_html=True,
@@ -636,21 +618,17 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
             )
         with c:
             st.markdown("**资料类型**")
-            st.caption("官方文档 / 发布说明 / 配置 / 验证资料")
-    if str((workspace or {}).get("repository", "")).casefold() == "autowarefoundation/autoware_universe":
+            st.caption("中文设计资料 / 使用指南 / 工程规范")
+    if str((workspace or {}).get("workspace", "")).casefold() == "autoware":
         examples = [
             "如何启动 Autoware 并通过命令行参数启用或禁用模块？",
             "如何使用 ROS 2 日志调试 Autoware？",
             "Autoware 规划模块由哪些部分组成？",
-            "How does the start planner decide when to generate a pull-out path?",
-            "What does the planning validator check before publishing a trajectory?",
-            "Which parameters configure the planning validator?",
         ]
     else:
         examples = [
             f"{name} 中某个功能或参数是如何设计的？",
             "哪些公开资料描述了这个变更的相关模块与验证方式？",
-            "What does the selected version's official documentation say about this feature?",
         ]
     st.selectbox(
         "示例问题（选择后可编辑）", examples, key="official_example",
@@ -850,7 +828,7 @@ def _analyze_change_request(
     objective: str | None = None,
     constraints: str | None = None,
     validation_plan: str | None = None,
-    language_mode: str = "bilingual",
+    language_mode: str = "zh",
 ) -> dict:
     agent_root = Path(__file__).resolve().parents[1] / "change-review-agent"
     if str(agent_root) not in sys.path:
@@ -1309,7 +1287,6 @@ def _retrieval_trace_panel(result: dict) -> None:
         st.subheader("待补充核查")
         gap_labels = {
             "NO_REQUIRED_SOURCE": "缺少必要资料",
-            "UNVERIFIED_TRANSLATION": "中英文对应关系待核验",
             "VERSION_AMBIGUITY": "版本适用性待确认",
             "IMAGE_NOT_REVIEWED": "图片证据待核验",
             "OUT_OF_SCOPE": "超出当前资料范围",
@@ -1399,8 +1376,8 @@ def _agent(
         "描述研发变更", height=120,
         placeholder=(
             "例如：计划调整行为路径规划的 pull-out 判断条件，请检查相关参数、模块说明与验证资料。"
-            if str((workspace or {}).get("repository", "")).casefold()
-            == "autowarefoundation/autoware_universe"
+            if str((workspace or {}).get("workspace", "")).casefold()
+            == "autoware"
             else "例如：计划调整某个已收录功能的行为，请检查相关模块、参数和验证资料。"
         ),
         key="official_change_request", on_change=_save_change_request,
@@ -1424,8 +1401,8 @@ def _agent(
             "影响范围（模块、项目或对象）", max_chars=160,
             placeholder=(
                 "例如：行为路径规划、规划验证器"
-                if str((workspace or {}).get("repository", "")).casefold()
-                == "autowarefoundation/autoware_universe"
+                if str((workspace or {}).get("workspace", "")).casefold()
+                == "autoware"
                 else "例如：目标模块、接口或配置项"
             ),
             key="official_impact_scope", on_change=_change_request_context_changed,
@@ -1451,15 +1428,9 @@ def _agent(
             on_change=_change_request_context_changed,
         )
         st.caption("未填写的目标、约束或验证计划会明确标为待补充；Agent 不会代替你推断事实。")
-    language_options = {"中英双语（推荐）": "bilingual", "仅中文": "zh", "仅英文": "en"}
-    language_label = st.selectbox(
-        "审查语种范围", list(language_options), index=0, key="official_review_language_mode",
-        on_change=_change_request_context_changed,
-    )
-    language_mode = language_options[language_label]
-    language_count = 2 if language_mode == "bilingual" else 1
+    language_mode = "zh"
     st.caption(
-        f"Agent 保留原始描述，最多拆分 4 项检查；每项按所选语种独立检索，最多 {4 * language_count} 次 RAG 查询，"
+        "Agent 保留原始描述，最多拆分 4 项检查；每项只检索中文资料，最多 4 次 RAG 查询，"
         f"最多选取 8 条 {target_version} 版本证据供模型分析。"
     )
     if st.button("检索资料并分析影响", type="primary", disabled=not ready or not summary.strip()):
@@ -1673,7 +1644,7 @@ def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None
 def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None) -> None:
     _page_header("知识服务", "资料来源", page_key="sources")
     name = _workspace_name(workspace)
-    st.write(f"资料来自 {name} 公开仓库的固定快照。中文内容为社区译本。")
+    st.write(f"资料来自 {name} 中文社区译本的固定提交快照。")
     coverage = _source_coverage_text(workspace)
     if coverage:
         with st.expander("查看收录范围与语言对应情况"):
@@ -1692,7 +1663,7 @@ def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None)
     st.caption(f"当前条件下有 {len(filtered)} 份固定来源资料。")
     kind = {
         "official_documentation": "官方文档",
-        "community_translation": "中文社区资料",
+        "community_translation": "中文社区译本",
         "github_release": "官方 Release",
         "github_issue": "官方 Issue",
         "github_pull_request": "官方 PR",
@@ -1704,10 +1675,8 @@ def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None)
             st.markdown(f"[查看固定提交来源]({row['source_url']})")
             if row.get("rendered_url"):
                 st.markdown(f"[阅读社区译文]({row['rendered_url']})")
-            if row.get("translation_alignment_status") == "path_matched_to_official_main":
-                st.caption("路径匹配 · 未做逐句翻译校验。")
-            elif row.get("source_type") == "community_translation":
-                st.caption("英文对应关系待核验。")
+            if row.get("source_type") == "community_translation":
+                st.caption("社区维护的中文译本；此链接固定到收录提交。")
     if len(filtered) > 12:
         with st.expander(f"查看其余 {len(filtered)-12} 份资料"):
             for row in filtered[12:]:
@@ -1968,17 +1937,18 @@ def _benchmark(workspace: dict | None) -> None:
             )
         st.markdown("\n".join(rows))
         st.caption("HOLDOUT 多来源完整命中仅 4/8，跨资料与跨版本核对仍是短板。本机 warm 检索时间不含公网、冷启动和模型生成；这些指标也不能代表答案正确率或幻觉率。")
-    elif workspace and workspace.get("retrieval_evaluation_status") == "expanded_corpus_pending_rebenchmark":
+    elif workspace and workspace.get("retrieval_evaluation_status") in {
+        "expanded_corpus_pending_rebenchmark", "chinese_only_pending_rebenchmark",
+    }:
         st.warning(
-            "语料刚扩展为英文官方文档、社区中文译文和 Autoware Universe Planning 的多快照集合；"
-            "旧 43 题 V3 结果与当前语料指纹不匹配，不能作为当前成绩。BM25 仅作可解释基线，"
-            "双语冻结评测尚未完成，目前没有可报告的当前语料准确率或最优策略。"
+            "当前语料已切换为中文社区资料快照，旧语料评测与当前指纹不匹配，不能作为当前成绩。"
+            "BM25 暂作可解释基线；中文语料评测完成前，不公布当前检索质量或最优策略。"
         )
     else:
         st.caption("当前后端尚未匹配已发布评测的语料与策略指纹；可能仍运行旧服务、候选策略或不同语料。不能把仓库内离线指标当作当前后端成绩。")
-    st.caption("Rerank：NOT EVALUATED。尚未完成符合轻量部署条件的可重复双语评测，当前不进入默认链路。")
+    st.caption("Rerank 尚未在当前中文快照上完成评测，因此不进入默认检索链路。")
     st.markdown("**历史选型（旧语料）**")
-    st.caption("以下冻结实验只用于说明最初选择 BM25 的依据；语料范围较小，不能作为当前 132 份资料的检索质量。")
+    st.caption("以下冻结实验仅用于回顾早期检索策略选择；语料和问题集都不是当前 Autoware 中文快照，不能作为当前质量指标。")
     path = Path(__file__).resolve().parents[1] / "evaluation" / "real_world_retrieval" / "results" / "benchmark_results.json"
     try:
         report = json.loads(path.read_text(encoding="utf-8"))
@@ -2020,7 +1990,7 @@ def _limits() -> None:
         ("回答", "请对照引用原文核验；证据不足时系统会拒答。"),
         ("影响分析", "没有显式关联时，Agent 提供的是待核对候选。"),
         ("人工审核", "审核记录按匿名会话保存，公网实例重启后可能清空；不会写回源资料。"),
-        ("检索策略", "双语重排尚未完成评测，暂未启用。"),
+        ("检索策略", "重排尚未在当前中文语料上完成评测，暂未启用。"),
     )):
         with st.container(border=True, key=f"limit_row_{index}"):
             st.markdown(f"**{title}**")
@@ -2078,6 +2048,8 @@ def render() -> None:
     )
     if mismatch:
         st.warning(mismatch)
+        st.info("为避免误用不匹配的资料，知识检索和变更审查暂不可用。")
+        return
     if choice == "总览":
         _home(ready, workspace)
     elif choice == "版本检索与问答":

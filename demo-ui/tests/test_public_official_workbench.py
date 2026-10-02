@@ -113,17 +113,12 @@ def test_workspace_scoped_selectors_follow_the_latest_manifest_version():
     assert public_workbench._published_language_options({"languages": []}) == [("all", "语言元数据未声明")]
 
 
-def test_bilingual_language_options_default_to_chinese_priority_before_all_languages():
+def test_chinese_only_language_options_do_not_offer_english_or_all_languages():
     import public_workbench
 
     options = public_workbench._published_language_options({"languages": ["en-US", "zh-CN"]})
 
-    assert options == [
-        ("zh_preferred", "中文优先"),
-        ("all", "全部已收录语言"),
-        ("zh", "中文"),
-        ("en", "English"),
-    ]
+    assert options == [("zh", "中文")]
 
 
 def test_relationship_labels_keep_path_candidates_distinct_from_confirmed_translation():
@@ -151,29 +146,18 @@ def test_relationship_labels_keep_path_candidates_distinct_from_confirmed_transl
     assert "译文" not in localized
 
 
-def test_autoware_source_coverage_summary_calls_out_unverified_community_pages():
+def test_autoware_source_coverage_summary_reports_one_chinese_snapshot():
     import public_workbench
 
     summary = public_workbench._source_coverage_text({
         "source_breakdown": [
-            {"version": "docs-main", "locale": "en-US", "source_type": "official_documentation", "count": 431},
-            {"version": "1.9.0", "locale": "en-US", "source_type": "official_documentation", "count": 431},
-            {"version": "docs-main", "locale": "zh-CN", "source_type": "community_translation", "count": 260},
-            {"version": "0.52.0", "locale": "en-US", "source_type": "official_documentation", "count": 13},
-            {"version": "0.51.0", "locale": "en-US", "source_type": "official_documentation", "count": 13},
+            {"version": "community-zh-2026-07", "locale": "zh-CN", "source_type": "community_translation", "count": 260},
         ],
-        "translation_alignment": {
-            "path_matched_to_official_main": 44,
-            "source_path_not_found_in_official_main": 216,
-        },
     })
 
     assert summary is not None
-    assert "官方 Documentation 英文 main 431 页" in summary
     assert "中文社区资料 260 页" in summary
-    assert "44 页仅有路径匹配候选（内容和版本关系未核验）" in summary
-    assert "216 页未找到同路径英文资料" in summary
-    assert "仅核验通过的关联用于同步差异检查" in summary
+    assert "当前仅有一个中文快照" in summary
 
 
 def test_workbench_warns_when_connected_public_rag_workspace_is_not_autoware(monkeypatch):
@@ -195,6 +179,7 @@ def test_workbench_warns_when_connected_public_rag_workspace_is_not_autoware(mon
     assert "Autoware 工作台不匹配" in warning
     assert "RAG_API_BASE_URL" not in warning
     assert "public_corpus_autoware" not in warning
+    assert not any("资料规模" in item.value for item in list(app.markdown) + list(app.caption))
 
 
 def test_home_hides_operational_and_corpus_detail_copy(monkeypatch):
@@ -274,20 +259,13 @@ def test_public_home_has_two_chinese_modules_and_no_case_labels(monkeypatch):
     from services.public_knowledge_client import PublicKnowledgeClient
     monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
         "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
-        "baseline_version": "0.51.0", "current_version": "latest",
-        "available_versions": ["latest", "docs-main", "1.9.0", "0.52.0", "0.51.0"],
-        "languages": ["en-US", "zh-CN"],
+        "baseline_version": "latest", "current_version": "latest",
+        "available_versions": ["latest"],
+        "version_labels": {"latest": "当前中文社区译本快照"},
+        "languages": ["zh-CN"],
         "source_breakdown": [
-            {"version": "docs-main", "locale": "en-US", "source_type": "official_documentation", "count": 431},
-            {"version": "1.9.0", "locale": "en-US", "source_type": "official_documentation", "count": 431},
-            {"version": "docs-main", "locale": "zh-CN", "source_type": "community_translation", "count": 260},
-            {"version": "0.52.0", "locale": "en-US", "source_type": "official_documentation", "count": 13},
-            {"version": "0.51.0", "locale": "en-US", "source_type": "official_documentation", "count": 13},
+            {"version": "community-zh-2026-07", "locale": "zh-CN", "source_type": "community_translation", "count": 260},
         ],
-        "translation_alignment": {
-            "path_matched_to_official_main": 44,
-            "source_path_not_found_in_official_main": 216,
-        },
     })
     app = AppTest.from_file(APP, default_timeout=40).run()
     assert not app.exception
@@ -298,9 +276,9 @@ def test_public_home_has_two_chinese_modules_and_no_case_labels(monkeypatch):
     assert "Agent · 研发资料变更审查" in text
     assert "研发资料变更影响审查" in text
     assert "中文社区资料" in text
-    assert "仅对核验通过的文档关系开展同步差异审查" in text
-    assert "官方英文资料 + 社区中文译本" not in text
-    assert "中英文资料按来源独立收录" in text
+    assert "当前仅有一个中文快照" in text
+    assert "官方英文资料" not in text
+    assert "中英文资料" not in text
     assert "进入知识检索" in {button.label for button in app.button}
     assert "发起变更审查" in {button.label for button in app.button}
     assert "Case A" not in text and "演示案例 A" not in text
@@ -314,7 +292,7 @@ def test_public_rag_keeps_answer_before_real_cited_source(monkeypatch):
     app = AppTest.from_file(APP, default_timeout=40).run()
     next(button for button in app.button if button.label == "版本化知识检索").click().run()
     assert not app.exception
-    assert app.selectbox(key="official_language").value == "zh_preferred"
+    assert app.selectbox(key="official_language").value == "zh"
     assert app.selectbox(key="official_version").value == "3.4.3"
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
     assert not app.exception
@@ -726,9 +704,10 @@ def test_rag_suggested_question_is_muted_placeholder_and_used_when_submitted_bla
     from services.public_knowledge_client import PublicKnowledgeClient
 
     monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
-        "baseline_version": "0.51.0", "current_version": "0.52.0",
-        "available_versions": ["0.51.0", "0.52.0"], "languages": ["en-US"],
+        "workspace": "Autoware", "repository": "tomato-ros/autoware-documentation-cn",
+        "baseline_version": "community-zh-2026-01", "current_version": "latest",
+        "available_versions": ["latest", "community-zh-2026-07", "community-zh-2026-01"],
+        "languages": ["zh-CN"],
     })
 
     submitted = []
@@ -743,11 +722,11 @@ def test_rag_suggested_question_is_muted_placeholder_and_used_when_submitted_bla
 
     question = app.text_area(key="official_question")
     assert question.value == ""
-    assert question.placeholder == "How does the start planner decide when to generate a pull-out path?"
+    assert question.placeholder == "如何启动 Autoware 并通过命令行参数启用或禁用模块？"
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
 
     assert not app.exception
-    assert submitted == ["How does the start planner decide when to generate a pull-out path?"]
+    assert submitted == ["如何启动 Autoware 并通过命令行参数启用或禁用模块？"]
     assert "依据官方资料生成的回答。" in "\n".join(item.value for item in app.markdown)
 
 
@@ -764,34 +743,36 @@ def test_rag_generation_uses_user_edited_question(monkeypatch):
     ))
     app = AppTest.from_file(APP, default_timeout=40).run()
     next(button for button in app.button if button.label == "版本化知识检索").click().run()
-    app.text_area(key="official_question").set_value("Which parameters configure the planning validator?").run()
+    app.text_area(key="official_question").set_value("规划验证器如何检查轨迹？").run()
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
 
     assert not app.exception
-    assert submitted == ["Which parameters configure the planning validator?"]
+    assert submitted == ["规划验证器如何检查轨迹？"]
 
 
 def test_suggested_questions_match_current_autoware_corpus(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
     monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
-        "baseline_version": "0.51.0", "current_version": "0.52.0",
-        "available_versions": ["0.51.0", "0.52.0"], "languages": ["en-US"],
+        "workspace": "Autoware", "repository": "tomato-ros/autoware-documentation-cn",
+        "baseline_version": "community-zh-2026-01", "current_version": "latest",
+        "available_versions": ["latest", "community-zh-2026-07", "community-zh-2026-01"],
+        "languages": ["zh-CN"],
     })
     app = AppTest.from_file(APP, default_timeout=40).run()
     next(button for button in app.button if button.label == "版本化知识检索").click().run()
 
     example_picker = app.selectbox(key="official_example")
     options = example_picker.options
-    assert "Which parameters configure the planning validator?" in options
-    assert "How does the start planner decide when to generate a pull-out path?" in options
-    assert "What does the planning validator check before publishing a trajectory?" in options
+    assert "如何启动 Autoware 并通过命令行参数启用或禁用模块？" in options
+    assert "如何使用 ROS 2 日志调试 Autoware？" in options
+    assert "Autoware 规划模块由哪些部分组成？" in options
+    assert not any(question.isascii() for question in options)
     assert not any("DolphinScheduler" in question or "API server" in question for question in options)
     assert not any(item.label == "从已收录资料选择示例问题" for item in app.expander)
     assert example_picker.label == "示例问题（选择后可编辑）"
 
-    selected_question = "Which parameters configure the planning validator?"
+    selected_question = "如何启动 Autoware 并通过命令行参数启用或禁用模块？"
     example_picker.set_value(selected_question).run()
     assert app.text_area(key="official_question").value == selected_question
 
