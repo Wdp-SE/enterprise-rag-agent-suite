@@ -296,12 +296,12 @@ wrong_scope_count = sum(row["source_id"] not in case["allowed_source_ids"] for r
 **Interfaces:**
 - 工作区已有本地修改保持原状；执行合并前只允许本分支提交包含本计划及其实现明确拥有的文件。
 
-- [ ] **Step 1: 运行完整后端与 Agent 测试**：分别在 `versioned-rag-service/`、`change-review-agent/`、`demo-ui/` 执行 `python -m pytest -q`；记录退出码和失败摘要。
-- [ ] **Step 2: 运行语料、索引、检索和审查 smoke**：从干净语料重建索引；执行新 retrieval 与 change-review 评测；启动 API 后验证 `/health`、`/public/workspace`、query 与 review 流程均使用新 profile/hash；本地 Streamlit UI 检查默认最新快照、设备筛选、证据链接和缺口显示。
-- [ ] **Step 3: 运行发布配置与内容扫描**：运行 release smoke 的本地 mock tests、`git diff --check`，并复核发布根目录不包含旧活动 corpora；核对归档报告保留但没有当前指标引用。
-- [ ] **Step 4: 审查分支差异和工作区隔离**：检查 `git diff origin/main...HEAD` 与 `git status --short`；不暂存、不重置现有用户改动或未跟踪资料。发现 main 已前进时先同步并重跑受影响检查。
-- [ ] **Step 5: 更新 main**：若远程仓库接受直接快进，使用 `git push origin HEAD:main`；若仓库策略拒绝直接推 main，则推送当前分支并创建/更新供用户审阅的 PR，不绕过保护规则、不 force-push。更新后读取远端 `main` SHA，确认包含新 corpus profile、评测和退役变更。
-- [ ] **Step 6: 报告边界**：提供 main commit、测试及离线评测实际结果、来源许可覆盖、当前已知缺口；说明 Render 配置已指向新 corpus，但本计划没有执行公网部署。
+- [x] **Step 1: 运行后端、Agent 与工作台回归**：RAG 服务全量 184 passed，Agent 全量 119 passed，公开工作台 72 passed，入口导航 4 passed。需要受限临时目录的更广泛 UI 测试受 Windows 沙箱权限限制，未将该环境问题伪报为通过。
+- [x] **Step 2: 核对新语料、离线评测与 API/UI 回归路径**：新索引为 18 份中文来源、394 个检索片段；RAG 冻结集 22 题，Agent 变更审查 12 题，两套 DEV/HOLDOUT 报告均绑定语料与运行指纹。自动化 API、工作台和发布 smoke 测试通过；没有调用付费生成 API，也没有执行公网部署。
+- [x] **Step 3: 运行发布配置与内容扫描**：发布 smoke/deployment manifest 测试通过，旧领域运行语料和活动配置已从服务/UI/deploy 路径移除；新旧评测分离，旧评测仅在 archive 说明中保留；暂存与工作树 `git diff --check` 均通过。
+- [x] **Step 4: 审查分支差异和工作区隔离**：同步前确认远端 `main` 是本分支祖先，本次只提交迁移所拥有的明确路径。准确率设计 spec 改动及工作区既存未跟踪目录未进入提交。
+- [x] **Step 5: 更新 main**：远端允许快进，提交 `c4b42d2` 已推送到 `main`；最终 SHA 在推送后复核。提交含 `[skip render]`，遵守本计划不发布 Render 的边界。
+- [x] **Step 6: 报告边界**：报告 main commit、测试与离线评测指标、UI 测试受限范围、评测局限和部署状态；Render 配置指向新 corpus，但没有发布公网服务。
 
 ## 计划自审
 
