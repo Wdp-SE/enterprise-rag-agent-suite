@@ -18,7 +18,7 @@ def test_public_demo_accepts_only_the_chinese_edge_ai_workspace():
 
 
 def test_public_demo_rejects_old_or_unrelated_workspace_ids():
-    warning = public_workspace_mismatch(_edge_workspace(workspace_id="autoware"), public_demo=True)
+    warning = public_workspace_mismatch(_edge_workspace(workspace_id="unrelated_workspace"), public_demo=True)
 
     assert warning is not None
     assert "知识空间不匹配" in warning

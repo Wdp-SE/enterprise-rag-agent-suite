@@ -61,7 +61,6 @@ def content_fingerprint(paths: dict[str, Path]) -> dict[str, str | None]:
 def public_build_identity(
     *, repo_root: Path, corpus_root: Path, retrieval_config_path: Path,
 ) -> dict:
-    evaluation_root = repo_root / "evaluation"
     corpus_fingerprint = content_fingerprint({
         "manifest_sha256": corpus_root / "corpus_manifest.json",
         "chunks_sha256": corpus_root / "chunks.json",
@@ -73,15 +72,32 @@ def public_build_identity(
         "base_policy_sha256": corpus_root / "retrieval_policy.json",
         "figure_lock_sha256": corpus_root / "figure_evidence_reviewed.lock.json",
     })["fingerprint_sha256"]
-    evaluation_fingerprint = content_fingerprint({
-        "retrieval_cases_sha256": evaluation_root / "autoware_quality_v1" / "cases.jsonl",
-        "retrieval_split_lock_sha256": evaluation_root / "autoware_quality_v1" / "split_lock.json",
-        "agent_planning_cases_sha256": evaluation_root / "autoware_agent_query_planning_v1" / "cases.jsonl",
-        "agent_planning_split_lock_sha256": evaluation_root / "autoware_agent_query_planning_v1" / "split_lock.json",
-    })["fingerprint_sha256"]
+    evaluation_fingerprint = edge_evaluation_fingerprint(repo_root)
     return {
         "build_revision": git_revision(repo_root) or "unknown",
         "corpus_fingerprint": corpus_fingerprint,
         "retrieval_config_fingerprint": retrieval_fingerprint,
         "evaluation_fingerprint": evaluation_fingerprint,
     }
+
+
+def edge_evaluation_fingerprint(repo_root: Path) -> str:
+    """Bind the current public evaluation identity to its inputs and measured outputs."""
+    evaluation_root = repo_root / "evaluation"
+    retrieval_root = evaluation_root / "edge_ai_retrieval_v2"
+    agent_root = evaluation_root / "edge_ai_change_review_v2"
+    return content_fingerprint({
+        "retrieval_cases": retrieval_root / "cases.jsonl",
+        "retrieval_split_lock": retrieval_root / "split_lock.json",
+        "retrieval_runner": retrieval_root / "run_evaluation.py",
+        "retrieval_dev_report": retrieval_root / "dev_report.json",
+        "retrieval_holdout_report": retrieval_root / "holdout_report.json",
+        "agent_cases": agent_root / "cases.jsonl",
+        "agent_split_lock": agent_root / "split_lock.json",
+        "agent_runner": agent_root / "run_evaluation.py",
+        "agent_dev_report": agent_root / "dev_report.json",
+        "agent_holdout_report": agent_root / "holdout_report.json",
+        "agent_change_planner": repo_root / "change-review-agent" / "app" / "change_request.py",
+        "agent_domain_profile_loader": repo_root / "change-review-agent" / "app" / "domain_profile.py",
+        "agent_domain_profile": repo_root / "change-review-agent" / "config" / "edge_ai_device_change_profile.json",
+    })["fingerprint_sha256"]

@@ -38,18 +38,21 @@ def _client(*, wrong_version=False, unhealthy=False, noanswer_status="OUT_OF_SCO
                 "corpus_fingerprint": {"fingerprint_sha256": CORPUS_HASH},
                 "retrieval_config_fingerprint": POLICY_HASH,
                 "evaluation_fingerprint": EVALUATION_HASH,
-                "repository": "tomato-ros/autoware-documentation-cn",
-                "languages": ["zh-CN"], "current_version": "latest",
-                "version_scopes": {"latest": {"versions": ["community-zh-2026-07"]}},
-                "available_versions": ["latest", "community-zh-2026-07", "community-zh-2026-01"],
+                "workspace_id": "edge_ai_device",
+                "repository": "Seeed-Studio/wiki-documents",
+                "languages": ["zh"], "current_version": "wiki-1eadc6584f96",
+                "retrieval_evaluation_status": "edge_ai_retrieval_v2_validated",
+                "frozen_benchmark_query_count": 22,
+                "retrieval_evaluation": {"name": "edge_ai_retrieval_v2"},
+                "change_review_evaluation": {"dataset_id": "edge_ai_change_review_v2"},
+                "version_scopes": {"current": {"versions": ["wiki-1eadc6584f96"]}},
+                "available_versions": ["wiki-1eadc6584f96"],
             })
         if path == "/public/search":
             body = request.read().decode("utf-8")
             request_json = __import__("json").loads(body)
             requested_version = request_json["version"]
-            version = "community-zh-2026-01" if wrong_version and requested_version == "latest" else (
-                "community-zh-2026-01" if requested_version == "community-zh-2026-01" else "community-zh-2026-07"
-            )
+            version = "stale-snapshot" if wrong_version else "wiki-1eadc6584f96"
             return httpx.Response(200, json={"status": "OK", "results": [{
                 "version": version, "language": "zh", "locale": "zh-CN",
             }]})
@@ -69,8 +72,8 @@ def test_release_smoke_passes_when_ui_api_and_all_public_probes_match():
         )
 
     assert result["status"] == "PASS"
-    assert result["probes"]["chinese_current_snapshot_query"]["versions"] == ["community-zh-2026-07"]
-    assert result["probes"]["chinese_historical_snapshot_query"]["versions"] == ["community-zh-2026-01"]
+    assert result["probes"]["jetson_flash_prerequisites"]["versions"] == ["wiki-1eadc6584f96"]
+    assert result["probes"]["industrial_device_support"]["versions"] == ["wiki-1eadc6584f96"]
     assert result["probes"]["no_answer_scope"]["status"] == "OUT_OF_SCOPE"
     assert "ui_http_ms" in result["remote_latency_ms"]
 
@@ -106,6 +109,30 @@ def test_release_smoke_rejects_unhealthy_api_and_wrong_version_results():
 
 def test_release_smoke_rejects_no_answer_query_if_it_is_not_guarded():
     with _client(noanswer_status="OK") as client, pytest.raises(smoke.ReleaseSmokeError, match="no-answer scope"):
+        smoke.run_smoke(
+            client, ui_url="https://ui.example", ui_revision=EXPECTED_SHA,
+            api_url="https://api.example", expected_sha=EXPECTED_SHA,
+        )
+
+
+def test_release_smoke_rejects_non_edge_workspace():
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.host == "ui.example":
+            return httpx.Response(200, text="Streamlit")
+        if request.url.path == "/health":
+            return httpx.Response(200, json={
+                "alive": True, "rag_ready": True, "build_revision": EXPECTED_SHA,
+                "corpus_fingerprint": {"fingerprint_sha256": CORPUS_HASH},
+                "retrieval_config_fingerprint": POLICY_HASH,
+                "evaluation_fingerprint": EVALUATION_HASH,
+            })
+        if request.url.path == "/public/workspace":
+            return httpx.Response(200, json={"workspace_id": "unrelated_workspace"})
+        return httpx.Response(404)
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client, pytest.raises(
+        smoke.ReleaseSmokeError, match="edge-AI corpus",
+    ):
         smoke.run_smoke(
             client, ui_url="https://ui.example", ui_revision=EXPECTED_SHA,
             api_url="https://api.example", expected_sha=EXPECTED_SHA,

@@ -195,7 +195,7 @@ for query in plan["queries"][:4]:
 - [x] **Step 2: 运行 UI 测试确认失败**：在 UI 重构前运行现有公开工作台测试，记录旧 workspace profile 与业务文案未满足新领域断言。
 - [x] **Step 3: 将 profile 校验改为领域 ID 校验**：检验 workspace/profile ID、唯一声明仓库和中文语言；不匹配时阻止公共演示继续渲染，避免将错域结果伪装成当前证据。
 - [x] **Step 4: 移除旧 Streamlit 演示切换**：`demo-ui/app.py` 只导入并运行 `public_workbench.render()`；旧环境变量不会切换至合成业务页面。
-- [x] **Step 5: 更新页面流和显示**：首页、查询、Agent 类型、来源页及版本说明从 edge profile/manifest 读取；评测页标记待测，不显示其他语料分数；图片 OCR 证据需匹配当前 manifest 的仓库与固定 commit；文档关联卡片不再写死旧项目名。
+- [x] **Step 5: 更新页面流和显示**：首页、查询、Agent 类型、来源页及版本说明从 edge profile/manifest 读取；评测页只展示与当前语料/代码指纹匹配的实际 DEV/HOLDOUT 报告，指纹不匹配时明确降级；当前图片证据清单为空，不声称支持图中文字检索；文档关联卡片不再写死旧项目名。
 
 ```python
 profile = workspace["domain_profile"]
@@ -203,19 +203,19 @@ device_model = st.selectbox("设备型号", profile["hardware_models"], key="edg
 software_baseline = st.selectbox("软件基线", profile["software_baselines"], key="edge_software_baseline")
 snapshot = st.selectbox("资料快照", workspace["available_versions"], key="corpus_snapshot")
 ```
-- [x] **Step 6: 重写用户文档并验证界面**：重写根目录与 Streamlit README；`demo-ui` 的公开工作台、profile 与入口回归 77 passed。
+- [x] **Step 6: 重写用户文档并验证界面**：重写根目录、RAG 服务、Streamlit 和生产就绪说明；当前公开工作台回归 72 passed，主入口相关导航/检索控件测试 4 passed。
 - [x] **Step 7: Commit 工作台切换**：待本任务代码提交后完成。
 
 ### Task 6: 冻结新语料检索与变更审查评测
 
 **Files:**
-- Create: `evaluation/edge_ai_retrieval_v1/README.md`
-- Create: `evaluation/edge_ai_retrieval_v1/cases.jsonl`
-- Create: `evaluation/edge_ai_retrieval_v1/split_lock.json`
-- Create: `evaluation/edge_ai_retrieval_v1/run_evaluation.py`
-- Create: `evaluation/edge_ai_change_review_v1/README.md`
-- Create: `evaluation/edge_ai_change_review_v1/cases.jsonl`
-- Create: `evaluation/edge_ai_change_review_v1/run_evaluation.py`
+- Create: `evaluation/edge_ai_retrieval_v2/README.md`
+- Create: `evaluation/edge_ai_retrieval_v2/cases.jsonl`
+- Create: `evaluation/edge_ai_retrieval_v2/split_lock.json`
+- Create: `evaluation/edge_ai_retrieval_v2/run_evaluation.py`
+- Create: `evaluation/edge_ai_change_review_v2/README.md`
+- Create: `evaluation/edge_ai_change_review_v2/cases.jsonl`
+- Create: `evaluation/edge_ai_change_review_v2/run_evaluation.py`
 - Create: `versioned-rag-service/src/public_evaluation_release.py`
 - Test: `versioned-rag-service/tests/test_public_evaluation_release.py`
 
@@ -224,9 +224,9 @@ snapshot = st.selectbox("资料快照", workspace["available_versions"], key="co
 - Agent runner 分别报告规则查询覆盖、证据候选覆盖、缺口和人工评分；不得将流程覆盖当作影响准确率。
 - `validate_public_evaluation_release(manifest, corpus_root, build_identity) -> dict | None` 只在所有冻结指纹和发布策略匹配时返回可展示报告。
 
-- [ ] **Step 1: 建立人工标注题集**：按来源文档族编写事实问答、型号/基线过滤、多来源关联、表格/图纸线索（仅在已复核来源存在时）和领域内无答案案例；每题标注必要来源、允许型号/软件范围及答案是否可由资料回答。按来源族划分 DEV/HOLDOUT，保持 HOLDOUT 问题不用于规则调试。
-- [ ] **Step 2: 写 runner 的完整性和指标测试**：测试题集 hash 变动、错语料指纹、无答案题、错误型号/软件证据、Top-K 变化时的报告状态；断言输出 Recall@K、完整证据集率、版本/型号错误数、无答案候选与延迟，并报告样本分母。
-- [ ] **Step 3: 实现冻结与复算**：先锁定题集/切分/语料/代码/配置指纹，再运行实际 DEV/HOLDOUT。仅比较当前已实现的 BM25、字段/分面和混合候选；OCR 只在审核 sidecar 存在时比较。没有独立 reranker 实现就不新增模型依赖或宣称重排效果。检索指标使用 source ID 而非易随切块变化的 chunk ID。
+- [x] **Step 1: 建立人工标注题集**：按来源文档族编写事实问答、型号/基线过滤、多来源关联和领域内无答案案例；图片 OCR 没有已复核来源，明确不纳入题集。题目按来源族分为各 11 道 DEV/HOLDOUT，Agent 场景各 6 道；HOLDOUT 只作最终留出验证。
+- [x] **Step 2: 写 runner 的完整性和指标测试**：覆盖题集 hash、错语料指纹、无答案题、错误型号/软件证据和 Top-K；输出必要来源召回、完整来源集率、范围/语言/快照错误、无答案候选与检索延迟，并报告分母。
+- [x] **Step 3: 实现冻结与复算**：题集、来源族切分、语料、索引、策略与实现均绑定指纹；比较 BM25 与分面 RRF。Reranker 与图像 OCR 均未纳入，因为当前没有独立 reranker 和已校对 OCR 证据。
 
 ```python
 rows = search(case["query"], policy=policy, top_k=case["top_k"], scope=case["allowed_scope"])
@@ -236,9 +236,9 @@ source_recall = len(required & set(ranked_ids)) / len(required) if required else
 complete = bool(required) and required.issubset(ranked_ids)
 wrong_scope_count = sum(row["source_id"] not in case["allowed_source_ids"] for row in rows)
 ```
-- [ ] **Step 4: 评估 Agent 端到端审查**：对固定假设变更记录必需查询、明确关系、预期候选、必要缺口和人工评分 rubric；先保留盲化 HOLDOUT，记录每类失败案例。API generation 模型准确率单独人工复核，不用 RAG 命中率代替。
-- [ ] **Step 5: 绑定可发布评测**：将新的报告元数据写入 manifest；实现通用指纹校验器，在 workspace 响应返回数据前验证语料、索引、retrieval config、题集与报告 hash；过期或不一致时只显示“当前版本未验证评测”。
-- [ ] **Step 6: 运行冻结评测与测试**：重跑两份 runner 的 `--split all`，保存实际结果和失败分类；执行 `python -m pytest tests/test_public_evaluation_release.py tests/test_public_server.py -q`。
+- [x] **Step 4: 评估 Agent 端到端审查**：冻结 12 个假设变更场景，各 6 道 DEV/HOLDOUT，记录分类、必需来源覆盖、范围缺口和人工边界；最终 LLM 建议的人工评分明确为 `not_scored`。
+- [x] **Step 5: 绑定可发布评测**：workspace 返回前校验语料、索引、检索策略、运行配置、Agent/RAG 代码、题集锁和实测报告指纹；过期或不一致时不发布分数。
+- [x] **Step 6: 运行冻结评测与测试**：保存真实 DEV/HOLDOUT 报告；RAG 服务全套 184 项测试通过，发布评测/服务契约包含其中。
 - [ ] **Step 7: Commit 新评测与发布门禁**：提交题集、锁、runner、报告、指纹校验及测试；报告保留真实输出，不手工挑选/改写有利数字。
 
 ### Task 7: 旧活动语料退役、Render 配置和发布 smoke
@@ -269,9 +269,9 @@ wrong_scope_count = sum(row["source_id"] not in case["allowed_source_ids"] for r
 - Render `RAG_PUBLIC_CORPUS_ROOT` and `RAG_PUBLIC_RETRIEVAL_CONFIG` both point into `public_corpus_edge_ai`.
 - Release smoke requires expected UI/API revision, corpus/profile id, source language, new evidence probes, and matching corpus/config/evaluation fingerprints; its JSON result contains no old-domain probe name.
 
-- [ ] **Step 1: Write retirement and release tests**：release smoke rejects Autoware or DolphinScheduler workspace, wrong `workspace_id`, non-Chinese hits, mixed-device or wrong-baseline hits, unknown hashes and stale UI/API revisions; deployment tests assert Render points only to the new corpus root/config.
-- [ ] **Step 2: Run tests to capture current failures**：执行 `python -m pytest tests/test_public_release_smoke.py tests/test_deployment_manifests.py -q`（在 `versioned-rag-service/` 执行）。
-- [ ] **Step 3: Update deployment and smoke probes**：把检索探针替换为已通过新 HOLDOUT 标注的安全示例问题；验证 workspace 与 health 的 build/fingerprint 一致，额外调用 public scope refusal 确认拒答不触发 generation。
+- [x] **Step 1: Write retirement and release tests**：release smoke 拒绝错误 workspace、语言、哈希、证据快照、评测或 UI/API revision；deployment tests 确认 Render 仅加载新 corpus root/config。
+- [x] **Step 2: Run tests to capture current failures**：RAG 服务全量回归 184 项通过，覆盖 public release smoke 与 deployment manifest tests。
+- [x] **Step 3: Update deployment and smoke probes**：smoke 使用当前 Jetson/工业设备来源查询并校验同一语料快照；私有信息 probe 在检索和生成前拒绝。
 
 ```yaml
       - key: RAG_PUBLIC_CORPUS_ROOT
@@ -279,10 +279,10 @@ wrong_scope_count = sum(row["source_id"] not in case["allowed_source_ids"] for r
       - key: RAG_PUBLIC_RETRIEVAL_CONFIG
         value: public_corpus_edge_ai/public_retrieval_runtime.json
 ```
-- [ ] **Step 4: 切换本地启动脚本并关掉旧 runtime toggle**：`start_prototype.ps1` 将 `RAG_PUBLIC_CORPUS_ROOT` 与 retrieval config 指向 `public_corpus_edge_ai`，去除 `DEMO_LEGACY_FIXTURES`、`RD_V2_ARTIFACT_ROOT` 的活动设置。`versioned-rag-service/.env.example` 删除旧 synthetic artifact root 示例，只保留当前公共服务变量。
-- [ ] **Step 5: Archive 历史评测并移除活动 legacy 代码/索引**：增加 archive index，标明旧题集只描述旧语料且不参与当前发布；删除 API/工作台中的 Autoware、DolphinScheduler 历史成绩渲染与 legacy validators；删除旧活动语料目录及旧采集配置/脚本/测试；删除 Render 构建目录中的 `public_demo_artifacts/rd-v2-public-demo-v1`，把原来依赖此目录的 Runtime 测试改用 `tests/fixtures/` 下最小、显式合成的 fixture。保留旧 evaluation 目录，但从默认 README、workspace API 和部署制品中解耦。
-- [ ] **Step 6: 限制发布包与合成 fixture**：扫描 `render.yaml` 服务 root 和构建产物，确认发布 runtime 索引只读取 `public_corpus_edge_ai`；合成 fixture 只位于测试目录且不被 manifest 引用。不要清理工作区既有未跟踪目录。
-- [ ] **Step 7: 运行删除后回归与旧词扫描**：执行 `python -m pytest tests/test_public_release_smoke.py tests/test_deployment_manifests.py tests/test_public_server.py -q`；运行 `rg -n "Autoware|autoware|DolphinScheduler|dolphinscheduler" src scripts render.yaml README.md`，活动服务路径必须无命中，归档评测目录不在扫描范围。
+- [x] **Step 4: 切换本地启动脚本并关掉旧 runtime toggle**：本地脚本与 `.env.example` 默认只指向 `public_corpus_edge_ai`，不再切换到旧 synthetic artifact。
+- [x] **Step 5: Archive 历史评测并移除活动 legacy 代码/索引**：增加旧评测归档索引；旧运行语料、索引、公开 demo artifact、领域采集配置/脚本/测试已删除，旧评测结果只留在历史目录。
+- [x] **Step 6: 限制发布包与合成 fixture**：Render root/config 与 release smoke 固定检查 edge corpus；活动 RAG/UI/deploy 路径不加载旧语料，既有未跟踪目录未加入本次变更。
+- [x] **Step 7: 运行删除后回归与旧词扫描**：RAG 全套 184 passed；活动源码、入口、部署、服务 README 和生产就绪文档旧词扫描无命中。历史评测与许可审计的排除说明保留为归档边界。
 - [ ] **Step 8: Commit 活动语料退役与发布配置**：确认 staged 文件名只属于本任务后提交，不使用 `git add -A`。
 
 ### Task 8: 全量验收并更新 GitHub main

@@ -1,7 +1,0 @@
-This directory contains selected Chinese community documentation snapshots from:
-
-- Tomato ROS Autoware Documentation Chinese community translation: https://github.com/tomato-ros/autoware-documentation-cn
-
-The current and historical snapshots are pinned by commit in corpus_manifest.json. The repository is licensed under Apache-2.0. Its Chinese translation is community-maintained and is not an official Autoware translation.
-
-This project is an independent demonstration and is not affiliated with the Autoware Foundation or Tomato ROS.

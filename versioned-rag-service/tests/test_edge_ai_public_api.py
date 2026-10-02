@@ -60,10 +60,14 @@ def test_workspace_and_health_identify_only_the_chinese_edge_ai_profile(tmp_path
                for row in workspace["source_registry"])
     assert "JetPack 7.2 (L4T 39.2.0)" in workspace["software_baselines"]
     assert "reComputer Industrial J4012" in workspace["hardware_models"]
-    assert workspace["retrieval_evaluation_status"] == "new_corpus_pending_rebenchmark"
+    assert workspace["retrieval_evaluation_status"] == "edge_ai_retrieval_v2_validated"
+    assert workspace["frozen_benchmark_query_count"] == 22
+    assert workspace["retrieval_evaluation"]["policy"] == "bm25"
+    assert workspace["retrieval_evaluation"]["case_split_counts"] == {"dev": 11, "holdout": 11}
+    assert workspace["change_review_evaluation"]["case_count"] == 12
+    assert workspace["change_review_evaluation"]["splits"]["holdout"]["human_quality_scoring"]["status"] == "not_scored"
     assert health["workspace"] == workspace["workspace"]
-    assert "Autoware" not in json.dumps(workspace)
-    assert "DolphinScheduler" not in json.dumps(workspace)
+    assert workspace["workspace_id"] == "edge_ai_device"
 
 
 def test_search_and_query_apply_the_same_hard_device_and_baseline_scope(tmp_path, monkeypatch):

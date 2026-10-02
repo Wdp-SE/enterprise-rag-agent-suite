@@ -14,17 +14,17 @@ import httpx
 
 _REVISION = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
 _FINGERPRINT = re.compile(r"^[0-9a-f]{64}$", re.IGNORECASE)
-_NO_ANSWER_QUERY = "Can this public corpus show our company's Jira access-approval audit trail?"
+_NO_ANSWER_QUERY = "请给出公司内部 J4012 老化测试通过率和签字负责人。"
 _SEARCH_PROBES = (
     {
-        "name": "chinese_current_snapshot_query",
-        "query": "如何启动 Autoware 并通过命令行参数启用或禁用模块？",
-        "version": "latest", "language": "zh",
+        "name": "jetson_flash_prerequisites",
+        "query": "使用 Flash Center 刷写 Jetson 固件前，需要准备什么主机环境和磁盘空间？",
+        "version": "current", "language": "zh",
     },
     {
-        "name": "chinese_historical_snapshot_query",
-        "query": "Autoware ROS 节点如何声明和读取参数？",
-        "version": "community-zh-2026-01", "language": "zh",
+        "name": "industrial_device_support",
+        "query": "reComputer Industrial J4012 支持哪些 Jetson 模组和 L4T 软件范围？",
+        "version": "current", "language": "zh",
     },
 )
 
@@ -127,11 +127,19 @@ def run_smoke(
     if not workspace:
         raise ReleaseSmokeError("RAG workspace profile is unavailable")
     if (
-        workspace.get("repository") != "tomato-ros/autoware-documentation-cn"
-        or workspace.get("languages") != ["zh-CN"]
-        or workspace.get("current_version") != "latest"
+        workspace.get("workspace_id") != "edge_ai_device"
+        or workspace.get("repository") != "Seeed-Studio/wiki-documents"
+        or workspace.get("languages") != ["zh"]
+        or workspace.get("current_version") != "wiki-1eadc6584f96"
     ):
-        raise ReleaseSmokeError("RAG workspace is not the pinned Chinese-only Autoware corpus")
+        raise ReleaseSmokeError("RAG workspace is not the pinned Chinese edge-AI corpus")
+    if (
+        workspace.get("retrieval_evaluation_status") != "edge_ai_retrieval_v2_validated"
+        or workspace.get("frozen_benchmark_query_count") != 22
+        or workspace.get("retrieval_evaluation", {}).get("name") != "edge_ai_retrieval_v2"
+        or workspace.get("change_review_evaluation", {}).get("dataset_id") != "edge_ai_change_review_v2"
+    ):
+        raise ReleaseSmokeError("RAG evaluation does not match the measured edge-AI release")
     if workspace.get("build_revision", "unknown").casefold() != api_revision.casefold():
         raise ReleaseSmokeError("RAG health and workspace revisions differ")
     fingerprint_keys = {

@@ -14,7 +14,9 @@
 
 ## 方案与质量口径
 
-当前使用 BM25 作为可解释检索基线，并支持 UI 选择 Top-K 与设备/软件过滤。新语料的冻结题集和指纹绑定评测尚未完成，因此不公布当前语料的召回率、答案准确率、幻觉率或最优策略。任何其他领域、旧语料或仓库离线实验的数字都不能当作这里的成绩。下一步先建立按来源文档族隔离的 DEV/HOLDOUT 问题集，再比较基线、候选扩展和重排；Agent 查询覆盖、证据完整率及人工判断质量单独报告。
+当前默认检索为可解释的 BM25。冻结的 22 题中文检索集按资料族拆分为 DEV/HOLDOUT（各 11 题），BM25 与分面 RRF 的来源召回、完整来源集率完全相同，且范围错误命中为 0，因此保留 BM25，不因几毫秒差异增加线上复杂度。BM25 的 DEV 必需来源召回为 0.95、完整来源集率为 0.90；HOLDOUT 分别为 0.90 和 0.90。每个 split 的 1 道语料外题仍会返回检索候选，需继续增强拒答判定；这不是最终回答错误率。
+
+变更审查另用 12 个场景评估规划分类与证据覆盖：DEV 变更类型识别率 0.833、来源召回 0.75、完整必需来源 3/4；HOLDOUT 分别为 1.00、0.9167、5/6。范围缺口检测与人工审核边界在两组均为 1.00。LLM 最终建议正确率、影响候选精确率、幻觉率尚未由盲评验证；不能把这些流程指标说成 Agent 准确率。题集规模较小，结果只代表当前 Seeed 中文语料与这批固定场景，不足以证明跨业务泛化。
 
 Agent 每项审查最多拆为 4 次 RAG 查询，最多把 8 条证据交给生成分析；候选引用按当前语料来源登记表校验。没有有效证据时保留缺口并停止肯定结论。当前审查与审核决定保留在会话/演示运行环境中，不是带身份和集中审计的企业审批系统。
 
@@ -24,7 +26,8 @@ Agent 每项审查最多拆为 4 次 RAG 查询，最多把 8 条证据交给生
 - `change-review-agent/`：基于领域 profile 的变更分类、有限查询规划、证据核验和人工审核流程。
 - `demo-ui/`：Streamlit 检索与变更审查工作台。
 - `versioned-rag-service/public_corpus_edge_ai/`：许可审计后的固定资料、索引清单和检索配置。
-- `evaluation/edge_ai_retrieval_v1/` 与 `evaluation/edge_ai_change_review_v1/`：后续冻结检索和审查评测所在目录；只有实际运行并绑定指纹后才发布指标。
+- `evaluation/edge_ai_retrieval_v2/` 与 `evaluation/edge_ai_change_review_v2/`：冻结题集、分割锁、可复算 runner 和实际 DEV/HOLDOUT 报告；API 只在所有语料/代码/报告指纹匹配时公开结果。
+- 旧领域与旧策略的评测只作历史记录保留，不是当前成绩；见[评测归档说明](evaluation/archive/README.md)。
 
 ## 本地运行
 
@@ -49,7 +52,7 @@ Set-Location demo-ui
 
 ## 发布说明
 
-源码工作区、RAG 后端语料、Streamlit 前端和公网部署需要分别核对构建 SHA 与语料指纹。当前任务只准备源码与 main 分支；在公网部署完成并核实两端指纹前，现有在线链接可能仍展示旧业务版本，不应作为新版本效果证明。
+源码工作区、RAG 后端语料、Streamlit 前端和公网部署需要分别核对构建 SHA 与语料指纹。GitHub `main` 的源代码更新不等于 Render 与 Streamlit 已部署；发布后需通过 `/health`、`/public/workspace` 和公开检索 smoke 核实两端版本。当前公开评测是离线、无模型调用的检索与规划测量，不代表线上生成质量。
 
 - [GitHub 源码](https://github.com/Wdp-SE/enterprise-rag-agent-suite)
 - [RAG API 文档](https://version-aware-rag-public-demo.onrender.com/docs)（以托管服务实际部署版本为准）

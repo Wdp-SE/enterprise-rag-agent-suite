@@ -1,0 +1,436 @@
+{
+  "status": "MEASURED",
+  "generated_at_utc": "2026-10-02T22:25:15+00:00",
+  "input_fingerprints": {
+    "corpus_manifest_sha256": "d7ebb136d951249ae7cdb13caf9d36ab91a2dad98c98f05cc92ebe96edf20ac9",
+    "chunks_sha256": "edb184f9be1f3bcbccde364f9d95fda95d9dbcf38327011ca838cc41093d3af4",
+    "dense_vectors_sha256": "eaff3ee94e1d006693991c84205fda48f73fe22ec0ea305d4b79f0a0da7de24d",
+    "retrieval_policy_sha256": "451d4810099fa1be7437fadcf65d380f5f09d61051e4defbfe55f434745f5abf",
+    "runtime_config_sha256": "18238d80a4e780e1ce4192525977a93131251ef5f6f5b3b90ab974244880786d",
+    "cases_sha256": "8d2fbc84e0b46e2390ad9fab942f9a1276cac92112a9ef208761266f3c8072e4",
+    "code:evaluation/edge_ai_retrieval_v2/run_evaluation.py": "eb42dc687868f3569049565673cea63b038e2b995b338c46c5a30d3e65dd5c65",
+    "code:versioned-rag-service/src/public_knowledge.py": "4ea67695bb481cdcda9db3e6ed660b0b559146577b4394432fff40548b01a8f4",
+    "code:versioned-rag-service/src/public_retrieval_runtime.py": "70dc4ab2fda9f67ae53884ddda51af411779fbf02afd14eaeaa7e9689f2f1c8e",
+    "code:versioned-rag-service/src/retrieval_fusion.py": "da65e1d5043f7e29e76d88cf02676fda8ec9be811b6f7d5965b5cdce4120ca8f",
+    "agent_cases_sha256": "5ca95369499bb4d9468c4c93e704e34bb3a831be029449c5c5965ff353e36c80",
+    "code:evaluation/edge_ai_change_review_v2/run_evaluation.py": "f381436c8dcfa03bce96833ca224bdf121b32147775673dc8850392fca2381b5",
+    "code:change-review-agent/app/change_request.py": "a61367bc1935c2e5a92eee79977c8b4487108354b43645636f1c662cbf7f0719",
+    "code:change-review-agent/app/domain_profile.py": "d884d643d51b7903da01f98b39dc8eb556b263ba80ce7a9dffe30070bbe7831b",
+    "code:change-review-agent/config/edge_ai_device_change_profile.json": "e7fa885943cc0522024cf47e1fd29af6a254e8d618ca33e39412a839755f57a4"
+  },
+  "split_lock_sha256": "139ef5fd9e221fadc0f066e236d31a7fa788d59e86536b5b7a567edf6a0c616c",
+  "schema_version": 1,
+  "dataset_id": "edge_ai_change_review_v2",
+  "splits": {
+    "holdout": {
+      "case_count": 6,
+      "expected_change_type_accuracy": 1.0,
+      "required_source_recall_across_planned_queries": 0.9167,
+      "complete_required_source_set_count": 5,
+      "answerable_case_count": 6,
+      "scope_gap_detection_accuracy": 1.0,
+      "manual_review_boundary_accuracy": 1.0,
+      "manual_review_required_count": 6,
+      "human_quality_scoring": {
+        "status": "not_scored",
+        "note": "Planner coverage and retrieval evidence are automated; impact-candidate precision and recommendation correctness require blinded human review.",
+        "cases_requiring_review": 6
+      },
+      "planning_latency_ms": {
+        "p50": 0.25,
+        "p95": 2.734
+      },
+      "retrieval_latency_ms": {
+        "p50": 4.217,
+        "p95": 6.084
+      },
+      "cases": [
+        {
+          "case_id": "j20_to_j40_carrier_change",
+          "family_id": "cross:seeed-recomputer-industrial-j20-interfaces+seeed-recomputer-industrial-j40-j30-interfaces",
+          "category": "cross_device_interface",
+          "expected_change_type": "device_configuration",
+          "planned_change_type": "device_configuration",
+          "change_type_match": true,
+          "planned_query_count": 4,
+          "query_limit": 4,
+          "required_source_ids": [
+            "seeed-recomputer-industrial-j20-interfaces",
+            "seeed-recomputer-industrial-j40-j30-interfaces"
+          ],
+          "retrieved_source_ids": [
+            "seeed-j4012-flash-jetpack",
+            "seeed-recomputer-backup-restore",
+            "seeed-recomputer-industrial-getting-started",
+            "seeed-recomputer-industrial-j20-interfaces",
+            "seeed-recomputer-preempt-rt-jp621"
+          ],
+          "required_source_recall": 0.5,
+          "complete_required_source_set": false,
+          "expected_scope_gap": true,
+          "scope_gap_detected": true,
+          "scope_gap_match": true,
+          "manual_review_required": true,
+          "manual_review_expected": true,
+          "manual_review_match": true,
+          "planning_latency_ms": 2.734,
+          "retrieval_latency_ms": 5.33,
+          "queries": [
+            {
+              "query": "产品配置从 reComputer Industrial J2012 切换到 J4012 载板，检查接口、供电和硬件差异；逐项对照 J20 与 J40/J30 文档。",
+              "search_query": "产品配置从 reComputer Industrial J2012 切换到 J4012 载板，检查接口、供电和硬件差异；逐项对照 J20 与 J40/J30 文档。 规格 接口 载板 电源 热设计",
+              "source_ids": [
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-industrial-j20-interfaces",
+                "seeed-recomputer-preempt-rt-jp621",
+                "seeed-j4012-flash-jetpack",
+                "seeed-recomputer-backup-restore"
+              ]
+            },
+            {
+              "query": "产品配置从 reComputer Industrial J2012 切换到 J4012 载板",
+              "search_query": "产品配置从 reComputer Industrial J2012 切换到 J4012 载板 规格 接口 载板 电源 热设计",
+              "source_ids": [
+                "seeed-recomputer-preempt-rt-jp621",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-industrial-j20-interfaces"
+              ]
+            },
+            {
+              "query": "检查接口、供电和硬件差异",
+              "search_query": "检查接口、供电和硬件差异 规格 接口 载板 电源 热设计",
+              "source_ids": [
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-j4012-flash-jetpack",
+                "seeed-j4012-flash-jetpack",
+                "seeed-recomputer-industrial-getting-started"
+              ]
+            },
+            {
+              "query": "逐项对照 J20 与 J40/J30 文档",
+              "search_query": "逐项对照 J20 与 J40/J30 文档 规格 接口 载板 电源 热设计",
+              "source_ids": [
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-j4012-flash-jetpack",
+                "seeed-recomputer-backup-restore",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-j4012-flash-jetpack"
+              ]
+            }
+          ]
+        },
+        {
+          "case_id": "ota_update_recovery_change",
+          "family_id": "cross:seeed-recomputer-ota+seeed-recomputer-backup-restore",
+          "category": "ota_update",
+          "expected_change_type": "deployment_operations",
+          "planned_change_type": "deployment_operations",
+          "change_type_match": true,
+          "planned_query_count": 4,
+          "query_limit": 4,
+          "required_source_ids": [
+            "seeed-recomputer-backup-restore",
+            "seeed-recomputer-ota"
+          ],
+          "retrieved_source_ids": [
+            "seeed-jetson-package-upgrade-guidance",
+            "seeed-recomputer-backup-restore",
+            "seeed-recomputer-ota"
+          ],
+          "required_source_recall": 1.0,
+          "complete_required_source_set": true,
+          "expected_scope_gap": false,
+          "scope_gap_detected": false,
+          "scope_gap_match": true,
+          "manual_review_required": true,
+          "manual_review_expected": true,
+          "manual_review_match": true,
+          "planning_latency_ms": 0.325,
+          "retrieval_latency_ms": 4.217,
+          "queries": [
+            {
+              "query": "变更 reComputer OTA 发布与恢复流程；核对 OTA 前置要求，并确认升级失败后的备份恢复检查项。",
+              "search_query": "变更 reComputer OTA 发布与恢复流程；核对 OTA 前置要求，并确认升级失败后的备份恢复检查项。 部署 运行环境 升级 诊断 验证",
+              "source_ids": [
+                "seeed-recomputer-backup-restore",
+                "seeed-recomputer-backup-restore",
+                "seeed-recomputer-ota",
+                "seeed-jetson-package-upgrade-guidance",
+                "seeed-recomputer-backup-restore"
+              ]
+            },
+            {
+              "query": "变更 reComputer OTA 发布与恢复流程",
+              "search_query": "变更 reComputer OTA 发布与恢复流程 部署 运行环境 升级 诊断 验证",
+              "source_ids": [
+                "seeed-jetson-package-upgrade-guidance",
+                "seeed-recomputer-ota",
+                "seeed-recomputer-ota",
+                "seeed-recomputer-ota",
+                "seeed-recomputer-backup-restore"
+              ]
+            },
+            {
+              "query": "核对 OTA 前置要求",
+              "search_query": "核对 OTA 前置要求 部署 运行环境 升级 诊断 验证",
+              "source_ids": [
+                "seeed-recomputer-ota",
+                "seeed-recomputer-ota",
+                "seeed-recomputer-ota",
+                "seeed-jetson-package-upgrade-guidance",
+                "seeed-recomputer-ota"
+              ]
+            },
+            {
+              "query": "确认升级失败后的备份恢复检查项",
+              "search_query": "确认升级失败后的备份恢复检查项 部署 运行环境 升级 诊断 验证",
+              "source_ids": [
+                "seeed-recomputer-backup-restore",
+                "seeed-recomputer-backup-restore",
+                "seeed-recomputer-backup-restore",
+                "seeed-recomputer-backup-restore",
+                "seeed-recomputer-backup-restore"
+              ]
+            }
+          ]
+        },
+        {
+          "case_id": "industrial_vision_environment_change",
+          "family_id": "source:seeed-industrial-vision-monitoring",
+          "category": "ai_deployment_validation",
+          "expected_change_type": "deployment_operations",
+          "planned_change_type": "deployment_operations",
+          "change_type_match": true,
+          "planned_query_count": 3,
+          "query_limit": 4,
+          "required_source_ids": [
+            "seeed-industrial-vision-monitoring"
+          ],
+          "retrieved_source_ids": [
+            "seeed-industrial-vision-monitoring",
+            "seeed-j4012-flash-jetpack",
+            "seeed-jetson-package-upgrade-guidance",
+            "seeed-recomputer-industrial-getting-started"
+          ],
+          "required_source_recall": 1.0,
+          "complete_required_source_set": true,
+          "expected_scope_gap": false,
+          "scope_gap_detected": false,
+          "scope_gap_match": true,
+          "manual_review_required": true,
+          "manual_review_expected": true,
+          "manual_review_match": true,
+          "planning_latency_ms": 0.255,
+          "retrieval_latency_ms": 4.733,
+          "queries": [
+            {
+              "query": "调整 J4012 工业视觉服务的部署环境，核对其明确的硬件支持和 JetPack 7.2 运行要求。",
+              "search_query": "调整 J4012 工业视觉服务的部署环境，核对其明确的硬件支持和 JetPack 7.2 运行要求。 部署 运行环境 升级 诊断 验证",
+              "source_ids": [
+                "seeed-industrial-vision-monitoring",
+                "seeed-industrial-vision-monitoring",
+                "seeed-j4012-flash-jetpack",
+                "seeed-industrial-vision-monitoring",
+                "seeed-recomputer-industrial-getting-started"
+              ]
+            },
+            {
+              "query": "调整 J4012 工业视觉服务的部署环境",
+              "search_query": "调整 J4012 工业视觉服务的部署环境 部署 运行环境 升级 诊断 验证",
+              "source_ids": [
+                "seeed-industrial-vision-monitoring",
+                "seeed-industrial-vision-monitoring",
+                "seeed-industrial-vision-monitoring",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-jetson-package-upgrade-guidance"
+              ]
+            },
+            {
+              "query": "核对其明确的硬件支持和 JetPack 7.2 运行要求",
+              "search_query": "核对其明确的硬件支持和 JetPack 7.2 运行要求 部署 运行环境 升级 诊断 验证",
+              "source_ids": [
+                "seeed-industrial-vision-monitoring",
+                "seeed-industrial-vision-monitoring",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-jetson-package-upgrade-guidance"
+              ]
+            }
+          ]
+        },
+        {
+          "case_id": "deepseek_local_runtime_change",
+          "family_id": "source:seeed-recomputer-jetson-deepseek-mlc",
+          "category": "ai_deployment",
+          "expected_change_type": "deployment_operations",
+          "planned_change_type": "deployment_operations",
+          "change_type_match": true,
+          "planned_query_count": 1,
+          "query_limit": 4,
+          "required_source_ids": [
+            "seeed-recomputer-jetson-deepseek-mlc"
+          ],
+          "retrieved_source_ids": [
+            "seeed-jetson-package-upgrade-guidance",
+            "seeed-recomputer-jetson-deepseek-mlc"
+          ],
+          "required_source_recall": 1.0,
+          "complete_required_source_set": true,
+          "expected_scope_gap": false,
+          "scope_gap_detected": false,
+          "scope_gap_match": true,
+          "manual_review_required": true,
+          "manual_review_expected": true,
+          "manual_review_match": true,
+          "planning_latency_ms": 0.153,
+          "retrieval_latency_ms": 1.767,
+          "queries": [
+            {
+              "query": "修改 reComputer Jetson 上 DeepSeek 的 MLC 部署方式，需要复核模型加载和运行环境要求。",
+              "search_query": "修改 reComputer Jetson 上 DeepSeek 的 MLC 部署方式，需要复核模型加载和运行环境要求。 部署 运行环境 升级 诊断 验证",
+              "source_ids": [
+                "seeed-recomputer-jetson-deepseek-mlc",
+                "seeed-recomputer-jetson-deepseek-mlc",
+                "seeed-recomputer-jetson-deepseek-mlc",
+                "seeed-recomputer-jetson-deepseek-mlc",
+                "seeed-jetson-package-upgrade-guidance"
+              ]
+            }
+          ]
+        },
+        {
+          "case_id": "preempt_rt_kernel_change",
+          "family_id": "source:seeed-recomputer-preempt-rt-jp621",
+          "category": "kernel_upgrade",
+          "expected_change_type": "software_baseline",
+          "planned_change_type": "software_baseline",
+          "change_type_match": true,
+          "planned_query_count": 3,
+          "query_limit": 4,
+          "required_source_ids": [
+            "seeed-recomputer-preempt-rt-jp621"
+          ],
+          "retrieved_source_ids": [
+            "seeed-j4012-flash-jetpack",
+            "seeed-jetpack-jetson-version-relations",
+            "seeed-jetson-flash-firmware",
+            "seeed-recomputer-preempt-rt-jp621"
+          ],
+          "required_source_recall": 1.0,
+          "complete_required_source_set": true,
+          "expected_scope_gap": false,
+          "scope_gap_detected": false,
+          "scope_gap_match": true,
+          "manual_review_required": true,
+          "manual_review_expected": true,
+          "manual_review_match": true,
+          "planning_latency_ms": 0.242,
+          "retrieval_latency_ms": 6.084,
+          "queries": [
+            {
+              "query": "将 J4012 的 JetPack 6.2.1 内核改为 PREEMPT_RT；检查构建步骤、板卡 DTB 和设备侧验证方法。",
+              "search_query": "将 J4012 的 JetPack 6.2.1 内核改为 PREEMPT_RT；检查构建步骤、板卡 DTB 和设备侧验证方法。 支持矩阵 刷写 版本适配 回滚",
+              "source_ids": [
+                "seeed-recomputer-preempt-rt-jp621",
+                "seeed-recomputer-preempt-rt-jp621",
+                "seeed-recomputer-preempt-rt-jp621",
+                "seeed-recomputer-preempt-rt-jp621",
+                "seeed-j4012-flash-jetpack"
+              ]
+            },
+            {
+              "query": "将 J4012 的 JetPack 6.2.1 内核改为 PREEMPT_RT",
+              "search_query": "将 J4012 的 JetPack 6.2.1 内核改为 PREEMPT_RT 支持矩阵 刷写 版本适配 回滚",
+              "source_ids": [
+                "seeed-recomputer-preempt-rt-jp621",
+                "seeed-recomputer-preempt-rt-jp621",
+                "seeed-j4012-flash-jetpack",
+                "seeed-jetpack-jetson-version-relations",
+                "seeed-j4012-flash-jetpack"
+              ]
+            },
+            {
+              "query": "检查构建步骤、板卡 DTB 和设备侧验证方法",
+              "search_query": "检查构建步骤、板卡 DTB 和设备侧验证方法 支持矩阵 刷写 版本适配 回滚",
+              "source_ids": [
+                "seeed-recomputer-preempt-rt-jp621",
+                "seeed-jetson-flash-firmware",
+                "seeed-recomputer-preempt-rt-jp621",
+                "seeed-recomputer-preempt-rt-jp621",
+                "seeed-recomputer-preempt-rt-jp621"
+              ]
+            }
+          ]
+        },
+        {
+          "case_id": "field_log_collection_change",
+          "family_id": "source:seeed-recomputer-j30-j40-system-logs",
+          "category": "diagnostics",
+          "expected_change_type": "deployment_operations",
+          "planned_change_type": "deployment_operations",
+          "change_type_match": true,
+          "planned_query_count": 3,
+          "query_limit": 4,
+          "required_source_ids": [
+            "seeed-recomputer-j30-j40-system-logs"
+          ],
+          "retrieved_source_ids": [
+            "seeed-jetson-package-upgrade-guidance",
+            "seeed-recomputer-backup-restore",
+            "seeed-recomputer-industrial-getting-started",
+            "seeed-recomputer-j30-j40-system-logs",
+            "seeed-recomputer-ota"
+          ],
+          "required_source_recall": 1.0,
+          "complete_required_source_set": true,
+          "expected_scope_gap": false,
+          "scope_gap_detected": false,
+          "scope_gap_match": true,
+          "manual_review_required": true,
+          "manual_review_expected": true,
+          "manual_review_match": true,
+          "planning_latency_ms": 0.25,
+          "retrieval_latency_ms": 3.179,
+          "queries": [
+            {
+              "query": "变更 J40 现场故障处理手册时，核对设备日志收集步骤和必要的诊断信息。",
+              "search_query": "变更 J40 现场故障处理手册时，核对设备日志收集步骤和必要的诊断信息。 部署 运行环境 升级 诊断 验证",
+              "source_ids": [
+                "seeed-recomputer-backup-restore",
+                "seeed-jetson-package-upgrade-guidance",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-j30-j40-system-logs",
+                "seeed-recomputer-industrial-getting-started"
+              ]
+            },
+            {
+              "query": "变更 J40 现场故障处理手册时",
+              "search_query": "变更 J40 现场故障处理手册时 部署 运行环境 升级 诊断 验证",
+              "source_ids": [
+                "seeed-recomputer-backup-restore",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-jetson-package-upgrade-guidance",
+                "seeed-recomputer-ota",
+                "seeed-recomputer-ota"
+              ]
+            },
+            {
+              "query": "核对设备日志收集步骤和必要的诊断信息",
+              "search_query": "核对设备日志收集步骤和必要的诊断信息 部署 运行环境 升级 诊断 验证",
+              "source_ids": [
+                "seeed-recomputer-j30-j40-system-logs",
+                "seeed-jetson-package-upgrade-guidance",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-j30-j40-system-logs",
+                "seeed-recomputer-ota"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

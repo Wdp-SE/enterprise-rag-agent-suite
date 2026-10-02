@@ -1,4 +1,4 @@
-"""Pinned Apache DolphinScheduler public corpus search, separate from frozen V2."""
+"""Pinned Chinese public engineering knowledge search for the edge-device demo."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ import numpy as np
 from src.document_relations import DocumentRelationIndex
 
 
-ROOT = Path(__file__).resolve().parents[1] / "public_corpus"
+ROOT = Path(__file__).resolve().parents[1] / "public_corpus_edge_ai"
 TOKEN_RE = re.compile(r"[a-z][a-z0-9_.-]*|[0-9]+|[\u3400-\u9fff]+", re.I)
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 BM25_DIVERSITY_PREFIX = {

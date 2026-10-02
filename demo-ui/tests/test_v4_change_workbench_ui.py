@@ -6,34 +6,14 @@ from streamlit.testing.v1 import AppTest
 UI_ROOT = Path(__file__).parents[1]
 
 
-def test_v4_workbench_is_the_primary_change_review_flow_and_loads_without_rag(monkeypatch) -> None:
-    monkeypatch.setenv("DEMO_RAG_BASE_URL", "http://127.0.0.1:1")
+def test_edge_ai_workbench_is_the_primary_review_flow_and_loads_without_rag(monkeypatch) -> None:
+    monkeypatch.setenv("RAG_API_BASE_URL", "http://127.0.0.1:1")
     app = AppTest.from_file(UI_ROOT / "app.py", default_timeout=60).run()
 
     assert not app.exception
-    assert [tab.label for tab in app.tabs] == [
-        "工作台",
-        "变更分析",
-        "修改审核",
-        "版本发布",
-        "知识服务",
-        "执行轨迹",
-        "评测结果",
-        "扩展工具",
-    ]
-    page = "\n".join(item.value for item in app.markdown)
-    assert "当前组织" in page
-    assert "demo_company_a" in page
-    assert "需求变化" in page
-    assert "已确认关系" in page
-    assert "疑似影响" in page
-    assert "引用依据" in page
-    assert "修改前与修改建议" in page
-    assert "安全校验" in page
-    assert "候选版本" in page
-    assert "执行轨迹" in page
-    assert "固定评测" in page
-    assert any(button.label == "运行变更分析" for button in app.button)
+    assert any(item.value == "研发知识版本服务与变更影响审查" for item in app.title)
+    navigation = {item.label for item in app.button}
+    assert {"总览", "版本化知识检索", "版本与历史", "发起变更审查", "检索评测"} <= navigation
 
 def test_change_analysis_explains_added_and_removed_without_blank_placeholders() -> None:
     result = {

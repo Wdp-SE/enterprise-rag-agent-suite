@@ -17,7 +17,6 @@ from typing import Protocol
 from urllib.parse import urlsplit
 
 from app.change_request import (
-    CHANGE_TYPES,
     build_request_plan,
     is_out_of_scope_public_request,
     request_queries,
@@ -85,56 +84,36 @@ def _official_hit(
     allowed_versions: set[str] | None = None,
     allowed_sources: list[dict] | None = None,
 ) -> bool:
+    """Accept only current Chinese chunks present in the pinned source registry."""
+    if not isinstance(allowed_sources, list):
+        return False
     score = row.get("retrieval_score")
     parsed = urlsplit(str(row.get("source_url", "")))
     repositories = {repository} if isinstance(repository, str) else set(repository)
-    row_repository = row.get("repository")
-    if allowed_sources is not None:
-        source_id = row.get("source_id")
-        trusted = next((item for item in allowed_sources if item.get("source_id") == source_id), None)
-        if not isinstance(trusted, dict):
-            return False
-        trusted_url = str(trusted.get("source_url") or "")
-        trusted_parsed = urlsplit(trusted_url)
-        trusted_repository = str(trusted.get("repository") or "")
-        trusted_snapshot = str(trusted.get("source_snapshot") or "")
-        trusted_commit = str(trusted.get("commit") or "")
-        trusted_hash = str(trusted.get("sha256") or "")
-        return bool(
-            row.get("version") in (allowed_versions or {current_version})
-            and row.get("source_snapshot") == trusted_snapshot
-            and trusted_snapshot == row.get("version")
-            and row.get("source_url") == trusted_url
-            and trusted_parsed.scheme == "https"
-            and trusted_parsed.netloc
-            and row_repository == trusted_repository
-            and trusted_repository in repositories
-            and re.fullmatch(r"[0-9a-f]{40}", trusted_commit)
-            and re.fullmatch(r"[0-9a-f]{64}", trusted_hash)
-            and row.get("language") == "zh"
-            and bool(row.get("chunk_id"))
-            and (score is None or isinstance(score, (int, float)) and score > 0)
-        )
-    if isinstance(row_repository, str) and row_repository.strip():
-        matched_repository = row_repository.strip()
-    elif len(repositories) == 1:
-        matched_repository = next(iter(repositories))
-    else:
-        matched_repository = ""
-    repository_path = "/" + matched_repository.strip("/") + "/"
-    commit = row.get("commit")
-    pinned_blob = (
-        not commit
-        or isinstance(commit, str) and re.fullmatch(r"[0-9a-f]{40}", commit)
-        and parsed.path.startswith(repository_path + "blob/" + commit + "/")
-    )
-    return (
+    source_id = row.get("source_id")
+    trusted = next((item for item in allowed_sources if item.get("source_id") == source_id), None)
+    if not isinstance(trusted, dict):
+        return False
+    trusted_url = str(trusted.get("source_url") or "")
+    trusted_parsed = urlsplit(trusted_url)
+    trusted_repository = str(trusted.get("repository") or "")
+    trusted_snapshot = str(trusted.get("source_snapshot") or "")
+    trusted_commit = str(trusted.get("commit") or "")
+    trusted_hash = str(trusted.get("sha256") or "")
+    return bool(
         row.get("version") in (allowed_versions or {current_version})
-        and matched_repository in repositories
-        and bool(re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", matched_repository))
-        and parsed.scheme == "https" and parsed.netloc == "github.com"
-        and parsed.path.startswith(repository_path)
-        and pinned_blob
+        and row.get("source_snapshot") == trusted_snapshot
+        and trusted_snapshot == row.get("version")
+        and row.get("source_url") == trusted_url
+        and parsed.scheme == "https"
+        and parsed.netloc == "wiki.seeedstudio.com"
+        and trusted_parsed.scheme == "https"
+        and trusted_parsed.netloc == "wiki.seeedstudio.com"
+        and trusted_repository in repositories
+        and row.get("repository") == trusted_repository
+        and re.fullmatch(r"[0-9a-f]{40}", trusted_commit)
+        and re.fullmatch(r"[0-9a-f]{64}", trusted_hash)
+        and row.get("language") == "zh"
         and bool(row.get("chunk_id"))
         and (score is None or isinstance(score, (int, float)) and score > 0)
     )
@@ -270,10 +249,8 @@ def _retrieval_gap_details(
         ),
         "search_unavailable": ("RETRIEVAL_FAILED", "SEARCH_UNAVAILABLE", "检索服务未完成"),
     }
-    material = (plan or {}).get("expected_materials") or (
-        CHANGE_TYPES.get((plan or {}).get("change_type"), CHANGE_TYPES["general"]) or {}
-    ).get("materials", CHANGE_TYPES["general"]["materials"])
-    action = (plan or {}).get("gap_action", CHANGE_TYPES["general"]["action"])
+    material = (plan or {}).get("expected_materials") or "当前设备与软件范围内的公开工程资料"
+    action = (plan or {}).get("gap_action") or "请按已选设备型号和软件基线补充检索，并由工程师核实。"
     details = []
     seen = set()
     for trace, _rows in searches:
@@ -286,7 +263,7 @@ def _retrieval_gap_details(
         seen.add(key)
         gap_type, legacy_gap_code, label = definition
         suggested_query = trace["query"]
-        language_label = {"zh": "中文", "en": "英文"}.get(trace.get("language"), "")
+        language_label = "中文" if trace.get("language") == "zh" else ""
         suffix = f"（{language_label}检索）" if language_label else ""
         details.append({
             "gap_type": gap_type,
@@ -345,63 +322,6 @@ def _model_evidence_gap_details(advice: dict, *, expected_version: str | None = 
             "suggested_action": "请人工逐版本对照原文，确认当前适用版本及差异原因。",
             "requires_human_review": True,
         })
-    return details
-
-
-def _unverified_translation_gap_details(
-    sources: list[dict], *, expected_version: str | None = None,
-) -> list[dict]:
-    """Surface unverified bilingual relationships without inferring translation drift."""
-    details = []
-    seen: set[tuple[str, str]] = set()
-    for source in sources:
-        source_id = str(source.get("document_id") or "")
-        source_relations = source.get("document_relationships", []) or []
-        translation_relations = [
-            relation for relation in source_relations
-            if isinstance(relation, dict)
-            if relation.get("relation_type") == "translation_of"
-            and relation.get("verification_status") in {"candidate", "unknown"}
-        ]
-        # Community translations are useful searchable material, but their
-        # existence alone does not prove page-by-page or paragraph alignment.
-        if source.get("source_type") == "community_translation" and not translation_relations:
-            translation_relations = [{
-                "relation_type": "translation_of", "verification_status": "unknown",
-            }]
-        for relation in translation_relations:
-            left = str(relation.get("source_document_id") or "")
-            right = str(relation.get("target_document_id") or "")
-            counterpart = right if source_id == left else left if source_id == right else right or left
-            pair = tuple(sorted((source_id, counterpart or "unknown-counterpart")))
-            if pair in seen:
-                continue
-            seen.add(pair)
-            heading = source.get("heading") or source.get("document_key") or source_id
-            if counterpart:
-                description = (
-                    f"{heading} 的中英文对应关系待核验；当前只能提示可能存在对应页面，"
-                    "不能据此判定翻译漂移或内容不一致。"
-                )
-                suggested_query = f"核验对应语种资料：{counterpart}"
-            else:
-                description = (
-                    f"{heading} 来自社区中文译本，尚无经人工核实的英文对应关系；"
-                    "不能据此判定内容同步或漂移。"
-                )
-                suggested_query = f"按主题检索对应英文官方资料：{heading}"
-            details.append({
-                "gap_type": "UNVERIFIED_TRANSLATION",
-                "message": description,
-                "description": description,
-                "query": None,
-                "suggested_query": suggested_query,
-                "missing_source_type": "经人工确认的中英文对应关系",
-                "expected_version": source.get("version") or expected_version,
-                "expected_materials": "对应语种的同范围官方资料",
-                "suggested_action": "先人工确认两份资料确为同一内容范围，再检查版本和更新时间；未确认前不标记为同步遗漏。",
-                "requires_human_review": True,
-            })
     return details
 
 
@@ -527,36 +447,6 @@ def _generation_stage_status(advice_status: str) -> str:
     return "FAILED"
 
 
-def _confirmed_dsip_document_reference(
-    gateway: PublicKnowledgeGateway, selected: dict, current_version: str,
-) -> dict | None:
-    proposal = "proposals/dsip-107-proposal"
-    implementation = "proposals/dsip-107-implementation"
-    if selected["document_key"] not in (proposal, implementation):
-        return None
-    implementation_id = f"{current_version}:en:{implementation}"
-    source = next(
-        (
-            row for row in gateway.document(implementation_id)
-            if row["document_key"] == implementation
-            and row["source_url"] == "https://github.com/apache/dolphinscheduler/pull/18464"
-            and "independent part of DSIP #18454" in row["content"]
-        ),
-        None,
-    )
-    if source is None:
-        return None
-    return {
-        "relation_type": "DOCUMENT_REFERENCE",
-        "source_document_id": implementation_id,
-        "target_document_id": f"{current_version}:en:{proposal}",
-        "source_chunk_id": source["chunk_id"],
-        "source_heading": source["heading"],
-        "source_url": source["source_url"],
-        "source_excerpt": source["content"],
-    }
-
-
 class PublicReviewAgent:
     def __init__(self, gateway: PublicKnowledgeGateway):
         self.gateway = gateway
@@ -571,7 +461,7 @@ class PublicReviewAgent:
         objective: str | None = None,
         constraints: str | None = None,
         validation_plan: str | None = None,
-        language_mode: str = "bilingual",
+        language_mode: str = "zh",
         device_model: str | None = None,
         module_sku: str | None = None,
         carrier_board: str | None = None,
@@ -581,9 +471,9 @@ class PublicReviewAgent:
         summary = change_summary.strip()
         if not summary or len(summary) > 4000:
             raise ValueError("变更描述应为 1 到 4000 字")
-        if language_mode not in {"bilingual", "zh", "en"}:
-            raise ValueError("审查语言范围仅支持 bilingual、zh 或 en")
-        languages = ["zh", "en"] if language_mode == "bilingual" else [language_mode]
+        if language_mode != "zh":
+            raise ValueError("当前知识空间仅收录中文资料，请使用中文审查")
+        languages = ["zh"]
 
         plan = build_request_plan(summary, change_type=change_type, impact_scope=impact_scope)
         plan["language_mode"] = language_mode
@@ -655,44 +545,40 @@ class PublicReviewAgent:
         workspace = self.gateway.workspace()
         current_version = workspace["current_version"]
         repositories = _workspace_repositories(workspace)
-        edge_profile = None
-        source_registry = None
+        if workspace.get("workspace_id") != "edge_ai_device":
+            raise ValueError("当前工作台仅支持已配置的中文边缘 AI 设备知识空间")
+        edge_profile = load_change_profile(EDGE_CHANGE_PROFILE_PATH)
+        if (workspace.get("domain_profile") or {}).get("id") != edge_profile["id"]:
+            raise ValueError("Agent 领域配置与当前知识空间不匹配")
+        edge_profile["scope_options"] = {
+            "device_model": list(workspace.get("hardware_models", [])),
+            "module_sku": list(workspace.get("module_skus", [])),
+            "carrier_board": list(workspace.get("carrier_boards", [])),
+            "software_baseline": list(workspace.get("software_baselines", [])),
+        }
+        source_registry = workspace.get("source_registry")
+        if not isinstance(source_registry, list) or not source_registry:
+            raise ValueError("当前知识空间未提供可校验的来源清单")
         scope_values = {
             "device_model": device_model,
             "module_sku": module_sku,
             "carrier_board": carrier_board,
             "software_baseline": software_baseline,
         }
-        if workspace.get("workspace_id") == "edge_ai_device":
-            edge_profile = load_change_profile(EDGE_CHANGE_PROFILE_PATH)
-            if (workspace.get("domain_profile") or {}).get("id") != edge_profile["id"]:
-                raise ValueError("Agent 领域配置与当前知识空间不匹配")
-            if language_mode == "en":
-                raise ValueError("当前知识空间仅收录中文资料，请使用中文审查")
-            languages = ["zh"]
-            edge_profile["scope_options"] = {
-                "device_model": list(workspace.get("hardware_models", [])),
-                "module_sku": list(workspace.get("module_skus", [])),
-                "carrier_board": list(workspace.get("carrier_boards", [])),
-                "software_baseline": list(workspace.get("software_baselines", [])),
-            }
-            source_registry = workspace.get("source_registry")
-            if not isinstance(source_registry, list) or not source_registry:
-                raise ValueError("当前知识空间未提供可校验的来源清单")
+
         available_versions = [
             str(value) for value in workspace.get("available_versions", [current_version])
         ]
         selected_version = current_version if not target_version or target_version == "current" else target_version
         if selected_version not in available_versions:
             raise ValueError("目标版本不在当前知识空间的已收录版本中")
-        if edge_profile is not None:
-            plan = build_request_plan(
-                summary, change_type=change_type, impact_scope=impact_scope,
-                profile=edge_profile, device_model=device_model, module_sku=module_sku,
-                carrier_board=carrier_board, software_baseline=software_baseline,
-                target_snapshot=selected_version,
-            )
-            plan["language_mode"] = "zh"
+        plan = build_request_plan(
+            summary, change_type=change_type, impact_scope=impact_scope,
+            profile=edge_profile, device_model=device_model, module_sku=module_sku,
+            carrier_board=carrier_board, software_baseline=software_baseline,
+            target_snapshot=selected_version,
+        )
+        plan["language_mode"] = "zh"
         allowed_versions = _scope_versions(workspace, selected_version)
         context_values = {}
         for name, raw_value in (
@@ -718,7 +604,7 @@ class PublicReviewAgent:
             json.dumps({
                 "version": selected_version, "change_type": plan["change_type"],
                 "impact_scope": plan["impact_scope"], "summary": summary,
-                "language_mode": "zh" if edge_profile is not None else language_mode,
+                "language_mode": "zh",
                 "device_scope": plan.get("device_scope"),
                 **context_values,
             }, ensure_ascii=False, sort_keys=True)
@@ -740,7 +626,7 @@ class PublicReviewAgent:
                 try:
                     search_result = self.gateway.search(
                         search_query, version=selected_version, language=language, top_k=5,
-                        **(scope_values if edge_profile is not None else {}),
+                        **scope_values,
                     )
                     retrieval_policy = search_result.get("retrieval_policy", retrieval_policy)
                     rows = [
@@ -821,29 +707,25 @@ class PublicReviewAgent:
                 f"\n检索覆盖状态：{'完整' if coverage['complete'] else '不完整'}"
                 f"\n审查边界：{coverage['incomplete_reason'] or '仅把引用资料列为待核对候选，最终由人工确认'}"
             )
-            if edge_profile is not None:
-                scope = plan["device_scope"]
-                scope_text = "；".join(f"{key}={value or '未指定'}" for key, value in scope.items())
-                advice_summary += (
-                    f"\n设备范围：{scope_text}"
-                    "\n安全约束：只列有本次证据支持的待核对候选；不得将缺少证据解释为兼容、无影响或已通过验证；"
-                    "资料没有明确给出设备与软件组合时，必须作为证据缺口交由工程师实测确认。"
-                )
+            scope = plan["device_scope"]
+            scope_text = "；".join(f"{key}={value or '未指定'}" for key, value in scope.items())
+            advice_summary += (
+                f"\n设备范围：{scope_text}"
+                "\n安全约束：只列有本次证据支持的待核对候选；不得将缺少证据解释为兼容、无影响或已通过验证；"
+                "资料没有明确给出设备与软件组合时，必须作为证据缺口交由工程师实测确认。"
+            )
             evidence_ids = [row["chunk_id"] for row in candidates]
             versioned_review = getattr(self.gateway, "review_advice_for_version", None)
             if callable(versioned_review):
                 advice = versioned_review(
                     advice_summary, evidence_ids, version=selected_version,
-                    **(scope_values if edge_profile is not None else {}),
+                    **scope_values,
                 )
             else:
                 advice_method = self.gateway.review_advice
-                if edge_profile is not None:
-                    advice = advice_method(
-                        advice_summary, evidence_ids, version=selected_version, **scope_values,
-                    )
-                else:
-                    advice = advice_method(advice_summary, evidence_ids)
+                advice = advice_method(
+                    advice_summary, evidence_ids, version=selected_version, **scope_values,
+                )
         except Exception:
             # Model assistance is optional; the underlying RAG candidates remain visible.
             advice = {"status": "GENERATION_PROVIDER_UNAVAILABLE", "answer": "N/A", "sources": []}
@@ -853,13 +735,9 @@ class PublicReviewAgent:
         )
         retrieval_trace["model_status"] = advice.get("status", "UNKNOWN")
         model_gap_details = _model_evidence_gap_details(advice, expected_version=selected_version)
-        translation_gap_details = _unverified_translation_gap_details(
-            candidates, expected_version=selected_version,
-        )
         evidence_gap_details.extend(model_gap_details)
-        evidence_gap_details.extend(translation_gap_details)
         evidence_gap_details.extend(validation_gap_details)
-        evidence_gaps.extend(row["message"] for row in [*model_gap_details, *translation_gap_details, *validation_gap_details])
+        evidence_gaps.extend(row["message"] for row in [*model_gap_details, *validation_gap_details])
 
         return {
             "task_id": task_id,
@@ -896,20 +774,15 @@ class PublicReviewAgent:
         current_version = workspace["current_version"]
         repositories = _workspace_repositories(workspace)
         allowed_versions = _scope_versions(workspace, current_version)
-        edge_profile = workspace.get("workspace_id") == "edge_ai_device"
-        source_registry = workspace.get("source_registry") if edge_profile else None
-        if edge_profile:
-            source_is_trusted = _official_hit(
-                selected, current_version, repositories, allowed_versions=allowed_versions,
-                allowed_sources=source_registry if isinstance(source_registry, list) else [],
-            )
-        else:
-            source_is_trusted = (
-                selected.get("version") in allowed_versions
-                and selected.get("repository") in repositories
-                and urlsplit(str(selected.get("source_url") or "")).scheme == "https"
-                and urlsplit(str(selected.get("source_url") or "")).netloc == "github.com"
-            )
+        if workspace.get("workspace_id") != "edge_ai_device":
+            raise ValueError("当前工作台仅支持已配置的中文边缘 AI 设备知识空间")
+        source_registry = workspace.get("source_registry")
+        if not isinstance(source_registry, list) or not source_registry:
+            raise ValueError("当前知识空间未提供可校验的来源清单")
+        source_is_trusted = _official_hit(
+            selected, current_version, repositories, allowed_versions=allowed_versions,
+            allowed_sources=source_registry,
+        )
         if selected.get("version") not in allowed_versions:
             raise ValueError("只能选择当前知识空间最新已收录范围内的资料")
         if not source_is_trusted:
@@ -935,21 +808,20 @@ class PublicReviewAgent:
             "module_sku": module_sku,
             "carrier_board": carrier_board,
             "software_baseline": software_baseline,
-        } if edge_profile else {}
-        if edge_profile:
-            scope_options = {
-                "device_model": workspace.get("hardware_models", []),
-                "module_sku": workspace.get("module_skus", []),
-                "carrier_board": workspace.get("carrier_boards", []),
-                "software_baseline": workspace.get("software_baselines", []),
-            }
-            for field, value in scope_values.items():
-                if value is not None and value not in scope_options[field]:
-                    raise ValueError(f"{field} 不在当前知识空间的可选范围中")
+        }
+        scope_options = {
+            "device_model": workspace.get("hardware_models", []),
+            "module_sku": workspace.get("module_skus", []),
+            "carrier_board": workspace.get("carrier_boards", []),
+            "software_baseline": workspace.get("software_baselines", []),
+        }
+        for field, value in scope_values.items():
+            if value is not None and value not in scope_options[field]:
+                raise ValueError(f"{field} 不在当前知识空间的可选范围中")
         try:
             retrieved = self.gateway.search(
                 related_query,
-                version=current_version, language="zh" if edge_profile else "all", top_k=12,
+                version=current_version, language="zh", top_k=12,
                 **scope_values,
             )["results"]
         except Exception:
@@ -960,12 +832,9 @@ class PublicReviewAgent:
             if row["chunk_id"] != selected["chunk_id"]
             and _official_hit(
                 row, current_version, repositories, allowed_versions=allowed_versions,
-                allowed_sources=source_registry if isinstance(source_registry, list) else None,
+                allowed_sources=source_registry,
             )
         ][:5]
-        document_reference = None if edge_profile else _confirmed_dsip_document_reference(
-            self.gateway, selected, current_version
-        )
         impacts = self.gateway.engineering_impacts({
             "changed_item_id": selected["chunk_id"],
             "items": [old_item] + [_item(row, row["content"]) for row in related],
@@ -986,7 +855,7 @@ class PublicReviewAgent:
             try:
                 review_advice = self.gateway.review_advice(
                     change_summary, [row["chunk_id"] for row in related],
-                    **({"version": current_version, **scope_values} if edge_profile else {}),
+                    version=current_version, **scope_values,
                 )
             except Exception:
                 # Optional model advice must never block the deterministic review flow.
@@ -1016,9 +885,6 @@ class PublicReviewAgent:
         model_gap_details = _model_evidence_gap_details(
             review_advice, expected_version=current_version,
         )
-        translation_gap_details = _unverified_translation_gap_details(
-            related, expected_version=current_version,
-        )
         exact_retrieval_gap_details = [] if related else [{
             "gap_type": "RETRIEVAL_FAILED" if retrieval_failed else "NO_REQUIRED_SOURCE",
             "legacy_gap_code": "SEARCH_UNAVAILABLE" if retrieval_failed else "NO_RELATED_MATERIAL",
@@ -1036,8 +902,7 @@ class PublicReviewAgent:
             "requires_human_review": True,
         }]
         all_gap_details = [
-            *exact_retrieval_gap_details, *model_gap_details, *translation_gap_details,
-            *invalid_citation_gaps,
+            *exact_retrieval_gap_details, *model_gap_details, *invalid_citation_gaps,
         ]
         return {
             "task_id": task_id,
@@ -1063,7 +928,7 @@ class PublicReviewAgent:
                 ),
                 "evidence": by_id[row["impacted_item_id"]],
             } for row in impacts],
-            "confirmed_relations": [document_reference] if document_reference else [],
+            "confirmed_relations": [],
             "patch_candidate": {
                 "target_chunk_id": selected["chunk_id"],
                 "before": selected["content"], "proposed_after": proposed,

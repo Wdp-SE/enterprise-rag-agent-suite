@@ -61,15 +61,19 @@ def test_client_catalog_scope_and_diff_contracts():
     }
 
 
-def test_streamlit_exposes_scope_and_version_diff_controls(monkeypatch):
-    monkeypatch.setenv("DEMO_RAG_BASE_URL", "http://127.0.0.1:1")
+def test_streamlit_exposes_current_edge_knowledge_and_review_controls(monkeypatch):
+    monkeypatch.setenv("RAG_API_BASE_URL", "http://127.0.0.1:1")
     monkeypatch.setenv("DEMO_REQUEST_TIMEOUT_SECONDS", "0.2")
     app = AppTest.from_file(Path(__file__).parents[1] / "app.py", default_timeout=60).run()
     assert not app.exception
-    labels = [item.label for item in app.radio]
-    assert "检索范围" in labels
-    assert "知识服务功能" in labels
-    assert any("版本对比" in item.label for item in app.expander)
+    navigation = {item.label for item in app.button}
+    assert {"版本化知识检索", "版本与历史", "发起变更审查"} <= navigation
+
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+    assert not app.exception
+    selectors = {item.label for item in app.selectbox}
+    assert {"版本范围", "资料语言", "示例问题（选择后可编辑）"} <= selectors
+    assert any(item.label == "只想核对原文？" for item in app.expander)
 
 
 

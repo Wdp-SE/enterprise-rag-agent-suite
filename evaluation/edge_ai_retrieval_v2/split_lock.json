@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "dataset_id": "edge_ai_retrieval_v2",
+  "case_count": 22,
+  "split_counts": {
+    "dev": 11,
+    "holdout": 11
+  },
+  "case_ids": [
+    "backup_restore_j4012",
+    "deepseek_mlc_deployment",
+    "flash_center_integrity_check",
+    "flash_center_prerequisites",
+    "industrial_j4012_specs",
+    "industrial_vision_deployment",
+    "j20_interface_details",
+    "j20_j40_interface_change",
+    "j30_j40_system_logs",
+    "j4012_flash_guide",
+    "j4012_l4t_support",
+    "j4012_upgrade_and_flash_sources",
+    "j40_j30_interface_details",
+    "jetpack5_ssd_boot_recovery",
+    "jetpack_jetson_relation",
+    "jetson_flash_troubleshooting",
+    "jetson_package_upgrade",
+    "preempt_rt_build_validation",
+    "private_factory_aging_result",
+    "private_ota_rollback_rate",
+    "recomputer_ota_flow",
+    "seeed_bsp_build"
+  ],
+  "family_splits": {
+    "cross:seeed-j4012-flash-jetpack+seeed-jetson-supported-devices": "dev",
+    "cross:seeed-recomputer-industrial-j20-interfaces+seeed-recomputer-industrial-j40-j30-interfaces": "holdout",
+    "negative:internal_factory_test": "dev",
+    "negative:internal_ota_validation": "holdout",
+    "source:seeed-industrial-vision-monitoring": "holdout",
+    "source:seeed-j4012-flash-jetpack": "dev",
+    "source:seeed-jetpack-jetson-version-relations": "dev",
+    "source:seeed-jetpack5-ssd-boot-troubleshooting": "holdout",
+    "source:seeed-jetson-bsp-build": "dev",
+    "source:seeed-jetson-flash-firmware": "dev",
+    "source:seeed-jetson-flashing-troubleshooting": "dev",
+    "source:seeed-jetson-package-upgrade-guidance": "dev",
+    "source:seeed-jetson-supported-devices": "dev",
+    "source:seeed-recomputer-backup-restore": "holdout",
+    "source:seeed-recomputer-industrial-getting-started": "dev",
+    "source:seeed-recomputer-industrial-j20-interfaces": "holdout",
+    "source:seeed-recomputer-industrial-j40-j30-interfaces": "holdout",
+    "source:seeed-recomputer-j30-j40-system-logs": "holdout",
+    "source:seeed-recomputer-jetson-deepseek-mlc": "holdout",
+    "source:seeed-recomputer-ota": "holdout",
+    "source:seeed-recomputer-preempt-rt-jp621": "holdout"
+  },
+  "strategy_allowlist": [
+    "bm25",
+    "bm25_faceted_rrf"
+  ],
+  "input_fingerprints": {
+    "corpus_manifest_sha256": "d7ebb136d951249ae7cdb13caf9d36ab91a2dad98c98f05cc92ebe96edf20ac9",
+    "chunks_sha256": "edb184f9be1f3bcbccde364f9d95fda95d9dbcf38327011ca838cc41093d3af4",
+    "dense_vectors_sha256": "eaff3ee94e1d006693991c84205fda48f73fe22ec0ea305d4b79f0a0da7de24d",
+    "retrieval_policy_sha256": "451d4810099fa1be7437fadcf65d380f5f09d61051e4defbfe55f434745f5abf",
+    "runtime_config_sha256": "18238d80a4e780e1ce4192525977a93131251ef5f6f5b3b90ab974244880786d",
+    "cases_sha256": "8d2fbc84e0b46e2390ad9fab942f9a1276cac92112a9ef208761266f3c8072e4",
+    "code:evaluation/edge_ai_retrieval_v2/run_evaluation.py": "eb42dc687868f3569049565673cea63b038e2b995b338c46c5a30d3e65dd5c65",
+    "code:versioned-rag-service/src/public_knowledge.py": "4ea67695bb481cdcda9db3e6ed660b0b559146577b4394432fff40548b01a8f4",
+    "code:versioned-rag-service/src/public_retrieval_runtime.py": "70dc4ab2fda9f67ae53884ddda51af411779fbf02afd14eaeaa7e9689f2f1c8e",
+    "code:versioned-rag-service/src/retrieval_fusion.py": "da65e1d5043f7e29e76d88cf02676fda8ec9be811b6f7d5965b5cdce4120ca8f"
+  },
+  "split_note": "Source-document families are held wholly in DEV or HOLDOUT; HOLDOUT is not used to tune query cases or policies."
+}

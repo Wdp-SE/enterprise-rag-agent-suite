@@ -43,30 +43,35 @@ def _module():
 
 
 def _corpus(tmp_path: Path) -> Path:
-    root = tmp_path / "public_corpus"
-    document_path = "docs/docs/zh/guide/parameter/priority.md"
-    local_path = "sources/3.4.3/zh/guide/parameter/priority.md"
+    root = tmp_path / "edge_ai_corpus"
+    document_path = "docs/cn/device/parameter/priority.md"
+    local_path = "sources/wiki-test-snapshot/zh/device/parameter/priority.md"
     source = root / local_path
     source.parent.mkdir(parents=True)
     source.write_text(
         "# 优先级\n\n"
-        "![参数图](../../../../img/new_ui/dev/parameter/priority_parameter01.png)\n"
-        "![同一张图](../../../../img/new_ui/dev/parameter/priority_parameter01.png)\n"
+        "![参数图](../../../../img/device/parameter/priority.png)\n"
+        "![同一张图](../../../../img/device/parameter/priority.png)\n"
         "![站外图](https://other.example/figure.png)\n",
         encoding="utf-8",
     )
     manifest = {
         "source_count": 1,
-        "current_version": "3.4.3",
+        "workspace_id": "edge_ai_device",
+        "workspace": "Edge AI documentation",
+        "repository": "Seeed-Studio/wiki-documents",
+        "current_version": "wiki-test-snapshot",
+        "commits": {"wiki-test-snapshot": COMMIT},
         "sources": [{
-            "document_key": "guide/parameter/priority",
-            "version": "3.4.3",
+            "document_key": "device/parameter/priority",
+            "version": "wiki-test-snapshot",
             "commit": COMMIT,
             "language": "zh",
             "source_type": "official_documentation",
-            "repository": "apache/dolphinscheduler",
+            "repository": "Seeed-Studio/wiki-documents",
             "document_path": document_path,
             "local_path": local_path,
+            "source_url": "https://wiki.seeedstudio.com/cn/device/parameter/priority/",
             "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         }],
     }
@@ -77,14 +82,7 @@ def _corpus(tmp_path: Path) -> Path:
 
 
 def _manifest(root: Path) -> dict:
-    manifest = json.loads((root / "corpus_manifest.json").read_text(encoding="utf-8"))
-    manifest["commits"] = {"3.4.3": COMMIT}
-    source = manifest["sources"][0]
-    source["source_url"] = (
-        f"https://github.com/apache/dolphinscheduler/blob/{COMMIT}/"
-        f"{source['document_path']}"
-    )
-    return manifest
+    return json.loads((root / "corpus_manifest.json").read_text(encoding="utf-8"))
 
 
 def _reviewed_figure(root: Path) -> dict:
@@ -106,10 +104,10 @@ def _reviewed_figure(root: Path) -> dict:
 
 def test_resolve_pinned_relative_image_without_accepting_external_or_escape():
     module = _module()
-    source = "docs/docs/zh/guide/parameter/priority.md"
+    source = "docs/cn/device/parameter/priority.md"
     assert module.resolve_asset_path(
-        source, "../../../../img/new_ui/dev/parameter/priority_parameter01.png"
-    ) == "docs/img/new_ui/dev/parameter/priority_parameter01.png"
+        source, "../../../../img/device/parameter/priority.png"
+    ) == "img/device/parameter/priority.png"
     assert module.resolve_asset_path(source, "https://example.org/image.png") is None
     assert module.resolve_asset_path(source, "../../../../../../private.png") is None
 
@@ -123,11 +121,11 @@ def test_inventory_groups_same_asset_and_does_not_turn_alt_into_ocr(tmp_path):
     assert len(inventory["figures"]) == 1
     figure = inventory["figures"][0]
     assert figure["asset_path"] == (
-        "docs/img/new_ui/dev/parameter/priority_parameter01.png"
+        "img/device/parameter/priority.png"
     )
     assert figure["raw_url"] == (
-        "https://raw.githubusercontent.com/apache/dolphinscheduler/"
-        f"{COMMIT}/docs/img/new_ui/dev/parameter/priority_parameter01.png"
+        "https://raw.githubusercontent.com/Seeed-Studio/wiki-documents/"
+        f"{COMMIT}/img/device/parameter/priority.png"
     )
     assert len(figure["references"]) == 2
     assert figure["references"][0]["heading"] == "优先级"
@@ -135,35 +133,36 @@ def test_inventory_groups_same_asset_and_does_not_turn_alt_into_ocr(tmp_path):
     assert "text" not in figure["ocr"]
 
 
-def test_autoware_markdown_inventory_uses_manifest_repository_and_commit(tmp_path):
+def test_markdown_inventory_uses_manifest_repository_and_commit(tmp_path):
     module = _module()
-    root = tmp_path / "autoware"
-    source_path = "planning/behavior_planner/README.md"
-    local_path = "sources/0.52.0/en/planning/behavior_planner/README.md"
+    root = tmp_path / "edge_ai_corpus"
+    source_path = "cn/device/vision/README.md"
+    local_path = "sources/wiki-test-snapshot/zh/device/vision/README.md"
     source = root / local_path
     source.parent.mkdir(parents=True)
     source.write_text(
-        "# Behavior Planner\n\n"
-        "![Trajectory states](images/trajectory_states.png)\n",
+        "# Industrial vision\n\n"
+        "![Camera layout](images/camera_layout.png)\n",
         encoding="utf-8",
     )
     commit = "b" * 40
     manifest = {
         "source_count": 1,
-        "workspace": "Autoware",
-        "repository": "autowarefoundation/autoware_universe",
-        "current_version": "0.52.0",
-        "commits": {"0.52.0": commit},
+        "workspace_id": "edge_ai_device",
+        "workspace": "Edge AI documentation",
+        "repository": "Seeed-Studio/wiki-documents",
+        "current_version": "wiki-test-snapshot",
+        "commits": {"wiki-test-snapshot": commit},
         "sources": [{
-            "document_key": "planning/behavior_planner",
-            "version": "0.52.0",
+            "document_key": "device/vision",
+            "version": "wiki-test-snapshot",
             "commit": commit,
-            "language": "en",
+            "language": "zh",
             "source_type": "official_documentation",
-            "repository": "autowarefoundation/autoware_universe",
+            "repository": "Seeed-Studio/wiki-documents",
             "document_path": source_path,
             "local_path": local_path,
-            "source_url": f"https://github.com/autowarefoundation/autoware_universe/blob/{commit}/{source_path}",
+            "source_url": "https://wiki.seeedstudio.com/cn/device/vision/",
             "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         }],
     }
@@ -173,11 +172,11 @@ def test_autoware_markdown_inventory_uses_manifest_repository_and_commit(tmp_pat
 
     assert inventory["unique_figure_count"] == 1
     figure = inventory["figures"][0]
-    assert figure["repository"] == "autowarefoundation/autoware_universe"
-    assert figure["asset_path"] == "planning/behavior_planner/images/trajectory_states.png"
+    assert figure["repository"] == "Seeed-Studio/wiki-documents"
+    assert figure["asset_path"] == "cn/device/vision/images/camera_layout.png"
     assert figure["raw_url"] == (
-        f"https://raw.githubusercontent.com/autowarefoundation/autoware_universe/{commit}/"
-        "planning/behavior_planner/images/trajectory_states.png"
+        f"https://raw.githubusercontent.com/Seeed-Studio/wiki-documents/{commit}/"
+        "cn/device/vision/images/camera_layout.png"
     )
 
 
@@ -216,18 +215,18 @@ def test_fetch_records_sha_and_real_ocr_only_when_returned(tmp_path):
 def test_svg_diagram_text_is_extracted_as_unreviewed_candidate():
     module = _module()
     inventory = {
-        "current_version": "0.52.0",
+        "current_version": "wiki-test-snapshot",
         "figures": [{
-            "version": "0.52.0", "asset_path": "planning/start_planner/flow.svg",
+            "version": "wiki-test-snapshot", "asset_path": "device/startup/flow.svg",
             "raw_url": "https://example.test/flow.svg",
-            "references": [{"document_key": "planning/start_planner/design"}],
+            "references": [{"document_key": "device/startup/design"}],
             "validation": {"status": "unverified"}, "ocr": {"status": "not_run"},
         }],
     }
     svg = b'<svg xmlns="http://www.w3.org/2000/svg"><text>Outside drivable area</text><text><tspan>Obstacle</tspan> stop</text></svg>'
 
     result = module.verify_selected_images(
-        inventory, selectors=("planning/start_planner/flow.svg",),
+        inventory, selectors=("device/startup/flow.svg",),
         fetcher=lambda _url, _cap: (svg, "image/svg+xml"),
     )
 
@@ -269,16 +268,16 @@ def test_svg_text_extraction_rejects_dtd_and_entities():
 def test_auto_selection_prefers_relevant_raster_figures_and_is_bounded():
     module = _module()
     inventory = {
-        "current_version": "0.52.0",
+        "current_version": "wiki-test-snapshot",
         "figures": [
-            {"version": "0.52.0", "asset_path": "planning/start_planner/flow.drawio.svg",
-             "raw_url": "https://example.test/flow.svg", "references": [{"document_key": "planning/start_planner/design"}],
+            {"version": "wiki-test-snapshot", "asset_path": "device/startup/flow.drawio.svg",
+             "raw_url": "https://example.test/flow.svg", "references": [{"document_key": "device/startup/design"}],
              "validation": {"status": "unverified"}, "ocr": {"status": "not_run"}},
-            {"version": "0.52.0", "asset_path": "planning/start_planner/trajectory.png",
-             "raw_url": "https://example.test/trajectory.png", "references": [{"document_key": "planning/start_planner/design"}],
+            {"version": "wiki-test-snapshot", "asset_path": "device/startup/trajectory.png",
+             "raw_url": "https://example.test/trajectory.png", "references": [{"document_key": "device/startup/design"}],
              "validation": {"status": "unverified"}, "ocr": {"status": "not_run"}},
-            {"version": "0.51.0", "asset_path": "planning/start_planner/old.png",
-             "raw_url": "https://example.test/old.png", "references": [{"document_key": "planning/start_planner/design"}],
+            {"version": "wiki-previous-snapshot", "asset_path": "device/startup/old.png",
+             "raw_url": "https://example.test/old.png", "references": [{"document_key": "device/startup/design"}],
              "validation": {"status": "unverified"}, "ocr": {"status": "not_run"}},
         ],
     }
@@ -295,16 +294,9 @@ def test_auto_selection_prefers_relevant_raster_figures_and_is_bounded():
     assert result["figures"][0]["ocr"]["status"] == "not_run"
 
 
-def test_selected_figure_sample_is_stratified_and_bounded():
+def test_selected_figure_sample_is_empty_until_current_sources_have_images():
     module = _module()
-    paths = module.SELECTED_FIGURES
-    assert len(paths) == 20
-    assert len(set(paths)) == 20
-    assert any("parameter" in path for path in paths)
-    assert any("project" in path for path in paths)
-    assert any("monitor" in path for path in paths)
-    assert any("open-api" in path for path in paths)
-    assert any("tasks" in path for path in paths)
+    assert module.SELECTED_FIGURES == ()
 
 
 def test_reviewed_builder_accepts_only_pinned_approved_ocr(tmp_path):
@@ -320,45 +312,45 @@ def test_reviewed_builder_accepts_only_pinned_approved_ocr(tmp_path):
     assert hit["modality"] == "image_ocr"
     assert hit["review_status"] == "approved"
     assert hit["content"] == "MAX_RETRY = 3"
-    assert hit["version"] == "3.4.3"
+    assert hit["version"] == "wiki-test-snapshot"
     assert hit["heading"] == "优先级"
     assert hit["sha256"] == "a" * 64
-    assert hit["raw_url"].endswith(f"/{COMMIT}/docs/img/new_ui/dev/parameter/priority_parameter01.png")
+    assert hit["raw_url"].endswith(f"/{COMMIT}/img/device/parameter/priority.png")
 
 
-def test_reviewed_builder_accepts_commit_bound_autoware_figure_evidence(tmp_path):
+def test_reviewed_builder_accepts_commit_bound_edge_ai_figure_evidence(tmp_path):
     module = _module()
-    root = tmp_path / "autoware"
-    repository = "autowarefoundation/autoware_universe"
+    root = tmp_path / "edge_ai_corpus"
+    repository = "Seeed-Studio/wiki-documents"
     commit = "b" * 40
-    source_path = "planning/behavior_planner/README.md"
-    local_path = "sources/0.52.0/en/planning/behavior_planner/README.md"
+    source_path = "cn/device/vision/README.md"
+    local_path = "sources/wiki-test-snapshot/zh/device/vision/README.md"
     source = root / local_path
     source.parent.mkdir(parents=True)
     source.write_text("# Behavior Planner\n", encoding="utf-8")
-    source_url = f"https://github.com/{repository}/blob/{commit}/{source_path}"
+    source_url = "https://wiki.seeedstudio.com/cn/device/vision/"
     manifest = {
-        "commits": {"0.52.0": commit},
+        "commits": {"wiki-test-snapshot": commit},
         "sources": [{
-            "repository": repository, "version": "0.52.0", "commit": commit,
-            "document_key": "planning/behavior_planner", "language": "en",
+            "repository": repository, "version": "wiki-test-snapshot", "commit": commit,
+            "document_key": "device/vision", "language": "zh",
             "source_type": "official_documentation", "document_path": source_path,
             "local_path": local_path, "source_url": source_url,
         }],
     }
     row = {
-        "schema_version": 1, "figure_id": "figure-autoware-1", "repository": repository,
-        "version": "0.52.0", "commit": commit,
-        "asset_path": "planning/behavior_planner/images/trajectory_states.png",
-        "raw_url": f"https://raw.githubusercontent.com/{repository}/{commit}/planning/behavior_planner/images/trajectory_states.png",
+        "schema_version": 1, "figure_id": "figure-edge-ai-1", "repository": repository,
+        "version": "wiki-test-snapshot", "commit": commit,
+        "asset_path": "cn/device/vision/images/trajectory_states.png",
+        "raw_url": f"https://raw.githubusercontent.com/{repository}/{commit}/cn/device/vision/images/trajectory_states.png",
         "references": [{
-            "document_key": "planning/behavior_planner", "language": "en",
+            "document_key": "device/vision", "language": "zh",
             "local_path": local_path, "line": 4, "heading": "Trajectory validation",
         }],
         "validation": {"status": "verified", "sha256": "c" * 64},
         "ocr": {"status": "text_extracted", "engine": "tesseract", "index_review_status": "approved"},
         "review": {"status": "approved", "sha256": "c" * 64,
-                   "reviewed_text": "Trajectory status: validated", "reviewed_at": "2026-09-30T00:00:00Z"},
+                   "reviewed_text": "设备图像证据经人工复核", "reviewed_at": "2026-09-30T00:00:00Z"},
     }
 
     chunks = module.build_reviewed_figure_chunks([row], manifest)
@@ -396,7 +388,7 @@ def test_reviewed_builder_rejects_unreviewed_or_mismatched_image_rows(tmp_path):
     assert chunks == []
 
 
-def test_reviewed_builder_keeps_language_specific_transcriptions(tmp_path):
+def test_generic_reviewed_builder_keeps_language_specific_transcriptions(tmp_path):
     module = _module()
     root = _corpus(tmp_path)
     row = _reviewed_figure(root)
@@ -405,9 +397,9 @@ def test_reviewed_builder_keeps_language_specific_transcriptions(tmp_path):
         "en": "The parameter output is MAX_RETRY = 3",
     }
     row["references"].append({
-        "document_key": "guide/parameter/priority",
+        "document_key": "device/parameter/priority",
         "language": "en",
-        "local_path": "sources/3.4.3/en/guide/parameter/priority.md",
+        "local_path": "sources/wiki-test-snapshot/en/device/parameter/priority.md",
         "line": 2,
         "heading": "Priority",
     })
@@ -415,9 +407,9 @@ def test_reviewed_builder_keeps_language_specific_transcriptions(tmp_path):
     en_source = deepcopy(manifest["sources"][0])
     en_source.update({
         "language": "en",
-        "local_path": "sources/3.4.3/en/guide/parameter/priority.md",
-        "document_path": "docs/docs/en/guide/parameter/priority.md",
-        "source_url": f"https://github.com/apache/dolphinscheduler/blob/{COMMIT}/docs/docs/en/guide/parameter/priority.md",
+        "local_path": "sources/wiki-test-snapshot/en/device/parameter/priority.md",
+        "document_path": "docs/en/device/parameter/priority.md",
+        "source_url": f"https://example.invalid/docs/{COMMIT}/device/parameter/priority.md",
     })
     manifest["sources"].append(en_source)
 

@@ -28,7 +28,7 @@ from urllib.parse import quote, unquote, urlsplit
 from urllib.request import Request, urlopen
 
 
-ROOT = Path(__file__).resolve().parents[1] / "public_corpus"
+ROOT = Path(__file__).resolve().parents[1] / "public_corpus_edge_ai"
 MAX_IMAGE_BYTES = 2_000_000
 _COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _MARKDOWN_IMAGE = re.compile(
@@ -39,29 +39,9 @@ _HTML_IMAGE = re.compile(r"<img\b[^>]*\bsrc\s*=\s*['\"](?P<url>[^'\"]+)['\"][^>]
 _HTML_ALT = re.compile(r"\balt\s*=\s*['\"](?P<alt>[^'\"]*)['\"]", re.I)
 _HEADING = re.compile(r"^\s{0,3}(?P<marks>#{1,6})\s+(?P<title>.+?)\s*#*\s*$")
 
-# Stratified sample spanning parameter, project, task, monitoring, and API figures.
-SELECTED_FIGURES = (
-    "docs/img/new_ui/dev/parameter/priority_parameter01.png",
-    "docs/img/new_ui/dev/parameter/context_parameter01.png",
-    "docs/img/new_ui/dev/parameter/context_parameter02.png",
-    "docs/img/new_ui/dev/parameter/context_log01.png",
-    "docs/img/new_ui/dev/parameter/context_log02.png",
-    "docs/img/new_ui/dev/parameter/context_log03.png",
-    "docs/img/new_ui/dev/parameter/context-sub-workflow01.png",
-    "docs/img/new_ui/dev/parameter/context-sub-workflow05.png",
-    "docs/img/new_ui/dev/project/instance-parameter.png",
-    "docs/img/new_ui/dev/project/workflow-task-run-config.png",
-    "docs/img/new_ui/dev/project/workflow-tree.png",
-    "docs/img/new_ui/dev/project/workflow-time01.png",
-    "docs/img/tasks/demo/dependent_task01.png",
-    "docs/img/tasks/demo/dependent_task02.png",
-    "docs/img/tasks/demo/condition_task01.png",
-    "docs/img/new_ui/dev/monitor/failure-command-list.png",
-    "docs/img/new_ui/dev/monitor/command-list.png",
-    "docs/img/new_ui/dev/monitor/audit-log.png",
-    "docs/img/new_ui/dev/open-api/api_doc.png",
-    "docs/img/new_ui/dev/open-api/api_test.png",
-)
+# The active Seeed snapshot currently has no image references in indexed source pages.
+# Keep selection empty until the corpus inventory contains auditable image assets.
+SELECTED_FIGURES: tuple[str, ...] = ()
 
 
 class ImageTooLarge(ValueError):
@@ -431,7 +411,7 @@ def verify_selected_images(
 ) -> dict:
     """Fetch a bounded sample; no image binaries or alt-derived OCR are retained."""
     if selectors is None:
-        relevant = re.compile(r"(?:planning|planner|validator|trajectory|behavior_path)", re.I)
+        relevant = re.compile(r"(?:device|vision|jetson|flashing|camera|startup)", re.I)
         candidates = [
             row for row in inventory["figures"]
             if row["version"] == inventory["current_version"]
@@ -599,8 +579,12 @@ def build_reviewed_figure_chunks(rows: list[dict], manifest: dict) -> list[dict]
             source = sources.get((version, commit, document_key, language))
             if not source:
                 continue
-            expected_source = f"https://github.com/{repository}/blob/{commit}/{quote(source['document_path'], safe='/-._')}"
-            if source.get("source_url") != expected_source:
+            source_url = source.get("source_url")
+            parsed_source_url = urlsplit(source_url) if isinstance(source_url, str) else None
+            if (
+                parsed_source_url is None or parsed_source_url.scheme != "https"
+                or not parsed_source_url.hostname or not parsed_source_url.path
+            ):
                 continue
             chunk_id = hashlib.sha256(
                 (
@@ -629,7 +613,7 @@ def build_reviewed_figure_chunks(rows: list[dict], manifest: dict) -> list[dict]
                 "ocr_mean_confidence": ocr.get("mean_confidence"),
                 "sha256": sha256,
                 "content": text.strip(),
-                "source_url": source["source_url"],
+                "source_url": source_url,
                 "raw_url": expected_raw,
             })
     return chunks

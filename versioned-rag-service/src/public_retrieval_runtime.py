@@ -17,14 +17,18 @@ POLICIES = {
     "bm25", "bm25_faceted_rrf", "bm25_figure_ocr",
     "bm25_faceted_figure_ocr", "hybrid",
 }
-DEFAULT_CONFIG = Path(__file__).resolve().parents[1] / "config" / "public_retrieval_runtime.json"
+DEFAULT_CONFIG = Path(__file__).resolve().parents[1] / "public_corpus_edge_ai" / "public_retrieval_runtime.json"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 class PublicRetrievalRuntime:
     """Adds bounded facets and approved image OCR without mutating V3 artifacts."""
 
-    def __init__(self, base_index, *, config_path: Path | None = None, sidecar_path: Path | None = None):
+    def __init__(
+        self, base_index, *, config_path: Path | None = None,
+        sidecar_path: Path | None = None, inventory_path: Path | None = None,
+        sidecar_data: dict | None = None, inventory_data: dict | None = None,
+    ):
         self.base_index = base_index
         self.root = base_index.root
         self.manifest = base_index.manifest
@@ -32,10 +36,17 @@ class PublicRetrievalRuntime:
         self.policy = base_index.policy
         self.config_path = Path(config_path or DEFAULT_CONFIG)
         self.sidecar_path = Path(sidecar_path or self.root / "figure_evidence_reviewed.json")
+        self.inventory_path = Path(inventory_path or self.root / "figure_evidence.json")
         try:
             self.config = json.loads(self.config_path.read_text(encoding="utf-8"))
-            self.sidecar = json.loads(self.sidecar_path.read_text(encoding="utf-8"))
-            inventory = json.loads((self.root / "figure_evidence.json").read_text(encoding="utf-8"))
+            self.sidecar = (
+                sidecar_data if sidecar_data is not None
+                else json.loads(self.sidecar_path.read_text(encoding="utf-8"))
+            )
+            inventory = (
+                inventory_data if inventory_data is not None
+                else json.loads(self.inventory_path.read_text(encoding="utf-8"))
+            )
         except (OSError, json.JSONDecodeError) as exc:
             raise ValueError("public retrieval runtime config or image sidecar is unavailable/invalid") from exc
         self._validate_config(self.config)

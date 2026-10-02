@@ -1,8 +1,12 @@
+from __future__ import annotations
+
+import json
 from pathlib import Path
 
 import pytest
 
 from app.change_request import (
+    CHANGE_TYPES,
     build_request_plan,
     classify_change_type,
     is_out_of_scope_public_request,
@@ -10,204 +14,50 @@ from app.change_request import (
 from app.domain_profile import load_change_profile
 
 
-EDGE_PROFILE_PATH = Path(__file__).resolve().parents[1] / "config" / "edge_ai_device_change_profile.json"
+PROFILE_PATH = Path(__file__).resolve().parents[1] / "config" / "edge_ai_device_change_profile.json"
 
 
-def test_comma_joined_change_and_verification_are_planned_separately():
-    summary = "将任务最大并发从 500 调整到 800，同时核对默认配置和重试行为是否需要同步。"
+def test_active_profile_is_chinese_edge_device_engineering_only():
+    profile = load_change_profile(PROFILE_PATH)
 
-    plan = build_request_plan(summary)
+    assert profile["id"] == "edge_ai_device"
+    assert profile["languages"] == ["zh"]
+    assert set(CHANGE_TYPES) == {
+        "software_baseline", "device_configuration", "deployment_operations", "general",
+    }
+    assert all(row["checklist"] for row in profile["change_types"])
 
-    clause_queries = [row["query"] for row in plan["queries"] if row["kind"] == "change_clause"]
-    assert plan["change_type"] == "parameter_config"
-    assert len(plan["queries"]) <= 4
-    assert any("最大并发" in query for query in clause_queries)
-    assert any("重试行为" in query for query in clause_queries)
+
+@pytest.mark.parametrize(("summary", "expected"), [
+    ("将 JetPack 从 6.2 升级到 7.2，并核对 L4T 和刷写步骤。", "software_baseline"),
+    ("调整 J4012 的 CAN 接口与供电配置。", "device_configuration"),
+    ("变更 Jetson 边缘推理容器的 OTA 部署与故障恢复。", "deployment_operations"),
+    ("检查当前资料里是否有对应的工程说明。", "general"),
+])
+def test_change_type_classification_uses_only_current_device_profile(summary, expected):
+    assert classify_change_type(summary) == expected
 
 
-def test_planner_keeps_full_request_and_hard_query_bound_after_expansion():
-    summary = (
-        "调整 API 异步任务状态字段，同时核对调用方兼容性，更新请求示例，"
-        "补充版本升级说明，并安排回归验证。"
-    )
+def test_compound_request_keeps_full_text_and_stops_at_profile_query_limit():
+    summary = "升级 JetPack 并核对刷写流程；更新工业视觉容器部署；检查故障恢复；补充回归测试。"
 
     plan = build_request_plan(summary)
 
     assert plan["queries"][0]["query"] == summary
-    assert plan["queries"][0]["search_query"].startswith(summary)
     assert len(plan["queries"]) <= 4
     assert plan["query_limit"] == 4
-    assert all(row["query"].strip() for row in plan["queries"])
+    assert plan["languages"] == ["zh"]
+    assert plan["manual_review_required"] is True
 
 
-def test_parameter_change_is_not_misclassified_by_context_words():
-    summary = "工作流里的全局参数和本地参数同名时，核对最终取值优先级。"
-
-    assert classify_change_type(summary) == "parameter_config"
-
-
-def test_unrelated_audit_log_columns_do_not_become_api_contract_changes():
-    summary = "监控审计日志包含用户名、操作类型和延迟字段。"
-
-    assert classify_change_type(summary) == "general"
-
-
-def test_identity_api_mention_with_security_context_is_security_change():
-    summary = "Does the API provide OIDC group-to-role sync? Check the official API and security docs."
-
-    assert classify_change_type(summary) == "security_permission"
-
-
-def test_explicit_recovery_behavior_remains_a_workflow_change():
-    summary = "调整工作流失败后的节点恢复策略，并检查重试行为。"
-
-    assert classify_change_type(summary) == "workflow_behavior"
-
-
-def test_autoware_planning_behavior_change_gets_domain_specific_category():
-    summary = "Review the Goal Planner pull-out trajectory behavior around obstacles and the drivable area."
-
-    plan = build_request_plan(summary)
-
-    assert plan["change_type"] == "planning_behavior"
-    assert plan["change_type_label"] == "规划 / 轨迹行为变更"
-    assert "规划" in plan["retrieval_focus"]
-
-
-def test_explicit_planner_parameter_change_keeps_parameter_category():
-    summary = "Adjust the Goal Planner obstacle-stop threshold parameter in the YAML config."
-
-    assert classify_change_type(summary) == "parameter_config"
-
-
-def test_quartz_schedule_default_is_not_misclassified_as_parameter_configuration():
-    summary = "missed_fire_policy 对 schedule 的默认行为是什么；核对 Quartz 配置和默认值。"
-
-    assert classify_change_type(summary) == "workflow_behavior"
-
-
-def test_primary_planning_change_is_not_overridden_by_a_secondary_threshold_check():
-    summary = "变更轨迹校验器对不可行驶区域的判定；核对校验阈值和规划器调用链。"
-
-    assert classify_change_type(summary) == "planning_behavior"
-
-
-def test_autoware_right_of_way_and_ros_topic_are_classified_by_domain():
-    assert classify_change_type("调整 Intersection 模块的路权判断逻辑。") == "planning_behavior"
-    assert classify_change_type("Change a ROS topic name and message type.") == "interface_compatibility"
-
-
-def test_every_change_type_has_a_bounded_review_checklist_and_general_has_manual_gap():
-    from app.change_request import CHANGE_TYPES
-
-    for type_id, category in CHANGE_TYPES.items():
-        plan = build_request_plan("Review the change.", change_type=type_id)
-        assert plan["checklist_items"]
-        assert len(plan["checklist_items"]) <= 5
-        if type_id == "general":
-            assert plan["manual_review_required"] is True
-            assert "人工" in plan["planning_gap"]
-        else:
-            assert plan["manual_review_required"] is False
-
-
-def test_subworkflow_query_keeps_user_text_and_adds_search_only_alias():
-    summary = "子工作流参数如何传递；核对下游 Shell 节点的 setValue 示例。"
-
-    plan = build_request_plan(summary)
-
-    clause = next(row for row in plan["queries"] if row["kind"] == "change_clause")
-    assert "SubWorkflow" not in clause["query"]
-    assert "SubWorkflow task" in clause["search_query"]
-    assert clause["search_query"].count("SubWorkflow task parent child workflow") == 1
-
-
-def test_condition_and_dependency_terms_get_targeted_english_search_terms():
-    summary = "新增条件分支并调整任务依赖；核对 DAG 工作流定义。"
-
-    plan = build_request_plan(summary)
-
-    expanded = " ".join(row["search_query"] for row in plan["queries"])
-    assert "condition branch" in expanded
-    assert "task dependency" in expanded
-    assert "workflow definition task conditions" in expanded
-
-
-def test_scope_guard_detects_private_company_data_without_blocking_public_docs():
-    assert is_out_of_scope_public_request(
-        "Apache DolphinScheduler 是否内置经纬恒润的内部车辆温度采集 API？"
-    )
-    assert is_out_of_scope_public_request("查询公司内部 Jira 审批人的手机号和私有工单权限")
-    assert not is_out_of_scope_public_request("DolphinScheduler 的内部工作流状态如何恢复？")
-    assert not is_out_of_scope_public_request("What is the API server health-check endpoint?")
-    assert is_out_of_scope_public_request(
-        "Check whether Autoware contains our internal company Jira approver list."
-    )
-    assert is_out_of_scope_public_request(
-        "Can this public corpus show our company's Jira access-approval audit trail?"
-    )
-
-
-def test_english_question_and_follow_up_check_become_separate_agent_queries():
-    plan = build_request_plan(
-        "Does the API expose a signed audit record? Check the official API contract."
-    )
-
-    assert len(plan["queries"]) == 3
-    assert any("signed audit record" in row["query"] for row in plan["queries"])
-    assert any("official API contract" in row["query"] for row in plan["queries"])
-
-
-def test_edge_profile_loads_valid_domain_change_categories():
-    profile = load_change_profile(EDGE_PROFILE_PATH)
-
-    assert profile["id"] == "edge_ai_device"
-    assert {row["id"] for row in profile["change_types"]} == {
-        "software_baseline", "device_configuration", "deployment_operations", "general",
-    }
-    assert profile["languages"] == ["zh"]
-
-
-def test_edge_request_plan_keeps_original_text_and_filters_confirmed_device_scope():
-    profile = load_change_profile(EDGE_PROFILE_PATH)
-    profile["scope_options"] = {
-        "device_model": ["reComputer Industrial J4012"],
-        "module_sku": ["P3767-0000"],
-        "carrier_board": ["J401"],
-        "software_baseline": ["JetPack 6.2"],
-    }
-    summary = "将 J4012 的 JetPack 基线从 6.2 升级到 7.2，并核对刷写、驱动和部署验证。"
-
-    plan = build_request_plan(
-        summary,
-        profile=profile,
-        device_model="reComputer Industrial J4012",
-        module_sku="P3767-0000",
-        carrier_board="J401",
-        software_baseline="JetPack 6.2",
-        target_snapshot="wiki-1eadc6584f96",
-    )
-
-    assert plan["change_type"] == "software_baseline"
-    assert plan["original_request"] == summary
-    assert plan["target_snapshot"] == "wiki-1eadc6584f96"
-    assert plan["device_scope"] == {
-        "device_model": "reComputer Industrial J4012",
-        "module_sku": "P3767-0000",
-        "carrier_board": "J401",
-        "software_baseline": "JetPack 6.2",
-    }
-    assert len(plan["queries"]) <= 4
-    assert all("SubWorkflow" not in row["search_query"] for row in plan["queries"])
-
-
-def test_edge_request_plan_rejects_unknown_device_scope_instead_of_dropping_filter():
-    profile = load_change_profile(EDGE_PROFILE_PATH)
+def test_profile_scope_rejects_an_unknown_device_instead_of_dropping_filter():
+    profile = load_change_profile(PROFILE_PATH)
     profile["scope_options"] = {"device_model": ["reComputer Industrial J4012"]}
 
     with pytest.raises(ValueError, match="不在当前知识空间"):
-        build_request_plan(
-            "升级 JetPack",
-            profile=profile,
-            device_model="Unknown Board X",
-        )
+        build_request_plan("升级 JetPack 前核对刷写要求。", profile=profile, device_model="Unknown Board X")
+
+
+def test_private_company_material_is_stopped_but_public_device_questions_are_allowed():
+    assert is_out_of_scope_public_request("查询本公司的内部 API 和私有工单。")
+    assert not is_out_of_scope_public_request("核对 Jetson 设备内部温度传感器的公开配置说明。")

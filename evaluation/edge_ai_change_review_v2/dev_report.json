@@ -1,0 +1,371 @@
+{
+  "status": "MEASURED",
+  "generated_at_utc": "2026-10-02T22:25:15+00:00",
+  "input_fingerprints": {
+    "corpus_manifest_sha256": "d7ebb136d951249ae7cdb13caf9d36ab91a2dad98c98f05cc92ebe96edf20ac9",
+    "chunks_sha256": "edb184f9be1f3bcbccde364f9d95fda95d9dbcf38327011ca838cc41093d3af4",
+    "dense_vectors_sha256": "eaff3ee94e1d006693991c84205fda48f73fe22ec0ea305d4b79f0a0da7de24d",
+    "retrieval_policy_sha256": "451d4810099fa1be7437fadcf65d380f5f09d61051e4defbfe55f434745f5abf",
+    "runtime_config_sha256": "18238d80a4e780e1ce4192525977a93131251ef5f6f5b3b90ab974244880786d",
+    "cases_sha256": "8d2fbc84e0b46e2390ad9fab942f9a1276cac92112a9ef208761266f3c8072e4",
+    "code:evaluation/edge_ai_retrieval_v2/run_evaluation.py": "eb42dc687868f3569049565673cea63b038e2b995b338c46c5a30d3e65dd5c65",
+    "code:versioned-rag-service/src/public_knowledge.py": "4ea67695bb481cdcda9db3e6ed660b0b559146577b4394432fff40548b01a8f4",
+    "code:versioned-rag-service/src/public_retrieval_runtime.py": "70dc4ab2fda9f67ae53884ddda51af411779fbf02afd14eaeaa7e9689f2f1c8e",
+    "code:versioned-rag-service/src/retrieval_fusion.py": "da65e1d5043f7e29e76d88cf02676fda8ec9be811b6f7d5965b5cdce4120ca8f",
+    "agent_cases_sha256": "5ca95369499bb4d9468c4c93e704e34bb3a831be029449c5c5965ff353e36c80",
+    "code:evaluation/edge_ai_change_review_v2/run_evaluation.py": "f381436c8dcfa03bce96833ca224bdf121b32147775673dc8850392fca2381b5",
+    "code:change-review-agent/app/change_request.py": "a61367bc1935c2e5a92eee79977c8b4487108354b43645636f1c662cbf7f0719",
+    "code:change-review-agent/app/domain_profile.py": "d884d643d51b7903da01f98b39dc8eb556b263ba80ce7a9dffe30070bbe7831b",
+    "code:change-review-agent/config/edge_ai_device_change_profile.json": "e7fa885943cc0522024cf47e1fd29af6a254e8d618ca33e39412a839755f57a4"
+  },
+  "split_lock_sha256": "139ef5fd9e221fadc0f066e236d31a7fa788d59e86536b5b7a567edf6a0c616c",
+  "schema_version": 1,
+  "dataset_id": "edge_ai_change_review_v2",
+  "splits": {
+    "dev": {
+      "case_count": 6,
+      "expected_change_type_accuracy": 0.8333,
+      "required_source_recall_across_planned_queries": 0.75,
+      "complete_required_source_set_count": 3,
+      "answerable_case_count": 4,
+      "scope_gap_detection_accuracy": 1.0,
+      "manual_review_boundary_accuracy": 1.0,
+      "manual_review_required_count": 6,
+      "human_quality_scoring": {
+        "status": "not_scored",
+        "note": "Planner coverage and retrieval evidence are automated; impact-candidate precision and recommendation correctness require blinded human review.",
+        "cases_requiring_review": 6
+      },
+      "planning_latency_ms": {
+        "p50": 0.149,
+        "p95": 2.26
+      },
+      "retrieval_latency_ms": {
+        "p50": 1.932,
+        "p95": 7.708
+      },
+      "cases": [
+        {
+          "case_id": "j4012_jetpack_baseline_change",
+          "family_id": "cross:seeed-jetson-supported-devices+seeed-j4012-flash-jetpack",
+          "category": "software_baseline",
+          "expected_change_type": "software_baseline",
+          "planned_change_type": "software_baseline",
+          "change_type_match": true,
+          "planned_query_count": 3,
+          "query_limit": 4,
+          "required_source_ids": [
+            "seeed-j4012-flash-jetpack",
+            "seeed-jetson-supported-devices"
+          ],
+          "retrieved_source_ids": [
+            "seeed-j4012-flash-jetpack",
+            "seeed-jetpack-jetson-version-relations",
+            "seeed-jetson-flash-firmware",
+            "seeed-jetson-supported-devices",
+            "seeed-recomputer-backup-restore",
+            "seeed-recomputer-ota"
+          ],
+          "required_source_recall": 1.0,
+          "complete_required_source_set": true,
+          "expected_scope_gap": false,
+          "scope_gap_detected": false,
+          "scope_gap_match": true,
+          "manual_review_required": true,
+          "manual_review_expected": true,
+          "manual_review_match": true,
+          "planning_latency_ms": 2.26,
+          "retrieval_latency_ms": 7.708,
+          "queries": [
+            {
+              "query": "计划将 reComputer Industrial J4012 的 JetPack 从 5.1.3 升级到 6.2；分别核对设备支持的 L4T 范围和 J4012 刷写前置条件。",
+              "search_query": "计划将 reComputer Industrial J4012 的 JetPack 从 5.1.3 升级到 6.2；分别核对设备支持的 L4T 范围和 J4012 刷写前置条件。 支持矩阵 刷写 版本适配 回滚",
+              "source_ids": [
+                "seeed-recomputer-ota",
+                "seeed-recomputer-ota",
+                "seeed-j4012-flash-jetpack",
+                "seeed-recomputer-ota",
+                "seeed-recomputer-backup-restore"
+              ]
+            },
+            {
+              "query": "计划将 reComputer Industrial J4012 的 JetPack 从 5.1.3 升级到 6.2",
+              "search_query": "计划将 reComputer Industrial J4012 的 JetPack 从 5.1.3 升级到 6.2 支持矩阵 刷写 版本适配 回滚",
+              "source_ids": [
+                "seeed-recomputer-ota",
+                "seeed-recomputer-ota",
+                "seeed-recomputer-ota",
+                "seeed-j4012-flash-jetpack",
+                "seeed-j4012-flash-jetpack"
+              ]
+            },
+            {
+              "query": "分别核对设备支持的 L4T 范围和 J4012 刷写前置条件",
+              "search_query": "分别核对设备支持的 L4T 范围和 J4012 刷写前置条件 支持矩阵 刷写 版本适配 回滚",
+              "source_ids": [
+                "seeed-j4012-flash-jetpack",
+                "seeed-jetpack-jetson-version-relations",
+                "seeed-recomputer-backup-restore",
+                "seeed-jetson-supported-devices",
+                "seeed-jetson-flash-firmware"
+              ]
+            }
+          ]
+        },
+        {
+          "case_id": "j4012_thermal_interface_change",
+          "family_id": "source:seeed-recomputer-industrial-getting-started",
+          "category": "device_configuration",
+          "expected_change_type": "device_configuration",
+          "planned_change_type": "device_configuration",
+          "change_type_match": true,
+          "planned_query_count": 3,
+          "query_limit": 4,
+          "required_source_ids": [
+            "seeed-recomputer-industrial-getting-started"
+          ],
+          "retrieved_source_ids": [
+            "seeed-j4012-flash-jetpack",
+            "seeed-recomputer-industrial-getting-started",
+            "seeed-recomputer-ota"
+          ],
+          "required_source_recall": 1.0,
+          "complete_required_source_set": true,
+          "expected_scope_gap": false,
+          "scope_gap_detected": false,
+          "scope_gap_match": true,
+          "manual_review_required": true,
+          "manual_review_expected": true,
+          "manual_review_match": true,
+          "planning_latency_ms": 0.25,
+          "retrieval_latency_ms": 4.534,
+          "queries": [
+            {
+              "query": "调整 reComputer Industrial J4012 的安装环境，核对工作温度范围、供电和网络接口限制。",
+              "search_query": "调整 reComputer Industrial J4012 的安装环境，核对工作温度范围、供电和网络接口限制。 规格 接口 载板 电源 热设计",
+              "source_ids": [
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-ota",
+                "seeed-j4012-flash-jetpack"
+              ]
+            },
+            {
+              "query": "调整 reComputer Industrial J4012 的安装环境",
+              "search_query": "调整 reComputer Industrial J4012 的安装环境 规格 接口 载板 电源 热设计",
+              "source_ids": [
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-ota",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-industrial-getting-started"
+              ]
+            },
+            {
+              "query": "核对工作温度范围、供电和网络接口限制",
+              "search_query": "核对工作温度范围、供电和网络接口限制 规格 接口 载板 电源 热设计",
+              "source_ids": [
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-j4012-flash-jetpack",
+                "seeed-j4012-flash-jetpack"
+              ]
+            }
+          ]
+        },
+        {
+          "case_id": "flash_recovery_process_change",
+          "family_id": "source:seeed-jetson-flashing-troubleshooting",
+          "category": "software_baseline",
+          "expected_change_type": "software_baseline",
+          "planned_change_type": "deployment_operations",
+          "change_type_match": false,
+          "planned_query_count": 1,
+          "query_limit": 4,
+          "required_source_ids": [
+            "seeed-jetson-flash-firmware",
+            "seeed-jetson-flashing-troubleshooting"
+          ],
+          "retrieved_source_ids": [
+            "seeed-j4012-flash-jetpack",
+            "seeed-recomputer-backup-restore",
+            "seeed-recomputer-industrial-getting-started",
+            "seeed-recomputer-ota"
+          ],
+          "required_source_recall": 0.0,
+          "complete_required_source_set": false,
+          "expected_scope_gap": false,
+          "scope_gap_detected": false,
+          "scope_gap_match": true,
+          "manual_review_required": true,
+          "manual_review_expected": true,
+          "manual_review_match": true,
+          "planning_latency_ms": 0.149,
+          "retrieval_latency_ms": 1.932,
+          "queries": [
+            {
+              "query": "修改 Jetson 刷写步骤后，需要核对刷写前检查项、恢复模式和常见失败排查。",
+              "search_query": "修改 Jetson 刷写步骤后，需要核对刷写前检查项、恢复模式和常见失败排查。 部署 运行环境 升级 诊断 验证",
+              "source_ids": [
+                "seeed-j4012-flash-jetpack",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-backup-restore",
+                "seeed-recomputer-ota",
+                "seeed-recomputer-backup-restore"
+              ]
+            }
+          ]
+        },
+        {
+          "case_id": "package_update_policy_change",
+          "family_id": "source:seeed-jetson-package-upgrade-guidance",
+          "category": "software_baseline",
+          "expected_change_type": "software_baseline",
+          "planned_change_type": "software_baseline",
+          "change_type_match": true,
+          "planned_query_count": 3,
+          "query_limit": 4,
+          "required_source_ids": [
+            "seeed-jetson-package-upgrade-guidance"
+          ],
+          "retrieved_source_ids": [
+            "seeed-j4012-flash-jetpack",
+            "seeed-jetpack-jetson-version-relations",
+            "seeed-jetson-package-upgrade-guidance",
+            "seeed-recomputer-industrial-getting-started",
+            "seeed-recomputer-ota"
+          ],
+          "required_source_recall": 1.0,
+          "complete_required_source_set": true,
+          "expected_scope_gap": false,
+          "scope_gap_detected": false,
+          "scope_gap_match": true,
+          "manual_review_required": true,
+          "manual_review_expected": true,
+          "manual_review_match": true,
+          "planning_latency_ms": 0.271,
+          "retrieval_latency_ms": 3.713,
+          "queries": [
+            {
+              "query": "准备变更 Jetson 软件包升级策略，核对 apt upgrade 的适用说明以及版本升级注意事项。",
+              "search_query": "准备变更 Jetson 软件包升级策略，核对 apt upgrade 的适用说明以及版本升级注意事项。 支持矩阵 刷写 版本适配 回滚",
+              "source_ids": [
+                "seeed-jetson-package-upgrade-guidance",
+                "seeed-j4012-flash-jetpack",
+                "seeed-recomputer-ota",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-ota"
+              ]
+            },
+            {
+              "query": "准备变更 Jetson 软件包升级策略",
+              "search_query": "准备变更 Jetson 软件包升级策略 支持矩阵 刷写 版本适配 回滚",
+              "source_ids": [
+                "seeed-jetson-package-upgrade-guidance",
+                "seeed-recomputer-ota",
+                "seeed-jetpack-jetson-version-relations",
+                "seeed-recomputer-ota",
+                "seeed-recomputer-industrial-getting-started"
+              ]
+            },
+            {
+              "query": "核对 apt upgrade 的适用说明以及版本升级注意事项",
+              "search_query": "核对 apt upgrade 的适用说明以及版本升级注意事项 支持矩阵 刷写 版本适配 回滚",
+              "source_ids": [
+                "seeed-j4012-flash-jetpack",
+                "seeed-recomputer-ota",
+                "seeed-jetson-package-upgrade-guidance",
+                "seeed-recomputer-ota",
+                "seeed-jetpack-jetson-version-relations"
+              ]
+            }
+          ]
+        },
+        {
+          "case_id": "general_change_missing_hardware_scope",
+          "family_id": "negative:underspecified_device_change",
+          "category": "underspecified_scope",
+          "expected_change_type": "general",
+          "planned_change_type": "general",
+          "change_type_match": true,
+          "planned_query_count": 1,
+          "query_limit": 4,
+          "required_source_ids": [],
+          "retrieved_source_ids": [
+            "seeed-industrial-vision-monitoring",
+            "seeed-jetpack-jetson-version-relations",
+            "seeed-recomputer-industrial-j20-interfaces",
+            "seeed-recomputer-industrial-j40-j30-interfaces",
+            "seeed-recomputer-preempt-rt-jp621"
+          ],
+          "required_source_recall": null,
+          "complete_required_source_set": false,
+          "expected_scope_gap": true,
+          "scope_gap_detected": true,
+          "scope_gap_match": true,
+          "manual_review_required": true,
+          "manual_review_expected": true,
+          "manual_review_match": true,
+          "planning_latency_ms": 0.087,
+          "retrieval_latency_ms": 1.026,
+          "queries": [
+            {
+              "query": "计划调整设备启动配置，请找出需要核对的工程资料。",
+              "search_query": "计划调整设备启动配置，请找出需要核对的工程资料。",
+              "source_ids": [
+                "seeed-recomputer-preempt-rt-jp621",
+                "seeed-industrial-vision-monitoring",
+                "seeed-jetpack-jetson-version-relations",
+                "seeed-recomputer-industrial-j20-interfaces",
+                "seeed-recomputer-industrial-j40-j30-interfaces"
+              ]
+            }
+          ]
+        },
+        {
+          "case_id": "internal_validation_result_request",
+          "family_id": "negative:internal_test_result",
+          "category": "out_of_corpus",
+          "expected_change_type": "general",
+          "planned_change_type": "general",
+          "change_type_match": true,
+          "planned_query_count": 1,
+          "query_limit": 4,
+          "required_source_ids": [],
+          "retrieved_source_ids": [
+            "seeed-j4012-flash-jetpack",
+            "seeed-recomputer-backup-restore",
+            "seeed-recomputer-industrial-getting-started",
+            "seeed-recomputer-j30-j40-system-logs",
+            "seeed-recomputer-ota"
+          ],
+          "required_source_recall": null,
+          "complete_required_source_set": false,
+          "expected_scope_gap": false,
+          "scope_gap_detected": false,
+          "scope_gap_match": true,
+          "manual_review_required": true,
+          "manual_review_expected": true,
+          "manual_review_match": true,
+          "planning_latency_ms": 0.083,
+          "retrieval_latency_ms": 0.819,
+          "queries": [
+            {
+              "query": "请确认公司内部 J4012 72 小时老化测试通过率和签字负责人。",
+              "search_query": "请确认公司内部 J4012 72 小时老化测试通过率和签字负责人。",
+              "source_ids": [
+                "seeed-recomputer-backup-restore",
+                "seeed-recomputer-j30-j40-system-logs",
+                "seeed-j4012-flash-jetpack",
+                "seeed-recomputer-industrial-getting-started",
+                "seeed-recomputer-ota"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -5,13 +5,14 @@ from __future__ import annotations
 import json
 import hashlib
 import os
+import posixpath
 import re
 import sys
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from html import escape
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import unquote, urljoin, urlsplit
 
 import streamlit as st
 
@@ -296,7 +297,7 @@ def _replace_markdown_images(content: str) -> str:
 
 
 def _rewrite_relative_source_links(content: str, source_url: str) -> str:
-    """Resolve relative Markdown links while staying on the same trusted source host."""
+    """Resolve links only while they remain in the pinned repository or docs locale."""
     source = urlsplit(source_url)
     pinned_prefix = re.match(
         r"^/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/blob/([0-9a-f]{40})/", source.path
@@ -309,6 +310,11 @@ def _rewrite_relative_source_links(content: str, source_url: str) -> str:
         f"https://github.com/{pinned_prefix.group(1)}/blob/{pinned_prefix.group(2)}/"
         if pinned_prefix else None
     )
+    wiki_locale_root = None
+    if wiki_source:
+        locale = re.match(r"^/(cn|en)/", source.path)
+        if locale:
+            wiki_locale_root = f"https://{source.netloc}/{locale.group(1)}/"
 
     def replace(match: re.Match[str]) -> str:
         destination = match.group(2).strip()
@@ -325,6 +331,12 @@ def _rewrite_relative_source_links(content: str, source_url: str) -> str:
             return match.group(0)
         if pinned_root and not resolved.startswith(pinned_root):
             return match.group(1)
+        if wiki_locale_root:
+            safe_root_path = urlsplit(wiki_locale_root).path
+            resolved_path = posixpath.normpath(unquote(resolved_parts.path))
+            normalized_root = posixpath.normpath(safe_root_path)
+            if resolved_path != normalized_root and not resolved_path.startswith(f"{normalized_root}/"):
+                return match.group(1)
         return f"[{match.group(1)}]({resolved})"
 
     return re.sub(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)", replace, content)
@@ -1802,18 +1814,63 @@ def _benchmark(workspace: dict | None) -> None:
     status = str(workspace.get("retrieval_evaluation_status") or "pending")
     policy = str(workspace.get("retrieval_policy") or "由服务配置").upper()
     st.markdown(f"**当前策略：{policy}**")
-    if status != "edge_ai_retrieval_v1_validated":
+    if status != "edge_ai_retrieval_v2_validated":
         st.warning(
             "当前 Seeed 中文工程资料尚未完成与语料指纹绑定的冻结评测；"
             "此前其他领域语料上的分数不适用于本知识空间，因此这里不展示为当前成绩。"
         )
     else:
         report = workspace.get("retrieval_evaluation")
-        if not isinstance(report, dict) or report.get("name") != "edge_ai_retrieval_v1":
+        if not isinstance(report, dict) or report.get("name") != "edge_ai_retrieval_v2":
             st.warning("后端标记为已评测，但没有返回匹配的边缘设备评测报告；当前不展示未经核验的数字。")
         else:
-            st.info("边缘设备评测报告已匹配当前语料。")
-            st.json(report)
+            st.info(
+                f"评测报告已绑定当前语料与策略指纹：固定题集 {report.get('case_count', 0)} 题，"
+                f"DEV/HOLDOUT 各 {report.get('case_split_counts', {}).get('dev', 0)} / "
+                f"{report.get('case_split_counts', {}).get('holdout', 0)} 题。"
+            )
+            st.caption(str(report.get("selection_reason") or "当前策略按冻结评测结果选择。"))
+            rows = []
+            candidates = report.get("candidates") or {}
+            for split in ("dev", "holdout"):
+                for strategy, values in (candidates.get(split) or {}).items():
+                    rows.append({
+                        "数据切分": "开发集" if split == "dev" else "留出集",
+                        "检索策略": strategy,
+                        "必需来源召回": values.get("mean_required_source_recall"),
+                        "完整来源集率": values.get("complete_required_source_set_rate"),
+                        "范围错误命中": values.get("wrong_scope_result_count"),
+                        "无答案题返回候选比例": values.get("unanswerable_candidate_rate"),
+                        "检索 P95 (ms)": (values.get("latency_ms") or {}).get("p95"),
+                    })
+            if rows:
+                st.dataframe(rows, width="stretch", hide_index=True)
+                st.caption(
+                    "无答案题返回检索候选不等同于最终回答错误；它提示候选里有噪声，"
+                    "需结合生成拒答与人工核验评估。当前 DEV/HOLDOUT 指标未显示 RRF 优于 BM25。"
+                )
+            agent_report = workspace.get("change_review_evaluation")
+            if isinstance(agent_report, dict):
+                st.markdown("**变更审查流程评测**")
+                st.caption(
+                    f"固定场景 {agent_report.get('case_count', 0)} 个；仅评估规则分类、检索覆盖、"
+                    "范围缺口和人工审核边界，不代表大模型影响建议准确率。"
+                )
+                agent_rows = []
+                for split, values in (agent_report.get("splits") or {}).items():
+                    agent_rows.append({
+                        "数据切分": "开发集" if split == "dev" else "留出集",
+                        "变更类型识别率": values.get("expected_change_type_accuracy"),
+                        "必需来源召回": values.get("required_source_recall_across_planned_queries"),
+                        "完整来源集": f"{values.get('complete_required_source_set_count', 0)} / {values.get('answerable_case_count', 0)}",
+                        "范围缺口识别率": values.get("scope_gap_detection_accuracy"),
+                        "人工审核边界": values.get("manual_review_boundary_accuracy"),
+                    })
+                if agent_rows:
+                    st.dataframe(agent_rows, width="stretch", hide_index=True)
+                st.warning(
+                    "影响候选精确率、建议正确性和最终回答事实性尚未完成人工盲评，不能据此宣称 Agent 准确率。"
+                )
 
     corpus = workspace.get("corpus_fingerprint") or {}
     st.markdown("**当前运行范围**")
@@ -1822,10 +1879,8 @@ def _benchmark(workspace: dict | None) -> None:
         f"{workspace.get('chunk_count', 0)} 个检索片段 · "
         f"语料指纹 `{corpus.get('fingerprint_sha256', '未返回')}`"
     )
-    st.caption(
-        "后续评测分别报告必需来源召回、完整证据集率、错误设备/软件范围命中、"
-        "无答案误召回和检索延迟；Agent 影响候选与生成答案质量另行评测。"
-    )
+    if status != "edge_ai_retrieval_v2_validated":
+        st.caption("完成与当前语料、配置和冻结题集指纹匹配的评测后，才会展示可复现的策略比较结果。")
     st.caption("当前新语料默认使用可解释的 BM25 基线；重排策略需在同一冻结题集上验证后再考虑启用。")
 
 

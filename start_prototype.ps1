@@ -22,8 +22,8 @@ if (-not (Test-Path -LiteralPath $uiPython -PathType Leaf)) {
     # Keep the existing local virtual environment usable after the folder rename.
     $uiPython = Join-Path $legacyAgentRoot '.venv\Scripts\python.exe'
 }
-$autowareCorpus = Join-Path $ragRoot 'public_corpus_autoware'
-$officialCorpus = Join-Path $autowareCorpus 'retrieval_policy.json'
+$edgeAiCorpus = Join-Path $ragRoot 'public_corpus_edge_ai'
+$officialCorpus = Join-Path $edgeAiCorpus 'retrieval_policy.json'
 
 # Codex can inject a loopback HTTP proxy into its child processes. If that
 # proxy is unavailable while Windows has a configured system proxy, let the
@@ -116,8 +116,8 @@ New-Item -ItemType Directory -Path $runRoot -Force | Out-Null
 
 $env:APP_ENV = 'public_demo'
 $env:RD_V2_PROJECT_ROOT = $ragRoot
-$env:RAG_PUBLIC_CORPUS_ROOT = $autowareCorpus
-$env:RAG_PUBLIC_RETRIEVAL_CONFIG = Join-Path $autowareCorpus 'public_retrieval_runtime.json'
+$env:RAG_PUBLIC_CORPUS_ROOT = $edgeAiCorpus
+$env:RAG_PUBLIC_RETRIEVAL_CONFIG = Join-Path $edgeAiCorpus 'public_retrieval_runtime.json'
 if ($EnableGeneration -and $DisableGeneration) {
     throw '不能同时指定 -EnableGeneration 和 -DisableGeneration。'
 }
@@ -178,7 +178,6 @@ if (-not $ragReady) {
 $env:RAG_API_BASE_URL = $ragUrl
 $env:DEMO_RUNTIME_ROOT = Join-Path $runRoot 'ui-runtime'
 $env:DEMO_DATA_CLASSIFICATION = 'Official Public'
-$env:DEMO_LEGACY_FIXTURES = 'false'
 $env:DEMO_ALLOW_RAG_QUERY = 'false'
 $env:STREAMLIT_BROWSER_GATHER_USAGE_STATS = 'false'
 $env:STREAMLIT_SERVER_HEADLESS = 'true'

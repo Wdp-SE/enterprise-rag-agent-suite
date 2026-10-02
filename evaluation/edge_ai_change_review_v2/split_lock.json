@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "dataset_id": "edge_ai_change_review_v2",
+  "case_count": 12,
+  "split_counts": {
+    "dev": 6,
+    "holdout": 6
+  },
+  "case_ids": [
+    "deepseek_local_runtime_change",
+    "field_log_collection_change",
+    "flash_recovery_process_change",
+    "general_change_missing_hardware_scope",
+    "industrial_vision_environment_change",
+    "internal_validation_result_request",
+    "j20_to_j40_carrier_change",
+    "j4012_jetpack_baseline_change",
+    "j4012_thermal_interface_change",
+    "ota_update_recovery_change",
+    "package_update_policy_change",
+    "preempt_rt_kernel_change"
+  ],
+  "family_splits": {
+    "cross:seeed-jetson-supported-devices+seeed-j4012-flash-jetpack": "dev",
+    "cross:seeed-recomputer-industrial-j20-interfaces+seeed-recomputer-industrial-j40-j30-interfaces": "holdout",
+    "cross:seeed-recomputer-ota+seeed-recomputer-backup-restore": "holdout",
+    "negative:internal_test_result": "dev",
+    "negative:underspecified_device_change": "dev",
+    "source:seeed-industrial-vision-monitoring": "holdout",
+    "source:seeed-jetson-flashing-troubleshooting": "dev",
+    "source:seeed-jetson-package-upgrade-guidance": "dev",
+    "source:seeed-recomputer-industrial-getting-started": "dev",
+    "source:seeed-recomputer-j30-j40-system-logs": "holdout",
+    "source:seeed-recomputer-jetson-deepseek-mlc": "holdout",
+    "source:seeed-recomputer-preempt-rt-jp621": "holdout"
+  },
+  "input_fingerprints": {
+    "corpus_manifest_sha256": "d7ebb136d951249ae7cdb13caf9d36ab91a2dad98c98f05cc92ebe96edf20ac9",
+    "chunks_sha256": "edb184f9be1f3bcbccde364f9d95fda95d9dbcf38327011ca838cc41093d3af4",
+    "dense_vectors_sha256": "eaff3ee94e1d006693991c84205fda48f73fe22ec0ea305d4b79f0a0da7de24d",
+    "retrieval_policy_sha256": "451d4810099fa1be7437fadcf65d380f5f09d61051e4defbfe55f434745f5abf",
+    "runtime_config_sha256": "18238d80a4e780e1ce4192525977a93131251ef5f6f5b3b90ab974244880786d",
+    "cases_sha256": "8d2fbc84e0b46e2390ad9fab942f9a1276cac92112a9ef208761266f3c8072e4",
+    "code:evaluation/edge_ai_retrieval_v2/run_evaluation.py": "eb42dc687868f3569049565673cea63b038e2b995b338c46c5a30d3e65dd5c65",
+    "code:versioned-rag-service/src/public_knowledge.py": "4ea67695bb481cdcda9db3e6ed660b0b559146577b4394432fff40548b01a8f4",
+    "code:versioned-rag-service/src/public_retrieval_runtime.py": "70dc4ab2fda9f67ae53884ddda51af411779fbf02afd14eaeaa7e9689f2f1c8e",
+    "code:versioned-rag-service/src/retrieval_fusion.py": "da65e1d5043f7e29e76d88cf02676fda8ec9be811b6f7d5965b5cdce4120ca8f",
+    "agent_cases_sha256": "5ca95369499bb4d9468c4c93e704e34bb3a831be029449c5c5965ff353e36c80",
+    "code:evaluation/edge_ai_change_review_v2/run_evaluation.py": "f381436c8dcfa03bce96833ca224bdf121b32147775673dc8850392fca2381b5",
+    "code:change-review-agent/app/change_request.py": "a61367bc1935c2e5a92eee79977c8b4487108354b43645636f1c662cbf7f0719",
+    "code:change-review-agent/app/domain_profile.py": "d884d643d51b7903da01f98b39dc8eb556b263ba80ce7a9dffe30070bbe7831b",
+    "code:change-review-agent/config/edge_ai_device_change_profile.json": "e7fa885943cc0522024cf47e1fd29af6a254e8d618ca33e39412a839755f57a4"
+  },
+  "split_note": "Change-review cases and their source families are fixed before scoring; HOLDOUT is not used to tune the planner."
+}

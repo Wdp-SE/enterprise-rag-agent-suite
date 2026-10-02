@@ -1,0 +1,701 @@
+{
+  "status": "MEASURED",
+  "generated_at_utc": "2026-10-02T22:25:14+00:00",
+  "input_fingerprints": {
+    "corpus_manifest_sha256": "d7ebb136d951249ae7cdb13caf9d36ab91a2dad98c98f05cc92ebe96edf20ac9",
+    "chunks_sha256": "edb184f9be1f3bcbccde364f9d95fda95d9dbcf38327011ca838cc41093d3af4",
+    "dense_vectors_sha256": "eaff3ee94e1d006693991c84205fda48f73fe22ec0ea305d4b79f0a0da7de24d",
+    "retrieval_policy_sha256": "451d4810099fa1be7437fadcf65d380f5f09d61051e4defbfe55f434745f5abf",
+    "runtime_config_sha256": "18238d80a4e780e1ce4192525977a93131251ef5f6f5b3b90ab974244880786d",
+    "cases_sha256": "8d2fbc84e0b46e2390ad9fab942f9a1276cac92112a9ef208761266f3c8072e4",
+    "code:evaluation/edge_ai_retrieval_v2/run_evaluation.py": "eb42dc687868f3569049565673cea63b038e2b995b338c46c5a30d3e65dd5c65",
+    "code:versioned-rag-service/src/public_knowledge.py": "4ea67695bb481cdcda9db3e6ed660b0b559146577b4394432fff40548b01a8f4",
+    "code:versioned-rag-service/src/public_retrieval_runtime.py": "70dc4ab2fda9f67ae53884ddda51af411779fbf02afd14eaeaa7e9689f2f1c8e",
+    "code:versioned-rag-service/src/retrieval_fusion.py": "da65e1d5043f7e29e76d88cf02676fda8ec9be811b6f7d5965b5cdce4120ca8f"
+  },
+  "split_lock_sha256": "e8affd2d5ef6149566a83f15a63cb70b70e26b848ac7244569a0e44b7f52ee4b",
+  "schema_version": 1,
+  "dataset_id": "edge_ai_retrieval_v2",
+  "splits": {
+    "dev": {
+      "bm25": {
+        "query_count": 11,
+        "answerable_query_count": 10,
+        "unanswerable_query_count": 1,
+        "mean_required_source_recall": 0.95,
+        "complete_required_source_set_rate": 0.9,
+        "wrong_scope_result_count": 0,
+        "wrong_scope_query_count": 0,
+        "wrong_language_result_count": 0,
+        "wrong_snapshot_result_count": 0,
+        "unanswerable_candidate_query_count": 1,
+        "unanswerable_candidate_rate": 1.0,
+        "latency_ms": {
+          "p50": 1.922,
+          "p95": 4.085
+        },
+        "by_category": {
+          "artifact_integrity": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "bsp_build": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "cross_document_change": {
+            "query_count": 1,
+            "mean_required_source_recall": 0.5,
+            "complete_required_source_set_count": 0,
+            "wrong_scope_result_count": 0
+          },
+          "device_software_compatibility": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "firmware_procedure": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "flash_prerequisites": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "hardware_specification": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "out_of_corpus": {
+            "query_count": 1,
+            "mean_required_source_recall": null,
+            "complete_required_source_set_count": 0,
+            "wrong_scope_result_count": 0
+          },
+          "software_baseline": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "software_update": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "troubleshooting": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          }
+        },
+        "cases": [
+          {
+            "case_id": "flash_center_prerequisites",
+            "family_id": "source:seeed-jetson-flash-firmware",
+            "category": "flash_prerequisites",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetson-flash-firmware"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetson-flash-firmware",
+              "seeed-jetson-flash-firmware",
+              "seeed-jetson-flashing-troubleshooting",
+              "seeed-industrial-vision-monitoring",
+              "seeed-jetson-flash-firmware"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 4.085
+          },
+          {
+            "case_id": "flash_center_integrity_check",
+            "family_id": "source:seeed-jetson-flash-firmware",
+            "category": "artifact_integrity",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetson-flash-firmware"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetson-flash-firmware",
+              "seeed-jetson-flash-firmware",
+              "seeed-j4012-flash-jetpack",
+              "seeed-j4012-flash-jetpack",
+              "seeed-j4012-flash-jetpack"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 2.903
+          },
+          {
+            "case_id": "industrial_j4012_specs",
+            "family_id": "source:seeed-recomputer-industrial-getting-started",
+            "category": "hardware_specification",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-recomputer-industrial-getting-started"
+            ],
+            "retrieved_source_ids": [
+              "seeed-recomputer-industrial-getting-started",
+              "seeed-recomputer-industrial-getting-started",
+              "seeed-industrial-vision-monitoring",
+              "seeed-recomputer-industrial-j40-j30-interfaces",
+              "seeed-recomputer-industrial-j40-j30-interfaces"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 2.07
+          },
+          {
+            "case_id": "j4012_l4t_support",
+            "family_id": "source:seeed-jetson-supported-devices",
+            "category": "device_software_compatibility",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetson-supported-devices"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetson-supported-devices",
+              "seeed-industrial-vision-monitoring",
+              "seeed-jetson-flash-firmware",
+              "seeed-jetpack-jetson-version-relations",
+              "seeed-j4012-flash-jetpack"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.407
+          },
+          {
+            "case_id": "jetpack_jetson_relation",
+            "family_id": "source:seeed-jetpack-jetson-version-relations",
+            "category": "software_baseline",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetpack-jetson-version-relations"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetpack-jetson-version-relations",
+              "seeed-jetpack5-ssd-boot-troubleshooting",
+              "seeed-jetpack-jetson-version-relations",
+              "seeed-jetson-bsp-build",
+              "seeed-jetpack-jetson-version-relations"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.713
+          },
+          {
+            "case_id": "j4012_flash_guide",
+            "family_id": "source:seeed-j4012-flash-jetpack",
+            "category": "firmware_procedure",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-j4012-flash-jetpack"
+            ],
+            "retrieved_source_ids": [
+              "seeed-j4012-flash-jetpack",
+              "seeed-recomputer-backup-restore",
+              "seeed-recomputer-preempt-rt-jp621",
+              "seeed-recomputer-industrial-j40-j30-interfaces",
+              "seeed-industrial-vision-monitoring"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.922
+          },
+          {
+            "case_id": "jetson_package_upgrade",
+            "family_id": "source:seeed-jetson-package-upgrade-guidance",
+            "category": "software_update",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetson-package-upgrade-guidance"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetson-package-upgrade-guidance",
+              "seeed-recomputer-ota",
+              "seeed-recomputer-backup-restore",
+              "seeed-recomputer-industrial-getting-started",
+              "seeed-jetpack-jetson-version-relations"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 2.021
+          },
+          {
+            "case_id": "seeed_bsp_build",
+            "family_id": "source:seeed-jetson-bsp-build",
+            "category": "bsp_build",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetson-bsp-build"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetson-bsp-build",
+              "seeed-jetson-bsp-build",
+              "seeed-jetson-bsp-build",
+              "seeed-jetpack5-ssd-boot-troubleshooting",
+              "seeed-jetpack-jetson-version-relations"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.398
+          },
+          {
+            "case_id": "jetson_flash_troubleshooting",
+            "family_id": "source:seeed-jetson-flashing-troubleshooting",
+            "category": "troubleshooting",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetson-flashing-troubleshooting"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetson-flashing-troubleshooting",
+              "seeed-jetson-flashing-troubleshooting",
+              "seeed-jetson-flashing-troubleshooting",
+              "seeed-jetson-flashing-troubleshooting",
+              "seeed-jetson-flashing-troubleshooting"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.548
+          },
+          {
+            "case_id": "j4012_upgrade_and_flash_sources",
+            "family_id": "cross:seeed-j4012-flash-jetpack+seeed-jetson-supported-devices",
+            "category": "cross_document_change",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-j4012-flash-jetpack",
+              "seeed-jetson-supported-devices"
+            ],
+            "retrieved_source_ids": [
+              "seeed-industrial-vision-monitoring",
+              "seeed-recomputer-flash-jetpack-wsl2",
+              "seeed-jetson-flash-firmware",
+              "seeed-jetpack-jetson-version-relations",
+              "seeed-j4012-flash-jetpack"
+            ],
+            "source_recall": 0.5,
+            "complete_source_set": false,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 2.119
+          },
+          {
+            "case_id": "private_factory_aging_result",
+            "family_id": "negative:internal_factory_test",
+            "category": "out_of_corpus",
+            "answerable": false,
+            "required_source_ids": [],
+            "retrieved_source_ids": [
+              "seeed-recomputer-jetson-deepseek-mlc",
+              "seeed-recomputer-j30-j40-system-logs",
+              "seeed-recomputer-industrial-j40-j30-interfaces",
+              "seeed-industrial-vision-monitoring",
+              "seeed-recomputer-industrial-j40-j30-interfaces"
+            ],
+            "source_recall": null,
+            "complete_source_set": false,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.529
+          }
+        ]
+      },
+      "bm25_faceted_rrf": {
+        "query_count": 11,
+        "answerable_query_count": 10,
+        "unanswerable_query_count": 1,
+        "mean_required_source_recall": 0.95,
+        "complete_required_source_set_rate": 0.9,
+        "wrong_scope_result_count": 0,
+        "wrong_scope_query_count": 0,
+        "wrong_language_result_count": 0,
+        "wrong_snapshot_result_count": 0,
+        "unanswerable_candidate_query_count": 1,
+        "unanswerable_candidate_rate": 1.0,
+        "latency_ms": {
+          "p50": 1.696,
+          "p95": 4.91
+        },
+        "by_category": {
+          "artifact_integrity": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "bsp_build": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "cross_document_change": {
+            "query_count": 1,
+            "mean_required_source_recall": 0.5,
+            "complete_required_source_set_count": 0,
+            "wrong_scope_result_count": 0
+          },
+          "device_software_compatibility": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "firmware_procedure": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "flash_prerequisites": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "hardware_specification": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "out_of_corpus": {
+            "query_count": 1,
+            "mean_required_source_recall": null,
+            "complete_required_source_set_count": 0,
+            "wrong_scope_result_count": 0
+          },
+          "software_baseline": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "software_update": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          },
+          "troubleshooting": {
+            "query_count": 1,
+            "mean_required_source_recall": 1.0,
+            "complete_required_source_set_count": 1,
+            "wrong_scope_result_count": 0
+          }
+        },
+        "cases": [
+          {
+            "case_id": "flash_center_prerequisites",
+            "family_id": "source:seeed-jetson-flash-firmware",
+            "category": "flash_prerequisites",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetson-flash-firmware"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetson-flash-firmware",
+              "seeed-jetson-flash-firmware",
+              "seeed-jetson-flashing-troubleshooting",
+              "seeed-industrial-vision-monitoring",
+              "seeed-jetson-flash-firmware"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.946
+          },
+          {
+            "case_id": "flash_center_integrity_check",
+            "family_id": "source:seeed-jetson-flash-firmware",
+            "category": "artifact_integrity",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetson-flash-firmware"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetson-flash-firmware",
+              "seeed-jetson-flash-firmware",
+              "seeed-j4012-flash-jetpack",
+              "seeed-j4012-flash-jetpack",
+              "seeed-j4012-flash-jetpack"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.246
+          },
+          {
+            "case_id": "industrial_j4012_specs",
+            "family_id": "source:seeed-recomputer-industrial-getting-started",
+            "category": "hardware_specification",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-recomputer-industrial-getting-started"
+            ],
+            "retrieved_source_ids": [
+              "seeed-recomputer-industrial-getting-started",
+              "seeed-recomputer-industrial-getting-started",
+              "seeed-industrial-vision-monitoring",
+              "seeed-recomputer-industrial-j40-j30-interfaces",
+              "seeed-recomputer-industrial-j40-j30-interfaces"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.678
+          },
+          {
+            "case_id": "j4012_l4t_support",
+            "family_id": "source:seeed-jetson-supported-devices",
+            "category": "device_software_compatibility",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetson-supported-devices"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetson-supported-devices",
+              "seeed-industrial-vision-monitoring",
+              "seeed-jetson-flash-firmware",
+              "seeed-jetpack-jetson-version-relations",
+              "seeed-j4012-flash-jetpack"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.502
+          },
+          {
+            "case_id": "jetpack_jetson_relation",
+            "family_id": "source:seeed-jetpack-jetson-version-relations",
+            "category": "software_baseline",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetpack-jetson-version-relations"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetpack-jetson-version-relations",
+              "seeed-jetpack5-ssd-boot-troubleshooting",
+              "seeed-jetpack-jetson-version-relations",
+              "seeed-jetson-bsp-build",
+              "seeed-jetpack-jetson-version-relations"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.977
+          },
+          {
+            "case_id": "j4012_flash_guide",
+            "family_id": "source:seeed-j4012-flash-jetpack",
+            "category": "firmware_procedure",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-j4012-flash-jetpack"
+            ],
+            "retrieved_source_ids": [
+              "seeed-j4012-flash-jetpack",
+              "seeed-recomputer-backup-restore",
+              "seeed-recomputer-preempt-rt-jp621",
+              "seeed-recomputer-industrial-j40-j30-interfaces",
+              "seeed-industrial-vision-monitoring"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 4.91
+          },
+          {
+            "case_id": "jetson_package_upgrade",
+            "family_id": "source:seeed-jetson-package-upgrade-guidance",
+            "category": "software_update",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetson-package-upgrade-guidance"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetson-package-upgrade-guidance",
+              "seeed-recomputer-ota",
+              "seeed-recomputer-backup-restore",
+              "seeed-recomputer-industrial-getting-started",
+              "seeed-jetpack-jetson-version-relations"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 3.263
+          },
+          {
+            "case_id": "seeed_bsp_build",
+            "family_id": "source:seeed-jetson-bsp-build",
+            "category": "bsp_build",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetson-bsp-build"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetson-bsp-build",
+              "seeed-jetson-bsp-build",
+              "seeed-jetson-bsp-build",
+              "seeed-jetpack5-ssd-boot-troubleshooting",
+              "seeed-jetpack-jetson-version-relations"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.696
+          },
+          {
+            "case_id": "jetson_flash_troubleshooting",
+            "family_id": "source:seeed-jetson-flashing-troubleshooting",
+            "category": "troubleshooting",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-jetson-flashing-troubleshooting"
+            ],
+            "retrieved_source_ids": [
+              "seeed-jetson-flashing-troubleshooting",
+              "seeed-jetson-flashing-troubleshooting",
+              "seeed-jetson-flashing-troubleshooting",
+              "seeed-jetson-flashing-troubleshooting",
+              "seeed-jetson-flashing-troubleshooting"
+            ],
+            "source_recall": 1.0,
+            "complete_source_set": true,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.424
+          },
+          {
+            "case_id": "j4012_upgrade_and_flash_sources",
+            "family_id": "cross:seeed-j4012-flash-jetpack+seeed-jetson-supported-devices",
+            "category": "cross_document_change",
+            "answerable": true,
+            "required_source_ids": [
+              "seeed-j4012-flash-jetpack",
+              "seeed-jetson-supported-devices"
+            ],
+            "retrieved_source_ids": [
+              "seeed-industrial-vision-monitoring",
+              "seeed-recomputer-flash-jetpack-wsl2",
+              "seeed-jetson-flash-firmware",
+              "seeed-jetpack-jetson-version-relations",
+              "seeed-j4012-flash-jetpack"
+            ],
+            "source_recall": 0.5,
+            "complete_source_set": false,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 2.872
+          },
+          {
+            "case_id": "private_factory_aging_result",
+            "family_id": "negative:internal_factory_test",
+            "category": "out_of_corpus",
+            "answerable": false,
+            "required_source_ids": [],
+            "retrieved_source_ids": [
+              "seeed-recomputer-jetson-deepseek-mlc",
+              "seeed-recomputer-j30-j40-system-logs",
+              "seeed-recomputer-industrial-j40-j30-interfaces",
+              "seeed-industrial-vision-monitoring",
+              "seeed-recomputer-industrial-j40-j30-interfaces"
+            ],
+            "source_recall": null,
+            "complete_source_set": false,
+            "candidate_count": 5,
+            "wrong_scope_result_count": 0,
+            "wrong_language_result_count": 0,
+            "wrong_snapshot_result_count": 0,
+            "latency_ms": 1.598
+          }
+        ]
+      }
+    }
+  }
+}

@@ -11,7 +11,8 @@ _PRIVATE_ORG_CONTEXT = re.compile(
     re.IGNORECASE,
 )
 _PRIVATE_DATA_SUBJECT = re.compile(
-    r"(?:api|接口|jira|工单|审批|流程|制度|通讯录|手机号|授权名单|权限|密级|加密|车辆|质量|配置|映射|数据)",
+    r"(?:api|接口|jira|工单|审批|流程|制度|通讯录|手机号|授权名单|权限|密级|加密|车辆|质量|配置|映射|数据|"
+    r"测试|通过率|回滚率|负责人|签字|验收|老化)",
     re.IGNORECASE,
 )
 _PRIVATE_ORG_ENGLISH = re.compile(

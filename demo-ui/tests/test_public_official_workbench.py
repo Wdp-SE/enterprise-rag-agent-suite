@@ -8,13 +8,18 @@ from streamlit.testing.v1 import AppTest
 
 APP = Path(__file__).parents[1] / "app.py"
 CHUNK = {
-    "chunk_id": "3.4.3:zh:guide/parameter/priority:1",
-    "document_id": "3.4.3:zh:guide/parameter/priority",
-    "document_key": "guide/parameter/priority",
-    "version": "3.4.3", "locale": "zh-CN", "language": "zh",
-    "heading": "参数优先级", "content": "上游参数优先于启动参数。",
+    "chunk_id": "wiki-1eadc6584f96:zh:seeed-jetson-flash-firmware:1",
+    "document_id": "wiki-1eadc6584f96:zh:seeed-jetson-flash-firmware",
+    "document_key": "seeed-jetson-flash-firmware",
+    "source_id": "seeed-jetson-flash-firmware",
+    "version": "wiki-1eadc6584f96", "source_snapshot": "wiki-1eadc6584f96",
+    "locale": "zh-CN", "language": "zh",
+    "heading": "Jetson 刷写与软件基线", "content": "刷写前核对设备型号、JetPack 与 L4T 版本。",
     "source_type": "official_documentation",
-    "source_url": "https://github.com/apache/dolphinscheduler/blob/verified/docs/docs/zh/guide/parameter/priority.md",
+    "source_url": "https://wiki.seeedstudio.com/cn/jetson_developtool_flash_firmware/",
+    "repository": "Seeed-Studio/wiki-documents",
+    "commit": "1eadc6584f962b6efdbdb3e49b2b4ce30c85be08",
+    "sha256": "a" * 64,
     "retrieval_score": 12.0, "retrieval_policy": "bm25",
 }
 
@@ -24,14 +29,10 @@ def _mock_client(monkeypatch):
     import public_workbench
 
     monkeypatch.setenv("DEMO_LEGACY_FIXTURES", "false")
-    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Apache DolphinScheduler", "baseline_version": "3.4.2",
-        "current_version": "3.4.3", "source_count": 52, "chunk_count": 659,
-        "languages": ["zh-CN", "en-US"], "repository": "apache/dolphinscheduler",
-    })
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: _edge_workspace())
     monkeypatch.setattr(PublicKnowledgeClient, "documents", lambda self: [{
         "document_id": CHUNK["document_id"], "document_key": CHUNK["document_key"],
-        "title": "参数优先级", "version": "3.4.3", "locale": "zh-CN",
+        "title": "Jetson 刷写与软件基线", "version": "wiki-1eadc6584f96", "locale": "zh-CN",
         "source_type": "official_documentation", "source_url": CHUNK["source_url"],
     }])
     monkeypatch.setattr(PublicKnowledgeClient, "document", lambda self, document_id: [dict(CHUNK)])
@@ -61,7 +62,7 @@ def _mock_client(monkeypatch):
                 "reason": "该章节说明参数优先级。",
                 "suggested_action": "核对示例与运维说明是否同步。",
             }],
-            "evidence_gaps": ["尚未检查英文资料。"],
+            "evidence_gaps": ["尚未提供目标设备的实测记录。"],
             "version_ambiguities": [],
             "reviewer_actions": ["逐版本确认变更影响。"],
             "review_status": "REQUIRES_HUMAN_REVIEW",
@@ -69,7 +70,7 @@ def _mock_client(monkeypatch):
     })
     monkeypatch.setattr(
         PublicKnowledgeClient, "review_advice_for_version",
-        lambda self, change_summary, evidence_chunk_ids, *, version:
+        lambda self, change_summary, evidence_chunk_ids, *, version, **scope:
             self.review_advice(change_summary, evidence_chunk_ids),
     )
     monkeypatch.setattr(public_workbench, "_analyze_hypothetical", lambda client, selected, proposed_text, **kwargs: {
@@ -89,7 +90,7 @@ def _mock_client(monkeypatch):
                     "reason": "该章节说明参数优先级。",
                     "suggested_action": "核对示例与运维说明是否同步。",
                 }],
-                "evidence_gaps": ["尚未检查英文资料。"],
+                "evidence_gaps": ["尚未提供目标设备的实测记录。"],
                 "version_ambiguities": [],
                 "reviewer_actions": ["逐版本确认变更影响。"],
                 "review_status": "REQUIRES_HUMAN_REVIEW",
@@ -198,7 +199,7 @@ def test_workspace_scoped_selectors_follow_the_latest_manifest_version():
     import public_workbench
 
     workspace = {
-        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
+        "workspace": "其他领域", "repository": "Seeed-Studio/wiki-documents",
         "baseline_version": "0.51.0", "current_version": "0.52.0",
         "available_versions": ["0.51.0", "0.52.0"], "languages": ["en-US"],
     }
@@ -258,14 +259,14 @@ def test_source_coverage_summary_reports_edge_device_snapshot_and_families():
     assert "ai deployment" in summary and "hardware interface" in summary
 
 
-def test_workbench_warns_when_connected_public_rag_workspace_is_not_autoware(monkeypatch):
+def test_workbench_warns_when_connected_public_rag_workspace_is_not_edge_ai(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
     monkeypatch.setenv("APP_ENV", "public_demo")
 
     monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Apache DolphinScheduler",
-        "repository": "apache/dolphinscheduler",
+        "workspace": "reComputer Industrial / Jetson",
+        "repository": "Seeed-Studio/wiki-documents",
         "baseline_version": "0.51.0", "current_version": "0.52.0",
         "languages": ["zh-CN", "en-US"],
     })
@@ -276,7 +277,7 @@ def test_workbench_warns_when_connected_public_rag_workspace_is_not_autoware(mon
     warning = "\n".join(item.value for item in app.warning)
     assert "知识空间不匹配" in warning
     assert "RAG_API_BASE_URL" not in warning
-    assert "public_corpus_autoware" not in warning
+    assert "public_corpus_other" not in warning
     assert not any("资料规模" in item.value for item in list(app.markdown) + list(app.caption))
 
 
@@ -382,13 +383,13 @@ def test_public_rag_keeps_answer_before_real_cited_source(monkeypatch):
     next(button for button in app.button if button.label == "版本化知识检索").click().run()
     assert not app.exception
     assert app.selectbox(key="official_language").value == "zh"
-    assert app.selectbox(key="official_version").value == "3.4.3"
+    assert app.selectbox(key="official_version").value == "wiki-1eadc6584f96"
     next(button for button in app.button if button.label == "生成带引用回答").click().run()
     assert not app.exception
     text = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
     assert {item.value for item in app.subheader} >= {"回答", "引用依据"}
     assert "阅读原始页面" in text
-    assert "[1] 参数优先级" in text
+    assert "[1] Jetson 刷写与软件基线" in text
     assert "引用编号对应本次检索片段" in text
     assert "证据支撑度：一般" not in text
     assert "不代表事实正确性" in text
@@ -402,9 +403,9 @@ def test_rag_renders_approved_image_ocr_as_derived_evidence(monkeypatch):
 
     image = {
         **CHUNK,
-        "chunk_id": "3.4.3:zh:guide/parameter/context:figure:1",
+        "chunk_id": "wiki-1eadc6584f96:zh:guide/parameter/context:figure:1",
         "document_key": "guide/parameter/context",
-        "document_id": "3.4.3:zh:guide/parameter/context",
+        "document_id": "wiki-1eadc6584f96:zh:guide/parameter/context",
         "heading": "参数上下文 / 查看运行结果",
         "content": "Node_A 日志截图显示输出 100 和 66。",
         "modality": "image_ocr", "figure_id": "64bd324feb4e55a2",
@@ -440,10 +441,10 @@ def test_rag_hides_approved_image_ocr_from_a_repository_outside_edge_workspace(m
         **CHUNK,
         "modality": "image_ocr", "figure_id": "foreign-figure",
         "review_status": "approved", "sha256": "a" * 64,
-        "repository": "apache/dolphinscheduler",
+        "repository": "Seeed-Studio/wiki-documents",
         "commit": "a190201acffa03d199d4ca216288734a6513de3d",
-        "raw_url": "https://raw.githubusercontent.com/apache/dolphinscheduler/a190201acffa03d199d4ca216288734a6513de3d/docs/img/example.png",
-        "source_url": "https://github.com/apache/dolphinscheduler/blob/a190201acffa03d199d4ca216288734a6513de3d/docs/docs/zh/guide/example.md",
+        "raw_url": "https://raw.githubusercontent.com/Seeed-Studio/wiki-documents/a190201acffa03d199d4ca216288734a6513de3d/docs/img/example.png",
+        "source_url": "https://wiki.seeedstudio.com/cn/a190201acffa03d199d4ca216288734a6513de3d/docs/docs/zh/guide/example.md",
         "content": "foreign project screenshot OCR",
     }
     monkeypatch.setattr(PublicKnowledgeClient, "search", lambda self, question, **scope: {
@@ -489,17 +490,17 @@ def test_version_selector_uses_latest_published_workspace_version(monkeypatch):
     from services.public_knowledge_client import PublicKnowledgeClient
 
     monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Apache DolphinScheduler", "baseline_version": "3.4.3",
-        "current_version": "3.5.0", "available_versions": ["3.5.0", "3.4.3"],
+        "workspace": "reComputer Industrial / Jetson", "baseline_version": "wiki-1eadc6584f96",
+        "current_version": "wiki-next-snapshot", "available_versions": ["wiki-next-snapshot", "wiki-1eadc6584f96"],
         "source_count": 70, "chunk_count": 800,
     })
     app = AppTest.from_file(APP, default_timeout=40).run()
     next(button for button in app.button if button.label == "版本化知识检索").click().run()
 
     assert not app.exception
-    assert app.selectbox(key="official_version").value == "3.5.0"
+    assert app.selectbox(key="official_version").value == "wiki-next-snapshot"
     labels = app.selectbox(key="official_version").options
-    assert labels[0].startswith("3.5.0") and labels[1].startswith("3.4.3")
+    assert labels[0].startswith("wiki-next-snapshot") and labels[1].startswith("wiki-1eadc6584f96")
     assert labels[2] == "全部已收录版本"
 
 
@@ -508,27 +509,27 @@ def test_version_selector_tracks_new_latest_release_after_manual_old_selection(m
     from services.public_knowledge_client import PublicKnowledgeClient
 
     workspace = {
-        "workspace": "Apache DolphinScheduler", "baseline_version": "3.4.2",
-        "current_version": "3.4.3", "available_versions": ["3.4.3", "3.4.2"],
+        "workspace": "reComputer Industrial / Jetson", "baseline_version": "wiki-previous-snapshot",
+        "current_version": "wiki-1eadc6584f96", "available_versions": ["wiki-1eadc6584f96", "wiki-previous-snapshot"],
         "source_count": 52, "chunk_count": 659,
         "latest_source_retrieval_timestamp": "2026-09-27T16:48:07.391969+00:00",
     }
     monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: dict(workspace))
     app = AppTest.from_file(APP, default_timeout=40).run()
     next(button for button in app.button if button.label == "版本化知识检索").click().run()
-    assert app.selectbox(key="official_version").value == "3.4.3"
+    assert app.selectbox(key="official_version").value == "wiki-1eadc6584f96"
 
     workspace.update(
-        baseline_version="3.4.3", current_version="3.5.0",
-        available_versions=["3.5.0", "3.4.3"],
+        baseline_version="wiki-1eadc6584f96", current_version="wiki-next-snapshot",
+        available_versions=["wiki-next-snapshot", "wiki-1eadc6584f96"],
         latest_source_retrieval_timestamp="2026-09-28T09:15:00+00:00",
     )
     app.run()
 
     assert not app.exception
-    assert app.selectbox(key="official_version").value == "3.5.0"
-    app.selectbox(key="official_version").set_value("3.4.3").run()
-    assert app.selectbox(key="official_version").value == "3.4.3"
+    assert app.selectbox(key="official_version").value == "wiki-next-snapshot"
+    app.selectbox(key="official_version").set_value("wiki-1eadc6584f96").run()
+    assert app.selectbox(key="official_version").value == "wiki-1eadc6584f96"
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
     assert "最新已收录" in app.selectbox(key="official_version").options[0]
     assert "最近收录：" in visible and "2026-09-28 09:15 UTC" in visible
@@ -687,7 +688,7 @@ def test_review_export_records_task_evidence_and_human_decision_without_raw_draf
 
     result = {
         "task_id": "task-123", "request_fingerprint": "request-sha", "request_mode": "selected_source",
-        "selected_source": {"chunk_id": "3.4.3:zh:guide/test:1", "source_url": "https://github.com/apache/dolphinscheduler/example"},
+        "selected_source": {"chunk_id": "wiki-1eadc6584f96:zh:guide/test:1", "source_url": "https://github.com/Seeed-Studio/wiki-documents/example"},
         "patch_candidate": {"before": "official text", "proposed_after": "private proposed text"},
         "retrieved_results": [], "review_advice": {"status": "OK", "review": {"impact_candidates": []}},
         "retrieval_trace": {"queries": []}, "evidence_gaps": [], "public_baseline_written": False,
@@ -697,7 +698,7 @@ def test_review_export_records_task_evidence_and_human_decision_without_raw_draf
 
     assert report["task_id"] == "task-123"
     assert report["human_decision"] == "reviewed"
-    assert report["selected_source_id"] == "3.4.3:zh:guide/test:1"
+    assert report["selected_source_id"] == "wiki-1eadc6584f96:zh:guide/test:1"
     assert report["public_baseline_written"] is False
     assert report["proposed_after_sha256"]
     assert report["schema_version"] == 3
@@ -724,7 +725,7 @@ def test_generation_rate_limit_keeps_evidence_and_explains_retry(monkeypatch):
     assert not app.exception
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
     assert "限流" in visible and "稍后重试" in visible
-    assert "[1] 参数优先级" in visible
+    assert "[1] Jetson 刷写与软件基线" in visible
     assert "test-request-1" in visible
 
 
@@ -752,7 +753,7 @@ def test_generated_answer_shows_cited_evidence_first_and_collapses_other_hits(mo
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
 
-    other = {**CHUNK, "chunk_id": "3.4.3:zh:guide/parameter/local:2", "heading": "本地参数"}
+    other = {**CHUNK, "chunk_id": "wiki-1eadc6584f96:zh:guide/parameter/local:2", "heading": "本地参数"}
     monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: {
         "answer": "启动参数优先于本地参数。", "sources": [dict(CHUNK)],
         "evidence": [dict(CHUNK), other], "status": "OK", "consistency_notes": [],
@@ -809,7 +810,7 @@ def test_agent_starts_with_natural_language_and_uses_rag_to_find_candidates(monk
     assert not app.exception
     assert calls
     assert all(call[2] == "zh" for call in calls)
-    assert all(call[1] == "3.4.3" for call in calls)
+    assert all(call[1] == "wiki-1eadc6584f96" for call in calls)
     assert app.session_state["official_request_review"]["request_summary"] == change_request
     assert app.session_state["official_request_review"]["impacts"][0]["evidence"]["chunk_id"] == CHUNK["chunk_id"]
     headings = [item.value for item in app.subheader]
@@ -878,7 +879,7 @@ def test_suggested_questions_match_current_edge_ai_profile(monkeypatch):
     options = example_picker.options
     assert options == workspace["domain_profile"]["example_queries"]
     assert not any(question.isascii() for question in options)
-    assert not any("DolphinScheduler" in question or "API server" in question for question in options)
+    assert not any("Jetson" in question or "API server" in question for question in options)
     assert not any(item.label == "从已收录资料选择示例问题" for item in app.expander)
     assert example_picker.label == "示例问题（选择后可编辑）"
 
@@ -894,7 +895,7 @@ def test_evidence_image_markdown_uses_text_placeholder_instead_of_missing_asset(
     image_chunk = {
         **CHUNK,
         "content": "Dependencies support execution tracking.\n\n"
-                   "![Apache DolphinScheduler](../../../img/introduction_ui.png)",
+                   "![reComputer Industrial / Jetson](../../../img/introduction_ui.png)",
     }
     monkeypatch.setattr(PublicKnowledgeClient, "search", lambda self, question, **scope: {
         "query": question, "results": [dict(image_chunk)], "retrieval_policy": "bm25",
@@ -906,8 +907,8 @@ def test_evidence_image_markdown_uses_text_placeholder_instead_of_missing_asset(
 
     assert not app.exception
     rendered = "\n".join(item.value for item in app.markdown)
-    assert "原文配图「Apache DolphinScheduler」" in rendered
-    assert "![Apache DolphinScheduler]" not in rendered
+    assert "原文配图「reComputer Industrial / Jetson」" in rendered
+    assert "![reComputer Industrial / Jetson]" not in rendered
 
 
 def test_agent_original_source_uses_placeholder_for_missing_markdown_images(monkeypatch):
@@ -916,8 +917,8 @@ def test_agent_original_source_uses_placeholder_for_missing_markdown_images(monk
 
     image_chunk = {
         **CHUNK,
-        "content": "Apache DolphinScheduler guide.\n\n"
-                   "![Apache DolphinScheduler](../../../img/introduction_ui.png)",
+        "content": "reComputer Industrial / Jetson guide.\n\n"
+                   "![reComputer Industrial / Jetson](../../../img/introduction_ui.png)",
     }
     monkeypatch.setattr(PublicKnowledgeClient, "document", lambda self, document_id: [dict(image_chunk)])
 
@@ -927,8 +928,8 @@ def test_agent_original_source_uses_placeholder_for_missing_markdown_images(monk
 
     assert not app.exception
     rendered = "\n".join(item.value for item in app.markdown)
-    assert "原文配图「Apache DolphinScheduler」" in rendered
-    assert "![Apache DolphinScheduler]" not in rendered
+    assert "原文配图「reComputer Industrial / Jetson」" in rendered
+    assert "![reComputer Industrial / Jetson]" not in rendered
 
 
 def test_public_rag_without_generation_shows_compact_evidence_fallback(monkeypatch):
@@ -949,7 +950,7 @@ def test_public_rag_without_generation_shows_compact_evidence_fallback(monkeypat
     assert "模型生成尚未启用" in visible
     assert "API_KEY" not in visible
     assert "start_prototype.ps1" not in visible
-    assert "[1] 参数优先级" in visible
+    assert "[1] Jetson 刷写与软件基线" in visible
     assert "检索候选" not in visible
     assert "只想核对原文？" in {item.label for item in app.expander}
     assert "仅查看检索原文" in {button.label for button in app.button}
@@ -970,7 +971,7 @@ def test_public_rag_generation_failure_explains_backend_fallback(monkeypatch):
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
     assert "生成未完成（FAIL_CLOSED）" in visible
     assert "联系维护者时请提供请求编号" in visible
-    assert "[1] 参数优先级" in visible
+    assert "[1] Jetson 刷写与软件基线" in visible
 
 
 def test_abstained_answer_explains_missing_retrieval_terms(monkeypatch):
@@ -996,7 +997,7 @@ def test_abstained_answer_explains_missing_retrieval_terms(monkeypatch):
     assert "health、check、endpoint" in visible
     assert "未覆盖关键词" in visible
     assert "不是网络或 API Key 故障" not in visible
-    assert "[1] 参数优先级" in visible
+    assert "[1] Jetson 刷写与软件基线" in visible
 
 
 def test_abstained_answer_distinguishes_keyword_match_from_supported_answer(monkeypatch):
@@ -1054,7 +1055,7 @@ def test_provider_connection_failure_explains_proxy_or_network(monkeypatch):
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.info))
     assert "后端无法连接模型服务" in visible
     assert "检索证据已保留" in visible
-    assert "[1] 参数优先级" in visible
+    assert "[1] Jetson 刷写与软件基线" in visible
 
 
 def test_provider_rejection_and_invalid_response_explain_safe_fallback(monkeypatch):
@@ -1293,23 +1294,23 @@ def test_relative_corpus_links_point_to_the_pinned_official_source():
     from public_workbench import _rewrite_relative_source_links
 
     source_url = (
-        "https://github.com/apache/dolphinscheduler/blob/"
+        "https://wiki.seeedstudio.com/cn/"
         "a190201acffa03d199d4ca216288734a6513de3d/"
         "docs/docs/zh/guide/parameter/priority.md"
     )
     content = (
         "[内置参数](built-in.md) [本章](#priority) "
-        "[官方发布](https://github.com/apache/dolphinscheduler/releases)"
+        "[官方发布](https://wiki.seeedstudio.com/cn/)"
     )
     rendered = _rewrite_relative_source_links(content, source_url)
 
     assert (
-        "[内置参数](https://github.com/apache/dolphinscheduler/blob/"
+        "[内置参数](https://wiki.seeedstudio.com/cn/"
         "a190201acffa03d199d4ca216288734a6513de3d/"
         "docs/docs/zh/guide/parameter/built-in.md)"
     ) in rendered
     assert f"[本章]({source_url}#priority)" in rendered
-    assert "[官方发布](https://github.com/apache/dolphinscheduler/releases)" in rendered
+    assert "[官方发布](https://wiki.seeedstudio.com/cn/)" in rendered
 
 
 def test_relative_wiki_links_resolve_to_seeed_origin_without_rewriting_external_links():
@@ -1407,7 +1408,7 @@ def test_public_agent_change_and_review_are_session_local(monkeypatch):
     visible = "\n".join(item.value for item in list(first.markdown) + list(first.caption))
     assert "该章节说明参数优先级。" in visible
     assert "核对示例与运维说明是否同步。" in visible
-    assert "尚未检查英文资料。" in visible
+    assert "尚未提供目标设备的实测记录。" in visible
     assert "等待人工审核" in visible
     headings = [item.value for item in first.subheader]
     assert headings.index("模型辅助核对建议") < headings.index("优先核对的影响候选")
@@ -1467,18 +1468,64 @@ def test_public_agent_shows_explicit_document_reference_without_confirming_parag
     assert "已确认关系" not in visible
 
 
-def test_public_navigation_exposes_single_domain_and_pending_edge_evaluation(monkeypatch):
+def test_public_navigation_exposes_single_domain_and_validated_edge_evaluation(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
-    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: _edge_workspace())
+    workspace = {
+        **_edge_workspace(),
+        "retrieval_evaluation_status": "edge_ai_retrieval_v2_validated",
+        "retrieval_evaluation": {
+            "name": "edge_ai_retrieval_v2", "policy": "bm25", "case_count": 22,
+            "case_split_counts": {"dev": 11, "holdout": 11},
+            "selection_reason": "DEV/HOLDOUT 上 BM25 Faceted RRF 未提高来源召回，保留 BM25。",
+            "candidates": {
+                "dev": {
+                    "bm25": {
+                        "mean_required_source_recall": 0.95,
+                        "complete_required_source_set_rate": 0.90,
+                        "wrong_scope_result_count": 0,
+                        "unanswerable_candidate_rate": 1.0,
+                        "latency_ms": {"p95": 4.085},
+                    },
+                    "bm25_faceted_rrf": {
+                        "mean_required_source_recall": 0.95,
+                        "complete_required_source_set_rate": 0.90,
+                        "wrong_scope_result_count": 0,
+                        "unanswerable_candidate_rate": 1.0,
+                        "latency_ms": {"p95": 4.91},
+                    },
+                },
+                "holdout": {
+                    "bm25": {
+                        "mean_required_source_recall": 0.90,
+                        "complete_required_source_set_rate": 0.90,
+                        "wrong_scope_result_count": 0,
+                        "unanswerable_candidate_rate": 1.0,
+                        "latency_ms": {"p95": 2.514},
+                    },
+                    "bm25_faceted_rrf": {
+                        "mean_required_source_recall": 0.90,
+                        "complete_required_source_set_rate": 0.90,
+                        "wrong_scope_result_count": 0,
+                        "unanswerable_candidate_rate": 1.0,
+                        "latency_ms": {"p95": 2.764},
+                    },
+                },
+            },
+        },
+    }
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: workspace)
     app = AppTest.from_file(APP, default_timeout=40).run()
     labels = {button.label for button in app.button}
     assert {"总览", "版本化知识检索", "版本与历史", "资料来源", "发起变更审查", "影响候选", "修改建议对照", "检索评测", "已知限制"} <= labels
     next(button for button in app.button if button.label == "检索评测").click().run()
     assert not app.exception
-    visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader) + list(app.warning))
+    visible = "\n".join(
+        item.value for group in (app.markdown, app.caption, app.subheader, app.warning, app.info)
+        for item in group
+    )
     assert "当前语料评测状态" in visible
-    assert "尚未完成" in visible
+    assert "固定题集 22 题" in visible
     assert "BM25" in visible
     assert "Autoware" not in visible and "DolphinScheduler" not in visible
     assert "43 条可回答" not in visible
@@ -1490,7 +1537,7 @@ def test_benchmark_ignores_other_corpus_numbers_for_new_edge_workspace(monkeypat
     workspace = {
         **_edge_workspace(),
         "retrieval_evaluation": {
-            "name": "autoware_accuracy_v2", "case_count": 90,
+            "name": "other_corpus_v2", "case_count": 90,
             "holdout": {"required_source_recall_at_5": 0.99},
         },
     }
@@ -1501,8 +1548,59 @@ def test_benchmark_ignores_other_corpus_numbers_for_new_edge_workspace(monkeypat
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader) + list(app.warning))
     assert not app.exception
     assert "尚未完成与语料指纹绑定的冻结评测" in visible
-    assert "0.99" not in visible and "autoware_accuracy_v2" not in visible
+    assert "0.99" not in visible and "other_corpus_v2" not in visible
     assert "其他领域语料上的分数不适用于本知识空间" in visible
+
+
+def test_benchmark_displays_only_fingerprinted_edge_metrics_and_agent_limits(monkeypatch):
+    _mock_client(monkeypatch)
+    from services.public_knowledge_client import PublicKnowledgeClient
+    workspace = {
+        **_edge_workspace(),
+        "retrieval_evaluation_status": "edge_ai_retrieval_v2_validated",
+        "retrieval_evaluation": {
+            "name": "edge_ai_retrieval_v2", "policy": "bm25", "case_count": 22,
+            "case_split_counts": {"dev": 11, "holdout": 11},
+            "selection_reason": "当前冻结 DEV/HOLDOUT 测试下保留 BM25。",
+            "candidates": {
+                split: {
+                    strategy: {
+                        "mean_required_source_recall": 0.90,
+                        "complete_required_source_set_rate": 0.90,
+                        "wrong_scope_result_count": 0,
+                        "unanswerable_candidate_rate": 1.0,
+                        "latency_ms": {"p95": 2.0},
+                    }
+                    for strategy in ("bm25", "bm25_faceted_rrf")
+                }
+                for split in ("dev", "holdout")
+            },
+        },
+        "change_review_evaluation": {
+            "case_count": 12,
+            "splits": {
+                split: {
+                    "expected_change_type_accuracy": 0.83,
+                    "required_source_recall_across_planned_queries": 0.75,
+                    "complete_required_source_set_count": 3,
+                    "answerable_case_count": 4,
+                    "scope_gap_detection_accuracy": 1.0,
+                    "manual_review_boundary_accuracy": 1.0,
+                    "human_quality_scoring": {"status": "not_scored"},
+                }
+                for split in ("dev", "holdout")
+            },
+        },
+    }
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: workspace)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+    next(button for button in app.button if button.label == "检索评测").click().run()
+
+    assert not app.exception
+    assert len(app.dataframe) == 2
+    assert set(app.dataframe[0].value.iloc[:, 1]) == {"bm25", "bm25_faceted_rrf"}
+    assert app.dataframe[0].value.iloc[0, 5] == 1.0
+    assert app.dataframe[1].value.iloc[0, 5] == 1.0
 
 
 def test_edge_version_page_distinguishes_snapshot_from_software_baselines(monkeypatch):
@@ -1522,26 +1620,29 @@ def test_edge_version_page_distinguishes_snapshot_from_software_baselines(monkey
 def test_relative_official_link_stays_on_commit_or_becomes_plain_text():
     from public_workbench import _rewrite_relative_source_links
 
-    source = "https://github.com/apache/dolphinscheduler/blob/" + "a" * 40 + "/docs/docs/zh/guide/parameter/context.md"
-    raw = "[安全章节](./global.md) [越界章节](../../../../../../../../another-repo/README.md) [外部](https://example.com/x)"
+    source = "https://wiki.seeedstudio.com/cn/jetson_developtool_flash_firmware/"
+    raw = "[安全章节](./jetson_developtool_supported_devices/) [中文目录](../) [越界章节](../../another-repo/README.md) [编码越界](%2e%2e/%2e%2e/en/README.md) [外部](https://example.com/x)"
     visible = _rewrite_relative_source_links(raw, source)
 
-    assert "[安全章节](https://github.com/apache/dolphinscheduler/blob/" in visible
+    assert "[安全章节](https://wiki.seeedstudio.com/cn/jetson_developtool_flash_firmware/jetson_developtool_supported_devices/)" in visible
+    assert "[中文目录](https://wiki.seeedstudio.com/cn/)" in visible
     assert "越界章节" in visible
     assert "[越界章节](" not in visible
+    assert "编码越界" in visible
+    assert "[编码越界](" not in visible
     assert "[外部](https://example.com/x)" in visible
 
 
 def test_verified_consistency_notice_names_primary_basis_and_both_versions(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
-    old = {**CHUNK, "version": "3.4.2", "source_url": "https://github.com/apache/dolphinscheduler/releases/tag/3.4.2"}
+    old = {**CHUNK, "version": "wiki-previous-snapshot", "source_url": "https://wiki.seeedstudio.com/cn//tag/wiki-previous-snapshot"}
     note = {
         "kind": "verified_literal_value_difference", "document_key": CHUNK["document_key"],
         "heading": CHUNK["heading"], "parameter": "worker.threads", "values": ["1000", "500"],
         "message": "同一章节中有不同的明确值。", "sources": [
-            {"version": "3.4.3", "locale": "zh-CN", "source_url": CHUNK["source_url"]},
-            {"version": "3.4.2", "locale": "zh-CN", "source_url": old["source_url"]},
+            {"version": "wiki-1eadc6584f96", "locale": "zh-CN", "source_url": CHUNK["source_url"]},
+            {"version": "wiki-previous-snapshot", "locale": "zh-CN", "source_url": old["source_url"]},
         ],
     }
     monkeypatch.setattr(PublicKnowledgeClient, "query_official", lambda self, question, **scope: {
@@ -1555,7 +1656,7 @@ def test_verified_consistency_notice_names_primary_basis_and_both_versions(monke
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.warning))
     assert "版本差异提醒" in visible
     assert "引用依据之一" in visible
-    assert "3.4.2" in visible and "3.4.3" in visible
+    assert "wiki-previous-snapshot" in visible and "wiki-1eadc6584f96" in visible
     assert "概率" not in visible
 
 
@@ -1587,7 +1688,7 @@ def test_agent_stepper_marks_human_review_after_analysis(monkeypatch):
 def test_switching_source_resets_previous_unsent_draft(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
-    second = {**CHUNK, "chunk_id": "3.4.3:zh:guide/parameter/priority:2",
+    second = {**CHUNK, "chunk_id": "wiki-1eadc6584f96:zh:guide/parameter/priority:2",
               "heading": "启动参数", "content": "启动参数是第二优先级。"}
     monkeypatch.setattr(PublicKnowledgeClient, "document",
                         lambda self, document_id: [dict(CHUNK), second])
@@ -1607,8 +1708,8 @@ def test_about_page_exposes_separate_frontend_backend_and_asset_fingerprints(mon
     monkeypatch.setattr(public_workbench, "ui_build_revision", lambda: "a" * 40)
     from services.public_knowledge_client import PublicKnowledgeClient
     monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: {
-        "workspace": "Autoware", "repository": "autowarefoundation/autoware_universe",
-        "repositories": ["autowarefoundation/autoware_universe"],
+        "workspace": "其他领域", "repository": "Seeed-Studio/wiki-documents",
+        "repositories": ["Seeed-Studio/wiki-documents"],
         "build_revision": "b" * 40,
         "corpus_fingerprint": {"fingerprint_sha256": "c" * 64},
         "retrieval_config_fingerprint": "d" * 64,

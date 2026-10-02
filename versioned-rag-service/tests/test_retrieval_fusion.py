@@ -19,7 +19,7 @@ def _module():
 
 def test_single_fact_query_is_preserved_exactly():
     module = _module()
-    query = "3.4.3 的 missed_fire_policy 默认值是什么？"
+    query = "J4012 JetPack 7.2 的兼容基线是什么？"
     assert module.split_query_facets(query) == [query]
 
 
@@ -45,8 +45,8 @@ def test_oversized_query_is_rejected_and_whitespace_facets_are_removed():
 
 def test_rrf_deduplicates_hits_and_keeps_facet_trace():
     module = _module()
-    first = {"chunk_id": "3.4.3:zh:a:1", "version": "3.4.3", "retrieval_score": 9.0}
-    second = {"chunk_id": "3.4.3:zh:b:1", "version": "3.4.3", "retrieval_score": 4.0}
+    first = {"chunk_id": "wiki-current:zh:a:1", "version": "wiki-current", "retrieval_score": 9.0}
+    second = {"chunk_id": "wiki-current:zh:b:1", "version": "wiki-current", "retrieval_score": 4.0}
 
     result = module.fuse_ranked_hits([[first, second], [second, first]], top_k=5)
 

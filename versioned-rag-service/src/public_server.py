@@ -26,7 +26,6 @@ from src.figure_sidecar_integrity import validate_reviewed_sidecar
 from src.public_api import router as public_router
 from src.public_knowledge import PublicKnowledgeIndex
 from src.public_retrieval_runtime import PublicRetrievalRuntime
-from src.public_retrieval_runtime import DEFAULT_CONFIG as DEFAULT_PUBLIC_RETRIEVAL_CONFIG
 
 
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
@@ -37,7 +36,7 @@ _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 def _configured_public_corpus_root() -> Path:
     configured = os.environ.get("RAG_PUBLIC_CORPUS_ROOT", "").strip()
     if not configured:
-        return Path(__file__).resolve().parents[1] / "public_corpus"
+        return Path(__file__).resolve().parents[1] / "public_corpus_edge_ai"
     path = Path(configured).expanduser()
     return path if path.is_absolute() else (SERVICE_ROOT / path).resolve()
 
@@ -45,7 +44,7 @@ def _configured_public_corpus_root() -> Path:
 def _configured_public_retrieval_config() -> Path:
     configured = os.environ.get("RAG_PUBLIC_RETRIEVAL_CONFIG", "").strip()
     if not configured:
-        return DEFAULT_PUBLIC_RETRIEVAL_CONFIG
+        return _configured_public_corpus_root() / "public_retrieval_runtime.json"
     path = Path(configured).expanduser()
     return path if path.is_absolute() else (SERVICE_ROOT / path).resolve()
 

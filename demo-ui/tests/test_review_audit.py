@@ -26,7 +26,7 @@ def _report(task_id: str, decision: str) -> dict:
         "request_summary": "调整全局参数并核对默认值。",
         "request_plan": {"change_type": "parameter_config", "queries": []},
         "retrieval_trace": {"queries": [{"query": "默认值", "status": "candidate_found"}]},
-        "evidence_sources": [{"chunk_id": "3.4.3:zh:guide/parameter/global:1"}],
+        "evidence_sources": [{"chunk_id": "wiki-1eadc6584f96:zh:guide/parameter/global:1"}],
         "human_decision": decision,
         "decided_at_utc": "2026-09-30T12:00:00+00:00",
     }
@@ -87,7 +87,7 @@ def test_workbench_review_callback_persists_decision_and_reports_event(monkeypat
         "request_plan": {"change_type": "parameter_config", "queries": []},
         "retrieval_trace": {"queries": []},
         "retrieved_results": [{
-            "chunk_id": "chunk-ui", "source_url": "https://github.com/apache/dolphinscheduler/doc.md",
+            "chunk_id": "chunk-ui", "source_url": "https://github.com/Seeed-Studio/wiki-documents/doc.md",
         }],
         "review_advice": {"status": "NO_EVIDENCE", "sources": []},
         "evidence_gaps": [],
