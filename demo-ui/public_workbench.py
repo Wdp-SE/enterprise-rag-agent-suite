@@ -812,8 +812,11 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                     elif reason == "NO_VALID_EVIDENCE_CITATIONS":
                         claimed = diagnostic.get("claimed_citation_count", 0)
                         valid = diagnostic.get("valid_citation_count", 0)
+                        candidates = diagnostic.get("candidate_count", 0)
                         st.caption(
-                            f"答案引用未通过校验（有效引用 {valid}/{claimed}），已隐藏。请以检索原文为准。"
+                            f"模型输出未通过证据引用校验：检索到 {candidates} 条候选资料，"
+                            f"{valid}/{claimed} 个引用能匹配本次结果。回答已隐藏以避免展示无法追溯内容；"
+                            "请核对下方原文，或缩小问题范围后重试。"
                         )
                     else:
                         st.caption(

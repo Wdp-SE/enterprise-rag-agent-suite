@@ -12,40 +12,38 @@ from src.public_knowledge import (
     PublicKnowledgeIndex, _parts, build_index, verified_consistency_notes,
 )
 
-LEGACY_CORPUS = Path(__file__).resolve().parents[1] / "public_corpus_edge_ai"
+CORPUS = Path(__file__).resolve().parents[1] / "public_corpus_pphuman"
 
 
 @pytest.fixture(scope="module")
 def index() -> PublicKnowledgeIndex:
-    # Legacy retrieval coverage remains explicit and cannot become the service default.
-    return PublicKnowledgeIndex(LEGACY_CORPUS)
+    return PublicKnowledgeIndex(CORPUS)
 
 
-def test_pinned_chinese_edge_ai_corpus_metadata_and_source_hashes(index):
+def test_pinned_chinese_pphuman_corpus_metadata_and_source_hashes(index):
     manifest = index.manifest
-    snapshot = manifest["source_snapshot"]
-    assert manifest["workspace_id"] == "edge_ai_device"
-    assert manifest["repository"] == "Seeed-Studio/wiki-documents"
-    assert manifest["current_version"] == snapshot["version"]
-    assert manifest["available_versions"] == [snapshot["version"]]
-    assert len(manifest["sources"]) == 18
+    assert manifest["workspace_id"] == "pphuman"
+    assert manifest["repository"] == "PaddlePaddle/PaddleDetection"
+    assert manifest["current_version"] == "v2.9.0"
+    assert manifest["available_versions"] == ["v2.5.0", "v2.6.0", "v2.7.0", "v2.8.0", "v2.8.1", "v2.9.0"]
+    assert len(manifest["sources"]) == 83
     assert {row["language"] for row in manifest["sources"]} == {"zh"}
     assert {row["locale"] for row in manifest["sources"]} == {"zh-CN"}
     for row in manifest["sources"]:
-        assert row["source_url"].startswith("https://wiki.seeedstudio.com/cn/")
-        assert row["commit"] == snapshot["commit"]
-        assert hashlib.sha256((LEGACY_CORPUS / row["local_path"]).read_bytes()).hexdigest() == row["sha256"]
+        assert row["source_url"].startswith("https://github.com/PaddlePaddle/PaddleDetection/blob/")
+        assert row["commit"] == manifest["versions"][row["version"]]["commit"]
+        assert hashlib.sha256((CORPUS / row["local_path"]).read_bytes()).hexdigest() == row["sha256"]
 
 
 def test_chinese_and_snapshot_filters_keep_one_workspace(index):
-    snapshot = index.manifest["current_version"]
-    hits = index.search("J4012 JetPack 7.2 边缘 AI 部署", language="zh", version="current")
+    snapshot = "v2.9.0"
+    hits = index.search("PP-Human 行人跟踪模型 推理配置", language="zh", version="latest")
     assert hits
     assert all(row["locale"] == "zh-CN" and row["version"] == snapshot for row in hits)
-    assert all(row["repository"] == "Seeed-Studio/wiki-documents" for row in hits)
-    assert index.search("Jetson", language="zh", version=snapshot)
+    assert all(row["repository"] == "PaddlePaddle/PaddleDetection" for row in hits)
+    assert index.search("行人跟踪", language="zh", version=snapshot)
     with pytest.raises(ValueError, match="unsupported public corpus scope"):
-        index.search("Jetson", language="zh", version="not-a-pinned-snapshot")
+        index.search("行人跟踪", language="zh", version="not-a-pinned-release")
 
 
 def test_consistency_warning_only_reports_verifiable_version_text_difference():
@@ -78,13 +76,12 @@ def test_consistency_warning_does_not_compare_different_languages_as_version_con
 
 
 def test_current_scope_is_only_the_pinned_document_snapshot(index):
-    snapshot = index.manifest["source_snapshot"]["version"]
-    current = index.search("Jetson", version="current", language="zh")
+    snapshot = index.manifest["current_version"]
+    current = index.search("行人跟踪", version="latest", language="zh")
     exact = index.search("Jetson", version=snapshot, language="zh")
     assert current and exact
     assert {row["version"] for row in current + exact} == {snapshot}
-    assert index.manifest["available_versions"] == [snapshot]
-    assert index.manifest["software_baselines"]  # software baselines are separate from snapshot history
+    assert len(index.manifest["available_versions"]) == 6
 
 
 def test_parts_keep_inherited_heading_path():
@@ -152,7 +149,7 @@ def test_fielded_bm25_does_not_compute_dense_or_baseline_scores(index, monkeypat
     monkeypatch.setattr("src.public_knowledge.dense_vector", unexpected)
 
     hits = index.search(
-        "J4012 JetPack 7.2", version="current", language="zh", policy="bm25_fields"
+        "PP-Human 行人跟踪推理配置", version="latest", language="zh", policy="bm25_fields"
     )
 
     assert hits
@@ -234,12 +231,12 @@ def test_consistency_warning_for_explicit_same_parameter_values():
 
 def test_public_index_rejects_policy_from_a_different_corpus(tmp_path):
     for name in ("corpus_manifest.json", "chunks.json", "dense_vectors.npy", "retrieval_policy.json"):
-        (tmp_path / name).write_bytes((LEGACY_CORPUS / name).read_bytes())
+        (tmp_path / name).write_bytes((CORPUS / name).read_bytes())
     policy_path = tmp_path / "retrieval_policy.json"
     policy = json.loads(policy_path.read_text(encoding="utf-8"))
     policy["benchmark_corpus_sha256"] = "0" * 64
     policy_path.write_text(json.dumps(policy), encoding="utf-8")
-    shutil.copytree(LEGACY_CORPUS / "sources", tmp_path / "sources")
+    shutil.copytree(CORPUS / "sources", tmp_path / "sources")
     with pytest.raises(ValueError, match="does not match pinned corpus"):
         PublicKnowledgeIndex(tmp_path)
 
@@ -247,8 +244,8 @@ def test_public_index_rejects_policy_from_a_different_corpus(tmp_path):
 @pytest.mark.parametrize("artifact", ["chunks.json", "dense_vectors.npy"])
 def test_public_index_rejects_tampered_prebuilt_artifact(tmp_path, artifact):
     for name in ("corpus_manifest.json", "chunks.json", "dense_vectors.npy", "retrieval_policy.json"):
-        (tmp_path / name).write_bytes((LEGACY_CORPUS / name).read_bytes())
-    shutil.copytree(LEGACY_CORPUS / "sources", tmp_path / "sources")
+        (tmp_path / name).write_bytes((CORPUS / name).read_bytes())
+    shutil.copytree(CORPUS / "sources", tmp_path / "sources")
 
     artifact_path = tmp_path / artifact
     if artifact == "chunks.json":

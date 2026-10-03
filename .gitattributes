@@ -2,24 +2,11 @@ versioned-rag-service/public_demo_artifacts/rd-v2-public-demo-v1/*.json text eol
 versioned-rag-service/public_demo_artifacts/rd-v2-public-demo-v1/*.jsonl text eol=lf
 versioned-rag-service/public_demo_artifacts/rd-v2-public-demo-v1/*.npy binary
 versioned-rag-service/public_demo_artifacts/rd-v2-public-demo-v1/*.faiss binary
-# Preserve hash-verified upstream snapshots and manifest bytes across platforms.
-versioned-rag-service/public_corpus/sources/** -text whitespace=cr-at-eol,-blank-at-eof
-versioned-rag-service/public_corpus/corpus_manifest.json -text whitespace=cr-at-eol
-versioned-rag-service/public_corpus/chunks.json text eol=lf
-# Keep the new Autoware corpus reproducible across Windows and Linux. Upstream
-# snapshots and their manifest are byte-pinned Git content; generated JSON uses LF.
-versioned-rag-service/public_corpus_autoware/sources/** -text whitespace=cr-at-eol,-blank-at-eof
-versioned-rag-service/public_corpus_autoware/corpus_manifest.json -text whitespace=cr-at-eol
-versioned-rag-service/public_corpus_autoware/LICENSE -text whitespace=cr-at-eol
-versioned-rag-service/public_corpus_autoware/*.json text eol=lf
-versioned-rag-service/public_corpus_autoware/NOTICE text eol=lf
-# Preserve the raw source snapshots and normalized corpus documents byte-for-byte;
-# their SHA-256 values are checked by the importer and runtime index builder.
-versioned-rag-service/public_corpus_edge_ai/raw_snapshots/** -text whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
-versioned-rag-service/public_corpus_edge_ai/sources/** -text whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
-versioned-rag-service/public_corpus_edge_ai/*.json text eol=lf
-versioned-rag-service/public_corpus_edge_ai/*.md text eol=lf
-versioned-rag-service/config/edge_ai_source_selection.json text eol=lf
+# Preserve PP-Human upstream snapshots byte-for-byte for source hash checks.
+versioned-rag-service/public_corpus_pphuman/sources/** -text whitespace=cr-at-eol,-blank-at-eof
+versioned-rag-service/public_corpus_pphuman/corpus_manifest.json text eol=lf
+versioned-rag-service/public_corpus_pphuman/*.json text eol=lf
+versioned-rag-service/public_corpus_pphuman/*.npy binary
 # The frozen V3 retrieval candidate hashes the exact code bytes. Preserve its
 # mixed historical line endings so Linux deployments match the evaluation lock.
 versioned-rag-service/src/public_knowledge.py -text whitespace=cr-at-eol

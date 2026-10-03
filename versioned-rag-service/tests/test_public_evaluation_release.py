@@ -9,7 +9,7 @@ from src.public_knowledge import PublicKnowledgeIndex
 
 ROOT = Path(__file__).resolve().parents[2]
 SERVICE = ROOT / "versioned-rag-service"
-CORPUS = SERVICE / "public_corpus_edge_ai"
+CORPUS = SERVICE / "public_corpus_pphuman"
 
 
 def _identity():
@@ -20,13 +20,13 @@ def _identity():
     )
 
 
-def test_historical_edge_evaluation_is_not_reused_for_the_current_project_build():
+def test_new_pphuman_corpus_does_not_reuse_a_historical_evaluation():
     index = PublicKnowledgeIndex(CORPUS)
     release = validate_public_evaluation_release(index.manifest, CORPUS, _identity())
     assert release is None
 
 
-def test_wrong_workspace_cannot_use_edge_evaluation():
+def test_wrong_workspace_cannot_use_a_pphuman_evaluation():
     manifest = dict(PublicKnowledgeIndex(CORPUS).manifest)
     manifest["workspace_id"] = "unrelated_workspace"
     assert validate_public_evaluation_release(manifest, CORPUS, _identity()) is None

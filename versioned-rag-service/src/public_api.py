@@ -24,7 +24,7 @@ from src.public_knowledge import (
 )
 from src.public_scope import is_out_of_scope_public_request
 from src.pphuman_corpus import PPHUMAN_WORKSPACE_ID
-from src.rd_v2_runtime import _format_context, validate_citation_membership
+from src.rd_v2_runtime import _format_context
 from src.public_evaluation_release import validate_public_evaluation_release
 
 
@@ -355,7 +355,12 @@ def _positive_retrieval_hits(hits: list[dict]) -> list[dict]:
     ]
 
 
-def _validate_claim_evidence(claims: object, evidence_hits: list[dict]) -> tuple[list[dict], list[dict]]:
+def _validate_claim_evidence(
+    claims: object,
+    evidence_hits: list[dict],
+    *,
+    evidence_aliases: dict[str, str] | None = None,
+) -> tuple[list[dict], list[dict]]:
     """Map answer claims to exact chunks from this retrieval response only."""
     if not isinstance(claims, list):
         raise ValueError("claims must be a list")
@@ -370,20 +375,25 @@ def _validate_claim_evidence(claims: object, evidence_hits: list[dict]) -> tuple
             return [], []
         text = claim.get("text")
         evidence_ids = claim.get("evidence_ids")
+        resolved_ids = [
+            (evidence_aliases or {}).get(chunk_id, chunk_id)
+            for chunk_id in evidence_ids
+        ] if isinstance(evidence_ids, list) else []
         if (
             not isinstance(text, str) or not text.strip()
             or not isinstance(evidence_ids, list) or not evidence_ids
             or any(not isinstance(chunk_id, str) or not chunk_id.strip() for chunk_id in evidence_ids)
             or len(evidence_ids) != len(set(evidence_ids))
-            or any(chunk_id not in allowed for chunk_id in evidence_ids)
+            or len(resolved_ids) != len(set(resolved_ids))
+            or any(chunk_id not in allowed for chunk_id in resolved_ids)
             or text.strip() in seen_claims
         ):
             raise ValueError("claim does not cite current retrieval evidence")
         seen_claims.add(text.strip())
-        for chunk_id in evidence_ids:
+        for chunk_id in resolved_ids:
             if chunk_id not in used_chunk_ids:
                 used_chunk_ids.append(chunk_id)
-        normalized_claims.append({"text": text.strip(), "evidence_ids": list(evidence_ids)})
+        normalized_claims.append({"text": text.strip(), "evidence_ids": resolved_ids})
     source_indexes = {chunk_id: index + 1 for index, chunk_id in enumerate(used_chunk_ids)}
     for claim in normalized_claims:
         claim["source_indexes"] = list(dict.fromkeys(source_indexes[item] for item in claim["evidence_ids"]))
@@ -740,19 +750,24 @@ async def query(payload: SearchRequest, request: Request) -> dict:
         return {**base, "status": "NO_EVIDENCE"}
     if generator is None:
         return {**base, "status": "GENERATION_NOT_CONFIGURED"}
+    evidence_aliases = {
+        f"E{position}": hit["chunk_id"]
+        for position, hit in enumerate(hits, start=1)
+    }
     generator_hits = [
         {
-            "document_id": hit["chunk_id"], "page_number": 1,
+            "document_id": f"E{position}", "page_number": 1,
             "section_id": hit["heading"], "section_path": [hit["document_key"], hit["heading"]],
-            "chunk_id": hit["chunk_id"], "text": hit["content"],
+            "chunk_id": f"E{position}", "text": hit["content"],
+            "modality": hit.get("modality", "text"),
         }
-        for hit in hits
+        for position, hit in enumerate(hits, start=1)
     ]
     provenance = "\n".join(
-        f"{row['chunk_id']} | version={row['version']} | locale={row['locale']} | "
+        f"E{position} | version={row['version']} | locale={row['locale']} | "
         f"modality={row.get('modality', 'text')} | commit={row.get('commit', 'n/a')} | "
         f"image_sha256={row.get('sha256', 'n/a')} | source={row['source_url']}"
-        for row in hits
+        for position, row in enumerate(hits, start=1)
     )
     workspace_name = str(index.manifest.get("workspace") or "已登记工作区")
     source_description = (
@@ -786,7 +801,9 @@ async def query(payload: SearchRequest, request: Request) -> dict:
         diagnostics["latency_ms"] = round((time.perf_counter() - started) * 1000)
         diagnostics["candidate_count"] = len(hits)
         try:
-            claims, cited_hits = _validate_claim_evidence(generated.get("claims"), hits)
+            claims, cited_hits = _validate_claim_evidence(
+                generated.get("claims"), hits, evidence_aliases=evidence_aliases,
+            )
         except (ValueError, TypeError, KeyError) as exc:
             diagnostics["failure_reason"] = "NO_VALID_EVIDENCE_CITATIONS"
             raw_claims = generated.get("claims")
@@ -794,7 +811,15 @@ async def query(payload: SearchRequest, request: Request) -> dict:
                 len(item.get("evidence_ids", [])) for item in raw_claims
                 if isinstance(item, dict) and isinstance(item.get("evidence_ids"), list)
             ) if isinstance(raw_claims, list) else 0
-            diagnostics["valid_citation_count"] = 0
+            allowed_ids = {row.get("chunk_id") for row in hits}
+            diagnostics["valid_citation_count"] = sum(
+                1
+                for item in raw_claims
+                if isinstance(item, dict) and isinstance(item.get("evidence_ids"), list)
+                for evidence_id in item["evidence_ids"]
+                if isinstance(evidence_id, str)
+                and evidence_aliases.get(evidence_id, evidence_id) in allowed_ids
+            ) if isinstance(raw_claims, list) else 0
             logger.info(
                 "Public generation request_id=%s status=ABSTAINED reason=%s candidate_count=%s",
                 diagnostics["request_id"], diagnostics["failure_reason"], diagnostics["candidate_count"],
@@ -806,24 +831,6 @@ async def query(payload: SearchRequest, request: Request) -> dict:
             logger.info(
                 "Public generation request_id=%s status=ABSTAINED reason=%s candidate_count=%s",
                 diagnostics["request_id"], diagnostics["failure_reason"], diagnostics["candidate_count"],
-            )
-            return {**base, "status": "ABSTAINED"}
-        claimed_sources = generated.get("relevant_sources")
-        citations = validate_citation_membership(claimed_sources, generator_hits) if isinstance(claimed_sources, list) else []
-        claim_chunk_ids = {chunk_id for claim in claims for chunk_id in claim["evidence_ids"]}
-        source_chunk_ids = {row["document_id"] for row in citations}
-        if (
-            not isinstance(claimed_sources, list)
-            or len(citations) != len(claimed_sources)
-            or not claim_chunk_ids.issubset(source_chunk_ids)
-        ):
-            diagnostics["failure_reason"] = "NO_VALID_EVIDENCE_CITATIONS"
-            diagnostics["claimed_citation_count"] = len(claimed_sources) if isinstance(claimed_sources, list) else 0
-            diagnostics["valid_citation_count"] = len(citations)
-            logger.info(
-                "Public generation request_id=%s status=ABSTAINED reason=%s candidate_count=%s claimed_citations=%s",
-                diagnostics["request_id"], diagnostics["failure_reason"], diagnostics["candidate_count"],
-                diagnostics["claimed_citation_count"],
             )
             return {**base, "status": "ABSTAINED"}
         diagnostics["claimed_citation_count"] = sum(len(claim["evidence_ids"]) for claim in claims)

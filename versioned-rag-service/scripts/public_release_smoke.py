@@ -15,22 +15,20 @@ import httpx
 
 _REVISION = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
 _FINGERPRINT = re.compile(r"^[0-9a-f]{64}$", re.IGNORECASE)
-_PROJECT_MANIFEST_PATH = Path(__file__).resolve().parents[1] / "config" / "industrial_inspection_project.json"
-PROJECT_ID = "industrial-inspection"
-PROJECT_REPOSITORY = "xbs0325/industrial-inspection"
-_NO_ANSWER_QUERY = "请提供公司内部客户摄像头账号密码和现场网络地址。"
+_CORPUS_MANIFEST_PATH = Path(__file__).resolve().parents[1] / "public_corpus_pphuman" / "corpus_manifest.json"
+PROJECT_ID = "pphuman"
+PROJECT_REPOSITORY = "PaddlePaddle/PaddleDetection"
+_NO_ANSWER_QUERY = "请提供公司内部 PP-Human 测试视频和私有工单。"
 _SEARCH_PROBES = (
     {
-        "name": "project_configuration",
-        "query_zh": "项目在哪里配置视频流输入与相机健康检查？",
-        "query_en": "Where are video stream input and camera health checks configured?",
-        "version": "current",
+        "name": "tracking_configuration",
+        "query": "行人跟踪模型切换后，推理配置和跟踪参数需要核对哪些内容？",
+        "version": "latest",
     },
     {
-        "name": "project_alert_flow",
-        "query_zh": "摄像头视频流异常时，告警和人工核查流程如何处理？",
-        "query_en": "How are camera stream failures turned into alerts and reviewed?",
-        "version": "current",
+        "name": "behavior_configuration",
+        "query": "PP-Human v2.9.0 如何启用行为识别并选择对应的模型配置？",
+        "version": "latest",
     },
 )
 
@@ -39,18 +37,21 @@ class ReleaseSmokeError(RuntimeError):
     pass
 
 
-def _project_source_manifest() -> dict:
+def _pphuman_source_manifest() -> dict:
     try:
-        manifest = json.loads(_PROJECT_MANIFEST_PATH.read_text(encoding="utf-8"))
+        manifest = json.loads(_CORPUS_MANIFEST_PATH.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise ReleaseSmokeError("local industrial-inspection project manifest is unavailable") from exc
+        raise ReleaseSmokeError("local PP-Human corpus manifest is unavailable") from exc
     if (
         not isinstance(manifest, dict)
-        or manifest.get("project_id") != PROJECT_ID
-        or manifest.get("primary_repository") != PROJECT_REPOSITORY
-        or not _REVISION.fullmatch(str(manifest.get("pinned_commit") or ""))
+        or manifest.get("workspace_id") != PROJECT_ID
+        or manifest.get("repository") != PROJECT_REPOSITORY
+        or not isinstance(manifest.get("versions"), dict)
+        or not _REVISION.fullmatch(str(
+            (manifest.get("versions", {}).get(manifest.get("current_version")) or {}).get("commit") or ""
+        ))
     ):
-        raise ReleaseSmokeError("local industrial-inspection project manifest is invalid")
+        raise ReleaseSmokeError("local PP-Human corpus manifest is invalid")
     return manifest
 
 
@@ -91,18 +92,13 @@ def _require_fingerprint(payload: dict, key: str, *, nested: bool = False) -> st
 
 
 def _probe_search(client: httpx.Client, api_url: str, workspace: dict, probe: dict) -> tuple[dict, float]:
-    languages = {str(value).casefold() for value in workspace.get("languages", [])}
-    if languages.intersection({"zh", "zh-cn", "zh-tw"}):
-        language, query = "zh", probe["query_zh"]
-    elif languages.intersection({"en", "en-us", "en-gb"}):
-        language, query = "en", probe["query_en"]
-    else:
-        raise ReleaseSmokeError("industrial-inspection workspace has no supported indexed language")
+    if workspace.get("languages") != ["zh"]:
+        raise ReleaseSmokeError("PP-Human workspace is not Chinese-only")
     payload, elapsed_ms, _ = _request(
         client, "POST", f"{api_url}/public/search",
         json_body={
-            "query": query, "version": probe["version"],
-            "language": language, "top_k": 5,
+            "query": probe["query"], "version": probe["version"],
+            "language": "zh", "top_k": 5,
         },
     )
     if not payload or not isinstance(payload.get("results"), list):
@@ -112,11 +108,11 @@ def _probe_search(client: httpx.Client, api_url: str, workspace: dict, probe: di
         raise ReleaseSmokeError(f"{probe['name']} returned no public evidence")
     if any(
         row.get("repository") != PROJECT_REPOSITORY
-        or row.get("namespace") != "project_primary"
-        or row.get("language") not in ({"zh", "zh-CN", "zh-TW"} if language == "zh" else {"en", "en-US", "en-GB"})
+        or row.get("language") != "zh"
+        or row.get("publisher") != "PaddlePaddle"
         for row in rows
     ):
-        raise ReleaseSmokeError(f"{probe['name']} returned evidence outside the primary project namespace")
+        raise ReleaseSmokeError(f"{probe['name']} returned evidence outside the PP-Human corpus")
     scope = workspace.get("version_scopes", {}).get(probe["version"])
     members = scope.get("versions") if isinstance(scope, dict) else scope
     permitted_versions = {
@@ -128,7 +124,9 @@ def _probe_search(client: httpx.Client, api_url: str, workspace: dict, probe: di
     wrong_version_rows = [row for row in rows if row.get("version") not in permitted_versions]
     if wrong_version_rows:
         raise ReleaseSmokeError(f"{probe['name']} returned wrong-version evidence")
-    expected_commit = str(workspace.get("current_version") or "").casefold()
+    expected_commit = str(
+        workspace.get("snapshots", [{}])[0].get("commit") or ""
+    ).casefold()
     if any(str(row.get("commit") or "").casefold() != expected_commit for row in rows):
         raise ReleaseSmokeError(f"{probe['name']} returned evidence from a different project commit")
     return {"status": "PASS", "evidence_count": len(rows), "versions": sorted({row.get("version") for row in rows if row.get("version")})}, elapsed_ms
@@ -170,20 +168,26 @@ def run_smoke(
         workspace.get("workspace_id") != PROJECT_ID
         or workspace.get("repository") != PROJECT_REPOSITORY
         or workspace.get("repositories") != [PROJECT_REPOSITORY]
-        or not workspace.get("languages")
+        or workspace.get("languages") != ["zh"]
         or workspace.get("public_body_indexing_enabled") is not True
     ):
-        raise ReleaseSmokeError("RAG workspace is not the single industrial-inspection project")
-    source_manifest = _project_source_manifest()
-    if workspace.get("current_version") != source_manifest["pinned_commit"]:
-        raise ReleaseSmokeError("RAG workspace is not pinned to the reviewed project commit")
+        raise ReleaseSmokeError("RAG workspace is not the PP-Human Chinese corpus")
+    source_manifest = _pphuman_source_manifest()
     if (
-        workspace.get("retrieval_evaluation_status") != "industrial_inspection_retrieval_v1_validated"
-        or int(workspace.get("frozen_benchmark_query_count") or 0) < 1
-        or workspace.get("retrieval_evaluation", {}).get("name") != "industrial_inspection_retrieval_v1"
-        or workspace.get("change_review_evaluation", {}).get("dataset_id") != "industrial_inspection_change_review_v1"
+        workspace.get("current_version") != source_manifest["current_version"]
+        or workspace.get("available_versions") != list(reversed(source_manifest["available_versions"]))
     ):
-        raise ReleaseSmokeError("industrial-inspection project evaluation is not validated")
+        raise ReleaseSmokeError("RAG workspace version list does not match the PP-Human corpus")
+    expected_commit = source_manifest["versions"][source_manifest["current_version"]]["commit"]
+    if not workspace.get("snapshots") or workspace["snapshots"][0].get("commit") != expected_commit:
+        raise ReleaseSmokeError("RAG workspace is not pinned to the current PP-Human release")
+    if (
+        workspace.get("retrieval_evaluation_status") != "new_corpus_pending_rebenchmark"
+        or int(workspace.get("frozen_benchmark_query_count") or 0) != 0
+        or "retrieval_evaluation" in workspace
+        or "change_review_evaluation" in workspace
+    ):
+        raise ReleaseSmokeError("RAG workspace is exposing a stale evaluation for the PP-Human corpus")
     if workspace.get("build_revision", "unknown").casefold() != api_revision.casefold():
         raise ReleaseSmokeError("RAG health and workspace revisions differ")
     fingerprint_keys = {

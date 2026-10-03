@@ -9,7 +9,7 @@ from src.public_knowledge import PublicKnowledgeIndex
 from src.public_retrieval_runtime import PublicRetrievalRuntime
 
 
-CORPUS = Path(__file__).resolve().parents[1] / "public_corpus_edge_ai"
+CORPUS = Path(__file__).resolve().parents[1] / "public_corpus_pphuman"
 
 
 def _config(tmp_path: Path, **overrides) -> Path:
@@ -27,7 +27,7 @@ def test_default_runtime_is_exactly_the_locked_bm25_baseline(tmp_path):
         sidecar_path=CORPUS / "figure_evidence_reviewed.json",
         inventory_path=CORPUS / "figure_evidence.json",
     )
-    question = "J4012 JetPack 7.2 工业视觉监控部署"
+    question = "行人跟踪模型切换后，推理配置和跟踪参数需要核对哪些内容？"
 
     assert runtime.search(question, language="zh") == index.search(question, language="zh")
     assert runtime.last_retrieval_call_count == 1
@@ -56,7 +56,7 @@ def test_faceted_rrf_deduplicates_and_records_contributing_facets(tmp_path):
         inventory_path=CORPUS / "figure_evidence.json",
     )
     hits = runtime.search(
-        "J4012 JetPack 7.2；刷写升级和 OTA 影响", top_k=10,
+        "PP-Human 行人跟踪模型；推理配置和跟踪参数变更", top_k=10,
         version="current", language="zh", policy="bm25_faceted_rrf",
     )
 
@@ -74,7 +74,7 @@ def test_single_fact_falls_back_to_one_bm25_query(tmp_path):
         sidecar_path=CORPUS / "figure_evidence_reviewed.json",
         inventory_path=CORPUS / "figure_evidence.json",
     )
-    query = "J4012 JetPack 7.2"
+    query = "PP-Human v2.9.0 行人跟踪"
 
     assert runtime.search(query, language="zh", policy="bm25_faceted_rrf") == index.search(query, language="zh")
     assert runtime.last_retrieval_call_count == 1

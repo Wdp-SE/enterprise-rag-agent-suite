@@ -28,8 +28,6 @@ from scripts.audit_project_source import (
 from src.public_knowledge import dense_vector
 
 
-DEFAULT_SELECTION = SERVICE_ROOT / "config" / "industrial_inspection_source_selection.json"
-DEFAULT_OUTPUT = SERVICE_ROOT / "public_corpus_industrial_inspection"
 MAX_SOURCE_BYTES = 20_000_000
 MAX_CHARS_PER_CHUNK = 1200
 _SOURCE_ID = re.compile(r"^[a-z0-9][a-z0-9-]{2,79}$")
@@ -431,9 +429,9 @@ def build_project_corpus(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repository-root", type=Path, required=True)
-    parser.add_argument("--project-manifest", type=Path, default=SERVICE_ROOT / "config" / "industrial_inspection_project.json")
-    parser.add_argument("--source-selection", type=Path, default=DEFAULT_SELECTION)
-    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--project-manifest", type=Path, required=True)
+    parser.add_argument("--source-selection", type=Path, required=True)
+    parser.add_argument("--output-root", type=Path, required=True)
     args = parser.parse_args()
     project = _read_json_file(args.project_manifest, "project manifest")
     selection = _read_json_file(args.source_selection, "source selection")
