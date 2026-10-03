@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from scripts.build_project_corpus import build_project_corpus
+from src.project_corpus_contract import validate_project_corpus
 
 
 REPOSITORY = "xbs0325/industrial-inspection"
@@ -159,6 +160,25 @@ def test_empty_approved_selection_builds_inactive_metadata_only_corpus(tmp_path:
     assert chunks == []
     inventory = json.loads((output_root / "source_import_manifest.json").read_text(encoding="utf-8"))
     assert inventory["excluded"][0]["reason"] == "license_not_approved"
+
+
+def test_active_project_index_requires_explicit_public_body_indexing(tmp_path: Path):
+    files = {"README.md": b"# Camera Service\n\nRTSP input health checks.\n"}
+    repository_root = tmp_path / "repo"
+    commit = _repo_with_sources(repository_root, files)
+    output_root = tmp_path / "corpus"
+    build_project_corpus(
+        repository_root,
+        _project_manifest(repository_root, commit, files),
+        _selection(files),
+        output_root,
+    )
+    manifest = json.loads((output_root / "corpus_manifest.json").read_text(encoding="utf-8"))
+    chunks = json.loads((output_root / "chunks.json").read_text(encoding="utf-8"))
+    manifest["public_body_indexing_enabled"] = False
+
+    with pytest.raises(ValueError, match="public body indexing"):
+        validate_project_corpus(output_root, manifest, chunks)
 
 
 @pytest.mark.parametrize(

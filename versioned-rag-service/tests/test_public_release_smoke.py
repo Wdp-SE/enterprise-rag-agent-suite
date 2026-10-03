@@ -19,14 +19,19 @@ POLICY_HASH = "c" * 64
 EVALUATION_HASH = "d" * 64
 
 
-def _client(*, wrong_version=False, unhealthy=False, noanswer_status="OUT_OF_SCOPE"):
+def _client(*, wrong_version=False, unhealthy=False, noanswer_status="OUT_OF_SCOPE", license_pending=False):
     def handler(request: httpx.Request) -> httpx.Response:
         path = request.url.path
         if request.url.host == "ui.example":
             return httpx.Response(200, text="Streamlit")
         if path == "/health":
             return httpx.Response(200, json={
-                "alive": not unhealthy, "rag_ready": True,
+                "alive": not unhealthy, "rag_ready": not license_pending,
+                "source_status": "pending_redistribution_license" if license_pending else "ready",
+                "project_status": {
+                    "active": not license_pending,
+                    "reason": "pending_redistribution_license" if license_pending else None,
+                },
                 "build_revision": EXPECTED_SHA,
                 "corpus_fingerprint": {"fingerprint_sha256": CORPUS_HASH},
                 "retrieval_config_fingerprint": POLICY_HASH,
@@ -38,23 +43,28 @@ def _client(*, wrong_version=False, unhealthy=False, noanswer_status="OUT_OF_SCO
                 "corpus_fingerprint": {"fingerprint_sha256": CORPUS_HASH},
                 "retrieval_config_fingerprint": POLICY_HASH,
                 "evaluation_fingerprint": EVALUATION_HASH,
-                "workspace_id": "edge_ai_device",
-                "repository": "Seeed-Studio/wiki-documents",
-                "languages": ["zh"], "current_version": "wiki-1eadc6584f96",
-                "retrieval_evaluation_status": "edge_ai_retrieval_v2_validated",
-                "frozen_benchmark_query_count": 22,
-                "retrieval_evaluation": {"name": "edge_ai_retrieval_v2"},
-                "change_review_evaluation": {"dataset_id": "edge_ai_change_review_v2"},
-                "version_scopes": {"current": {"versions": ["wiki-1eadc6584f96"]}},
-                "available_versions": ["wiki-1eadc6584f96"],
+                "workspace_id": "industrial-inspection",
+                "repository": "xbs0325/industrial-inspection",
+                "repositories": ["xbs0325/industrial-inspection"],
+                "languages": ["zh"], "current_version": "6d0df954f26b1810910db9f50727ca8bd19afa9f",
+                "source_status": "ready",
+                "public_body_indexing_enabled": True,
+                "retrieval_evaluation_status": "industrial_inspection_retrieval_v1_validated",
+                "frozen_benchmark_query_count": 20,
+                "retrieval_evaluation": {"name": "industrial_inspection_retrieval_v1"},
+                "change_review_evaluation": {"dataset_id": "industrial_inspection_change_review_v1"},
+                "version_scopes": {"current": {"versions": ["6d0df954f26b1810910db9f50727ca8bd19afa9f"]}},
+                "available_versions": ["6d0df954f26b1810910db9f50727ca8bd19afa9f"],
             })
         if path == "/public/search":
             body = request.read().decode("utf-8")
             request_json = __import__("json").loads(body)
             requested_version = request_json["version"]
-            version = "stale-snapshot" if wrong_version else "wiki-1eadc6584f96"
+            version = "stale-snapshot" if wrong_version else "6d0df954f26b1810910db9f50727ca8bd19afa9f"
             return httpx.Response(200, json={"status": "OK", "results": [{
                 "version": version, "language": "zh", "locale": "zh-CN",
+                "repository": "xbs0325/industrial-inspection",
+                "commit": version, "namespace": "project_primary",
             }]})
         if path == "/public/query":
             return httpx.Response(200, json={"status": noanswer_status, "evidence": []})
@@ -72,8 +82,8 @@ def test_release_smoke_passes_when_ui_api_and_all_public_probes_match():
         )
 
     assert result["status"] == "PASS"
-    assert result["probes"]["jetson_flash_prerequisites"]["versions"] == ["wiki-1eadc6584f96"]
-    assert result["probes"]["industrial_device_support"]["versions"] == ["wiki-1eadc6584f96"]
+    assert result["probes"]["project_configuration"]["versions"] == ["6d0df954f26b1810910db9f50727ca8bd19afa9f"]
+    assert result["probes"]["project_alert_flow"]["versions"] == ["6d0df954f26b1810910db9f50727ca8bd19afa9f"]
     assert result["probes"]["no_answer_scope"]["status"] == "OUT_OF_SCOPE"
     assert "ui_http_ms" in result["remote_latency_ms"]
 
@@ -115,7 +125,7 @@ def test_release_smoke_rejects_no_answer_query_if_it_is_not_guarded():
         )
 
 
-def test_release_smoke_rejects_non_edge_workspace():
+def test_release_smoke_rejects_non_project_workspace():
     def handler(request: httpx.Request) -> httpx.Response:
         if request.url.host == "ui.example":
             return httpx.Response(200, text="Streamlit")
@@ -131,7 +141,17 @@ def test_release_smoke_rejects_non_edge_workspace():
         return httpx.Response(404)
 
     with httpx.Client(transport=httpx.MockTransport(handler)) as client, pytest.raises(
-        smoke.ReleaseSmokeError, match="edge-AI corpus",
+        smoke.ReleaseSmokeError, match="industrial-inspection project",
+    ):
+        smoke.run_smoke(
+            client, ui_url="https://ui.example", ui_revision=EXPECTED_SHA,
+            api_url="https://api.example", expected_sha=EXPECTED_SHA,
+        )
+
+
+def test_release_smoke_reports_the_license_gate_as_the_readiness_reason():
+    with _client(license_pending=True) as client, pytest.raises(
+        smoke.ReleaseSmokeError, match="pending_redistribution_license",
     ):
         smoke.run_smoke(
             client, ui_url="https://ui.example", ui_revision=EXPECTED_SHA,

@@ -2,6 +2,18 @@
   "schema_version": 1,
   "project_id": "industrial-inspection",
   "project_name": "industrial-inspection 工业视觉安全监控应用",
+  "domain_profile": {
+    "id": "industrial_inspection",
+    "name": "工业视觉安全监控应用研发",
+    "business_scenario": "面向一个工业视觉安全监控应用仓库，按固定 Git commit 查询应用设计、实现、配置、部署和测试资料；变更审查只整理同一仓库内有证据支持的影响候选与验证项，最终由工程师确认。",
+    "source_scope": "唯一来源为 xbs0325/industrial-inspection；Seeed/NVIDIA 资料不属于应用项目主语料，除非以后单独审核并启用设备依赖参考。",
+    "change_types": [
+      {"id": "vision_pipeline", "label": "视觉检测与告警流程变更"},
+      {"id": "camera_input", "label": "相机输入与视频流配置变更"},
+      {"id": "deployment", "label": "Docker 与设备部署配置变更"},
+      {"id": "model_runtime", "label": "模型与推理运行配置变更"}
+    ]
+  },
   "primary_repository": "xbs0325/industrial-inspection",
   "primary_repository_url": "https://github.com/xbs0325/industrial-inspection",
   "publisher": "xbs0325",

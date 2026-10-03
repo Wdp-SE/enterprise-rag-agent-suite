@@ -15,8 +15,8 @@ def test_deployment_manifests_use_public_profile_and_lightweight_dependencies() 
     assert "RD_V2_GENERATION_PROVIDER" in render and "deepseek" in render
     assert "RD_V2_GENERATION_MODEL" in render and "deepseek-v4-flash" in render
     assert "DEEPSEEK_API_KEY" in render and "sync: false" in render
-    assert "public_corpus_edge_ai" in render
-    assert "public_corpus_edge_ai" in (ROOT / "start_prototype.ps1").read_text(encoding="utf-8")
+    assert "public_corpus_industrial_inspection" in render
+    assert "public_corpus_industrial_inspection" in (ROOT / "start_prototype.ps1").read_text(encoding="utf-8")
     assert "MAX_LLM_CALLS_PER_SESSION" not in render
     requirements = (
         ROOT / "versioned-rag-service/requirements-render.txt"
@@ -40,4 +40,4 @@ def test_public_smoke_is_read_only_and_example_secrets_are_placeholders() -> Non
     assert "RAG_API_BASE_URL=https://<render-service>" in example
     assert "DASHSCOPE_API_KEY=<set-in-platform-secret-store>" in example
     service_example = (ROOT / "versioned-rag-service/.env.example").read_text(encoding="utf-8")
-    assert "RAG_PUBLIC_CORPUS_ROOT=public_corpus_edge_ai" in service_example
+    assert "RAG_PUBLIC_CORPUS_ROOT=public_corpus_industrial_inspection" in service_example

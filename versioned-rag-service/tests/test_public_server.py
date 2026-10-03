@@ -37,19 +37,21 @@ def _index() -> PublicKnowledgeIndex:
     return PublicKnowledgeIndex(CORPUS)
 
 
-def test_default_index_and_health_use_the_pinned_chinese_edge_device_corpus():
+def test_default_index_and_health_use_the_license_gated_single_project_corpus():
     index = PublicKnowledgeIndex()
     with TestClient(create_app(index=index)) as client:
         workspace = client.get("/public/workspace").json()
         health = client.get("/health").json()
 
-    assert index.manifest["workspace_id"] == "edge_ai_device"
-    assert workspace["workspace_id"] == "edge_ai_device"
-    assert workspace["languages"] == ["zh"]
-    assert workspace["source_count"] == 18
-    assert workspace["current_version"] == "wiki-1eadc6584f96"
+    assert index.manifest["workspace_id"] == "industrial-inspection"
+    assert workspace["workspace_id"] == "industrial-inspection"
+    assert workspace["languages"] == []
+    assert workspace["source_count"] == 0
+    assert workspace["current_version"] == "6d0df954f26b1810910db9f50727ca8bd19afa9f"
+    assert workspace["rag_ready"] is False
+    assert health["rag_ready"] is False
     assert health["workspace"] == workspace["workspace"]
-    assert workspace["workspace_id"] == "edge_ai_device"
+    assert workspace["workspace_id"] == "industrial-inspection"
 
 
 def test_query_without_generation_returns_retrieved_evidence_without_fabricating_answer():

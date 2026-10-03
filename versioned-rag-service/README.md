@@ -1,38 +1,39 @@
-# 中文边缘 AI 研发知识 RAG 服务
+# 单项目版本化研发知识 RAG 服务
 
-FastAPI 服务仅加载 Seeed Studio Wiki 中 reComputer Industrial / Jetson 的固定中文公开快照。语料包含 18 份来源、394 个文本片段，固定到 `Seeed-Studio/wiki-documents` commit `1eadc6584f962b6efdbdb3e49b2b4ce30c85be08`。它是精选公开资料快照，不代表完整产品资料、企业内部验证或设备兼容性认证。
+FastAPI 服务只接受唯一项目 `xbs0325/industrial-inspection` 的固定版本语料，不允许静默回退到旧领域索引。目标提交为 `6d0df954f26b1810910db9f50727ca8bd19afa9f`。
 
-## 当前服务
+## 当前服务状态
 
-- `GET /health`：服务状态、运行策略和构建/语料/配置/评测指纹。
-- `GET /public/workspace`：中文工作区、设备/软件范围、来源清单与经指纹校验的评测摘要。
-- `GET /public/documents`、`GET /public/document`：固定来源文档和片段。
-- `POST /public/search`：仅用当前中文资料检索，可按设备型号、模组 SKU、载板和 JetPack/L4T 软件范围过滤。
-- `POST /public/query`：返回引用证据；仅在服务端开启生成且供应商可用时生成回答。
-- `POST /public/review-advice`：基于本轮提交的证据生成待审核的影响候选，不修改源资料。
+GitHub 未声明内容再分发许可证，逐文件审计为 0 个已批准正文。活动 corpus manifest 是元数据声明，索引为 0 来源、0 片段、`active=false`。服务可以启动并提供状态接口，但 `/health` 报告 `rag_ready=false`；搜索和生成接口返回 `503 PROJECT_CORPUS_INACTIVE_LICENSE_PENDING`，不会请求模型。这个仓库当前没有可用于报告的本项目 RAG/Agent 指标。
 
-当前检索默认 BM25。离线 22 题评测中，BM25 与分面 RRF 在 DEV/HOLDOUT 来源召回与完整来源集率相同，因此保留 BM25。每个切分只有 1 道语料外题，检索仍返回候选；检索候选不等于正确答案，回答拒绝率与 LLM 事实性仍需独立人工评测。12 题 Agent 评测只报告规则分类、范围缺口、人工审核边界与必需来源覆盖，没有宣称最终建议准确率。详细分母、指纹和复算命令见 [`evaluation/edge_ai_retrieval_v2`](../evaluation/edge_ai_retrieval_v2/README.md) 与 [`evaluation/edge_ai_change_review_v2`](../evaluation/edge_ai_change_review_v2/README.md)。旧领域评测保留作历史记录，索引见 [`evaluation/archive`](../evaluation/archive/README.md)，不代表当前语料成绩。
+只有在取得明确许可、完成逐文件审核并重建语料后，才能开放内容检索。旧 Seeed/Jetson 的 corpus、评测与适配代码不属于当前活动项目，历史结果不能作为本项目成绩。
 
-当前入库文本中的图片不含已审核 OCR 派生证据；服务使用绑定语料 manifest 的空图片 sidecar 和锁文件，避免误混入其他语料图片数据。图像像素内的文字暂不可检索。
+## API 状态接口
+
+- `GET /health`：进程存活状态、RAG 就绪状态和构建身份。
+- `GET /public/workspace`：唯一项目仓库、commit、来源/片段数、许可门禁和评测状态。
+- `GET /public/documents`：当前已批准来源目录；语料未激活时返回空目录。
+- `POST /public/search`、`POST /public/query`：仅在经验证的项目正文语料激活后工作；不得由客户端指定其他仓库或 namespace。
 
 ## 本地启动
 
-从仓库根目录使用 `start_prototype.ps1`，或在服务目录内运行：
+从仓库根目录进入服务目录：
 
 ```powershell
-$env:RAG_PUBLIC_CORPUS_ROOT = "public_corpus_edge_ai"
-$env:RAG_PUBLIC_RETRIEVAL_CONFIG = "public_corpus_edge_ai/public_retrieval_runtime.json"
+$env:RAG_PUBLIC_CORPUS_ROOT = "public_corpus_industrial_inspection"
+$env:RAG_PUBLIC_RETRIEVAL_CONFIG = "public_corpus_industrial_inspection/public_retrieval_runtime.json"
 ..\.venv\Scripts\python.exe -m uvicorn src.public_server:app --host 127.0.0.1 --port 8765
 ```
 
-示例运行变量位于 [`.env.example`](.env.example)。生成密钥只配置在后端服务环境；没有密钥时仍可检索和组织审查证据。
-
-## 发布 Smoke
-
-发布核对脚本要求 UI 与 RAG 使用相同提交 SHA、工作区必须是 `edge_ai_device`、语言必须为中文、评测需匹配当前指纹，并执行两条公开资料探针及一条不触发检索/生成的企业内测数据拒绝探针。它不会调用模型供应商。
+运行来源审计和 corpus 构建器的命令行帮助：
 
 ```powershell
-..\.venv\Scripts\python.exe scripts/public_release_smoke.py --help
+..\.venv\Scripts\python.exe scripts/audit_project_source.py --help
+..\.venv\Scripts\python.exe scripts/build_project_corpus.py --help
 ```
 
-部署模板将 `RAG_PUBLIC_CORPUS_ROOT` 与检索配置指向 `public_corpus_edge_ai/`。GitHub `main` 更新与 Render 部署是不同步骤；部署后需运行 Smoke 核对在线版本。
+构建器只复制逐文件明确批准的内容；来源哈希、项目仓库、commit、发布者和许可证审核记录必须全部匹配。空语料保持 inactive。
+
+## 发布门禁
+
+Render 模板也指向 `public_corpus_industrial_inspection/`。部署空语料时，服务健康检查只表示进程存活，不代表检索可用。发布核对需分别验证 `/health` 的 `rag_ready`、`/public/workspace` 的项目来源与许可状态，以及本项目自己的冻结评测；其他领域评测不会被引用。

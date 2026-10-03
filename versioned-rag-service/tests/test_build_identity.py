@@ -76,3 +76,23 @@ def test_content_fingerprint_marks_missing_inputs_unknown(tmp_path):
     result = content_fingerprint({"chunks_sha256": tmp_path / "missing.json"})
 
     assert result == {"chunks_sha256": None, "fingerprint_sha256": "unknown"}
+
+
+def test_project_workspace_does_not_publish_legacy_domain_evaluation_fingerprint(tmp_path):
+    from src.build_identity import public_build_identity
+
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "corpus_manifest.json").write_text(
+        '{"project_id":"industrial-inspection"}', encoding="utf-8",
+    )
+    config = corpus / "public_retrieval_runtime.json"
+    config.write_text("{}", encoding="utf-8")
+
+    result = public_build_identity(
+        repo_root=tmp_path,
+        corpus_root=corpus,
+        retrieval_config_path=config,
+    )
+
+    assert result["evaluation_fingerprint"] == "pending_project_evaluation"

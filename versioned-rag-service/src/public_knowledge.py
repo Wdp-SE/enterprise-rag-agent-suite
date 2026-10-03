@@ -1,4 +1,4 @@
-"""Pinned Chinese public engineering knowledge search for the edge-device demo."""
+"""Pinned public engineering knowledge search for the active project workspace."""
 
 from __future__ import annotations
 
@@ -15,9 +15,10 @@ from urllib.parse import urlparse
 import numpy as np
 
 from src.document_relations import DocumentRelationIndex
+from src.project_corpus_contract import validate_project_corpus
 
 
-ROOT = Path(__file__).resolve().parents[1] / "public_corpus_edge_ai"
+ROOT = Path(__file__).resolve().parents[1] / "public_corpus_industrial_inspection"
 TOKEN_RE = re.compile(r"[a-z][a-z0-9_.-]*|[0-9]+|[\u3400-\u9fff]+", re.I)
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 BM25_DIVERSITY_PREFIX = {
@@ -170,6 +171,11 @@ def build_index(root: Path = ROOT) -> dict:
     manifest = json.loads((root / "corpus_manifest.json").read_text(encoding="utf-8"))
     if manifest.get("workspace_id") == EDGE_AI_WORKSPACE_ID:
         _validate_edge_ai_manifest(root, manifest)
+    if manifest.get("project_id"):
+        chunks = json.loads((root / "chunks.json").read_text(encoding="utf-8"))
+        status = validate_project_corpus(root, manifest, chunks)
+        if not status["active"]:
+            raise ValueError(f"project corpus is inactive: {status['reason']}")
     chunks = []
     for source in manifest["sources"]:
         raw = (root / source["local_path"]).read_bytes()
@@ -254,12 +260,17 @@ class PublicKnowledgeIndex:
         # stale registry disables relationship claims, but leaves corpus search usable.
         self.document_relations = DocumentRelationIndex.from_corpus(root, self.manifest)
         self.chunks = json.loads((root / "chunks.json").read_text(encoding="utf-8"))
+        self.project_status = (
+            validate_project_corpus(root, self.manifest, self.chunks)
+            if self.manifest.get("project_id") else None
+        )
+        self.ready = self.project_status["active"] if self.project_status else True
         self.matrix = np.load(root / "dense_vectors.npy", allow_pickle=False)
         if len(self.chunks) != len(self.matrix):
             raise ValueError("public corpus index size mismatch")
         self.term_freqs = [Counter(tokens(c["heading"] + " " + c["document_key"] + " " + c["content"])) for c in self.chunks]
         self.lengths = np.array([sum(row.values()) for row in self.term_freqs])
-        self.avg_length = float(np.mean(self.lengths))
+        self.avg_length = float(np.mean(self.lengths)) if len(self.lengths) else 1.0
         self.doc_freq = Counter()
         for row in self.term_freqs:
             self.doc_freq.update(row.keys())
@@ -273,7 +284,7 @@ class PublicKnowledgeIndex:
             for field, rows in self.field_term_freqs.items()
         }
         self.field_avg_lengths = {
-            field: max(float(np.mean(lengths)), 1.0)
+            field: max(float(np.mean(lengths)) if len(lengths) else 1.0, 1.0)
             for field, lengths in self.field_lengths.items()
         }
         self.field_doc_freq = Counter()
@@ -358,7 +369,12 @@ class PublicKnowledgeIndex:
         language: str = "zh_preferred", policy: str | None = None,
         device_model: str | None = None, module_sku: str | None = None,
         carrier_board: str | None = None, software_baseline: str | None = None,
+        source_namespace: str = "project_primary",
     ) -> list[dict]:
+        if self.project_status and not self.ready:
+            raise ValueError(f"project corpus is inactive: {self.project_status['reason']}")
+        if self.project_status and source_namespace != "project_primary":
+            raise ValueError("dependency references require a separate reviewed index")
         if not query.strip() or len(query) > 4000 or not 1 <= top_k <= 20:
             raise ValueError("invalid search request")
         try:
@@ -392,6 +408,7 @@ class PublicKnowledgeIndex:
             i for i, chunk in enumerate(self.chunks)
             if (version_members is None or chunk["version"] in version_members)
             and (language not in ("zh", "en") or chunk["language"] == language)
+            and (not self.project_status or chunk.get("namespace") == source_namespace)
             and (self.manifest.get("workspace_id") != EDGE_AI_WORKSPACE_ID or _matches_facets(chunk, facet_filters))
         ]
         # Language preference is a candidate tie-break, not a hard filter.

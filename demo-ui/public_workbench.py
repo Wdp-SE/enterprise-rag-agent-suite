@@ -21,7 +21,13 @@ from components.public_theme import PUBLIC_CSS
 from services.public_knowledge_client import PublicKnowledgeClient
 from services.review_audit import SQLiteReviewAudit
 from services.rag_client import ServiceError
-from services.public_workspace_profile import public_workspace_mismatch, workspace_snapshot
+from services.public_workspace_profile import (
+    public_workspace_mismatch,
+    workspace_readiness_message,
+    workspace_page_readiness_notice,
+    workspace_snapshot,
+    clear_workspace_bound_results,
+)
 
 
 CSS = PUBLIC_CSS
@@ -110,7 +116,7 @@ def _published_language_options(workspace: dict | None) -> list[tuple[str, str]]
     locales = set((workspace or {}).get("languages") or [])
     if locales.intersection({"zh", "zh-CN", "zh-TW"}):
         return [("zh", "中文")]
-    if "en-US" in locales:
+    if locales.intersection({"en", "en-US", "en-GB"}):
         return [("en", "English")]
     return [("all", "语言元数据未声明")]
 
@@ -118,7 +124,7 @@ def _published_language_options(workspace: dict | None) -> list[tuple[str, str]]
 def _sync_workspace_version(workspace: dict | None) -> str | None:
     """Follow a newly published workspace version while preserving user scope otherwise."""
     current = _confirmed_current_version(workspace)
-    st.session_state["official_workspace"] = workspace or {}
+    clear_workspace_bound_results(st.session_state, workspace)
     for widget_key in ("official_version", "source_version", "agent_target_version"):
         default_key = f"{widget_key}_default"
         confirmed_key = f"{default_key}_confirmed"
@@ -585,17 +591,19 @@ def _home(ready: bool, workspace: dict | None) -> None:
     version_range = _version_option_label(current, workspace) if current else "服务未连接，无法确认"
     name = _workspace_name(workspace)
     locales = (workspace or {}).get("languages") or []
-    language_label = "中文" if set(locales).intersection({"zh", "zh-CN", "zh-TW"}) else "服务连接后确认"
-    st.markdown('<div class="masthead"><span class="kicker">公开研发资料 / 版本化知识空间</span></div>', unsafe_allow_html=True)
+    language_label = " / ".join(locales) if locales else "尚无已审核语料"
+    st.markdown('<div class="masthead"><span class="kicker">单项目研发资料 / 版本化知识空间</span></div>', unsafe_allow_html=True)
     st.title("研发知识版本服务与变更影响审查")
     st.write(
-        f"基于 {name} 的中文公开工程资料，按资料快照、设备型号与软件环境检索；"
-        "变更审查只整理可追溯的影响候选和证据缺口，最终由工程师确认。"
+        f"基于 {name} 的固定版本项目资料进行检索；变更审查整理同一项目内有来源支持的影响候选和证据缺口，最终由工程师确认。"
     )
-    state = "已连接" if ready else "等待连接"
+    state = "已连接" if ready else (
+        "许可待核实" if workspace and workspace.get("source_status") == "pending_redistribution_license"
+        else "等待连接或语料激活"
+    )
     status = [
         ("知识空间", name),
-        ("资料来源", "固定来源的中文公开工程资料"),
+        ("资料来源", "单一项目固定版本公开资料"),
         ("默认检索范围", version_range),
         ("语言", language_label),
         ("服务状态", state),
@@ -648,7 +656,7 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
     default_version_label = _version_option_label(current, workspace) if current else "无法确认最新已收录版本"
     st.markdown(
         f'<div class="context-strip"><span><strong>知识空间</strong> {escape(name)}</span>'
-        f'<span><strong>资料</strong> 固定来源的中文公开工程资料</span>'
+        f'<span><strong>资料</strong> 单一项目固定版本资料</span>'
         f'<span><strong>默认版本</strong> {escape(default_version_label)}</span>'
         f'<span><strong>默认检索</strong> {escape(default_policy)}</span></div>',
         unsafe_allow_html=True,
@@ -874,7 +882,11 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
                     f"Token 用量：{generation.get('usage') or '未返回'}"
                 )
     if not ready:
-        st.info("知识服务可能正在冷启动；资料范围会在连接恢复后显示，请稍后刷新。")
+        notice = workspace_page_readiness_notice(
+            workspace, "知识服务可能正在冷启动；连接恢复后可继续检索。",
+        )
+        if notice:
+            st.info(notice)
     if scroll_to_results:
         _scroll_to_results()
 
@@ -1656,7 +1668,11 @@ def _agent(
     else:
         _review_steps(0)
         if not ready:
-            st.info("知识服务正在启动或暂不可用；连接恢复后可直接提交自然语言变更描述。")
+            notice = workspace_page_readiness_notice(
+                workspace, "知识服务正在启动或暂不可用；连接恢复后可直接提交自然语言变更描述。",
+            )
+            if notice:
+                st.info(notice)
 
 
 def _review_subpage(choice: str) -> None:
@@ -1683,7 +1699,11 @@ def _review_subpage(choice: str) -> None:
 def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None) -> None:
     _page_header("知识服务", "版本与历史", page_key="versions")
     if not ready:
-        st.info("知识服务暂不可用，连接恢复后可查看各版本的真实资料。")
+        notice = workspace_page_readiness_notice(
+            workspace, "知识服务暂不可用，连接恢复后可查看各版本的真实资料。",
+        )
+        if notice:
+            st.info(notice)
         return
     docs = _request(client.documents, fallback="版本资料目录暂不可用。") or []
     if (workspace or {}).get("workspace_id") == "edge_ai_device":
@@ -1768,7 +1788,11 @@ def _sources(client: PublicKnowledgeClient, ready: bool, workspace: dict | None)
         with st.expander("查看收录范围与语言对应情况"):
             st.write(coverage)
     if not ready:
-        st.info("知识服务暂不可用，资料目录将在连接恢复后显示。")
+        notice = workspace_page_readiness_notice(
+            workspace, "知识服务暂不可用，资料目录将在连接恢复后显示。",
+        )
+        if notice:
+            st.info(notice)
         return
     docs = _request(client.documents, fallback="官方资料目录暂不可用。") or []
     version = st.selectbox("资料版本", [*_published_versions(workspace), "all"], format_func=lambda x: _version_option_label(x, workspace), key="source_version")
@@ -1814,9 +1838,12 @@ def _benchmark(workspace: dict | None) -> None:
     status = str(workspace.get("retrieval_evaluation_status") or "pending")
     policy = str(workspace.get("retrieval_policy") or "由服务配置").upper()
     st.markdown(f"**当前策略：{policy}**")
+    if status == "pending_project_evaluation" and workspace.get("source_status") == "pending_redistribution_license":
+        st.warning("目标项目尚未获得可核实的内容再分发许可，目前没有可索引的项目正文，因此尚不能评测本项目 RAG 或 Agent 效果。历史其他语料的成绩不作为当前项目成绩。")
+        return
     if status != "edge_ai_retrieval_v2_validated":
         st.warning(
-            "当前 Seeed 中文工程资料尚未完成与语料指纹绑定的冻结评测；"
+            "当前项目尚未完成与活动语料指纹绑定的冻结评测；"
             "此前其他领域语料上的分数不适用于本知识空间，因此这里不展示为当前成绩。"
         )
     else:
@@ -1934,7 +1961,7 @@ def render() -> None:
         ]
     client = _client()
     workspace = _request(client.workspace, fallback="知识服务暂未连接，页面仍可浏览。")
-    ready = bool(workspace)
+    ready = bool(workspace) and workspace.get("rag_ready", True) is not False
     _sync_workspace_version(workspace)
     with st.sidebar:
         st.markdown('<div class="sidebar-mark">工作台导航</div>', unsafe_allow_html=True)
@@ -1951,6 +1978,9 @@ def render() -> None:
         st.warning(mismatch)
         st.info("为避免误用不匹配的资料，知识检索和变更审查暂不可用。")
         return
+    readiness_message = workspace_readiness_message(workspace)
+    if readiness_message:
+        st.warning(readiness_message)
     if choice == "总览":
         _home(ready, workspace)
     elif choice == "版本检索与问答":

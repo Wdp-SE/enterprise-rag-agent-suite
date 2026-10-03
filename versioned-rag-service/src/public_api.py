@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import math
+import os
 import time
 import uuid
 from collections import Counter
@@ -212,12 +213,13 @@ class SearchRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     query: str = Field(min_length=1, max_length=4000)
     top_k: int = Field(default=5, ge=1, le=20)
-    version: str = Field(default="current", min_length=1, max_length=32)
+    version: str = Field(default="current", min_length=1, max_length=64)
     language: Literal["zh_preferred", "all", "zh", "en"] = "zh_preferred"
     device_model: str | None = Field(default=None, min_length=1, max_length=120)
     module_sku: str | None = Field(default=None, min_length=1, max_length=80)
     carrier_board: str | None = Field(default=None, min_length=1, max_length=120)
     software_baseline: str | None = Field(default=None, min_length=1, max_length=120)
+    include_dependency_reference: bool = False
 
 
 def _validate_public_language(index: PublicKnowledgeIndex, payload: SearchRequest) -> None:
@@ -268,7 +270,7 @@ class ReviewAdviceRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     change_summary: str = Field(min_length=1, max_length=4000)
     evidence_chunk_ids: list[str] = Field(min_length=1, max_length=8)
-    version: str = Field(default="current", min_length=1, max_length=32)
+    version: str = Field(default="current", min_length=1, max_length=64)
     device_model: str | None = Field(default=None, min_length=1, max_length=120)
     module_sku: str | None = Field(default=None, min_length=1, max_length=80)
     carrier_board: str | None = Field(default=None, min_length=1, max_length=120)
@@ -279,9 +281,23 @@ def _index(request: Request) -> PublicKnowledgeIndex:
     index = getattr(request.app.state, "public_knowledge_index", None)
     if index is None:
         raise HTTPException(status_code=503, detail="PUBLIC_CORPUS_NOT_READY")
+    if index.manifest.get("project_id"):
+        if index.manifest.get("project_id") != "industrial-inspection":
+            raise HTTPException(status_code=503, detail="PUBLIC_CORPUS_PROFILE_MISMATCH")
+        return index
+    if os.environ.get("APP_ENV", "local").strip().casefold() == "public_demo":
+        raise HTTPException(status_code=503, detail="PUBLIC_CORPUS_PROFILE_MISMATCH")
     if index.manifest.get("workspace_id") != "edge_ai_device":
         raise HTTPException(status_code=503, detail="PUBLIC_CORPUS_PROFILE_MISMATCH")
     return index
+
+
+def _require_project_query_ready(index, payload=None) -> None:
+    if getattr(payload, "include_dependency_reference", False) and not index.manifest.get("dependency_reference_allowlist"):
+        raise HTTPException(status_code=422, detail="DEPENDENCY_REFERENCE_NOT_AVAILABLE")
+    base_index = getattr(index, "base_index", index)
+    if getattr(base_index, "project_status", None) and not base_index.ready:
+        raise HTTPException(status_code=503, detail="PROJECT_CORPUS_INACTIVE_LICENSE_PENDING")
 
 
 def _relationship_index(index):
@@ -372,6 +388,51 @@ def _validate_claim_evidence(claims: object, evidence_hits: list[dict]) -> tuple
 def workspace(request: Request) -> dict:
     index = _index(request)
     manifest = index.manifest
+    if manifest.get("project_id") == "industrial-inspection":
+        base_index = getattr(index, "base_index", index)
+        status = getattr(base_index, "project_status", None) or {
+            "active": False, "reason": manifest.get("source_status", "pending_project_corpus_activation"),
+            "project_primary_count": len(manifest.get("sources", [])),
+            "dependency_reference_count": 0, "chunk_count": len(index.chunks),
+        }
+        return {
+            "workspace_id": manifest["project_id"],
+            "domain_profile": dict(manifest.get("domain_profile") or {"id": manifest["project_id"]}),
+            "workspace": manifest.get("workspace", manifest.get("project_name", manifest["project_id"])),
+            "repository": manifest["primary_repository"],
+            "repositories": [manifest["primary_repository"]],
+            "current_version": manifest["pinned_commit"],
+            "available_versions": [manifest["pinned_commit"]],
+            "version_scopes": {"current": {"versions": [manifest["pinned_commit"]]}},
+            "snapshots": [{
+                "repository": manifest["primary_repository"],
+                "commit": manifest["pinned_commit"],
+                "version": manifest["pinned_commit"],
+                "source_count": status["project_primary_count"],
+            }],
+            "source_registry": [
+                {key: row.get(key) for key in (
+                    "source_id", "source_url", "repository", "commit", "path", "sha256", "publisher", "license_id", "namespace",
+                )}
+                for row in manifest.get("sources", [])
+            ],
+            "languages": list(manifest.get("languages", [])),
+            "source_count": status["project_primary_count"],
+            "project_primary_count": status["project_primary_count"],
+            "dependency_reference_count": 0,
+            "chunk_count": status["chunk_count"],
+            "source_status": manifest.get("source_status", "pending_project_corpus_activation"),
+            "public_body_indexing_enabled": bool(manifest.get("public_body_indexing_enabled", False)),
+            "rag_ready": bool(status["active"]),
+            "activation_block_reason": status["reason"],
+            "license_discovery": dict(manifest.get("license_discovery") or {}),
+            "retrieval_policy": _runtime_policy(index),
+            "retrieval_evaluation_status": "pending_project_evaluation",
+            "frozen_benchmark_query_count": 0,
+            "data_origin": f"唯一应用来源：{manifest['primary_repository']}；发布者与许可按逐路径清单审核。",
+            "upstream_writes_enabled": False,
+            **getattr(request.app.state, "public_build_identity", {}),
+        }
     if manifest.get("workspace_id") != "edge_ai_device":
         raise HTTPException(status_code=503, detail="PUBLIC_CORPUS_PROFILE_MISMATCH")
     evaluation_release = validate_public_evaluation_release(
@@ -507,6 +568,7 @@ def document(payload: DocumentRequest, request: Request) -> dict:
 @router.post("/search")
 def search(payload: SearchRequest, request: Request) -> dict:
     index = _index(request)
+    _require_project_query_ready(index, payload)
     retrieval_started = time.perf_counter()
     if is_out_of_scope_public_request(payload.query):
         _log_public_stage(request, operation="search", stage="scope", status="OUT_OF_SCOPE", started=retrieval_started, hit_count=0)
@@ -523,6 +585,7 @@ def search(payload: SearchRequest, request: Request) -> dict:
             top_k=payload.top_k, version=payload.version, language=payload.language,
             device_model=payload.device_model, module_sku=payload.module_sku,
             carrier_board=payload.carrier_board, software_baseline=payload.software_baseline,
+            source_namespace="project_primary",
         ))
     except ValueError as exc:
         raise HTTPException(status_code=422, detail="INVALID_PUBLIC_SEARCH") from exc
@@ -538,6 +601,7 @@ def search(payload: SearchRequest, request: Request) -> dict:
 @router.post("/query")
 async def query(payload: SearchRequest, request: Request) -> dict:
     index = _index(request)
+    _require_project_query_ready(index, payload)
     retrieval_started = time.perf_counter()
     if is_out_of_scope_public_request(payload.query):
         diagnostics = _generation_diagnostics(
@@ -560,6 +624,7 @@ async def query(payload: SearchRequest, request: Request) -> dict:
             top_k=payload.top_k, version=payload.version, language=payload.language,
             device_model=payload.device_model, module_sku=payload.module_sku,
             carrier_board=payload.carrier_board, software_baseline=payload.software_baseline,
+            source_namespace="project_primary",
         ))
     except ValueError as exc:
         raise HTTPException(status_code=422, detail="INVALID_PUBLIC_SEARCH") from exc
@@ -724,6 +789,7 @@ async def query(payload: SearchRequest, request: Request) -> dict:
 async def review_advice(payload: ReviewAdviceRequest, request: Request) -> dict:
     """Generate a review checklist from evidence pinned to the requested version."""
     index = _index(request)
+    _require_project_query_ready(index)
     if is_out_of_scope_public_request(payload.change_summary):
         diagnostics = _generation_diagnostics(
             None, request_id=getattr(request.state, "request_id", None),

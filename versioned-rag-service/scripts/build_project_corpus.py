@@ -10,6 +10,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path, PurePosixPath
+from urllib.parse import quote
 
 import numpy as np
 
@@ -234,19 +235,34 @@ def build_project_corpus(
         review = project_manifest["source_license_reviews"][path]
         source_id = row["source_id"]
         stored_path = f"sources/{source_id}{PurePosixPath(path).suffix.casefold()}"
+        language = row.get("language", "en")
+        if language not in {"en", "zh"}:
+            raise ValueError(f"source language must be en or zh: {path}")
+        locale = "zh-CN" if language == "zh" else "en-US"
+        source_url = (
+            f"https://github.com/{identity['primary_repository']}/blob/"
+            f"{identity['pinned_commit']}/{quote(path, safe='/') }"
+        )
         (output_root / stored_path).parent.mkdir(parents=True, exist_ok=True)
         (output_root / stored_path).write_bytes(raw)
         source = {
             "source_id": source_id,
             "document_id": source_id,
             "document_key": source_id,
+            "document_key": source_id,
             "title": row.get("title") or PurePosixPath(path).name,
             "repository": identity["primary_repository"],
             "repository_url": f"https://github.com/{identity['primary_repository']}",
             "commit": identity["pinned_commit"],
             "path": path,
+            "document_path": path,
             "local_path": stored_path,
             "source_format": source_format,
+            "source_url": source_url,
+            "source_type": "project_file",
+            "version": identity["pinned_commit"],
+            "language": language,
+            "locale": locale,
             "namespace": "project_primary",
             "project_id": identity["project_id"],
             "publisher": review["publisher"],
@@ -271,6 +287,11 @@ def build_project_corpus(
                 "repository": identity["primary_repository"],
                 "commit": identity["pinned_commit"],
                 "document_path": path,
+                "version": identity["pinned_commit"],
+                "language": language,
+                "locale": locale,
+                "source_url": source_url,
+                "source_type": "project_file",
                 "source_id": source_id,
                 "source_format": source_format,
                 "publisher": source["publisher"],
@@ -310,13 +331,29 @@ def build_project_corpus(
         "active": active,
         "activation_status": "ready" if active else "blocked_pending_approved_source_bodies",
         "project_id": identity["project_id"],
+        "workspace_id": identity["project_id"],
         "project_name": project_manifest.get("project_name", identity["project_id"]),
+        "workspace": project_manifest.get("project_name", identity["project_id"]),
+        "domain_profile": project_manifest.get("domain_profile", {"id": identity["project_id"]}),
         "primary_repository": identity["primary_repository"],
         "repository": identity["primary_repository"],
         "commit": identity["pinned_commit"],
         "pinned_commit": identity["pinned_commit"],
+        "current_version": identity["pinned_commit"],
+        "available_versions": [identity["pinned_commit"]],
+        "version_scopes": {"current": {"versions": [identity["pinned_commit"]]}},
+        "languages": sorted({row["language"] for row in sources}),
+        "source_snapshot": {
+            "repository": identity["primary_repository"],
+            "commit": identity["pinned_commit"],
+            "version": identity["pinned_commit"],
+        },
         "allowed_path_prefixes": identity["allowed_path_prefixes"],
         "sources": sources,
+        "source_status": project_manifest.get("source_status", "pending_project_source_review"),
+        "public_body_indexing_enabled": bool(project_manifest.get("public_body_indexing_enabled", False)),
+        "license_discovery": project_manifest.get("license_discovery", {}),
+        "source_count": len(sources),
         "project_primary_count": len(sources),
         "dependency_reference_count": 0,
         "chunk_count": len(chunks),
@@ -327,9 +364,44 @@ def build_project_corpus(
         np.stack([dense_vector(f"{row['heading']} {' '.join(row['heading_path'])} {row['content']}") for row in chunks])
         if chunks else np.zeros((0, 512), dtype=np.float32)
     )
-    _write_json(output_root / "corpus_manifest.json", corpus_manifest)
-    _write_json(output_root / "chunks.json", chunks)
-    np.save(output_root / "dense_vectors.npy", vector_matrix)
+    manifest_path = output_root / "corpus_manifest.json"
+    chunks_path = output_root / "chunks.json"
+    vectors_path = output_root / "dense_vectors.npy"
+    _write_json(manifest_path, corpus_manifest)
+    _write_json(chunks_path, chunks)
+    np.save(vectors_path, vector_matrix)
+    manifest_hash = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    artifact_hashes = {
+        path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in (chunks_path, vectors_path)
+    }
+    _write_json(output_root / "retrieval_policy.json", {
+        "schema_version": 1,
+        "default_policy": "bm25",
+        "selection_status": "pending_project_rebenchmark",
+        "benchmark_query_count": 0,
+        "reranker_enabled": False,
+        "benchmark_corpus_sha256": manifest_hash,
+        "index_artifacts_sha256": artifact_hashes,
+    })
+    runtime_config = {
+        "schema_version": 1, "allowed_policies": ["bm25"], "default_policy": "bm25",
+        "max_facets": 4, "rrf_k": 60, "image_top_k": 5,
+    }
+    _write_json(output_root / "public_retrieval_runtime.json", runtime_config)
+    inventory_bytes = (json.dumps({
+        "schema_version": 1, "corpus_manifest_sha256": manifest_hash, "figures": [],
+    }, separators=(",", ":")) + "\n").encode("utf-8")
+    reviewed_bytes = (json.dumps({
+        "schema_version": 1, "corpus_manifest_sha256": manifest_hash, "chunks": [],
+    }, separators=(",", ":")) + "\n").encode("utf-8")
+    (output_root / "figure_evidence.json").write_bytes(inventory_bytes)
+    (output_root / "figure_evidence_reviewed.json").write_bytes(reviewed_bytes)
+    _write_json(output_root / "figure_evidence_reviewed.lock.json", {
+        "schema_version": 1,
+        "sidecar_sha256": hashlib.sha256(reviewed_bytes).hexdigest(),
+        "corpus_manifest_sha256": manifest_hash,
+    })
     import_manifest = {
         "schema_version": 1,
         "project_id": identity["project_id"],

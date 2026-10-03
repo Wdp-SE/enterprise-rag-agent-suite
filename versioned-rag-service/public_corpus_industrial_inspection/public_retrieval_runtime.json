@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "allowed_policies": [
+    "bm25"
+  ],
+  "default_policy": "bm25",
+  "max_facets": 4,
+  "rrf_k": 60,
+  "image_top_k": 5
+}

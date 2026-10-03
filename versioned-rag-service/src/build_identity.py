@@ -72,7 +72,15 @@ def public_build_identity(
         "base_policy_sha256": corpus_root / "retrieval_policy.json",
         "figure_lock_sha256": corpus_root / "figure_evidence_reviewed.lock.json",
     })["fingerprint_sha256"]
-    evaluation_fingerprint = edge_evaluation_fingerprint(repo_root)
+    try:
+        project_id = json.loads((corpus_root / "corpus_manifest.json").read_text(encoding="utf-8")).get("project_id")
+    except (OSError, json.JSONDecodeError, AttributeError):
+        project_id = None
+    evaluation_fingerprint = (
+        industrial_inspection_evaluation_fingerprint(repo_root)
+        if project_id == "industrial-inspection"
+        else edge_evaluation_fingerprint(repo_root)
+    )
     return {
         "build_revision": git_revision(repo_root) or "unknown",
         "corpus_fingerprint": corpus_fingerprint,
@@ -101,3 +109,25 @@ def edge_evaluation_fingerprint(repo_root: Path) -> str:
         "agent_domain_profile_loader": repo_root / "change-review-agent" / "app" / "domain_profile.py",
         "agent_domain_profile": repo_root / "change-review-agent" / "config" / "edge_ai_device_change_profile.json",
     })["fingerprint_sha256"]
+
+
+def industrial_inspection_evaluation_fingerprint(repo_root: Path) -> str:
+    """Return only this project's evaluation identity; never reuse legacy-domain scores."""
+    evaluation_root = Path(repo_root) / "evaluation"
+    retrieval_root = evaluation_root / "industrial_inspection_retrieval_v1"
+    review_root = evaluation_root / "industrial_inspection_change_review_v1"
+    paths = {
+        "retrieval_cases": retrieval_root / "cases.jsonl",
+        "retrieval_split_lock": retrieval_root / "split_lock.json",
+        "retrieval_runner": retrieval_root / "run_evaluation.py",
+        "retrieval_dev_report": retrieval_root / "dev_report.json",
+        "retrieval_holdout_report": retrieval_root / "holdout_report.json",
+        "review_cases": review_root / "cases.jsonl",
+        "review_split_lock": review_root / "split_lock.json",
+        "review_runner": review_root / "run_evaluation.py",
+        "review_dev_report": review_root / "dev_report.json",
+        "review_holdout_report": review_root / "holdout_report.json",
+    }
+    if any(not path.is_file() for path in paths.values()):
+        return "pending_project_evaluation"
+    return content_fingerprint(paths)["fingerprint_sha256"]

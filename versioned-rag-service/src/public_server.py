@@ -36,7 +36,7 @@ _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 def _configured_public_corpus_root() -> Path:
     configured = os.environ.get("RAG_PUBLIC_CORPUS_ROOT", "").strip()
     if not configured:
-        return Path(__file__).resolve().parents[1] / "public_corpus_edge_ai"
+        return Path(__file__).resolve().parents[1] / "public_corpus_industrial_inspection"
     path = Path(configured).expanduser()
     return path if path.is_absolute() else (SERVICE_ROOT / path).resolve()
 
@@ -166,9 +166,13 @@ def create_app(*, index: PublicKnowledgeIndex | None = None, generator=None,
     @app.get("/health")
     def health() -> dict:
         identity = app.state.public_build_identity
+        base_index = app.state.public_base_knowledge_index
         return {
-            "alive": True, "rag_ready": bool(app.state.public_knowledge_index),
-            "workspace": app.state.public_base_knowledge_index.manifest["workspace"],
+            "alive": True, "rag_ready": bool(getattr(base_index, "ready", True)),
+            "workspace": base_index.manifest.get("workspace", base_index.manifest.get("project_name", "未配置知识空间")),
+            "workspace_id": base_index.manifest.get("project_id", base_index.manifest.get("workspace_id")),
+            "source_status": base_index.manifest.get("source_status"),
+            "project_status": getattr(base_index, "project_status", None),
             "retrieval_policy": app.state.public_knowledge_index.policy["default_policy"],
             "runtime_retrieval_policy": app.state.public_knowledge_index.runtime_policy,
             "approved_image_chunk_count": len(app.state.public_knowledge_index._images),

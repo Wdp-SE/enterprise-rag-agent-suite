@@ -9,13 +9,16 @@ import numpy as np
 import pytest
 
 from src.public_knowledge import (
-    ROOT, PublicKnowledgeIndex, _parts, build_index, verified_consistency_notes,
+    PublicKnowledgeIndex, _parts, build_index, verified_consistency_notes,
 )
+
+LEGACY_CORPUS = Path(__file__).resolve().parents[1] / "public_corpus_edge_ai"
 
 
 @pytest.fixture(scope="module")
 def index() -> PublicKnowledgeIndex:
-    return PublicKnowledgeIndex()
+    # Legacy retrieval coverage remains explicit and cannot become the service default.
+    return PublicKnowledgeIndex(LEGACY_CORPUS)
 
 
 def test_pinned_chinese_edge_ai_corpus_metadata_and_source_hashes(index):
@@ -31,7 +34,7 @@ def test_pinned_chinese_edge_ai_corpus_metadata_and_source_hashes(index):
     for row in manifest["sources"]:
         assert row["source_url"].startswith("https://wiki.seeedstudio.com/cn/")
         assert row["commit"] == snapshot["commit"]
-        assert hashlib.sha256((ROOT / row["local_path"]).read_bytes()).hexdigest() == row["sha256"]
+        assert hashlib.sha256((LEGACY_CORPUS / row["local_path"]).read_bytes()).hexdigest() == row["sha256"]
 
 
 def test_chinese_and_snapshot_filters_keep_one_workspace(index):
@@ -163,6 +166,8 @@ def test_source_diverse_bm25_exposes_more_relevant_documents_without_changing_de
         "sources": [{"version": "snapshot-current"}, {"version": "snapshot-old"}],
     }
     candidate_index.policy = {"default_policy": "bm25"}
+    candidate_index.project_status = None
+    candidate_index.ready = True
     candidate_index.chunks = [
         {"chunk_id": "a:1", "document_id": "snapshot-current:zh:a", "version": "snapshot-current", "language": "zh"},
         {"chunk_id": "a:2", "document_id": "snapshot-current:zh:a", "version": "snapshot-current", "language": "zh"},
@@ -200,6 +205,8 @@ def test_source_diverse_bm25_keeps_matching_siblings_before_zero_score_documents
     candidate_index = object.__new__(PublicKnowledgeIndex)
     candidate_index.manifest = {"current_version": "snapshot-current", "sources": [{"version": "snapshot-current"}]}
     candidate_index.policy = {"default_policy": "bm25"}
+    candidate_index.project_status = None
+    candidate_index.ready = True
     candidate_index.chunks = [
         {"chunk_id": "a:1", "document_id": "a", "version": "snapshot-current", "language": "zh"},
         {"chunk_id": "a:2", "document_id": "a", "version": "snapshot-current", "language": "zh"},
@@ -227,12 +234,12 @@ def test_consistency_warning_for_explicit_same_parameter_values():
 
 def test_public_index_rejects_policy_from_a_different_corpus(tmp_path):
     for name in ("corpus_manifest.json", "chunks.json", "dense_vectors.npy", "retrieval_policy.json"):
-        (tmp_path / name).write_bytes((ROOT / name).read_bytes())
+        (tmp_path / name).write_bytes((LEGACY_CORPUS / name).read_bytes())
     policy_path = tmp_path / "retrieval_policy.json"
     policy = json.loads(policy_path.read_text(encoding="utf-8"))
     policy["benchmark_corpus_sha256"] = "0" * 64
     policy_path.write_text(json.dumps(policy), encoding="utf-8")
-    shutil.copytree(ROOT / "sources", tmp_path / "sources")
+    shutil.copytree(LEGACY_CORPUS / "sources", tmp_path / "sources")
     with pytest.raises(ValueError, match="does not match pinned corpus"):
         PublicKnowledgeIndex(tmp_path)
 
@@ -240,8 +247,8 @@ def test_public_index_rejects_policy_from_a_different_corpus(tmp_path):
 @pytest.mark.parametrize("artifact", ["chunks.json", "dense_vectors.npy"])
 def test_public_index_rejects_tampered_prebuilt_artifact(tmp_path, artifact):
     for name in ("corpus_manifest.json", "chunks.json", "dense_vectors.npy", "retrieval_policy.json"):
-        (tmp_path / name).write_bytes((ROOT / name).read_bytes())
-    shutil.copytree(ROOT / "sources", tmp_path / "sources")
+        (tmp_path / name).write_bytes((LEGACY_CORPUS / name).read_bytes())
+    shutil.copytree(LEGACY_CORPUS / "sources", tmp_path / "sources")
 
     artifact_path = tmp_path / artifact
     if artifact == "chunks.json":

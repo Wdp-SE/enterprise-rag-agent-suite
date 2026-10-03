@@ -22,8 +22,8 @@ if (-not (Test-Path -LiteralPath $uiPython -PathType Leaf)) {
     # Keep the existing local virtual environment usable after the folder rename.
     $uiPython = Join-Path $legacyAgentRoot '.venv\Scripts\python.exe'
 }
-$edgeAiCorpus = Join-Path $ragRoot 'public_corpus_edge_ai'
-$officialCorpus = Join-Path $edgeAiCorpus 'retrieval_policy.json'
+$projectCorpus = Join-Path $ragRoot 'public_corpus_industrial_inspection'
+$projectRetrievalPolicy = Join-Path $projectCorpus 'retrieval_policy.json'
 
 # Codex can inject a loopback HTTP proxy into its child processes. If that
 # proxy is unavailable while Windows has a configured system proxy, let the
@@ -87,7 +87,7 @@ function Start-PrototypeProcess([hashtable]$StartParameters) {
     }
 }
 
-foreach ($required in @($ragPython, $uiPython, $officialCorpus)) {
+foreach ($required in @($ragPython, $uiPython, $projectRetrievalPolicy)) {
     if (-not (Test-Path -LiteralPath $required)) {
         throw "缺少启动依赖：$required；请先按 README 安装环境。"
     }
@@ -116,8 +116,8 @@ New-Item -ItemType Directory -Path $runRoot -Force | Out-Null
 
 $env:APP_ENV = 'public_demo'
 $env:RD_V2_PROJECT_ROOT = $ragRoot
-$env:RAG_PUBLIC_CORPUS_ROOT = $edgeAiCorpus
-$env:RAG_PUBLIC_RETRIEVAL_CONFIG = Join-Path $edgeAiCorpus 'public_retrieval_runtime.json'
+$env:RAG_PUBLIC_CORPUS_ROOT = $projectCorpus
+$env:RAG_PUBLIC_RETRIEVAL_CONFIG = Join-Path $projectCorpus 'public_retrieval_runtime.json'
 if ($EnableGeneration -and $DisableGeneration) {
     throw '不能同时指定 -EnableGeneration 和 -DisableGeneration。'
 }

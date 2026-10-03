@@ -20,16 +20,10 @@ def _identity():
     )
 
 
-def test_current_chinese_edge_evaluation_is_bound_to_live_build():
+def test_historical_edge_evaluation_is_not_reused_for_the_current_project_build():
     index = PublicKnowledgeIndex(CORPUS)
     release = validate_public_evaluation_release(index.manifest, CORPUS, _identity())
-    assert release is not None
-    assert release["status"] == "validated"
-    assert release["case_count"] == 22
-    assert release["case_split_counts"] == {"dev": 11, "holdout": 11}
-    assert release["selected_policy"] == "bm25"
-    assert release["change_review"]["case_count"] == 12
-    assert release["change_review"]["splits"]["holdout"]["human_quality_scoring"]["status"] == "not_scored"
+    assert release is None
 
 
 def test_wrong_workspace_cannot_use_edge_evaluation():

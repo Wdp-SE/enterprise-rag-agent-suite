@@ -218,6 +218,38 @@ def test_chinese_only_language_options_do_not_offer_english_or_all_languages():
     assert options == [("zh", "中文")]
 
 
+def test_unlicensed_single_project_is_explained_and_query_controls_stay_disabled(monkeypatch):
+    from services.public_knowledge_client import PublicKnowledgeClient
+
+    workspace = {
+        "workspace_id": "industrial-inspection",
+        "domain_profile": {"id": "industrial_inspection", "name": "工业视觉安全监控应用研发"},
+        "workspace": "工业视觉安全监控应用研发",
+        "repository": "xbs0325/industrial-inspection",
+        "repositories": ["xbs0325/industrial-inspection"],
+        "current_version": "6d0df954f26b1810910db9f50727ca8bd19afa9f",
+        "available_versions": ["6d0df954f26b1810910db9f50727ca8bd19afa9f"],
+        "languages": [],
+        "source_status": "pending_redistribution_license",
+        "activation_block_reason": "pending_redistribution_license",
+        "rag_ready": False,
+        "source_count": 0,
+        "chunk_count": 0,
+        "retrieval_evaluation_status": "pending_project_evaluation",
+    }
+    monkeypatch.setenv("APP_ENV", "public_demo")
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: workspace)
+    app = AppTest.from_file(APP, default_timeout=40).run()
+
+    assert not app.exception
+    assert any("未声明内容再分发许可" in item.value for item in app.warning)
+    next(button for button in app.button if button.label == "版本化知识检索").click().run()
+
+    query = next(button for button in app.button if button.label == "生成带引用回答")
+    assert query.disabled is True
+    assert any("暂不可用" in item.value for item in app.info)
+
+
 def test_relationship_labels_keep_path_candidates_distinct_from_confirmed_translation():
     import public_workbench
 

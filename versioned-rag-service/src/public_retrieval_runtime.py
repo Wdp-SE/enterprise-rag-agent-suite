@@ -17,7 +17,7 @@ POLICIES = {
     "bm25", "bm25_faceted_rrf", "bm25_figure_ocr",
     "bm25_faceted_figure_ocr", "hybrid",
 }
-DEFAULT_CONFIG = Path(__file__).resolve().parents[1] / "public_corpus_edge_ai" / "public_retrieval_runtime.json"
+DEFAULT_CONFIG = Path(__file__).resolve().parents[1] / "public_corpus_industrial_inspection" / "public_retrieval_runtime.json"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -272,7 +272,8 @@ class PublicRetrievalRuntime:
     def search(self, query: str, *, top_k: int = 5, version: str = "current",
                language: str = "zh_preferred", policy: str | None = None,
                device_model: str | None = None, module_sku: str | None = None,
-               carrier_board: str | None = None, software_baseline: str | None = None) -> list[dict]:
+               carrier_board: str | None = None, software_baseline: str | None = None,
+               source_namespace: str = "project_primary") -> list[dict]:
         selected = policy or self.runtime_policy
         if selected not in self.config["allowed_policies"]:
             raise ValueError("unsupported retrieval runtime policy")
@@ -281,6 +282,7 @@ class PublicRetrievalRuntime:
             "module_sku": module_sku,
             "carrier_board": carrier_board,
             "software_baseline": software_baseline,
+            "source_namespace": source_namespace,
         }
         # Delegate validation for query length, top_k, version and language to the pinned index.
         if selected == "bm25":
