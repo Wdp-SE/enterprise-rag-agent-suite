@@ -23,6 +23,7 @@ from src.public_knowledge import (
     PublicKnowledgeIndex, tokens, verified_consistency_notes,
 )
 from src.public_scope import is_out_of_scope_public_request
+from src.pphuman_corpus import PPHUMAN_WORKSPACE_ID
 from src.rd_v2_runtime import _format_context, validate_citation_membership
 from src.public_evaluation_release import validate_public_evaluation_release
 
@@ -281,13 +282,18 @@ def _index(request: Request) -> PublicKnowledgeIndex:
     index = getattr(request.app.state, "public_knowledge_index", None)
     if index is None:
         raise HTTPException(status_code=503, detail="PUBLIC_CORPUS_NOT_READY")
+    if os.environ.get("APP_ENV", "local").strip().casefold() == "public_demo":
+        if (
+            not index.manifest.get("project_id")
+            and index.manifest.get("workspace_id") == PPHUMAN_WORKSPACE_ID
+        ):
+            return index
+        raise HTTPException(status_code=503, detail="PUBLIC_CORPUS_PROFILE_MISMATCH")
     if index.manifest.get("project_id"):
         if index.manifest.get("project_id") != "industrial-inspection":
             raise HTTPException(status_code=503, detail="PUBLIC_CORPUS_PROFILE_MISMATCH")
         return index
-    if os.environ.get("APP_ENV", "local").strip().casefold() == "public_demo":
-        raise HTTPException(status_code=503, detail="PUBLIC_CORPUS_PROFILE_MISMATCH")
-    if index.manifest.get("workspace_id") != "edge_ai_device":
+    if index.manifest.get("workspace_id") not in {"edge_ai_device", PPHUMAN_WORKSPACE_ID}:
         raise HTTPException(status_code=503, detail="PUBLIC_CORPUS_PROFILE_MISMATCH")
     return index
 
@@ -433,6 +439,84 @@ def workspace(request: Request) -> dict:
             "upstream_writes_enabled": False,
             **getattr(request.app.state, "public_build_identity", {}),
         }
+    if manifest.get("workspace_id") == PPHUMAN_WORKSPACE_ID:
+        versions = list(reversed(manifest.get("available_versions", [])))
+        sources = manifest.get("sources", [])
+        source_breakdown = Counter(
+            (
+                str(row.get("version", "")), str(row.get("locale", "")),
+                str(row.get("document_family", "engineering_docs")),
+                str(row.get("source_format", "markdown")),
+            )
+            for row in sources
+        )
+        snapshots = []
+        for version in versions:
+            snapshot = dict(manifest.get("versions", {}).get(version, {}))
+            snapshot.update({
+                "version": version,
+                "repository": manifest["repository"],
+                "source_count": sum(row.get("version") == version for row in sources),
+                "label": "当前最新版" if version == manifest["current_version"] else f"历史版本 {version}",
+            })
+            snapshots.append(snapshot)
+        relation_index = _relationship_index(index)
+        return {
+            "workspace_id": PPHUMAN_WORKSPACE_ID,
+            "domain_profile": dict(manifest.get("domain_profile") or {"id": PPHUMAN_WORKSPACE_ID}),
+            "workspace": manifest["workspace"],
+            "repository": manifest["repository"],
+            "repositories": [manifest["repository"]],
+            "baseline_version": manifest.get("available_versions", [None])[0],
+            "current_version": manifest["current_version"],
+            "available_versions": versions,
+            "version_labels": {
+                version: ("当前最新版" if version == manifest["current_version"] else f"历史版本 {version}")
+                for version in versions
+            },
+            "version_scopes": dict(manifest.get("version_scopes") or {}),
+            "snapshots": snapshots,
+            "source_registry": [
+                {key: source.get(key) for key in (
+                    "source_id", "source_url", "repository", "version", "source_snapshot", "commit",
+                    "path", "sha256", "publisher", "license",
+                )}
+                for source in sources
+            ],
+            "languages": ["zh"],
+            "source_count": len(sources),
+            "unique_document_count": len({row.get("document_key") for row in sources}),
+            "chunk_count": len(index.chunks),
+            "source_breakdown": [
+                {
+                    "version": version, "locale": locale, "document_family": family,
+                    "source_format": source_format, "count": count,
+                }
+                for (version, locale, family, source_format), count in sorted(source_breakdown.items())
+            ],
+            "source_status": "ready",
+            "public_body_indexing_enabled": True,
+            "rag_ready": bool(getattr(index, "ready", True)),
+            "activation_block_reason": None,
+            "retrieval_policy": _runtime_policy(index),
+            "base_retrieval_policy": index.policy["default_policy"],
+            "retrieval_evaluation_status": str(
+                manifest.get("retrieval_evaluation_status") or "new_corpus_pending_rebenchmark"
+            ),
+            "frozen_benchmark_query_count": 0,
+            "data_origin": manifest.get("data_origin", "PaddleDetection 官方中文 PP-Human 研发资料；来源固定到正式 release tag。"),
+            "upstream_writes_enabled": False,
+            "approved_image_chunk_count": len(getattr(index, "_images", [])),
+            "document_relationships": (
+                relation_index.summary() if relation_index is not None else
+                {"status": "missing", "available": False, "relation_count": 0,
+                 "by_type": {}, "by_verification_status": {}, "verified_translation_pairs": 0}
+            ),
+            **getattr(request.app.state, "public_build_identity", {
+                "build_revision": "unknown", "corpus_fingerprint": {"fingerprint_sha256": "unknown"},
+                "retrieval_config_fingerprint": "unknown", "evaluation_fingerprint": "unknown",
+            }),
+        }
     if manifest.get("workspace_id") != "edge_ai_device":
         raise HTTPException(status_code=503, detail="PUBLIC_CORPUS_PROFILE_MISMATCH")
     evaluation_release = validate_public_evaluation_release(
@@ -524,7 +608,11 @@ def documents(request: Request) -> dict:
     for source in index.manifest["sources"]:
         key = f"{source['version']}:{source['language']}:{source['document_key']}"
         first_line = (index.root / source["local_path"]).read_text(encoding="utf-8").splitlines()[0].strip()
-        title = first_line.removeprefix("# ").strip() if first_line.startswith("# ") else first_heading.get(key, source["document_key"])
+        title = source.get("document_title") or (
+            first_line.removeprefix("# ").strip()
+            if first_line.startswith("# ")
+            else first_heading.get(key, source["document_key"])
+        )
         rows.append({
             "document_id": key, "document_key": source["document_key"],
             "title": title,
@@ -532,6 +620,11 @@ def documents(request: Request) -> dict:
             "source_type": source["source_type"], "source_url": source["source_url"],
             "repository": source["repository"], "commit": source["commit"],
             "document_path": source["document_path"],
+            **{
+                field: source[field]
+                for field in ("publisher", "license", "license_url", "attribution")
+                if source.get(field)
+            },
             "document_relationships": (
                 _relationship_index(index).for_document(key)
                 if _relationship_index(index) is not None else []

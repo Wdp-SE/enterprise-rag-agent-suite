@@ -73,12 +73,17 @@ def public_build_identity(
         "figure_lock_sha256": corpus_root / "figure_evidence_reviewed.lock.json",
     })["fingerprint_sha256"]
     try:
-        project_id = json.loads((corpus_root / "corpus_manifest.json").read_text(encoding="utf-8")).get("project_id")
+        manifest = json.loads((corpus_root / "corpus_manifest.json").read_text(encoding="utf-8"))
+        project_id = manifest.get("project_id")
+        workspace_id = manifest.get("workspace_id")
     except (OSError, json.JSONDecodeError, AttributeError):
         project_id = None
+        workspace_id = None
     evaluation_fingerprint = (
         industrial_inspection_evaluation_fingerprint(repo_root)
         if project_id == "industrial-inspection"
+        else pphuman_evaluation_fingerprint(repo_root)
+        if workspace_id == "pphuman"
         else edge_evaluation_fingerprint(repo_root)
     )
     return {
@@ -130,4 +135,27 @@ def industrial_inspection_evaluation_fingerprint(repo_root: Path) -> str:
     }
     if any(not path.is_file() for path in paths.values()):
         return "pending_project_evaluation"
+    return content_fingerprint(paths)["fingerprint_sha256"]
+
+
+def pphuman_evaluation_fingerprint(repo_root: Path) -> str:
+    """Bind evaluation status only to PP-Human cases, code and measured reports."""
+    evaluation_root = Path(repo_root) / "evaluation" / "pphuman_v1"
+    paths = {
+        "retrieval_cases": evaluation_root / "retrieval_cases.jsonl",
+        "retrieval_split_lock": evaluation_root / "retrieval_split_lock.json",
+        "retrieval_runner": evaluation_root / "run_retrieval_evaluation.py",
+        "retrieval_dev_report": evaluation_root / "retrieval_dev_report.json",
+        "retrieval_holdout_report": evaluation_root / "retrieval_holdout_report.json",
+        "agent_cases": evaluation_root / "agent_cases.jsonl",
+        "agent_split_lock": evaluation_root / "agent_split_lock.json",
+        "agent_runner": evaluation_root / "run_agent_evaluation.py",
+        "agent_dev_report": evaluation_root / "agent_dev_report.json",
+        "agent_holdout_report": evaluation_root / "agent_holdout_report.json",
+        "agent_change_planner": Path(repo_root) / "change-review-agent" / "app" / "change_request.py",
+        "agent_domain_profile_loader": Path(repo_root) / "change-review-agent" / "app" / "domain_profile.py",
+        "agent_domain_profile": Path(repo_root) / "change-review-agent" / "config" / "pphuman_change_profile.json",
+    }
+    if any(not path.is_file() for path in paths.values()):
+        return "pending_pphuman_evaluation"
     return content_fingerprint(paths)["fingerprint_sha256"]

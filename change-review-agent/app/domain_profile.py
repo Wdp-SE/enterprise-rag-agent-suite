@@ -18,7 +18,15 @@ def load_change_profile(path: Path) -> dict[str, Any]:
     if not isinstance(profile.get("id"), str) or not profile["id"].strip():
         raise ValueError("领域配置必须声明 id")
     if profile.get("languages") != ["zh"]:
-        raise ValueError("边缘 AI 设备领域配置仅支持中文语料")
+        raise ValueError("当前领域配置仅支持中文语料")
+    scope_fields = profile.get("scope_fields")
+    if scope_fields is not None and (
+        not isinstance(scope_fields, list)
+        or any(field not in {"device_model", "module_sku", "carrier_board", "software_baseline"}
+               for field in scope_fields)
+        or len(scope_fields) != len(set(scope_fields))
+    ):
+        raise ValueError("领域配置中的范围字段无效")
     max_queries = profile.get("max_queries")
     evidence_budget = profile.get("evidence_budget")
     if not isinstance(max_queries, int) or not 1 <= max_queries <= 4:

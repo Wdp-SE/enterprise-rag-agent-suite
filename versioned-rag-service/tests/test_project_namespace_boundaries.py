@@ -106,14 +106,17 @@ def test_unlicensed_project_cannot_run_agent_review_generation():
     assert generator.calls == 0
 
 
-def test_public_demo_rejects_a_legacy_corpus_even_if_environment_points_to_it(monkeypatch):
+def test_public_demo_rejects_legacy_corpora_even_if_environment_points_to_them(monkeypatch):
     monkeypatch.setenv("APP_ENV", "public_demo")
-    legacy_root = SERVICE / "public_corpus_edge_ai"
-    with TestClient(create_app(
-        index=PublicKnowledgeIndex(legacy_root),
-        retrieval_config_path=legacy_root / "public_retrieval_runtime.json",
-    )) as client:
-        response = client.get("/public/workspace")
+    for legacy_root in (
+        SERVICE / "public_corpus_edge_ai",
+        SERVICE / "public_corpus_industrial_inspection",
+    ):
+        with TestClient(create_app(
+            index=PublicKnowledgeIndex(legacy_root),
+            retrieval_config_path=legacy_root / "public_retrieval_runtime.json",
+        )) as client:
+            response = client.get("/public/workspace")
 
-    assert response.status_code == 503
-    assert response.json()["detail"] == "PUBLIC_CORPUS_PROFILE_MISMATCH"
+        assert response.status_code == 503
+        assert response.json()["detail"] == "PUBLIC_CORPUS_PROFILE_MISMATCH"

@@ -1,12 +1,12 @@
-"""Public-demo identity and readiness checks for the single project workspace."""
+"""Public-demo identity and readiness checks for the active public workspace."""
 
 from __future__ import annotations
 
 
-PROJECT_ID = "industrial-inspection"
-PROJECT_PROFILE_ID = "industrial_inspection"
-PROJECT_REPOSITORY = "xbs0325/industrial-inspection"
-_ALLOWED_LANGUAGES = {"zh", "zh-CN", "zh-TW", "en", "en-US"}
+PROJECT_ID = "pphuman"
+PROJECT_PROFILE_ID = "pphuman"
+PROJECT_REPOSITORY = "PaddlePaddle/PaddleDetection"
+_ALLOWED_LANGUAGES = {"zh"}
 _WORKSPACE_RESULT_KEYS = (
     "official_result", "official_result_top_k", "official_review",
     "official_request_review", "official_review_decision",
@@ -35,9 +35,9 @@ def public_workspace_mismatch(workspace: dict | None, *, public_demo: bool) -> s
         or profile.get("id") != PROJECT_PROFILE_ID
         or repository != PROJECT_REPOSITORY
         or repositories != [PROJECT_REPOSITORY]
-        or not languages.issubset(_ALLOWED_LANGUAGES)
+        or languages != _ALLOWED_LANGUAGES
     ):
-        return "当前知识空间与单项目演示配置不匹配，检索暂不可用。请联系维护者。"
+        return "当前连接的知识空间与 PP-Human 官方中文资料不匹配，已停止检索。请检查后端资料配置。"
     return None
 
 
@@ -56,8 +56,8 @@ def workspace_readiness_message(workspace: dict | None) -> str | None:
             "正文检索与变更审查暂不可用，待许可核实并重新构建语料后开放。"
         )
     if status == "pending_project_evaluation":
-        return "项目语料尚未完成评测与激活，正文检索与变更审查暂不可用。"
-    return "项目语料尚未通过激活校验，正文检索与变更审查暂不可用。"
+        return "PP-Human 语料尚未完成评测与激活，正文检索与变更审查暂不可用。"
+    return "PP-Human 语料尚未通过激活校验，正文检索与变更审查暂不可用。"
 
 
 def workspace_page_readiness_notice(workspace: dict | None, fallback: str) -> str | None:

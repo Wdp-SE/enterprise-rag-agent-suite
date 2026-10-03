@@ -37,21 +37,24 @@ def _index() -> PublicKnowledgeIndex:
     return PublicKnowledgeIndex(CORPUS)
 
 
-def test_default_index_and_health_use_the_license_gated_single_project_corpus():
+def test_default_index_and_health_use_the_pphuman_corpus(monkeypatch):
+    monkeypatch.delenv("RAG_PUBLIC_CORPUS_ROOT", raising=False)
+    monkeypatch.setenv("APP_ENV", "public_demo")
     index = PublicKnowledgeIndex()
     with TestClient(create_app(index=index)) as client:
         workspace = client.get("/public/workspace").json()
         health = client.get("/health").json()
 
-    assert index.manifest["workspace_id"] == "industrial-inspection"
-    assert workspace["workspace_id"] == "industrial-inspection"
-    assert workspace["languages"] == []
-    assert workspace["source_count"] == 0
-    assert workspace["current_version"] == "6d0df954f26b1810910db9f50727ca8bd19afa9f"
-    assert workspace["rag_ready"] is False
-    assert health["rag_ready"] is False
+    assert index.manifest["workspace_id"] == "pphuman"
+    assert workspace["workspace_id"] == "pphuman"
+    assert workspace["languages"] == ["zh"]
+    assert workspace["source_count"] == 83
+    assert workspace["current_version"] == "v2.9.0"
+    assert workspace["rag_ready"] is True
+    assert workspace["retrieval_evaluation_status"] == "new_corpus_pending_rebenchmark"
+    assert health["rag_ready"] is True
     assert health["workspace"] == workspace["workspace"]
-    assert workspace["workspace_id"] == "industrial-inspection"
+    assert workspace["workspace_id"] == "pphuman"
 
 
 def test_query_without_generation_returns_retrieved_evidence_without_fabricating_answer():

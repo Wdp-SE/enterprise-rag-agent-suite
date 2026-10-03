@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "workspace_id": "pphuman",
+  "sources": [
+    {
+      "path": "configs/pphuman/pedestrian_yolov3/README_cn.md",
+      "title": "行人检测模型说明",
+      "document_family": "model_config"
+    },
+    {
+      "path": "configs/pphuman/ppyoloe_crn_l_36e_pphuman.yml",
+      "title": "PP-YOLOE-L 行人模型训练配置",
+      "document_family": "model_config"
+    },
+    {
+      "path": "configs/pphuman/ppyoloe_crn_s_36e_pphuman.yml",
+      "title": "PP-YOLOE-S 行人模型训练配置",
+      "document_family": "model_config"
+    },
+    {
+      "path": "configs/pphuman/ppyoloe_plus_crn_t_auxhead_320_60e_pphuman.yml",
+      "title": "PP-YOLOE-Plus 轻量行人模型配置",
+      "document_family": "model_config"
+    },
+    {
+      "path": "deploy/pipeline/config/infer_cfg_pphuman.yml",
+      "title": "PP-Human 推理流水线配置",
+      "document_family": "inference_config"
+    },
+    {
+      "path": "deploy/pipeline/config/tracker_config.yml",
+      "title": "行人跟踪器配置",
+      "document_family": "tracker_config"
+    },
+    {
+      "path": "deploy/pipeline/docs/tutorials/PPHuman_QUICK_STARTED.md",
+      "title": "PP-Human 快速开始",
+      "document_family": "quick_start"
+    },
+    {
+      "path": "deploy/pipeline/docs/tutorials/pphuman_action.md",
+      "title": "PP-Human 行为识别",
+      "document_family": "behavior_recognition"
+    },
+    {
+      "path": "deploy/pipeline/docs/tutorials/pphuman_attribute.md",
+      "title": "PP-Human 属性识别",
+      "document_family": "attribute_recognition"
+    },
+    {
+      "path": "deploy/pipeline/docs/tutorials/pphuman_mot.md",
+      "title": "PP-Human 行人跟踪与流量统计",
+      "document_family": "tracking"
+    },
+    {
+      "path": "deploy/pipeline/docs/tutorials/pphuman_mtmct.md",
+      "title": "PP-Human 跨镜行人跟踪",
+      "document_family": "cross_camera_tracking"
+    },
+    {
+      "path": "docs/advanced_tutorials/customization/pphuman_attribute.md",
+      "title": "行人属性识别二次开发",
+      "document_family": "attribute_recognition"
+    },
+    {
+      "path": "docs/advanced_tutorials/customization/pphuman_mot.md",
+      "title": "行人跟踪二次开发",
+      "document_family": "tracking"
+    },
+    {
+      "path": "docs/advanced_tutorials/customization/pphuman_mtmct.md",
+      "title": "跨镜跟踪二次开发",
+      "document_family": "cross_camera_tracking"
+    }
+  ],
+  "exclusions": [
+    "英文说明页面",
+    "PP-Vehicle 等其他任务文档",
+    "模型权重、示例图片/视频、公开或第三方数据集、二进制产物",
+    "仓库内不属于 PP-Human 的通用文档和其他工程模块"
+  ]
+}

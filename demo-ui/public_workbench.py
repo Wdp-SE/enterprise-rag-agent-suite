@@ -145,7 +145,8 @@ def _version_option_label(version: str, workspace: dict | None) -> str:
         return "全部已收录版本"
     labels = (workspace or {}).get("version_labels") or {}
     if version in labels:
-        return str(labels[version])
+        label = str(labels[version])
+        return label if version in label else f"{version} · {label}"
     if not current:
         return f"{version} · 离线回退配置（未确认）"
     if version == current:
@@ -591,11 +592,15 @@ def _home(ready: bool, workspace: dict | None) -> None:
     version_range = _version_option_label(current, workspace) if current else "服务未连接，无法确认"
     name = _workspace_name(workspace)
     locales = (workspace or {}).get("languages") or []
-    language_label = " / ".join(locales) if locales else "尚无已审核语料"
-    st.markdown('<div class="masthead"><span class="kicker">单项目研发资料 / 版本化知识空间</span></div>', unsafe_allow_html=True)
+    language_names = {"zh": "中文", "zh-CN": "中文"}
+    language_label = " / ".join(language_names.get(value, value) for value in locales) if locales else "尚无已审核语料"
+    st.markdown(
+        f'<div class="masthead"><span class="kicker">{escape(name)} · 版本化研发知识</span></div>',
+        unsafe_allow_html=True,
+    )
     st.title("研发知识版本服务与变更影响审查")
     st.write(
-        f"基于 {name} 的固定版本项目资料进行检索；变更审查整理同一项目内有来源支持的影响候选和证据缺口，最终由工程师确认。"
+        f"基于 {name} 的官方中文研发资料进行版本检索；变更审查整理有来源支持的影响候选和证据缺口，最终由工程师确认。"
     )
     state = "已连接" if ready else (
         "许可待核实" if workspace and workspace.get("source_status") == "pending_redistribution_license"
@@ -603,7 +608,7 @@ def _home(ready: bool, workspace: dict | None) -> None:
     )
     status = [
         ("知识空间", name),
-        ("资料来源", "单一项目固定版本公开资料"),
+        ("资料来源", "PaddleDetection 官方开源资料"),
         ("默认检索范围", version_range),
         ("语言", language_label),
         ("服务状态", state),
@@ -619,7 +624,7 @@ def _home(ready: bool, workspace: dict | None) -> None:
         with st.container(border=True, key="public_rag_module"):
             _module_heading("版本化研发知识服务 · RAG")
             st.markdown("### 版本化知识检索与问答")
-            st.write("按资料快照、设备和软件环境检索工程资料，并保留原文出处。")
+            st.write("按正式版本、功能模块和配置检索 PP-Human 研发资料，并保留原文出处。")
             st.button("进入知识检索", type="primary", use_container_width=True,
                       on_click=_navigate, args=("版本检索与问答",))
     with right:
@@ -636,6 +641,9 @@ def _home(ready: bool, workspace: dict | None) -> None:
         '<span>修改建议</span><span>人工审核</span></div>',
         unsafe_allow_html=True,
     )
+    privacy_note = ((workspace or {}).get("domain_profile") or {}).get("privacy_boundary")
+    if privacy_note:
+        st.caption(str(privacy_note))
     if workspace:
         st.markdown(
             f'<div class="home-snapshot">{escape(workspace_snapshot(workspace))}</div>',
@@ -656,7 +664,7 @@ def _knowledge(client: PublicKnowledgeClient, ready: bool, workspace: dict | Non
     default_version_label = _version_option_label(current, workspace) if current else "无法确认最新已收录版本"
     st.markdown(
         f'<div class="context-strip"><span><strong>知识空间</strong> {escape(name)}</span>'
-        f'<span><strong>资料</strong> 单一项目固定版本资料</span>'
+        f'<span><strong>资料</strong> PaddleDetection 官方 PP-Human 资料</span>'
         f'<span><strong>默认版本</strong> {escape(default_version_label)}</span>'
         f'<span><strong>默认检索</strong> {escape(default_policy)}</span></div>',
         unsafe_allow_html=True,
@@ -1466,8 +1474,8 @@ def _agent(
     summary = st.text_area(
         "描述研发变更", height=120,
         placeholder=(
-            f"例如：{example_queries[0]}；请补充目标设备和软件基线，便于缩小核查范围。"
-            if example_queries else "描述计划修改的设备、软件基线、部署或运维行为，并说明希望核对的资料。"
+            f"例如：{example_queries[0]}；请补充目标版本、功能模块和变更前后差异。"
+            if example_queries else "说明变更目标版本、功能模块、变更前后行为和希望核查的资料。"
         ),
         key="official_change_request", on_change=_save_change_request,
     )
@@ -1489,7 +1497,7 @@ def _agent(
         )
         impact_scope = st.text_input(
             "影响范围（模块、项目或对象）", max_chars=160,
-            placeholder="例如：设备型号、接口、刷写流程、推理部署或故障恢复步骤",
+            placeholder="例如：行人跟踪器、行为识别流水线、模型配置或推理部署",
             key="official_impact_scope", on_change=_change_request_context_changed,
         )
         target_version = st.selectbox(
@@ -1706,6 +1714,27 @@ def _versions(client: PublicKnowledgeClient, ready: bool, workspace: dict | None
             st.info(notice)
         return
     docs = _request(client.documents, fallback="版本资料目录暂不可用。") or []
+    if (workspace or {}).get("workspace_id") == "pphuman":
+        st.write("每组资料固定到 PaddleDetection 对应的正式 release tag；可按版本回看 PP-Human 教程和配置变更。")
+        snapshots = (workspace or {}).get("snapshots") or []
+        columns = st.columns(3, gap="medium")
+        for index, snapshot in enumerate(snapshots):
+            version = str(snapshot.get("version") or "未标记版本")
+            members = [row for row in docs if row.get("version") == version]
+            with columns[index % len(columns)]:
+                with st.container(border=True, key=f"pphuman_snapshot_{version}"):
+                    st.markdown(f"### {version}　{snapshot.get('label', '')}")
+                    st.caption(
+                        f"{len(members)} 份版本资料 · 固定提交 `{snapshot.get('commit') or '未声明'}`"
+                    )
+                    for row in members[:4]:
+                        st.markdown(f"- {row.get('title') or row['document_key']} · [查看官方原文]({row['source_url']})")
+                    if len(members) > 4:
+                        with st.expander(f"查看其余 {len(members) - 4} 份资料"):
+                            for row in members[4:]:
+                                st.markdown(f"- {row.get('title') or row['document_key']} · [查看官方原文]({row['source_url']})")
+        st.caption("这些是各 release 的文档快照；项目未随此工作台下载模型权重、样例视频或第三方数据集。")
+        return
     if (workspace or {}).get("workspace_id") == "edge_ai_device":
         st.write("资料快照记录语料的固定来源版本；JetPack/L4T 与设备型号是检索范围，不代表历史语料快照。")
         snapshots = (workspace or {}).get("snapshots") or []

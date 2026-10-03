@@ -1,39 +1,41 @@
-# 单项目版本化研发知识 RAG 服务
+# PP-Human 版本化研发知识服务
 
-FastAPI 服务只接受唯一项目 `xbs0325/industrial-inspection` 的固定版本语料，不允许静默回退到旧领域索引。目标提交为 `6d0df954f26b1810910db9f50727ca8bd19afa9f`。
+FastAPI 服务为 PP-Human 研发文档检索和变更审查 Agent 提供同一套中文、版本化证据。活动语料固定于 PaddlePaddle/PaddleDetection 仓库的六个正式版本，默认 v2.9.0；检索来源包含固定 commit、路径和文件哈希，历史版本查询不会用最新版资料代替。
 
-## 当前服务状态
+## 语料状态
 
-GitHub 未声明内容再分发许可证，逐文件审计为 0 个已批准正文。活动 corpus manifest 是元数据声明，索引为 0 来源、0 片段、`active=false`。服务可以启动并提供状态接口，但 `/health` 报告 `rag_ready=false`；搜索和生成接口返回 `503 PROJECT_CORPUS_INACTIVE_LICENSE_PENDING`，不会请求模型。这个仓库当前没有可用于报告的本项目 RAG/Agent 指标。
+当前索引包含 83 条版本来源、14 个文档主题、761 个片段，覆盖 v2.5.0 至 v2.9.0（含 v2.8.1）。仅收录 PP-Human 中文教程及直接配置文件。Apache-2.0 许可依据记录在每条来源中；不包含模型权重、影像、视频或数据集。
 
-只有在取得明确许可、完成逐文件审核并重建语料后，才能开放内容检索。旧 Seeed/Jetson 的 corpus、评测与适配代码不属于当前活动项目，历史结果不能作为本项目成绩。
+新语料已可检索，但 PP-Human 专项检索与 Agent 冻结评测仍待建立，因此服务标注 `new_corpus_pending_rebenchmark`，不能把历史语料的指标作为当前效果。
 
-## API 状态接口
+## API
 
-- `GET /health`：进程存活状态、RAG 就绪状态和构建身份。
-- `GET /public/workspace`：唯一项目仓库、commit、来源/片段数、许可门禁和评测状态。
-- `GET /public/documents`：当前已批准来源目录；语料未激活时返回空目录。
-- `POST /public/search`、`POST /public/query`：仅在经验证的项目正文语料激活后工作；不得由客户端指定其他仓库或 namespace。
+- `GET /health`：进程健康、语料就绪和构建指纹。
+- `GET /public/workspace`：当前版本、可查询历史版本、来源数量、中文范围及评测状态。
+- `GET /public/documents`：按版本列出固定来源和标题。
+- `POST /public/search`、`POST /public/query`：检索或生成带引用回答，语言和版本范围由服务端语料清单验证。
+- `POST /public/review-advice`：Agent 提交已检索证据 ID，回答只能引用本次提交的证据。
 
 ## 本地启动
 
-从仓库根目录进入服务目录：
+从服务目录执行：
 
 ```powershell
-$env:RAG_PUBLIC_CORPUS_ROOT = "public_corpus_industrial_inspection"
-$env:RAG_PUBLIC_RETRIEVAL_CONFIG = "public_corpus_industrial_inspection/public_retrieval_runtime.json"
+$env:RAG_PUBLIC_CORPUS_ROOT = "public_corpus_pphuman"
+$env:RAG_PUBLIC_RETRIEVAL_CONFIG = "public_corpus_pphuman/public_retrieval_runtime.json"
 ..\.venv\Scripts\python.exe -m uvicorn src.public_server:app --host 127.0.0.1 --port 8765
 ```
 
-运行来源审计和 corpus 构建器的命令行帮助：
+要启用回答生成，在后端进程设置 `RD_V2_ALLOW_EXTERNAL_GENERATION=true`、`RD_V2_GENERATION_PROVIDER=deepseek` 和 `DEEPSEEK_API_KEY`。密钥仅放在服务端或部署平台的密钥存储中。
+
+## 来源导入和评测
+
+`config/pphuman_source_selection.json` 是正文路径白名单。`scripts/build_pphuman_corpus.py` 从本地官方仓库读取固定 tag，只能构建到空的输出目录；会生成来源清单、索引、版本关系和排除项审计。缺少的历史文件必须记录为缺失，禁止从后续版本补写。
 
 ```powershell
-..\.venv\Scripts\python.exe scripts/audit_project_source.py --help
-..\.venv\Scripts\python.exe scripts/build_project_corpus.py --help
+$env:PYTHONPATH = "."
+python scripts/build_pphuman_corpus.py --repository-root <PaddleDetection本地仓库路径> --output <新的空目录>
+python -m pytest -q tests/test_pphuman_corpus.py tests/test_pphuman_server.py
 ```
 
-构建器只复制逐文件明确批准的内容；来源哈希、项目仓库、commit、发布者和许可证审核记录必须全部匹配。空语料保持 inactive。
-
-## 发布门禁
-
-Render 模板也指向 `public_corpus_industrial_inspection/`。部署空语料时，服务健康检查只表示进程存活，不代表检索可用。发布核对需分别验证 `/health` 的 `rag_ready`、`/public/workspace` 的项目来源与许可状态，以及本项目自己的冻结评测；其他领域评测不会被引用。
+只有在 PP-Human 版本化检索和变更审查题集冻结并通过独立 holdout 后，才能公布准确率或切换检索策略。其他语料的报告不得用于表示本服务的效果。

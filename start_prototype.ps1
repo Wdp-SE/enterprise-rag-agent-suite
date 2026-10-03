@@ -22,7 +22,7 @@ if (-not (Test-Path -LiteralPath $uiPython -PathType Leaf)) {
     # Keep the existing local virtual environment usable after the folder rename.
     $uiPython = Join-Path $legacyAgentRoot '.venv\Scripts\python.exe'
 }
-$projectCorpus = Join-Path $ragRoot 'public_corpus_industrial_inspection'
+$projectCorpus = Join-Path $ragRoot 'public_corpus_pphuman'
 $projectRetrievalPolicy = Join-Path $projectCorpus 'retrieval_policy.json'
 
 # Codex can inject a loopback HTTP proxy into its child processes. If that

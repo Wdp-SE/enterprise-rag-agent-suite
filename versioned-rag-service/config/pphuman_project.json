@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "workspace_id": "pphuman",
+  "workspace": "PP-Human 行人分析工程知识",
+  "publisher": "PaddlePaddle",
+  "repository": "PaddlePaddle/PaddleDetection",
+  "repository_url": "https://github.com/PaddlePaddle/PaddleDetection",
+  "license": "Apache-2.0",
+  "license_url": "https://github.com/PaddlePaddle/PaddleDetection/blob/release/2.9/LICENSE",
+  "license_review_reference": "PaddleDetection 仓库根目录 LICENSE；逐路径限定为 PP-Human 中文教程与配置，第三方图片、模型权重及数据集不导入。",
+  "current_version": "v2.9.0",
+  "versions": {
+    "v2.5.0": {"tag": "v2.5.0", "commit": "443e4a313ed28a07a33ef65b6c35fa732b1148bb"},
+    "v2.6.0": {"tag": "v2.6.0", "commit": "93e2d433ff07aaf95605d7d5e39779340c6b961c"},
+    "v2.7.0": {"tag": "v2.7.0", "commit": "7d6dc4079379b7827351c511f76e23ccea4910fd"},
+    "v2.8.0": {"tag": "v2.8.0", "commit": "666f597fd00d3157e84dd9fb2dd3f40bf9918ebc"},
+    "v2.8.1": {"tag": "v2.8.1", "commit": "59d5f5ebebc2a380f5f07dd413a056b75af01f2a"},
+    "v2.9.0": {"tag": "v2.9.0", "commit": "b25522a0f4bde8c80603f3ba5e3472059972e3b5"}
+  },
+  "domain_profile": {
+    "id": "pphuman",
+    "name": "PP-Human 行人分析系统研发",
+    "business_scenario": "面向维护 PP-Human 行人检测、跟踪、属性和行为分析流水线的算法与应用工程团队，按正式版本检索官方中文研发资料；当模块、模型配置、跟踪流程或部署方式变更时，RAG 提供原文证据，Agent 整理可能受影响的教程、配置和验证项，由研发人员审核。",
+    "source_scope": "仅收录 PaddlePaddle/PaddleDetection 官方仓库中 PP-Human 中文教程及其直接配置文件；不代表 PaddlePaddle 内部资料、企业工单、真实视频测试或量产认证。",
+    "privacy_boundary": "此工作台只处理公开研发文档，不上传或分析真人图片、视频、身份或员工行为数据；审查结果只是待核实候选，不用于个人考核或自动决策。",
+    "change_types": [
+      {"id": "model_config", "label": "检测或属性模型配置变更", "document_families": ["model_config", "inference_config", "attribute_recognition"]},
+      {"id": "behavior_pipeline", "label": "行为识别流程变更", "document_families": ["behavior_recognition", "inference_config"]},
+      {"id": "tracking", "label": "行人跟踪或跨镜跟踪变更", "document_families": ["tracking", "cross_camera_tracking", "inference_config"]},
+      {"id": "deployment", "label": "推理部署和运行配置变更", "document_families": ["quick_start", "inference_config", "tracker_config"]}
+    ],
+    "example_queries": [
+      "PP-Human v2.9.0 如何启用行为识别并选择对应的模型配置？",
+      "行人跟踪模型切换后，推理配置和跟踪参数需要核对哪些内容？",
+      "属性识别二次开发需要遵循什么数据格式和模型接入配置？"
+    ]
+  },
+  "data_origin": "PaddleDetection 官方中文 PP-Human 教程和工程配置；固定到 v2.5.0–v2.9.0 正式 release tag，最新默认 v2.9.0。"
+}

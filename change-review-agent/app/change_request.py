@@ -21,12 +21,12 @@ _CLAUSE_SPLIT = re.compile(
 _CLAUSE_PREFIX = re.compile(r"^(?:同时|并且|并|然后|随后|接着|also\s+|and\s+then\s+|and\s+|then\s+)", re.IGNORECASE)
 
 
-EDGE_PROFILE_PATH = Path(__file__).resolve().parents[1] / "config" / "edge_ai_device_change_profile.json"
+PPHUMAN_PROFILE_PATH = Path(__file__).resolve().parents[1] / "config" / "pphuman_change_profile.json"
 AUTO_CHANGE_TYPE = "auto"
 
 
 def _default_profile() -> dict[str, Any]:
-    return load_change_profile(EDGE_PROFILE_PATH)
+    return load_change_profile(PPHUMAN_PROFILE_PATH)
 
 
 CHANGE_TYPES: dict[str, dict[str, Any]] = categories_by_id(_default_profile())
@@ -69,7 +69,7 @@ def _contains_term(text: str, term: str) -> bool:
 
 
 def classify_change_type(text: str) -> str:
-    """Classify a request using only the active edge-device business profile."""
+    """Classify a request using the active PP-Human engineering profile."""
     clauses = [part.strip() for part in _CLAUSE_SPLIT.split(text or "") if part.strip()]
     categories = _default_profile()["change_types"]
     if clauses:
@@ -129,12 +129,22 @@ def _build_profile_request_plan(
     else:
         raise ValueError("变更类型不在当前领域配置中")
 
-    device_scope = {
+    declared_scope_fields = profile.get(
+        "scope_fields", ["device_model", "module_sku", "carrier_board", "software_baseline"],
+    )
+    all_scope_values = {
         "device_model": (device_model or "").strip() or None,
         "module_sku": (module_sku or "").strip() or None,
         "carrier_board": (carrier_board or "").strip() or None,
         "software_baseline": (software_baseline or "").strip() or None,
     }
+    unsupported_scope = [
+        field for field, value in all_scope_values.items()
+        if value is not None and field not in declared_scope_fields
+    ]
+    if unsupported_scope:
+        raise ValueError("当前领域配置不支持所填的设备范围字段")
+    device_scope = {field: all_scope_values[field] for field in declared_scope_fields}
     declared_options = profile.get("scope_options", {})
     for field, value in device_scope.items():
         if value is None:

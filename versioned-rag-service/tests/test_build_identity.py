@@ -96,3 +96,23 @@ def test_project_workspace_does_not_publish_legacy_domain_evaluation_fingerprint
     )
 
     assert result["evaluation_fingerprint"] == "pending_project_evaluation"
+
+
+def test_pphuman_build_identity_never_reuses_another_domain_evaluation(tmp_path):
+    from src.build_identity import public_build_identity
+
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "corpus_manifest.json").write_text(
+        '{"workspace_id":"pphuman"}', encoding="utf-8",
+    )
+    config = corpus / "public_retrieval_runtime.json"
+    config.write_text("{}", encoding="utf-8")
+
+    result = public_build_identity(
+        repo_root=tmp_path,
+        corpus_root=corpus,
+        retrieval_config_path=config,
+    )
+
+    assert result["evaluation_fingerprint"] == "pending_pphuman_evaluation"

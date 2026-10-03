@@ -24,7 +24,33 @@ from app.change_request import (
 from app.domain_profile import load_change_profile
 
 
+PPHUMAN_CHANGE_PROFILE_PATH = Path(__file__).resolve().parents[1] / "config" / "pphuman_change_profile.json"
 EDGE_CHANGE_PROFILE_PATH = Path(__file__).resolve().parents[1] / "config" / "edge_ai_device_change_profile.json"
+_CHANGE_PROFILE_PATHS = {
+    "pphuman": PPHUMAN_CHANGE_PROFILE_PATH,
+    # Kept for isolated legacy tests and local tooling; the public demo only
+    # accepts the PP-Human workspace.
+    "edge_ai_device": EDGE_CHANGE_PROFILE_PATH,
+}
+
+
+def _profile_for_workspace(workspace: dict) -> dict:
+    workspace_id = workspace.get("workspace_id")
+    path = _CHANGE_PROFILE_PATHS.get(workspace_id)
+    if path is None:
+        raise ValueError("当前工作台仅支持已配置的公开中文知识空间")
+    profile = load_change_profile(path)
+    declared_profile_id = (workspace.get("domain_profile") or {}).get("id")
+    if profile["id"] != workspace_id or declared_profile_id != profile["id"]:
+        raise ValueError("Agent 领域配置与当前知识空间不匹配")
+    if workspace_id == "edge_ai_device":
+        profile["scope_options"] = {
+            "device_model": list(workspace.get("hardware_models", [])),
+            "module_sku": list(workspace.get("module_skus", [])),
+            "carrier_board": list(workspace.get("carrier_boards", [])),
+            "software_baseline": list(workspace.get("software_baselines", [])),
+        }
+    return profile
 
 
 class PublicKnowledgeGateway(Protocol):
@@ -100,19 +126,30 @@ def _official_hit(
     trusted_snapshot = str(trusted.get("source_snapshot") or "")
     trusted_commit = str(trusted.get("commit") or "")
     trusted_hash = str(trusted.get("sha256") or "")
+    trusted_path = str(trusted.get("path") or trusted.get("document_path") or "")
+    url_is_pinned_to_registered_blob = False
+    if trusted_parsed.scheme == "https" and trusted_parsed.netloc == "github.com":
+        expected_path = f"/{trusted_repository}/blob/{trusted_commit}/{trusted_path}"
+        url_is_pinned_to_registered_blob = bool(trusted_path and trusted_parsed.path == expected_path)
+    elif trusted_parsed.scheme == "https" and trusted_parsed.netloc == "wiki.seeedstudio.com":
+        url_is_pinned_to_registered_blob = trusted_parsed.path.startswith("/cn/")
+    row_commit = row.get("commit")
+    row_hash = row.get("source_sha256") or row.get("sha256")
     return bool(
         row.get("version") in (allowed_versions or {current_version})
         and row.get("source_snapshot") == trusted_snapshot
         and trusted_snapshot == row.get("version")
         and row.get("source_url") == trusted_url
         and parsed.scheme == "https"
-        and parsed.netloc == "wiki.seeedstudio.com"
         and trusted_parsed.scheme == "https"
-        and trusted_parsed.netloc == "wiki.seeedstudio.com"
+        and url_is_pinned_to_registered_blob
         and trusted_repository in repositories
         and row.get("repository") == trusted_repository
         and re.fullmatch(r"[0-9a-f]{40}", trusted_commit)
         and re.fullmatch(r"[0-9a-f]{64}", trusted_hash)
+        and (row_commit is None or row_commit == trusted_commit)
+        and (row_hash is None or row_hash == trusted_hash)
+        and (not trusted_path or row.get("document_path") == trusted_path)
         and row.get("language") == "zh"
         and bool(row.get("chunk_id"))
         and (score is None or isinstance(score, (int, float)) and score > 0)
@@ -545,17 +582,7 @@ class PublicReviewAgent:
         workspace = self.gateway.workspace()
         current_version = workspace["current_version"]
         repositories = _workspace_repositories(workspace)
-        if workspace.get("workspace_id") != "edge_ai_device":
-            raise ValueError("当前工作台仅支持已配置的中文边缘 AI 设备知识空间")
-        edge_profile = load_change_profile(EDGE_CHANGE_PROFILE_PATH)
-        if (workspace.get("domain_profile") or {}).get("id") != edge_profile["id"]:
-            raise ValueError("Agent 领域配置与当前知识空间不匹配")
-        edge_profile["scope_options"] = {
-            "device_model": list(workspace.get("hardware_models", [])),
-            "module_sku": list(workspace.get("module_skus", [])),
-            "carrier_board": list(workspace.get("carrier_boards", [])),
-            "software_baseline": list(workspace.get("software_baselines", [])),
-        }
+        active_profile = _profile_for_workspace(workspace)
         source_registry = workspace.get("source_registry")
         if not isinstance(source_registry, list) or not source_registry:
             raise ValueError("当前知识空间未提供可校验的来源清单")
@@ -574,7 +601,7 @@ class PublicReviewAgent:
             raise ValueError("目标版本不在当前知识空间的已收录版本中")
         plan = build_request_plan(
             summary, change_type=change_type, impact_scope=impact_scope,
-            profile=edge_profile, device_model=device_model, module_sku=module_sku,
+            profile=active_profile, device_model=device_model, module_sku=module_sku,
             carrier_board=carrier_board, software_baseline=software_baseline,
             target_snapshot=selected_version,
         )
@@ -708,11 +735,12 @@ class PublicReviewAgent:
                 f"\n审查边界：{coverage['incomplete_reason'] or '仅把引用资料列为待核对候选，最终由人工确认'}"
             )
             scope = plan["device_scope"]
-            scope_text = "；".join(f"{key}={value or '未指定'}" for key, value in scope.items())
+            if scope:
+                scope_text = "；".join(f"{key}={value or '未指定'}" for key, value in scope.items())
+                advice_summary += f"\n适用范围：{scope_text}"
             advice_summary += (
-                f"\n设备范围：{scope_text}"
-                "\n安全约束：只列有本次证据支持的待核对候选；不得将缺少证据解释为兼容、无影响或已通过验证；"
-                "资料没有明确给出设备与软件组合时，必须作为证据缺口交由工程师实测确认。"
+                "\n安全约束：只列有本次证据支持的待核对候选；不得将缺少证据解释为无影响或已通过验证；"
+                "资料未明确覆盖的内容必须作为证据缺口交由工程师确认。"
             )
             evidence_ids = [row["chunk_id"] for row in candidates]
             versioned_review = getattr(self.gateway, "review_advice_for_version", None)
@@ -774,8 +802,7 @@ class PublicReviewAgent:
         current_version = workspace["current_version"]
         repositories = _workspace_repositories(workspace)
         allowed_versions = _scope_versions(workspace, current_version)
-        if workspace.get("workspace_id") != "edge_ai_device":
-            raise ValueError("当前工作台仅支持已配置的中文边缘 AI 设备知识空间")
+        active_profile = _profile_for_workspace(workspace)
         source_registry = workspace.get("source_registry")
         if not isinstance(source_registry, list) or not source_registry:
             raise ValueError("当前知识空间未提供可校验的来源清单")
@@ -803,18 +830,29 @@ class PublicReviewAgent:
         )[:20]
         related_query = (selected["heading"] + " " + proposed)[:1000]
         retrieval_failed = False
-        scope_values = {
-            "device_model": device_model,
-            "module_sku": module_sku,
-            "carrier_board": carrier_board,
-            "software_baseline": software_baseline,
-        }
-        scope_options = {
+        all_scope_values = {
             "device_model": workspace.get("hardware_models", []),
             "module_sku": workspace.get("module_skus", []),
             "carrier_board": workspace.get("carrier_boards", []),
             "software_baseline": workspace.get("software_baselines", []),
         }
+        supplied_scope_values = {
+            "device_model": device_model,
+            "module_sku": module_sku,
+            "carrier_board": carrier_board,
+            "software_baseline": software_baseline,
+        }
+        declared_scope_fields = active_profile.get(
+            "scope_fields", ["device_model", "module_sku", "carrier_board", "software_baseline"],
+        )
+        if any(value is not None and field not in declared_scope_fields
+               for field, value in supplied_scope_values.items()):
+            raise ValueError("当前领域配置不支持所填的设备范围字段")
+        scope_values = {
+            field: supplied_scope_values[field]
+            for field in declared_scope_fields
+        }
+        scope_options = active_profile.get("scope_options", {})
         for field, value in scope_values.items():
             if value is not None and value not in scope_options[field]:
                 raise ValueError(f"{field} 不在当前知识空间的可选范围中")

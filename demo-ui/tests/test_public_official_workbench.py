@@ -139,6 +139,44 @@ def _edge_workspace():
     }
 
 
+def _pphuman_workspace():
+    return {
+        "workspace_id": "pphuman",
+        "domain_profile": {
+            "id": "pphuman",
+            "name": "PP-Human 行人分析系统研发",
+            "example_queries": [
+                "PP-Human v2.9.0 如何启用行为识别并选择对应的模型配置？",
+                "调整行人跟踪器配置后，需要核对哪些部署步骤和验证项？",
+            ],
+            "change_types": [
+                {"id": "model_config", "label": "检测或属性模型配置变更"},
+                {"id": "behavior_pipeline", "label": "行为识别或属性分析流程变更"},
+                {"id": "tracking", "label": "行人跟踪或跨镜跟踪变更"},
+                {"id": "deployment", "label": "推理部署和运行配置变更"},
+            ],
+        },
+        "workspace": "PP-Human 行人分析工程知识",
+        "repository": "PaddlePaddle/PaddleDetection",
+        "repositories": ["PaddlePaddle/PaddleDetection"],
+        "current_version": "v2.9.0",
+        "baseline_version": "v2.5.0",
+        "available_versions": ["v2.9.0", "v2.8.1", "v2.8.0", "v2.7.0", "v2.6.0", "v2.5.0"],
+        "version_labels": {"v2.9.0": "当前最新版"},
+        "version_scopes": {"latest": {"versions": ["v2.9.0"]}},
+        "languages": ["zh"],
+        "source_count": 83,
+        "chunk_count": 761,
+        "unique_document_count": 14,
+        "source_breakdown": [{
+            "version": "v2.9.0", "locale": "zh-CN", "document_family": "tracking",
+            "source_format": "markdown", "count": 14,
+        }],
+        "retrieval_evaluation_status": "new_corpus_pending_rebenchmark",
+        "rag_ready": True,
+    }
+
+
 def test_edge_knowledge_filters_are_forwarded_to_rag(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
@@ -218,7 +256,7 @@ def test_chinese_only_language_options_do_not_offer_english_or_all_languages():
     assert options == [("zh", "中文")]
 
 
-def test_unlicensed_single_project_is_explained_and_query_controls_stay_disabled(monkeypatch):
+def test_legacy_project_workspace_is_rejected_and_query_controls_stay_disabled(monkeypatch):
     from services.public_knowledge_client import PublicKnowledgeClient
 
     workspace = {
@@ -242,12 +280,11 @@ def test_unlicensed_single_project_is_explained_and_query_controls_stay_disabled
     app = AppTest.from_file(APP, default_timeout=40).run()
 
     assert not app.exception
-    assert any("未声明内容再分发许可" in item.value for item in app.warning)
+    assert any("PP-Human 官方中文资料不匹配" in item.value for item in app.warning)
     next(button for button in app.button if button.label == "版本化知识检索").click().run()
 
-    query = next(button for button in app.button if button.label == "生成带引用回答")
-    assert query.disabled is True
-    assert any("暂不可用" in item.value for item in app.info)
+    assert not any(button.label == "生成带引用回答" for button in app.button)
+    assert any("为避免误用不匹配的资料" in item.value for item in app.info)
 
 
 def test_relationship_labels_keep_path_candidates_distinct_from_confirmed_translation():
@@ -291,7 +328,7 @@ def test_source_coverage_summary_reports_edge_device_snapshot_and_families():
     assert "ai deployment" in summary and "hardware interface" in summary
 
 
-def test_workbench_warns_when_connected_public_rag_workspace_is_not_edge_ai(monkeypatch):
+def test_workbench_warns_when_public_rag_workspace_is_not_pphuman(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
     monkeypatch.setenv("APP_ENV", "public_demo")
@@ -307,7 +344,7 @@ def test_workbench_warns_when_connected_public_rag_workspace_is_not_edge_ai(monk
 
     assert not app.exception
     warning = "\n".join(item.value for item in app.warning)
-    assert "知识空间不匹配" in warning
+    assert "PP-Human 官方中文资料不匹配" in warning
     assert "RAG_API_BASE_URL" not in warning
     assert "public_corpus_other" not in warning
     assert not any("资料规模" in item.value for item in list(app.markdown) + list(app.caption))
@@ -385,20 +422,20 @@ def _start_agent_request(app, summary="假设调整全局参数优先级，并�
     return app
 
 
-def test_public_home_has_edge_ai_modules_and_no_case_labels(monkeypatch):
+def test_public_home_has_pphuman_modules_and_change_review_flow(monkeypatch):
     _mock_client(monkeypatch)
     from services.public_knowledge_client import PublicKnowledgeClient
-    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: _edge_workspace())
+    monkeypatch.setattr(PublicKnowledgeClient, "workspace", lambda self: _pphuman_workspace())
     app = AppTest.from_file(APP, default_timeout=40).run()
     assert not app.exception
     assert [item.value for item in app.title] == ["研发知识版本服务与变更影响审查"]
     text = "\n".join(item.value for item in list(app.markdown) + list(app.caption))
-    assert "reComputer Industrial" in text
+    assert "PP-Human 行人分析工程知识" in text
     assert "版本化研发知识服务 · RAG" in text
     assert "Agent · 研发资料变更审查" in text
     assert "研发资料变更影响审查" in text
-    assert "中文公开工程资料" in text
-    assert "固定资料快照" in text
+    assert "PP-Human 行人分析系统研发" not in text
+    assert "v2.9.0" in text
     assert "官方英文资料" not in text
     assert "中英文资料" not in text
     assert "进入知识检索" in {button.label for button in app.button}
@@ -1579,7 +1616,7 @@ def test_benchmark_ignores_other_corpus_numbers_for_new_edge_workspace(monkeypat
 
     visible = "\n".join(item.value for item in list(app.markdown) + list(app.caption) + list(app.subheader) + list(app.warning))
     assert not app.exception
-    assert "尚未完成与语料指纹绑定的冻结评测" in visible
+    assert "尚未完成与活动语料指纹绑定的冻结评测" in visible
     assert "0.99" not in visible and "other_corpus_v2" not in visible
     assert "其他领域语料上的分数不适用于本知识空间" in visible
 

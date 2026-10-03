@@ -17,7 +17,7 @@ POLICIES = {
     "bm25", "bm25_faceted_rrf", "bm25_figure_ocr",
     "bm25_faceted_figure_ocr", "hybrid",
 }
-DEFAULT_CONFIG = Path(__file__).resolve().parents[1] / "public_corpus_industrial_inspection" / "public_retrieval_runtime.json"
+DEFAULT_CONFIG = Path(__file__).resolve().parents[1] / "public_corpus_pphuman" / "public_retrieval_runtime.json"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 

@@ -15,10 +15,11 @@ from urllib.parse import urlparse
 import numpy as np
 
 from src.document_relations import DocumentRelationIndex
+from src.pphuman_corpus import PPHUMAN_WORKSPACE_ID, validate_pphuman_manifest
 from src.project_corpus_contract import validate_project_corpus
 
 
-ROOT = Path(__file__).resolve().parents[1] / "public_corpus_industrial_inspection"
+ROOT = Path(__file__).resolve().parents[1] / "public_corpus_pphuman"
 TOKEN_RE = re.compile(r"[a-z][a-z0-9_.-]*|[0-9]+|[\u3400-\u9fff]+", re.I)
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 BM25_DIVERSITY_PREFIX = {
@@ -171,6 +172,8 @@ def build_index(root: Path = ROOT) -> dict:
     manifest = json.loads((root / "corpus_manifest.json").read_text(encoding="utf-8"))
     if manifest.get("workspace_id") == EDGE_AI_WORKSPACE_ID:
         _validate_edge_ai_manifest(root, manifest)
+    if manifest.get("workspace_id") == PPHUMAN_WORKSPACE_ID:
+        validate_pphuman_manifest(root, manifest)
     if manifest.get("project_id"):
         chunks = json.loads((root / "chunks.json").read_text(encoding="utf-8"))
         status = validate_project_corpus(root, manifest, chunks)
@@ -205,11 +208,13 @@ def build_index(root: Path = ROOT) -> dict:
                 "document_title": document_title, "heading": heading,
                 "heading_path": heading_path, "content": content,
                 "repository": source["repository"], "document_path": source["document_path"],
+                    "commit": source.get("commit"),
+                    "source_sha256": source.get("sha256"),
                 **facet_metadata,
                 **{
                     field: source[field]
                     for field in (
-                        "source_snapshot", "source_id", "license", "license_status",
+                        "source_snapshot", "source_id", "publisher", "license", "license_url", "license_status",
                         "attribution", "source_format", "document_family", "scope_note",
                         "source_updated_at",
                     )
@@ -228,6 +233,14 @@ def build_index(root: Path = ROOT) -> dict:
         dense_vector(c["heading"] + " " + c["document_key"] + " " + c["content"])
         for c in chunks
     ])
+    if manifest.get("workspace_id") == PPHUMAN_WORKSPACE_ID:
+        manifest["chunk_count"] = len(chunks)
+        manifest_path = root / "corpus_manifest.json"
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8", newline="\n",
+        )
+        validate_pphuman_manifest(root, manifest, chunks)
     (root / "chunks.json").write_text(
         json.dumps(chunks, ensure_ascii=False, separators=(",", ":")) + "\n",
         encoding="utf-8",
@@ -264,6 +277,8 @@ class PublicKnowledgeIndex:
             validate_project_corpus(root, self.manifest, self.chunks)
             if self.manifest.get("project_id") else None
         )
+        if self.manifest.get("workspace_id") == PPHUMAN_WORKSPACE_ID:
+            validate_pphuman_manifest(root, self.manifest, self.chunks)
         self.ready = self.project_status["active"] if self.project_status else True
         self.matrix = np.load(root / "dense_vectors.npy", allow_pickle=False)
         if len(self.chunks) != len(self.matrix):

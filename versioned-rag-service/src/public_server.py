@@ -36,7 +36,7 @@ _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 def _configured_public_corpus_root() -> Path:
     configured = os.environ.get("RAG_PUBLIC_CORPUS_ROOT", "").strip()
     if not configured:
-        return Path(__file__).resolve().parents[1] / "public_corpus_industrial_inspection"
+        return Path(__file__).resolve().parents[1] / "public_corpus_pphuman"
     path = Path(configured).expanduser()
     return path if path.is_absolute() else (SERVICE_ROOT / path).resolve()
 
