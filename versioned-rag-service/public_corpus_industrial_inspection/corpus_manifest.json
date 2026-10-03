@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "active": false,
+  "activation_status": "blocked_pending_approved_source_bodies",
+  "project_id": "industrial-inspection",
+  "project_name": "industrial-inspection 工业视觉安全监控应用",
+  "primary_repository": "xbs0325/industrial-inspection",
+  "repository": "xbs0325/industrial-inspection",
+  "commit": "6d0df954f26b1810910db9f50727ca8bd19afa9f",
+  "pinned_commit": "6d0df954f26b1810910db9f50727ca8bd19afa9f",
+  "allowed_path_prefixes": [
+    "README.md",
+    "app",
+    "config",
+    "scripts",
+    "Dockerfile",
+    "docker-compose.yml",
+    "go2rtc.docker.yaml",
+    "requirements.docker.txt",
+    "pyproject.toml",
+    "run.sh",
+    "entrypoint.sh",
+    "clean.sh",
+    ".env.example"
+  ],
+  "sources": [],
+  "project_primary_count": 0,
+  "dependency_reference_count": 0,
+  "chunk_count": 0,
+  "namespaces": [],
+  "dependency_reference_allowlist": []
+}
