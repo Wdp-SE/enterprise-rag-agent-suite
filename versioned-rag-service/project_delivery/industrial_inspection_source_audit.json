@@ -1,0 +1,416 @@
+{
+  "schema_version": 1,
+  "repository": "xbs0325/industrial-inspection",
+  "repository_url": "https://github.com/xbs0325/industrial-inspection",
+  "commit": "6d0df954f26b1810910db9f50727ca8bd19afa9f",
+  "tracked_path_count": 47,
+  "approved_body_path_count": 0,
+  "link_only_path_count": 0,
+  "unknown_path_count": 47,
+  "excluded_by_path_policy_count": 5,
+  "allowed_path_prefixes": [
+    "README.md",
+    "app",
+    "config",
+    "scripts",
+    "Dockerfile",
+    "docker-compose.yml",
+    "go2rtc.docker.yaml",
+    "requirements.docker.txt",
+    "pyproject.toml",
+    "run.sh",
+    "entrypoint.sh",
+    "clean.sh",
+    ".env.example"
+  ],
+  "paths": [
+    {
+      "path": ".dockerignore",
+      "allowed_for_indexing": false,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": ".env.example",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": ".gitignore",
+      "allowed_for_indexing": false,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "Dockerfile",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "README.md",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/__init__.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/alert_gate.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/analysis_worker.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/box_utils.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/bundled_config/camera.sdp",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/bundled_config/go2rtc.yaml",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/camera_device.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/camera_service.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/cli.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/clip_utils.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/config.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/logging_setup.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/main.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/model_service.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/ppe_detector.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/ppe_filter.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/prefetch_gate.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/runtime.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/simple_tracker.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/static/css/style.css",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/static/img/idle.svg",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/static/index.html",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/static/js/app.js",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/supervisor.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "app/vlm_parse.py",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "clean.sh",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "config.yaml",
+      "allowed_for_indexing": false,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "config/camera.sdp",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "config/go2rtc.yaml",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "docker-compose.yml",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "entrypoint.sh",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "go2rtc.docker.yaml",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "pyproject.toml",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "requirements.docker.txt",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "run.sh",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "scripts/docker_build_deps.sh",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "scripts/download_models.sh",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "scripts/download_ppe_yolo.sh",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "scripts/download_smolvlm.sh",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "scripts/write_camera_compose.sh",
+      "allowed_for_indexing": true,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "wheels/.gitkeep",
+      "allowed_for_indexing": false,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    },
+    {
+      "path": "wheels/README.md",
+      "allowed_for_indexing": false,
+      "license_status": "unknown",
+      "license_id": null,
+      "publisher": null,
+      "review_reference": null
+    }
+  ],
+  "project_id": "industrial-inspection",
+  "audit_mode": "metadata_only",
+  "source_status": "pending_redistribution_license",
+  "public_body_indexing_enabled": false,
+  "license_discovery": {
+    "checked_at": "2026-10-03",
+    "github_api_metadata_url": "https://api.github.com/repos/xbs0325/industrial-inspection",
+    "github_api_license": null,
+    "default_branch": "main",
+    "repository_license_file_present": false,
+    "disposition": "metadata_only_until_explicit_reuse_license_is_verified"
+  }
+}

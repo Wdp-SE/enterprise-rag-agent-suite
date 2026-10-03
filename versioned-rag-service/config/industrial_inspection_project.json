@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "project_id": "industrial-inspection",
+  "project_name": "industrial-inspection 工业视觉安全监控应用",
+  "primary_repository": "xbs0325/industrial-inspection",
+  "primary_repository_url": "https://github.com/xbs0325/industrial-inspection",
+  "publisher": "xbs0325",
+  "pinned_commit": "6d0df954f26b1810910db9f50727ca8bd19afa9f",
+  "snapshot_label": "main@6d0df954f26b",
+  "source_status": "pending_redistribution_license",
+  "public_body_indexing_enabled": false,
+  "license_discovery": {
+    "checked_at": "2026-10-03",
+    "github_api_metadata_url": "https://api.github.com/repos/xbs0325/industrial-inspection",
+    "github_api_license": null,
+    "default_branch": "main",
+    "repository_license_file_present": false,
+    "disposition": "metadata_only_until_explicit_reuse_license_is_verified"
+  },
+  "allowed_path_prefixes": [
+    "README.md",
+    "app/",
+    "config/",
+    "scripts/",
+    "Dockerfile",
+    "docker-compose.yml",
+    "go2rtc.docker.yaml",
+    "requirements.docker.txt",
+    "pyproject.toml",
+    "run.sh",
+    "entrypoint.sh",
+    "clean.sh",
+    ".env.example"
+  ],
+  "dependency_reference_allowlist": [],
+  "source_license_reviews": {}
+}
