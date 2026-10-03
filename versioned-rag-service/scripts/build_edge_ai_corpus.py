@@ -136,11 +136,22 @@ def write_json(path: Path, content: dict) -> None:
     path.write_text(json.dumps(content, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
+def build_relation_registry(manifest: dict) -> dict:
+    """Create a valid empty registry when no source relations were verified."""
+    manifest_bytes = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    return {
+        "schema_version": 1,
+        "corpus_manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+        "relations": [],
+    }
+
+
 def build_corpus(root: Path = ROOT) -> dict:
     imported = json.loads((root / "source_import_manifest.json").read_text(encoding="utf-8"))
     selection = json.loads(SOURCE_SELECTION.read_text(encoding="utf-8"))
     manifest = build_manifest(imported, selection)
     write_json(root / "corpus_manifest.json", manifest)
+    write_json(root / "document_relations.json", build_relation_registry(manifest))
     write_json(root / "retrieval_policy.json", {
         "schema_version": 1,
         "default_policy": "bm25",

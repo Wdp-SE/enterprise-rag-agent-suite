@@ -6,7 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.build_edge_ai_corpus import build_manifest
+from scripts.build_edge_ai_corpus import build_manifest, build_relation_registry, write_json
+from src.document_relations import DocumentRelationIndex
 from src.public_knowledge import PublicKnowledgeIndex, build_index
 
 
@@ -145,6 +146,28 @@ def test_real_source_manifest_builds_a_chinese_workspace_with_snapshot_scopes():
     assert all(row["source_snapshot"] == row["version"] == manifest["current_version"] for row in manifest["sources"])
     assert all(row["software_baselines"] for row in manifest["sources"])
     assert all(row["license_status"] == "redistributable" for row in manifest["sources"])
+
+
+def test_relation_registry_is_explicitly_empty_and_bound_to_the_exact_manifest(tmp_path):
+    manifest = {
+        "schema_version": 1,
+        "workspace_id": "edge_ai_device",
+        "sources": [],
+    }
+    write_json(tmp_path / "corpus_manifest.json", manifest)
+    write_json(tmp_path / "document_relations.json", build_relation_registry(manifest))
+
+    summary = DocumentRelationIndex.from_corpus(tmp_path, manifest).summary()
+
+    assert summary == {
+        "status": "ready",
+        "available": True,
+        "issue": None,
+        "relation_count": 0,
+        "by_type": {},
+        "by_verification_status": {},
+        "verified_translation_pairs": 0,
+    }
 
 
 def test_manifest_builder_rejects_import_metadata_not_in_audited_selection():
