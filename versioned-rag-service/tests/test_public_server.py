@@ -38,14 +38,16 @@ def _index() -> PublicKnowledgeIndex:
 
 
 def test_default_index_and_health_use_the_pphuman_corpus(monkeypatch):
-    monkeypatch.delenv("RAG_PUBLIC_CORPUS_ROOT", raising=False)
     monkeypatch.setenv("APP_ENV", "public_demo")
-    index = PublicKnowledgeIndex()
-    with TestClient(create_app(index=index)) as client:
+    monkeypatch.setenv("RAG_PUBLIC_CORPUS_ROOT", "public_corpus_industrial_inspection")
+    monkeypatch.setenv(
+        "RAG_PUBLIC_RETRIEVAL_CONFIG",
+        "public_corpus_industrial_inspection/public_retrieval_runtime.json",
+    )
+    with TestClient(create_app()) as client:
         workspace = client.get("/public/workspace").json()
         health = client.get("/health").json()
 
-    assert index.manifest["workspace_id"] == "pphuman"
     assert workspace["workspace_id"] == "pphuman"
     assert workspace["languages"] == ["zh"]
     assert workspace["source_count"] == 83

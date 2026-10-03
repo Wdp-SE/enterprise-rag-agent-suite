@@ -33,15 +33,23 @@ logger = logging.getLogger(__name__)
 _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 
 
+def _is_public_demo() -> bool:
+    return os.environ.get("APP_ENV", "local").strip().casefold() == "public_demo"
+
+
 def _configured_public_corpus_root() -> Path:
+    if _is_public_demo():
+        return SERVICE_ROOT / "public_corpus_pphuman"
     configured = os.environ.get("RAG_PUBLIC_CORPUS_ROOT", "").strip()
     if not configured:
-        return Path(__file__).resolve().parents[1] / "public_corpus_pphuman"
+        return SERVICE_ROOT / "public_corpus_pphuman"
     path = Path(configured).expanduser()
     return path if path.is_absolute() else (SERVICE_ROOT / path).resolve()
 
 
 def _configured_public_retrieval_config() -> Path:
+    if _is_public_demo():
+        return _configured_public_corpus_root() / "public_retrieval_runtime.json"
     configured = os.environ.get("RAG_PUBLIC_RETRIEVAL_CONFIG", "").strip()
     if not configured:
         return _configured_public_corpus_root() / "public_retrieval_runtime.json"
